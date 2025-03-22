@@ -1,6 +1,6 @@
 # IAMY
 
-
+text of contacr --(LLM)--> smart contact --(LLM)--> external data sources-oracles
 
 With IAMY, you can configure your preferred parameters, and IAMY will generate LLM pipelines tailored to meet your specified target metrics based on your labeled data.
 
