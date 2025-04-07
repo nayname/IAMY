@@ -1,0 +1,124 @@
+Below is an example of how you might define a new “Crowdfund” component (to coordinate the NFT sale and goal logic), along with a CW721 component (for minting NFTs), and a Splitter component (to distribute sale proceeds 80/20). This schema references the modules described in your context (e.g., Marketplace for NFTs, Splitter for fund distribution) and adds a Crowdfund layer that orchestrates the overall flow.
+
+--------------------------------------------------------------------------------
+JSON SCHEMA
+--------------------------------------------------------------------------------
+{
+  "description": {
+    "Crowdfund": {
+      "description": "Crowdfund ADO smart contract configuration",
+      "fields": {
+        "name": {
+          "type": "String",
+          "description": "A human-readable name for the crowdfund contract."
+        },
+        "goal_amount": {
+          "type": "Uint128",
+          "description": "Total fundraising goal (e.g., in a specific native token)."
+        },
+        "end_time": {
+          "type": "Option<Expiry>",
+          "description": "Optional time at which the crowdfund ends. If omitted, no time-based lock."
+        },
+        "marketplace_config": {
+          "type": "InstantiateMsg",
+          "description": "Configuration for the Marketplace module (selling NFTs)."
+        },
+        "cw721_config": {
+          "type": "InstantiateMsg",
+          "description": "Configuration for the CW721 module (minting NFTs)."
+        },
+        "splitter_config": {
+          "type": "Splitter",
+          "description": "Configuration for the Splitter module to distribute proceeds."
+        },
+        "owner": {
+          "type": "Option<String>",
+          "description": "Address of the crowdfund’s owner. Defaults to the message sender if omitted."
+        }
+      }
+    }
+  },
+  "schema": {
+    "Crowdfund": {
+      "name": "MyNFTFundraiser",
+      "goal_amount": "1000000",
+      "end_time": null,
+      "marketplace_config": {
+        "authorized_cw20_address": null,
+        "authorized_token_addresses": null,
+        "kernel_address": "andr1kernelmarket...",
+        "owner": "andr1crowdfundowner..."
+      },
+      "cw721_config": {
+        "name": "MyProjectNFT",
+        "symbol": "MPN",
+        "minter": "andr1crowdfundowner...",
+        "kernel_address": "andr1kernelcw721...",      /* If your CW721 ADO also needs a kernel */
+        "owner": "andr1crowdfundowner..."          /* If your CW721 abides by a standard schema that allows specifying an owner */
+      },
+      "splitter_config": {
+        "recipients": [
+          {
+            "recipient": {
+              "address": "andr1recipientPrimary..."
+            },
+            "percent": "0.8"
+          },
+          {
+            "recipient": {
+              "address": "andr1recipientSecondary..."
+            },
+            "percent": "0.2"
+          }
+        ],
+        "lock_time": null,
+        "kernel_address": "andr1kernelsplitter...",
+        "owner": "andr1crowdfundowner..."
+      },
+      "owner": "andr1crowdfundowner..."
+    }
+  }
+}
+
+--------------------------------------------------------------------------------
+EXPLANATION
+--------------------------------------------------------------------------------
+
+1. Crowdfund Description  
+   • "name": A human-readable identifier for the crowdfund.  
+   • "goal_amount": The total goal (e.g., 1,000,000 units of some token).  
+   • "end_time": Optional. If you want to enforce a specific end date/timestamp, you can provide an Expiry in milliseconds.  
+   • "marketplace_config": References the standard Marketplace “InstantiateMsg” (from the provided context) so that you can list NFTs for sale in this contract.  
+   • "cw721_config": References a CW721 “InstantiateMsg” for minting project NFTs. This object can vary based on your chosen CW721 standard, but the example includes basics like "name", "symbol", and "minter".  
+   • "splitter_config": Uses the “Splitter” from the provided context. It has “recipients” set to 80% and 20% shares.  
+   • "owner": If not provided, many ADOs default to the message sender at instantiation.
+
+2. Splitter (80/20)  
+   The “Splitter” config includes:  
+   • "recipients": A list of addresses and percentages showing how the sale proceeds should be distributed, e.g., 80% to one address and 20% to another.  
+   • "lock_time": If set, changing the configuration is blocked until after that time.  
+   • "kernel_address": If your system uses a kernel for AMP messaging or global configuration, specify it here.  
+   • "owner": Owner of the Splitter contract can update recipients (if not locked).
+
+3. Marketplace (for NFT Sales)  
+   This config lines up with the Marketplace’s “instantiate” fields from your context:  
+   • "authorized_cw20_address": (optional) A single CW20 token address authorized for NFT purchases.  
+   • "authorized_token_addresses": (optional) A list of CW721 addresses allowed to send NFTs.  
+   • "kernel_address": Required by the Marketplace for AMP messaging.  
+   • "owner": Defaults to the message sender if omitted.
+
+4. CW721  
+   This config references a typical CW721 “InstantiateMsg” pattern, specifying fields like:  
+   • "name": NFT collection name.  
+   • "symbol": NFT collection symbol.  
+   • "minter": Address that can mint the NFTs (often the contract owner).  
+   • Optionally includes kernel and owner fields if your environment supports them.
+
+With these components in place, you can:  
+• Launch a CW721 contract to mint and manage NFTs.  
+• Use the Marketplace to list those NFTs for sale.  
+• Split the sale proceeds 80/20 once the NFTs sell, governed by the Splitter component.  
+• Optionally track a fundraising goal and/or end time in the Crowdfund component to control your project’s logic.  
+
+You can modify any of these details (owner addresses, kernel addresses, lock times, etc.) to match your particular environment and requirements.

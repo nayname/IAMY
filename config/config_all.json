@@ -1,23 +1,53 @@
 {
-	"...": {
-		"0": {
-			"cell": "",
-			"classes": {
-				"pos": {
-					"the function ...": "correct_parameters_and_calculation:bool",
-					"a function ...": "correct_function_operations:bool"
-				},
-				"neg": {
-					"no function ...": "incorrect_function_name:bool",
-					"the script ...": "incorrect_language:bool",
-					"...": "return_no_value:bool",
-					"...": "...:bool",
-					"...": "...:bool",
-					"...": "...:bool",
-					"...": "...:bool"
-				}
-			},
-			"descr": "In this exercise, ..."
-		}
+	"nft_marketplace": {
+		"classes": [
+			"cw721",
+			"marketplace"
+		],
+		"descr": "The NFT Marketplace App is a simple application built using ADO Builder that enables users to create and manage a marketplace for an NFT collection. It uses two main components: a **CW721 component** for minting NFTs and a **Marketplace component** for selling them at a fixed price. Users begin by minting NFTs using the Batch Mint feature and then initiate sales by sending each NFT to the Marketplace component, configuring sale details such as price, currency (native or CW20), and duration. The app supports native tokens like `ustars` for purchases and allows batch operations for efficiency. Once published to the chain, users can buy NFTs directly, with funds going to the seller’s wallet."
+	},
+	"crowdfund": {
+		"classes": [
+			"splitter",
+			"marketplace"
+		],
+		"descr": "The Crowdfund App is a decentralized crowdfunding platform built using Andromeda ADOs, designed to fund projects through the sale of NFTs. The core functionality involves minting NFTs via a CW721 component, running a sale using a Crowdfund component, and automatically distributing the raised funds using a Splitter component. The funds from NFT sales are split between two addresses—80% to the primary and 20% to the secondary—once the sale ends. The app's workflow includes building and publishing the app, minting NFTs, starting the sale, and having the Splitter component handle automatic fund distribution upon completion. Interactions are managed via attached messages to ensure correct execution and fund routing."
+	},
+	"cw20_exchange": {
+		"classes": [
+			"cw20",
+			"cw20_exchange"
+		],
+		"descr": "The CW20 Exchange App is a decentralized application built using the Andromeda Protocol that allows users to mint, sell, and manage CW20 tokens. The guide walks users through creating the app on the ADO Builder, starting by defining components like a CW20 token and a CW20 exchange. Users mint CW20 tokens and send them to the exchange component to initiate a token sale, where the tokens are sold in exchange for native `uandr` tokens. The app includes setting up sale parameters such as price, duration, and recipient wallet for sale proceeds. Once live, users can purchase the tokens using native tokens, and the guide demonstrates how to mint, send, sell, and query balances to verify interactions with the app."
+	},
+	"auction_using_cw20_tokens": {
+		"classes": [
+			"cw20",
+			"auction",
+			"cw20_exchange"
+		],
+		"descr": "This ADO app enables the creation of private NFT auctions using CW20 tokens as the bidding currency. It allows a team to mint an NFT collection (using the CW721 standard), create a custom CW20 token, and restrict bidding rights to holders of that token. The app setup involves configuring three main components: CW721 (for NFTs), CW20 (for the bidding token), and the Auction component (to host NFT auctions). Users can mint NFTs, define auction parameters (such as start/end time, minimum bid, and whitelist access), and then send NFTs to the auction module. Bidders use CW20 tokens to place bids, and once the auction concludes, a claim process finalizes the transfer of the NFT to the highest bidder and the tokens to the seller."
+	},
+	"vesting_and_staking": {
+		"classes": [
+			"cw20",
+			"cw20_exchange"
+		],
+		"descr": "The Vesting and Staking App is a Web3 application built on the Andromeda Chain using Beta ADOs, designed to manage token vesting and automatic staking for company employees. The app is configured to vest a fixed amount of native tokens (e.g., ANDR) over a 1-year period. Once tokens are vested, they are automatically sent to a staking component and staked without requiring manual intervention. Each employee receives their own instance of the app, which includes two main components: a **Vesting ADO** (to manage token vesting and release schedules) and a **Staking ADO** (to stake tokens upon release). The setup involves specifying token denominations, recipient addresses, validator details, and vesting schedules (e.g., 1-hour lockup, 5% release every 10 minutes). Ownership of the app or components is then transferred to the employee to ensure they control their tokens and rewards. The app supports easy claiming of vested tokens and staking rewards, streamlining the token distribution and engagement process."
+	},
+	"extended_marketplace": {
+		"classes": [
+			"cw721",
+			"marketplace"
+		],
+		"descr": "Here’s a summary of the Extended Marketplace ADO app: This app expands on a basic NFT marketplace by adding advanced features using the Andromeda Operating System (aOS). Built on the Andromeda chain, it facilitates the sale of NFTs for ANDR tokens. The project involves three artists in a collective, each contributing individual NFT artworks, and one collaborative piece. Proceeds from individual NFTs go to their respective creators, while the revenue from the collaborative NFT is automatically split equally using a splitter component. Key components of the app include: CW721 for minting NFTs with controlled permissions. Marketplace for listing NFTs and applying a 5% administrative tax on sales. Splitter for distributing proceeds from the collaborative NFT evenly between the artists. The admin artist sets permissions allowing the other two artists to mint their NFTs once. After minting, all NFTs are listed for sale through the marketplace. The app is then connected to an Embeddable interface, which generates a public-facing marketplace where users can view and purchase the NFTs."
+	},
+	"commission_based_sales": {
+		"classes": [
+			"cw721",
+			"timelock",
+			"marketplace"
+		],
+		"descr": "The Commission-Based Sales Application is a Web3 app built on the Andromeda chain designed to manage NFT-based product sales (like event tickets) and distribute commission to salespeople. Tickets are minted as NFTs (CW721) and sold via a marketplace component, with the funds temporarily held in a timelock until the end of the month. Salespeople receive a tiered commission based on total monthly sales, ranging from 10% to 25%, which is handled using a conditional splitter that distributes the funds accordingly. The app’s workflow involves: Minting NFTs (tickets) and listing them on the marketplace. Directing sales proceeds to a timelock ADO that holds the funds until a specified time. Once the time condition is met, the timelock releases funds to a conditional splitter, which distributes the correct commission to the salesman and the remainder to the company based on pre-set thresholds. The commission logic is flexible (e.g., daily or weekly), but this example uses monthly payouts. The app leverages Andromeda's modular ADO components for a low-code, customizable sales platform."
 	}
 }

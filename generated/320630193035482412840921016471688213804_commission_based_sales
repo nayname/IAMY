@@ -1,0 +1,155 @@
+Below is an example of how you could set up and link four Andromeda modules to achieve your goal of selling event tickets as NFTs, accruing sales proceeds in a Timelock, and then distributing monthly commissions via a Conditional Splitter. The flow is:
+
+1) A CW721 contract (“tickets”) mints event-ticket NFTs.  
+2) A Marketplace contract lists these NFTs for sale (with proceeds going into a Timelock).  
+3) The Timelock contract holds the sale proceeds until a specified date/time (e.g., month’s end).  
+4) At the month’s end, you release the Timelock funds to a Conditional Splitter, which calculates the salesperson’s commission and sends the remainder to the company.
+
+--------------------------------------------------------------------------------
+1. CW721 (Tickets) Contract
+--------------------------------------------------------------------------------
+Below is a sample InstantiateMsg for your ticket NFT contract, based on the “cw721” schema shown in your context:
+
+{
+  "ado_type": "cw721",
+  "description": "This CW721 contract represents event tickets.",
+  "instantiate_msg": {
+    "name": "EventTickets",
+    "symbol": "TIX",
+    "minter": "andr1owner... (your address or a controller)",
+    "kernel_address": "andr1kerneladdress... (if using AMP features)",
+    "owner": "andr1owner..."  // optional override, if different from sender
+  }
+}
+
+Explanation:
+• name / symbol: Basic metadata for your ticket collection.  
+• minter: Who can mint new tickets (it could be your wallet or a specialized contract).  
+• kernel_address: Required if using Andromeda’s kernel for cross-contract AMP messaging.  
+• owner: Optional override of the contract’s owner field.
+
+--------------------------------------------------------------------------------
+2. Marketplace Contract
+--------------------------------------------------------------------------------
+Next, instantiate the Marketplace so that it sells only the tickets from the CW721 above and deposits all sale proceeds into the Timelock. In a typical workflow, you will do the following at sale time (via ExecuteMsg) so that any buyer’s payment is routed to the Timelock’s address.
+
+InstantiateMsg example:
+
+{
+  "ado_type": "marketplace",
+  "description": "Marketplace for selling event tickets.",
+  "instantiate_msg": {
+    "authorized_cw20_address": null,
+    "authorized_token_addresses": [
+      "andr1cw721tickets..." // the address of the CW721 contract once deployed
+    ],
+    "kernel_address": "andr1kerneladdress...", // same kernel if needed
+    "owner": "andr1owner..." // optional override
+  }
+}
+
+When you start a sale (by sending an NFT to the Marketplace using its ReceiveNft flow or by calling start_sale if the marketplace supports that directly), ensure the sale’s “recipient” is set to the Timelock contract address. For instance:
+
+ExecuteMsg "receive_nft" (example):
+{
+  "receive_nft": {
+    "sender": "andr1owner...",        // who is sending the NFT
+    "token_id": "ticket_001",        // which ticket
+    "msg": "<Base64-encoded StartSale data>"
+  }
+}
+
+Within that StartSale message (decoded), you’d configure:
+{
+  "start_sale": {
+    "coin_denom": {
+      "native_token": "uandr"
+      // or { "cw20_address": "..." } if selling via CW20
+    },
+    "price": "1000", // example price
+    "recipient": "andr1timelock..." // The Timelock contract address
+  }
+}
+
+This ensures that whenever someone buys "ticket_001" for 1000 uandr, the proceeds land in the Timelock.
+
+--------------------------------------------------------------------------------
+3. Timelock Contract (Accrual until Month’s End)
+--------------------------------------------------------------------------------
+Instantiate a Timelock that holds the funds until the monthly release date/time.
+
+{
+  "ado_type": "timelock",
+  "description": "Timelock for holding all ticket-sale proceeds until the end of each month.",
+  "instantiate_msg": {
+    "kernel_address": "andr1kerneladdress...",
+    "owner": "andr1owner..." // you can be the owner to control release_funds
+  }
+}
+
+When a buyer calls “buy” in the Marketplace, the sale proceeds will be transferred into this Timelock. To release funds after the monthly period elapses, you will call:
+
+{
+  "release_funds": {
+    "recipient_addr": "andr1conditional_splitter...", // The address of your Splitter
+    "start_after": null,
+    "limit": null
+  }
+}
+
+By default, the Timelock will not release anything until you (or an authorized party) execute release_funds. Optionally, you can attach an EscrowCondition (e.g., an expiration date at month’s end) when you hold_funds; then Timelock automatically becomes eligible to release at that time.
+
+--------------------------------------------------------------------------------
+4. Conditional Splitter (Scaling Commissions)
+--------------------------------------------------------------------------------
+Finally, a Conditional Splitter can compute how much goes to the salesperson vs. the company based on the total monthly sales. This is an illustrative InstantiateMsg for a hypothetical “conditional_splitter” ADO type (not shown in your provided context, but commonly used in Andromeda for tiered payouts). Adjust to match your real contract’s schema:
+
+{
+  "ado_type": "conditional_splitter",
+  "description": "Splits monthly Timelock withdrawals between a salesperson and the company, with tiered commissions.",
+  "instantiate_msg": {
+    "kernel_address": "andr1kerneladdress...",
+    "owner": "andr1owner...",
+    "tiers": [
+      // Example tier thresholds in total monthly sales (uandr)
+      { "threshold": "1000000", "commission_rate": "0.10" }, // 10% if under 1,000,000 in total sales
+      { "threshold": "5000000", "commission_rate": "0.15" }, // 15% for 1M–5M
+      { "threshold": "10000000","commission_rate": "0.20" }, // 20% for 5M–10M
+      { "threshold": null,      "commission_rate": "0.25" }  // 25% if over 10M
+    ],
+    "addresses": {
+      "salesperson": "andr1salesperson...",
+      "company": "andr1company..."
+    }
+  }
+}
+
+When the Timelock calls release_funds to this contract (by specifying recipient_addr = "andr1conditional_splitter..."), the Splitter can:  
+• Determine how much was just received and add it to the running total for the month.  
+• Based on the total monthly sales so far, pick the appropriate commission rate.  
+• Transfer that commission to the salesperson.  
+• Transfer the remainder to the company.  
+
+(Implementation details may vary depending on how you track “monthly” totals, e.g. resetting after each distribution or storing state. Some Andromeda-based splitter contracts let you define tiered rules; if not, you’d create a custom logic ADO that performs exactly this function.)
+
+--------------------------------------------------------------------------------
+Putting It All Together
+--------------------------------------------------------------------------------
+• Deploy the cw721 (ticket) contract.  
+• Deploy the Timelock.  
+• Deploy the Conditional Splitter.  
+• Deploy the Marketplace, authorizing the cw721 contract.  
+
+Flow of Funds:  
+1) You (or an admin) mint tickets in the cw721 contract.  
+2) You start sales on the Marketplace (recipient set to the Timelock).  
+3) Buyers purchase tickets; the Marketplace sends the payment to the Timelock.  
+4) At month’s end, call release_funds on Timelock to send all accrued proceeds to the Conditional Splitter.  
+5) The Conditional Splitter calculates how to split commission vs. remainder and transfers accordingly.  
+
+With these pieces in place, you achieve:  
+• NFT-based tickets.  
+• Sales proceed accrual in Timelock until end-of-month.  
+• Tiered commission distribution to salesperson vs. company at release time.
+
+This high-level configuration (CW721 + Marketplace + Timelock + Conditional Splitter) provides a template for your Andromeda-based application that sells event tickets with monthly commission payouts. Adjust addresses, thresholds, and additional logic as needed for your exact business rules.

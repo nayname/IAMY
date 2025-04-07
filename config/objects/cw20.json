@@ -1,0 +1,71 @@
+{
+	"description": {
+		"name": "String - The name of the token.",
+		"symbol": "String - The symbol of the token (3-12 alphabetic characters).",
+		"decimals": "u8 - The number of decimals the token uses.",
+		"initial_balances": "Vec<Cw20Coin> - List of addresses and token amounts to initialize balances.",
+		"mint": {
+			"minter": "String - Address allowed to mint tokens.",
+			"cap": "Option<Uint128> - Maximum amount of tokens that can be minted."
+		},
+		"marketing": {
+			"project": "Option<String> - URL of the token's project.",
+			"description": "Option<String> - Description of the token.",
+			"marketing": "Option<String> - Address that can update marketing info.",
+			"logo": {
+				"type": "enum",
+				"variants": {
+					"Url": "String - URL to the logo image.",
+					"Embedded": {
+						"type": "enum",
+						"variants": {
+							"Svg": "Binary - SVG image data.",
+							"Png": "Binary - PNG image data."
+						}
+					}
+				}
+			}
+		},
+		"kernel_address": "String - Kernel contract address for AMP messaging.",
+		"owner": "Option<String> - Optional owner of the ADO, defaults to sender.",
+		"Cw20Coin": {
+			"address": "String - Address to receive initial tokens.",
+			"amount": "Uint128 - Amount of tokens."
+		},
+		"MinterResponse": {
+			"minter": "String - Address allowed to mint.",
+			"cap": "Option<Uint128> - Optional minting cap."
+		},
+		"InstantiateMarketingInfo": {
+			"project": "Option<String>",
+			"description": "Option<String>",
+			"marketing": "Option<String>",
+			"logo": "Option<Logo>"
+		}
+	},
+	"schema": {
+		"name": "mytoken",
+		"symbol": "MYT",
+		"decimals": 6,
+		"initial_balances": [
+			{
+				"address": "andr1xyz...",
+				"amount": "5000000"
+			}
+		],
+		"mint": {
+			"minter": "andr1minter...",
+			"cap": "1000000"
+		},
+		"marketing": {
+			"project": "https://mytoken.io",
+			"description": "This is a utility token for MyToken ecosystem.",
+			"marketing": "andr1marketer...",
+			"logo": {
+				"Url": "https://mytoken.io/logo.png"
+			}
+		},
+		"kernel_address": "andr1kernel...",
+		"owner": "andr1owner..."
+	}
+}

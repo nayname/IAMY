@@ -1,0 +1,64 @@
+{
+    "description": {
+        "Splitter": {
+            "description": "Splitter ADO smart contract configuration",
+            "fields": {
+                "recipients": {
+                    "type": "Vec<AddressPercent>",
+                    "description": "The recipient list of the splitter. Can be updated after instantiation if there is no current lock time."
+                },
+                "lock_time": {
+                    "type": "Option<Expiry>",
+                    "description": "How long the splitter is locked. When locked, no recipients can be added/changed."
+                },
+                "kernel_address": {
+                    "type": "String",
+                    "description": "Contract address of the kernel contract to be used for AMP messaging."
+                },
+                "owner": {
+                    "type": "Option<String>",
+                    "description": "Optional address to specify as the owner of the ADO being created. Defaults to the sender if not specified."
+                }
+            }
+        },
+        "AddressPercent": {
+            "description": "Determines a recipient and their percentage share of funds.",
+            "fields": {
+                "recipient": {
+                    "type": "Address",
+                    "description": "Recipient address."
+                },
+                "percent": {
+                    "type": "Decimal",
+                    "description": "Percentage of funds the recipient should receive. Must not exceed 1.0."
+                }
+            }
+        },
+        "MillisecondsExpiration": {
+            "description": "Expiration timestamp in milliseconds for the splitter lock.",
+            "fields": {
+                "at_time": {
+                    "type": "u64",
+                    "description": "Timestamp (in milliseconds) when the lock expires."
+                }
+            }
+        }
+    },
+    "schema": {
+        "Splitter": {
+            "recipients": [
+                {
+                    "recipient": {
+                        "address": "andr1..."
+                    },
+                    "percent": "0.5"
+                }
+            ],
+            "lock_time": {
+                "at_time": "1655212973000"
+            },
+            "kernel_address": "andr1...",
+            "owner": "andr1..."
+        }
+    }
+}

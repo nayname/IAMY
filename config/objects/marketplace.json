@@ -1,0 +1,117 @@
+{
+	"description": {
+		"Marketplace": "A smart contract (ADO type: marketplace, version 2.3.0) allowing NFT sales via native or CW20 tokens. Supports starting, buying, updating, and canceling NFT sales.",
+		"InstantiateMsg": {
+			"authorized_cw20_address": "Optional CW20 address to authorize for purchasing NFTs. If omitted, any CW20 is allowed.",
+			"authorized_token_addresses": "Optional CW721 contract addresses allowed to send NFTs for sale. If omitted, any CW721 can send.",
+			"kernel_address": "Required kernel contract address for AMP messaging.",
+			"owner": "Optional owner address of the contract. Defaults to message sender."
+		},
+		"ExecuteMsg": {
+			"ReceiveNft": "Handles receiving NFTs from CW721 and starts a sale using a StartSale struct.",
+			"Receive": "Handles receiving CW20 tokens for purchasing NFTs.",
+			"buy": "Allows users to buy NFTs by specifying token_id and token_address.",
+			"update_sale": "Allows updating sale conditions like price, coin_denom, and recipient.",
+			"authorize_contract": "Authorizes CW20/CW721 contracts to send tokens. Needs action and contract address.",
+			"deauthorize_contract": "Removes authorization for CW20/CW721 contracts. Needs action and contract address.",
+			"cancel_sale": "Cancels an active sale. Only NFT owner can do this."
+		},
+		"QueryMsg": {
+			"latest_sale_state": "Fetches the latest sale state (ongoing or most recent).",
+			"sale_state": "Fetches the sale state for a specific sale_id.",
+			"sale_ids": "Gets sale ids of a specific NFT.",
+			"sale_infos_for_address": "Gets sale info of all tokens from a specified CW721 address.",
+			"authorized_addresses": "Lists authorized addresses for a specific permission action."
+		},
+		"SaleStateResponse": {
+			"sale_id": "Unique ID for the sale.",
+			"coin_denom": "Currency used for the sale.",
+			"price": "Price of the NFT.",
+			"status": "Sale status: Open, Executed, Cancelled, Expired.",
+			"start_time": "Start time of the sale (timestamp).",
+			"end_time": "End time of the sale (timestamp).",
+			"recipient": "Recipient address for the funds."
+		},
+		"SaleInfo": {
+			"sale_ids": "IDs of sales conducted on this NFT.",
+			"token_address": "CW721 address of the NFT.",
+			"token_id": "ID of the NFT."
+		},
+		"AuthorizedAddressesResponse": {
+			"addresses": "List of authorized addresses."
+		}
+	},
+	"schema": {
+		"instantiate": {
+			"authorized_cw20_address": "andr1cw20...",
+			"authorized_token_addresses": [
+				"andr1cw721..."
+			],
+			"kernel_address": "andr1kernel...",
+			"owner": "andr1owner..."
+		},
+		"execute": {
+			"receive_nft": {
+				"sender": "andr1user...",
+				"token_id": "123",
+				"msg": "<base64_start_sale_payload>"
+			},
+			"receive": {
+				"sender": "andr1user...",
+				"amount": "500000",
+				"msg": "<base64_buy_payload>"
+			},
+			"buy": {
+				"token_id": "1",
+				"token_address": "andr1cw721..."
+			},
+			"update_sale": {
+				"token_id": "1",
+				"token_address": "andr1cw721...",
+				"price": "100",
+				"coin_denom": {
+					"native_token": "uandr"
+				},
+				"recipient": {
+					"address": "andr1recipient..."
+				}
+			},
+			"authorize_contract": {
+				"action": "send_cw20",
+				"addr": "andr1cw20..."
+			},
+			"deauthorize_contract": {
+				"action": "send_nft",
+				"addr": "andr1cw721..."
+			},
+			"cancel_sale": {
+				"token_id": "1",
+				"token_address": "andr1cw721..."
+			}
+		},
+		"query": {
+			"latest_sale_state": {
+				"token_id": "1",
+				"token_address": "andr1cw721..."
+			},
+			"sale_state": {
+				"sale_id": "1"
+			},
+			"sale_ids": {
+				"token_id": "1",
+				"token_address": "andr1cw721..."
+			},
+			"sale_infos_for_address": {
+				"token_address": "andr1cw721...",
+				"start_after": "0",
+				"limit": 10
+			},
+			"authorized_addresses": {
+				"action": "send_nft",
+				"start_after": "andr1start...",
+				"limit": 25,
+				"order_by": "asc"
+			}
+		}
+	}
+}

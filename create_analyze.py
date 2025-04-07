@@ -13,12 +13,7 @@ from urlextract import URLExtract
 
 import psycopg2
 
-from app.validator import Validator
-from config.config import courses
-from lib.parse_code import parse_json, compile_request
-from lib.query import proceed_query, send_request
-from helper import get_submitted, overall_analysis_from_dataset, create_dataset, iterate_over_db, \
-    report, get_overall, get_name, get_dataset_report
+from lib.pp import Pipeline
 
 lessons = []
 
@@ -26,6 +21,16 @@ make_groups = (...)
 
 rules_from_errors = ...
 
+operations = ["nft_marketplace", "crowdfund", "cw20_exchange", "auction_using_cw20_tokens", "extended_marketplace",
+              "commission_based_sales", "vesting_and_staking"]
+
+
+classify_query = "Lets pretend that we have an LLM app that generates Andromeda Protocol app contracts" \
+                 " using user promtps in natural language. You will be given a user's promt. Based on the context, classify the query to one of the following classes. " \
+                 "Classes: ***OPERATIONS***. User's query: ***QUERY***"
+
+generate_flex = "You will be given a description of the modules and the schema of the modules. Based on this context and the" \
+                " user's query, generate the schema that fulfills the users intent. User's query: ***QUERY***"
 
 def get_all_lesson(works, type, sample):
     examples = {}
@@ -166,12 +171,6 @@ def fill_configs(conn, l, chosen):
         insert_query = ...
 
 
-f = open('report.json')
-rprt = json.load(f)
-
-f = open('variants.json')
-variants = json.load(f)
-
 def score(param):
     if param['not_passed']['count_unmatched'] > ((param['not_passed']['count']/10) * 3):
         param['score'] = -2
@@ -252,72 +251,66 @@ def update_chosen(variants):
                     insert_query = (...)
 
 
+def get_context(query, context):
+    messages = []
+    messages.append(
+            {
+                "role": "user",
+                "content": f"Context: {context}\n\nUser question: {query}"
+            })
 
-def first_part(thread):
-    lectures = get_lectures(conn, thread, 'first')
+    return messages
 
-    for lecture in lectures:
-        get_data_type(lecture, conn)
-        make_placeholder(lecture, conn)
+def generate(query, map):
+    f = open("context.json", "r")
+    context = f.read()
 
-        version = get_version(lecture, conn, "update")
+    p = Pipeline()
+    messages = get_context(
+        classify_query.replace("***OPERATIONS***", json.dumps(operations)).replace("***QUERY***", query), context)
+    request, answer = p.ask_gpt(messages)
 
-        if not exists_comments(lecture):
-                ...
+    class_ = answer.choices[0].message.content.replace('"', '')
+    print("Class: ", class_)
 
-                set_new(lecture, conn, version)
+    f = open('config/config_all.json')
+    classes_config = json.load(f)
+    prog_context = []
 
-                get_classifying_queries(lecture, conn, version)
+    for c in classes_config[class_]["classes"]:
+        f = open("config/objects/" + c + ".json", "r")
+        context = f.read()
+        prog_context.append(context)
 
-        try:
-            ...
+    messages = get_context(generate_flex.replace("***QUERY***", query), json.dumps(prog_context))
+    request, answer = p.ask_gpt(messages)
 
-            create_groups(lecture, conn, version)
+    hash = random.getrandbits(128)
+    f = open("generated/" + str(hash) + "_" + class_, "a")
+    f.write(answer.choices[0].message.content)
+    f.close()
 
-            create_dataset(lecture, 20, version, conn)
-
-            get_submitted(lecture, True)
-            overall_analysis_from_dataset(lecture, version)
-            print("variants:", lecture)
-
-            store_variants(variants, lecture, version, conn)
-            chosen = choose_variant(variants, lecture, conn)
-            fill_configs(conn, lecture, chosen)
-            ...
-        except Exception as e:
-            ...
-
-    ...
-
-
-
-def second_part(thread):
-    lectures = get_lectures(conn, thread, 'second')
-
-    for l in lectures:
-        version = get_version(l, conn)
-        run_over_flow(l, 50, version)
-
-    courses = set()
-
-    for l in lectures:
-        version = get_version(l, conn)
-        res = report(l, version, conn)
-        if res[1] not in rprt.keys():
-            rprt[res[1]] = {}
-        rprt[res[1]].update(res[0])
-        courses.add(res[1])
-
-    get_overall(rprt, courses, conn)
-    base_report(rprt, conn)
-
-    with open('report.json', 'w') as f:
-        json.dump(rprt, f)
+    map.append({"name":str(hash) + "_" + class_, "query":query, "label":class_})
+    f = open('generated_map.json', "w")
+    json.dump(map, f)
+    f.close()
 
 
-if 'first' in sys.argv[1]:
-    first_part(sys.argv[2])
-elif 'second' in sys.argv[1]:
-    second_part(sys.argv[2])
 
+f = open('queries.json')
+queries = json.load(f)
+
+f = open('generated_map.json')
+map = json.load(f)
+
+generate(queries['nft_marketplace'][0], map)
+generate(queries['crowdfund'][0], map)
+generate(queries['cw20_exchange'][0], map)
+generate(queries['auction_using_cw20_tokens'][0], map)
+generate(queries['extended_marketplace'][0], map)
+generate(queries['commission_based_sales'][0], map)
+generate(queries['vesting_and_staking'][0], map)
+generate(queries['extended_marketplace'][1], map)
+generate(queries['cw20_exchange'][1], map)
+generate(queries['vesting_and_staking'][1], map)
 

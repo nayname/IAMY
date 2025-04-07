@@ -1,0 +1,215 @@
+{
+  "description": {
+    "InstantiateMsg": {
+      "authorized_token_addresses": "Optional list of CW721 contract addresses allowed to list NFTs in auctions. If omitted, all CW721 contracts can list.",
+      "authorized_cw20_address": "CW20 token contract used for bidding. Required here since we only allow bids using the specified CW20 token.",
+      "minimum_token_balance": "String - A numeric string representing the minimum balance of the authorized CW20 token a bidder must hold to place a bid. For example, \"500\" means addresses must hold at least 500 tokens.",
+      "kernel_address": "String - Address of the kernel contract used for AMP messaging.",
+      "owner": "Optional address of the Auction contract owner. Defaults to the instantiator if omitted."
+    },
+    "StartAuction": {
+      "start_time": "Optional auction start time in milliseconds. If omitted, the auction starts immediately.",
+      "end_time": "Mandatory auction end time in milliseconds.",
+      "coin_denom": "Denomination for bidding. This can be the CW20 contract address or a native token. In this scenario, it should match the 'authorized_cw20_address' if using your custom token.",
+      "buy_now_price": "Optional buy-now price. If set, any bidder can instantly purchase the NFT at this price.",
+      "min_bid": "Optional minimum starting bid.",
+      "min_raise": "Optional minimum increment for subsequent bids.",
+      "whitelist": "Optional list of addresses allowed to bid. If omitted, any address holding the required CW20 balance can bid.",
+      "recipient": "Optional address to receive funds upon successful auction completion."
+    },
+    "PlaceBid": {
+      "token_id": "ID of the NFT being bid on.",
+      "token_address": "CW721 contract address of the NFT collection."
+    },
+    "UpdateAuction": {
+      "token_id": "ID of the NFT for the auction.",
+      "token_address": "CW721 contract address of the NFT collection.",
+      "start_time": "Optional updated start time in milliseconds.",
+      "end_time": "New mandatory end time in milliseconds.",
+      "coin_denom": "Denomination used for bidding (should match your authorized CW20 if using the custom token).",
+      "uses_cw20": "Boolean indicating whether the auction uses a CW20 for bids.",
+      "min_bid": "Optional updated minimum bid.",
+      "min_raise": "Optional updated minimum raise between bids.",
+      "whitelist": "Optional updated list of addresses allowed to bid.",
+      "recipient": "Optional updated recipient for auction proceeds."
+    },
+    "CancelAuction": {
+      "token_id": "ID of the NFT to cancel the auction for.",
+      "token_address": "CW721 contract address of the NFT."
+    },
+    "Claim": {
+      "token_id": "ID of the NFT to claim (if you are the winner) or bid to reclaim (if outbid).",
+      "token_address": "CW721 contract address of the NFT."
+    }
+  },
+  "schema": {
+    "InstantiateMsg": {
+      "type": "object",
+      "properties": {
+        "authorized_token_addresses": {
+          "type": "array",
+          "description": "Optional list of CW721 contract addresses allowed for auctions. If omitted, any CW721 can be used.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "authorized_cw20_address": {
+          "type": "string",
+          "description": "CW20 token address used for bidding. Required so only this token can be used."
+        },
+        "minimum_token_balance": {
+          "type": "string",
+          "description": "Minimum CW20 token balance required for bidding, e.g. \"500\"."
+        },
+        "kernel_address": {
+          "type": "string",
+          "description": "Address of the kernel contract for AMP messaging."
+        },
+        "owner": {
+          "type": "string",
+          "description": "Optional owner of this Auction contract. Defaults to the message sender if omitted."
+        }
+      },
+      "required": [
+        "authorized_cw20_address",
+        "minimum_token_balance",
+        "kernel_address"
+      ]
+    },
+    "StartAuction": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "object",
+          "description": "Optional start time. If omitted, begins immediately."
+        },
+        "end_time": {
+          "type": "object",
+          "description": "Required end time for the auction."
+        },
+        "coin_denom": {
+          "type": "object",
+          "description": "Bidding denomination (should match authorized_cw20_address if using the custom token)."
+        },
+        "buy_now_price": {
+          "type": "string",
+          "description": "Optional buy-now price."
+        },
+        "min_bid": {
+          "type": "string",
+          "description": "Optional starting bid."
+        },
+        "min_raise": {
+          "type": "string",
+          "description": "Optional min raise between bids."
+        },
+        "whitelist": {
+          "type": "array",
+          "description": "Optional list of whitelisted bidder addresses. If omitted, anyone who meets the CW20 balance requirement may bid.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "recipient": {
+          "type": "object",
+          "description": "Optional recipient for auction proceeds."
+        }
+      },
+      "required": [
+        "end_time",
+        "coin_denom"
+      ]
+    },
+    "PlaceBid": {
+      "type": "object",
+      "properties": {
+        "token_id": {
+          "type": "string",
+          "description": "NFT token ID for the bid."
+        },
+        "token_address": {
+          "type": "string",
+          "description": "CW721 contract address of the NFT."
+        }
+      },
+      "required": [
+        "token_id",
+        "token_address"
+      ]
+    },
+    "UpdateAuction": {
+      "type": "object",
+      "properties": {
+        "token_id": {
+          "type": "string"
+        },
+        "token_address": {
+          "type": "string"
+        },
+        "start_time": {
+          "type": "object"
+        },
+        "end_time": {
+          "type": "object"
+        },
+        "coin_denom": {
+          "type": "object"
+        },
+        "uses_cw20": {
+          "type": "boolean"
+        },
+        "min_bid": {
+          "type": "string"
+        },
+        "min_raise": {
+          "type": "string"
+        },
+        "whitelist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "recipient": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "token_id",
+        "token_address",
+        "end_time",
+        "coin_denom"
+      ]
+    },
+    "CancelAuction": {
+      "type": "object",
+      "properties": {
+        "token_id": {
+          "type": "string"
+        },
+        "token_address": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "token_id",
+        "token_address"
+      ]
+    },
+    "Claim": {
+      "type": "object",
+      "properties": {
+        "token_id": {
+          "type": "string"
+        },
+        "token_address": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "token_id",
+        "token_address"
+      ]
+    }
+  }
+}
