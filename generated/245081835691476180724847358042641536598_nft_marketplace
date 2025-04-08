@@ -1,0 +1,113 @@
+Below is an example “application schema” showing how you might configure both a CW721 (NFT) component and a Marketplace component under the Andromeda Protocol to achieve your goal. It mints 100 NFTs in one collection, each listed immediately for a fixed price of 100,000 ustars, with each sale lasting 2 hours.
+
+--------------------------------------------------------------------------------
+{
+  "andromeda_app": {
+    "cw721": {
+      "instantiate": {
+        "name": "My NFT Collection",
+        "symbol": "MYNFT",
+        "minter": "andr1owner...",
+        "kernel_address": "andr1kernel..."
+      },
+      "execute": {
+        "batch_mint": {
+          "tokens": [
+            {
+              "token_id": "1",
+              "owner": "andr1owner...",
+              "token_uri": "https://example.com/metadata/1.json",
+              "extension": {
+                "publisher": "MyPublisher"
+              }
+            },
+            {
+              "token_id": "2",
+              "owner": "andr1owner...",
+              "token_uri": "https://example.com/metadata/2.json",
+              "extension": {
+                "publisher": "MyPublisher"
+              }
+            },
+            ...
+            {
+              "token_id": "100",
+              "owner": "andr1owner...",
+              "token_uri": "https://example.com/metadata/100.json",
+              "extension": {
+                "publisher": "MyPublisher"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "marketplace": {
+      "instantiate": {
+        "authorized_cw20_address": null,
+        "authorized_token_addresses": [
+          "andr1address_of_the_cw721..."
+        ],
+        "kernel_address": "andr1kernel...",
+        "owner": "andr1owner..."
+      },
+      "execute": [
+        {
+          "receive_nft": {
+            "sender": "andr1owner...",
+            "token_id": "1",
+            "msg": "<base64_encoded_start_sale_for_token_1>"
+          }
+        },
+        {
+          "receive_nft": {
+            "sender": "andr1owner...",
+            "token_id": "2",
+            "msg": "<base64_encoded_start_sale_for_token_2>"
+          }
+        },
+        ...
+        {
+          "receive_nft": {
+            "sender": "andr1owner...",
+            "token_id": "100",
+            "msg": "<base64_encoded_start_sale_for_token_100>"
+          }
+        }
+      ]
+    }
+  }
+}
+--------------------------------------------------------------------------------
+
+Explanation of Key Parts
+
+1. CW721 (NFT) Instantiation and Batch Minting
+   • name / symbol – Identifiers for your NFT collection.  
+   • minter – Address allowed to mint (here, the contract owner).  
+   • kernel_address – The Andromeda kernel contract address.  
+   • batch_mint → tokens (1..100) – Creates 100 NFTs, each with a unique token_id and metadata URI.
+
+2. Marketplace Instantiation
+   • authorized_cw20_address = null – Since you are using ustars (a native token), you do not need to authorize a CW20 contract.  
+   • authorized_token_addresses = ["<cw721_address>"] – Restricts the marketplace to only accept NFTs from your newly instantiated CW721 (replace “andr1address_of_the_cw721...” with the actual contract address once known).  
+   • kernel_address / owner – As with the CW721, these reference the kernel and the owner of the marketplace.
+
+3. Marketplace “ReceiveNft” (Start Sale)
+   • Each “receive_nft” call in the marketplace’s execute array starts a 2-hour sale for the specified token.  
+   • The msg field is base64-encoded JSON. The JSON typically looks like:  
+     {
+       "start_sale": {
+         "coin_denom": {
+           "native_token": "ustars"
+         },
+         "price": "100000",
+         "start_time": 0,
+         "end_time": 7200,
+         "recipient": "andr1owner..."
+       }
+     }  
+   • You would replace token_id with each NFT ID.  
+   • start_time = 0 and end_time = 7200 make the listing end precisely 2 hours after it begins (7200 seconds).
+
+By adapting the placeholders (addresses, URLs, etc.) and applying the same “receive_nft” pattern for all 100 tokens, you will have an NFT collection and a marketplace that lists each minted NFT automatically for a fixed price of 100,000 ustars, each sale lasting 2 hours.

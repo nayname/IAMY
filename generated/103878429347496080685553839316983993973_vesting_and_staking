@@ -1,0 +1,243 @@
+Below is an example of how you might define a new Vesting ADO schema (separate from the “mytoken” and “sale” modules shown in your context) that achieves the requested functionality. It illustrates:
+
+• Creating a unique vesting contract (ADO) per employee,  
+• Enforcing a 6-month lockup,  
+• Releasing tokens monthly at a 10% rate thereafter,  
+• Automatically staking claimed tokens to a chosen validator,  
+• Providing ownership-transfer steps so that each employee can ultimately control their own vesting app.
+
+--------------------------------------------------------------------------------
+VESTING ADO SCHEMA
+--------------------------------------------------------------------------------
+
+{
+  "description": {
+    "name": "Vesting ADO",
+    "overview": "Manages time-locked token vesting for a single beneficiary with monthly releases and auto-staking on claim.",
+    "InstantiateMsg": {
+      "beneficiary": "String - Address that receives vested tokens.",
+      "token_address": "String - CW20 token contract address being vested.",
+      "kernel_address": "String - (Optional) Address of Andromeda's kernel contract, if using AMP for messaging.",
+      "total_amount": "Uint128 - Total amount of tokens to be vested.",
+      "lockup_period": "u64 - Lockup duration in seconds (e.g. ~6 months).",
+      "monthly_release_percent": "Decimal - Percentage (0 to 1) of total tokens released each month after lockup. For 10%, use 0.1.",
+      "validator_address": "String - The validator to which claimed tokens will be auto-staked.",
+      "owner": "Option<String> - Optional. If omitted, instantiator is owner until ownership is transferred."
+    },
+    "ExecuteMsg": {
+      "Claim": "Claims any currently vested (unreleased) tokens, then auto-stakes them to 'validator_address'.",
+      "TransferOwnership": {
+        "new_owner": "String - Address to receive ownership rights."
+      },
+      "ClaimOwnership": "Completes transfer of ownership after it is offered."
+    },
+    "QueryMsg": {
+      "VestingInfo": "Returns the current vesting schedule, how much is locked, how much is claimable, and other relevant info.",
+      "Owner": "Returns the current owner and any pending owner transfer if applicable."
+    },
+    "Responses": {
+      "VestingInfoResponse": {
+        "beneficiary": "String - Address that receives tokens.",
+        "total_amount": "Uint128 - Total tokens allocated.",
+        "locked_amount": "Uint128 - Amount still under lockup.",
+        "claimable_amount": "Uint128 - Amount currently claimable.",
+        "lockup_expires": "u64 - Unix timestamp (seconds) when lockup ends.",
+        "monthly_release_percent": "Decimal - Percent released each month.",
+        "validator_address": "String - Where tokens are auto-staked on claim."
+      },
+      "OwnerResponse": {
+        "owner": "String - Current owner address.",
+        "pending_owner": "Option<String> - Address, if ownership transfer is in process."
+      }
+    }
+  },
+  "schema": {
+    "InstantiateMsg": {
+      "type": "object",
+      "required": [
+        "beneficiary",
+        "token_address",
+        "total_amount",
+        "lockup_period",
+        "monthly_release_percent",
+        "validator_address"
+      ],
+      "properties": {
+        "beneficiary": {
+          "type": "string"
+        },
+        "token_address": {
+          "type": "string"
+        },
+        "kernel_address": {
+          "type": "string"
+        },
+        "total_amount": {
+          "type": "string",
+          "description": "Uint128 as a string"
+        },
+        "lockup_period": {
+          "type": "integer",
+          "description": "Lockup in seconds"
+        },
+        "monthly_release_percent": {
+          "type": "number",
+          "description": "Use 0.1 for a 10% monthly release"
+        },
+        "validator_address": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        }
+      }
+    },
+    "ExecuteMsg": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "claim": {
+              "type": "object",
+              "description": "Claims available tokens and auto-stakes them."
+            }
+          },
+          "required": ["claim"]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "transfer_ownership": {
+              "type": "object",
+              "required": ["new_owner"],
+              "properties": {
+                "new_owner": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "claim_ownership": {
+              "type": "object",
+              "description": "Finalizes ownership transfer by new owner."
+            }
+          },
+          "required": ["claim_ownership"]
+        }
+      ]
+    },
+    "QueryMsg": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "vesting_info": {
+              "type": "object",
+              "description": "Queries vesting details including locked, claimable, etc."
+            }
+          },
+          "required": ["vesting_info"]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "type": "object",
+              "description": "Queries current contract owner."
+            }
+          },
+          "required": ["owner"]
+        }
+      ]
+    },
+    "Responses": {
+      "VestingInfoResponse": {
+        "type": "object",
+        "properties": {
+          "beneficiary": {
+            "type": "string"
+          },
+          "total_amount": {
+            "type": "string"
+          },
+          "locked_amount": {
+            "type": "string"
+          },
+          "claimable_amount": {
+            "type": "string"
+          },
+          "lockup_expires": {
+            "type": "integer"
+          },
+          "monthly_release_percent": {
+            "type": "number"
+          },
+          "validator_address": {
+            "type": "string"
+          }
+        }
+      },
+      "OwnerResponse": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string"
+          },
+          "pending_owner": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
+
+--------------------------------------------------------------------------------
+EXAMPLE USAGE FOR TWO EMPLOYEES
+--------------------------------------------------------------------------------
+
+Below is a high-level outline of how you could instantiate and configure two separate Vesting ADOs (one for each employee). For brevity, we assume both employees get the same schedule but with different addresses.
+
+1. Instantiate Vesting ADO #1 for Employee A:
+   - Msg: InstantiateMsg
+     {
+       "beneficiary": "andr1employeeA...",
+       "token_address": "andr1token...",   
+       "kernel_address": "andr1kernel...", 
+       "total_amount": "100000000",          // Example total tokens
+       "lockup_period": 15552000,            // ~ 6 months in seconds
+       "monthly_release_percent": 0.1,       // 10% monthly
+       "validator_address": "andr1validator",// Where tokens will be staked
+       "owner": "andr1foundation..."         // (Optional) or your address if you’ll transfer ownership later
+     }
+
+2. Instantiate Vesting ADO #2 for Employee B:
+   - Same format as above, except:
+     {
+       "beneficiary": "andr1employeeB...",
+       ...
+     }
+
+3. Ownership Transfer Steps:
+   - If you originally set yourself (or some other address) as the owner, you can transfer ownership to each employee so they fully control their own vesting contract.
+     a) The current owner calls:
+        ExecuteMsg → { "transfer_ownership": { "new_owner": "andr1employeeA..." } }
+     b) Employee A finalizes the transfer by calling:
+        ExecuteMsg → { "claim_ownership": {} }
+
+   - Repeat similarly for Employee B. Now each employee has full control over their own Vesting ADO.
+
+4. Claiming & Auto-Staking:
+   - Once the lockup period expires (after 6 months), Employee A or B calls:
+     ExecuteMsg → { "claim": {} }
+   - The contract calculates the vested amount (based on 10% monthly releases), sends that portion as CW20 tokens to the vesting contract itself, and then automatically stakes them to "andr1validator". The employee can query at any time to see how many tokens remain locked.
+
+This schema and flow provide:
+• A 6-month lockup.  
+• 10% monthly release thereafter.  
+• Auto-staking of claimed tokens.  
+• A clear ownership transfer process so each employee can own and manage their own vesting ADO.

@@ -1,0 +1,81 @@
+Below is an example of how you can construct the CW20 messages needed to:
+
+1) Mint 10,000 additional tokens (sending them to your wallet address).  
+2) Query your updated balance.
+
+Because these are two separate actions (one ExecuteMsg and one QueryMsg), you will typically send them as separate transactions/messages.
+
+--------------------------------------------------------------------------------
+1) ExecuteMsg: Mint
+--------------------------------------------------------------------------------
+This message mints 10,000 tokens and sends them to your connected wallet.
+
+{
+  "mint": {
+    "recipient": "<YOUR_CONNECTED_WALLET_ADDRESS>",
+    "amount": "10000"
+  }
+}
+
+Explanation of fields:
+• "recipient": The address that should receive the newly minted tokens (your wallet).  
+• "amount": The number of tokens (as a string) to be minted. Use a string if your CW20 contract expects it in that format.
+
+--------------------------------------------------------------------------------
+2) QueryMsg: Balance
+--------------------------------------------------------------------------------
+After the mint transaction executes, you can query the contract to verify the updated balance of your wallet:
+
+{
+  "balance": {
+    "address": "<YOUR_CONNECTED_WALLET_ADDRESS>"
+  }
+}
+
+Explanation of fields:
+• "balance": A standard CW20 query endpoint to get the token balance of a specific address.  
+• "address": The wallet address whose balance you want to check (should match the “recipient” address from the mint step).
+
+--------------------------------------------------------------------------------
+Complete JSON Schema Snippets
+--------------------------------------------------------------------------------
+Below is a concise representation showing both actions. They are separate messages; you will send them one at a time in the order shown:
+
+1) ExecuteMsg (mint):
+{
+  "type": "object",
+  "properties": {
+    "mint": {
+      "type": "object",
+      "properties": {
+        "recipient": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      },
+      "required": ["recipient", "amount"]
+    }
+  },
+  "required": ["mint"]
+}
+
+2) QueryMsg (balance):
+{
+  "type": "object",
+  "properties": {
+    "balance": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        }
+      },
+      "required": ["address"]
+    }
+  },
+  "required": ["balance"]
+}
+
+Use the first schema to mint the tokens, then use the second schema to confirm (query) your new token balance.

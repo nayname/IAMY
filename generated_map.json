@@ -1,1 +1,47 @@
-[]
+[
+	{
+		"name": "245081835691476180724847358042641536598_nft_marketplace",
+		"query": "I want to create a new NFT marketplace that lets me mint a collection of 100 NFTs and list each at a fixed price. Please generate an Andromeda Protocol application that includes a CW721 component for minting the NFTs and a Marketplace component to sell them. The purchasing token should be the native token `ustars`, and each NFT should be sold for `100000` `ustars`. Make sure the sale duration is 2 hours for each NFT.",
+		"label": "nft_marketplace"
+	},
+	{
+		"name": "191583701748413273279574119680174944796_crowdfund",
+		"query": "Hi! I want to build a Crowdfund app that sells NFTs to raise funds for my project. Could you create a Crowdfund component, a CW721 component to mint the NFTs, and a Splitter that splits funds 80/20 between two addresses once the sale ends?",
+		"label": "crowdfund"
+	},
+	{
+		"name": "70877067707000209069762983175495315895_auction_using_cw20_tokens",
+		"query": "Build me an NFT Auction app that only allows holders of my custom CW20 token to place bids. The NFT collection will be minted via a CW721 component, the bidding token will be a CW20 component I’ve created, and only addresses holding at least 500 of these tokens should be allowed to participate in the auctions.",
+		"label": "auction_using_cw20_tokens"
+	},
+	{
+		"name": "77087752536001847570870837439444763396_nft_marketplace",
+		"query": "I want to create a new Andromeda Protocol application that includes a CW721 component for minting NFTs and a marketplace component for selling them, but I’d like the sales to be in ANDR tokens (uandr). Please generate the necessary configuration for deploying this App on the Andromeda chain.",
+		"label": "nft_marketplace"
+	},
+	{
+		"name": "286816981949297830851326710050443776616_commission_based_sales",
+		"query": "I’m looking to create an Andromeda-based application that sells event tickets as NFTs. Each ticket sale needs to accrue funds in a Timelock until the end of each month. At that time, the Conditional Splitter should distribute commissions to my single salesperson and the remainder goes to the company. The commission percentages should scale from 10% up to 25% depending on the total sales. Can you generate the smart contract flow and configuration for this setup?",
+		"label": "commission_based_sales"
+	},
+	{
+		"name": "58219553204639351191287696033165873025_vesting_and_staking",
+		"query": "I want to create a simple vesting and staking application on the Andromeda chain. The app should lock up a certain amount of our native token for 1 year and then release it in increments. Once released, all tokens must automatically be staked in the default validator. Please generate the appropriate Vesting and Staking ADO components and show me how to configure them.",
+		"label": "vesting_and_staking"
+	},
+	{
+		"name": "196796384591326400254997113104386320566_extended_marketplace",
+		"query": "Add a 5% tax rate to the marketplace component so that any buyer purchasing an NFT will pay an additional 5% on top of the sale price. The revenue from this tax should be sent to a specific address for administrative costs.",
+		"label": "extended_marketplace"
+	},
+	{
+		"name": "283337307747552265975183805938761038194_cw20_exchange",
+		"query": "I’d like to mint 10,000 additional tokens of MyProjectToken and send them to my connected wallet. Then, verify my updated token balance.",
+		"label": "cw20_exchange"
+	},
+	{
+		"name": "103878429347496080685553839316983993973_vesting_and_staking",
+		"query": "Create a vesting schedule for two employees on the Andromeda chain. Each employee gets a unique Vesting ADO with a 6-month lockup. After lockup, tokens are released monthly at a rate of 10%. Once the tokens are claimed, they should automatically stake to our chosen validator. Provide the ownership transfer steps so each employee controls their own app.",
+		"label": "vesting_and_staking"
+	}
+]

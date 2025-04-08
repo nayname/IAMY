@@ -1,0 +1,26 @@
+Below is an example configuration showing how you might instantiate both a CW721 module (for minting NFTs) and a Marketplace module (restricted to sales in the native ANDR token, “uandr”). You can adjust the fields (e.g., addresses and collection names) as needed for your actual deployment:
+
+{
+  "cw721_instantiate": {
+    "name": "My NFT Collection",
+    "symbol": "MNFT",
+    "minter": "andr1owner...",         // Address allowed to mint
+    "kernel_address": "andr1kernel...",// Your kernel contract address
+    "owner": "andr1owner..."          // (Optional) owner of the CW721 module
+  },
+  "marketplace_instantiate": {
+    "authorized_cw20_address": null,       // No CW20 token authorized, so only native "uandr" can be used
+    "authorized_token_addresses": [],      // Empty = allow any CW721, or specify [ "address_of_cw721" ] to limit
+    "kernel_address": "andr1kernel...",    // Same kernel address for AMP messaging
+    "owner": "andr1owner..."              // (Optional) owner of the marketplace
+  }
+}
+
+Explanation:
+
+• "authorized_cw20_address": null ensures that no CW20 tokens are authorized for purchases, so the marketplace will only accept the native “uandr” token.  
+• "authorized_token_addresses": [] means any CW721 contract may list NFTs for sale. If you want only your newly created CW721 to sell on this marketplace, replace [] with ["<cw721_contract_address>"].  
+• "kernel_address" points to the kernel contract that routes messages within the Andromeda Protocol.  
+• "owner" in each module can be the same or different; if omitted, it defaults to the message sender.  
+
+Deploying these two modules under the same application will allow you to mint NFTs with the CW721 component and subsequently list or sell them via the Marketplace, using “uandr” as the currency.

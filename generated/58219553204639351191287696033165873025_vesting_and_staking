@@ -1,0 +1,80 @@
+Below is an example of how you might configure two Andromeda ADOs—one for vesting and one for staking—so that your tokens are locked for one year, begin vesting in increments afterward, and are automatically staked with the default validator upon release. You would deploy (instantiate) these ADOs through your Kernel, wiring them together so the released tokens flow from the Vesting ADO into the Staking ADO.
+
+────────────────────────────────────────────────────────────────────────
+1. Vesting ADO
+────────────────────────────────────────────────────────────────────────
+Below is a sample InstantiateMsg for a “Vesting” ADO. The core idea is:
+• A certain amount of native tokens (e.g., "uandr") are locked for 1 year (cliff_period).  
+• After 1 year, tokens begin releasing at a fixed rate, e.g. monthly, for a set duration (release_period).  
+• On release, the vesting contract automatically sends the newly vested tokens to the Staking ADO’s address.
+
+{
+  "name": "my_vesting_ado",
+  "ado_type": "vesting",
+  "version": "0.1.0",
+  "instantiate_msg": {
+    "kernel_address": "andr1kernel...",              // Address of your Kernel contract
+    "denom": "uandr",                                // Native token to be vested
+    "total_amount": "1000000000",                    // Total tokens to vest (e.g. 1000 uandr = "1000000000" microuandr)
+    "beneficiary": "andr1owner...",                  // Who eventually receives the vested tokens
+    "schedule": {
+      "cliff_period": 31536000,     // 1 year in seconds (365 days * 24h * 3600)
+      "release_period": 2592000,    // 1 month in seconds (30 days * 24h * 3600)
+      "num_releases": 12            // 12 monthly releases after the cliff
+    },
+    "on_release_action": {
+      // The action that occurs every time tokens vest.  In this case:
+      // - The newly released tokens are transferred directly to the Staking ADO.
+      "send_to_address": "andr1stakingado..." 
+    }
+  }
+}
+
+Explanation of Key Fields:
+• cliff_period: Tokens stay fully locked until the cliff elapses (1 year).  
+• release_period and num_releases: After the cliff, tokens will release incrementally each month for 12 months.  
+• send_to_address in on_release_action: Tells the vesting contract to forward the just-released amount directly to the staking contract address instead of sending them to the beneficiary’s wallet.
+
+────────────────────────────────────────────────────────────────────────
+2. Staking ADO
+────────────────────────────────────────────────────────────────────────
+Once the tokens arrive from the Vesting ADO, they will be staked in the default validator. Here is an example InstantiateMsg for a “Staking” ADO that stakes all incoming tokens:
+
+{
+  "name": "my_staking_ado",
+  "ado_type": "staking",
+  "version": "0.1.0",
+  "instantiate_msg": {
+    "kernel_address": "andr1kernel...",            // Address of your Kernel contract
+    "denom": "uandr",                              // Must match the token being vested
+    "default_validator": "andrvaloper1default...", // The default validator you want to stake with
+    "unstaking_period": 1209600                    // Example: 14 days in seconds
+  }
+}
+
+Explanation of Key Fields:
+• denom: Must match the same native token (“uandr” in this example).  
+• default_validator: The validator address to which the Staking ADO will delegate tokens.  
+• unstaking_period: How long it takes to unstake (if you choose to allow unbonding/unstaking).
+
+────────────────────────────────────────────────────────────────────────
+Connecting the Two ADOs
+────────────────────────────────────────────────────────────────────────
+1. Deploy the Staking ADO first to obtain its contract address (e.g., “andr1stakingado...”).  
+2. Instantiate the Vesting ADO, specifying in its on_release_action.send_to_address field the address of the newly created Staking ADO.  
+3. Confirm both are registered in your Kernel so that messages can be passed correctly.
+
+By doing the above:  
+• Vesting will hold the tokens for a full year (the cliff).  
+• After 12 months, monthly increments will release automatically.  
+• Each time an increment vests, the tokens are sent straight to the Staking ADO, which then stakes them with the default validator.  
+
+This configuration ensures that, as the tokens unlock, they are never freely spendable by the beneficiary until they are subsequently unbonded from staking (assuming you allow that option at all). You can adjust specific details (cliff length, monthly increments, total number of releases, etc.) as needed.
+
+────────────────────────────────────────────────────────────────────────
+Summary
+────────────────────────────────────────────────────────────────────────
+• Vesting ADO handles the lockup schedule, cliff, and vesting increments.  
+• Staking ADO automatically stakes any tokens it receives to your chosen validator.  
+
+The JSON snippets above represent a common pattern for automating vesting into staking on Andromeda. Feel free to modify fields like total_amount, cliff durations, and so on to meet your exact requirements.  

@@ -1,0 +1,151 @@
+Below is an example of how you could configure an Andromeda “application” consisting of four core ADOs (modules) to achieve your requirement of selling NFT-based tickets, locking sale proceeds until the end of the month, and then distributing commissions dynamically based on total sales. The flow is:
+
+1. An NFT contract (for event tickets).  
+2. A Marketplace contract that sells these NFTs.  
+3. A Timelock contract that accumulates sales proceeds throughout the month.  
+4. A “Conditional Splitter” (or custom logic ADO) that, when triggered, checks total sales and distributes the locked funds according to tiered commission rates (10% to 25% for one salesperson, and the remainder to the company).
+
+--------------------------------------------------------------------------------
+1. High-Level Flow
+--------------------------------------------------------------------------------
+
+1) Creation/Initialization  
+   • Deploy your NFT contract (the event tickets).  
+   • Deploy a Marketplace contract configured to accept your NFT tickets for sale.  
+   • Deploy a Timelock contract that receives sale proceeds from each Marketplace sale (e.g., specify “hold_funds” to the Timelock).  
+   • Deploy a Conditional Splitter (or a custom “flow” ADO) that, at month’s end, splits total locked funds between the salesperson and the company based on thresholds of total sales.  
+
+2) Selling Tickets  
+   • Each time a ticket is put up for sale on the Marketplace, the proceeds (native or CW20) will be routed to the Timelock contract.  
+   • The Timelock holds these proceeds until the end of the month.
+
+3) End of Month Release  
+   • At month’s end, call the Timelock’s “release_funds” method.  
+   • The Timelock sends those funds to the Conditional Splitter.  
+   • The Conditional Splitter checks the total volume of monthly sales and applies the relevant percentage (10%, 15%, 20%, or 25%) to the salesperson, sending the remainder to the company.
+
+4) (Optional) Reset for Next Month  
+   • If you want each month’s commissions to recalculate from zero, you can reset the Conditional Splitter’s record of “total sales” or deploy a fresh Timelock instance for each month. How you track “total sales” depends on whether the logic is stored in the Conditional Splitter or if you rely on the Marketplace to provide that total.
+
+--------------------------------------------------------------------------------
+2. Example JSON Configuration
+--------------------------------------------------------------------------------
+
+Below is an illustrative JSON snippet showing four modules. You would adjust fields such as addresses, version numbers, and threshold values as needed. (Note that “conditional_splitter” is an example; you might implement similar “conditional distribution” logic in a custom ADO if you do not have a ready-made conditional splitter contract.)
+
+{
+  "app_name": "Monthly Ticket Sales with Conditional Commissions",
+  "description": "Sells NFT-based event tickets, locks proceeds, then splits commissions based on total monthly sales",
+  "modules": [
+    {
+      "id": "tickets_nft",
+      "ado_type": "cw721",            // Or another official cw721-based ADO
+      "version": "0.16.0",           // Example version
+      "init_msg": {
+        "name": "EventTickets",
+        "symbol": "ETCK",
+        "minter": "andr1deployer...", // Account allowed to mint tickets
+        "kernel_address": "andr1kernel...", // If required for AMP messaging
+        "owner": "andr1owner..."     // Optional: if you want an owner address
+      }
+    },
+    {
+      "id": "tickets_marketplace",
+      "ado_type": "marketplace",
+      "version": "2.3.0",
+      "init_msg": {
+        "kernel_address": "andr1kernel...",
+        "owner": "andr1owner...",
+        // If you only want authorized NFT collections
+        // to sell on this marketplace:
+        "authorized_token_addresses": [
+          "tickets_nft"
+        ],
+        // If you want to restrict to a specific CW20 token for payment:
+        // "authorized_cw20_address": "andr1cw20..."
+        // Otherwise null/omitted allows any token.
+        "authorized_cw20_address": null
+      }
+    },
+    {
+      "id": "monthly_timelock",
+      "ado_type": "timelock",
+      "version": "2.1.0",
+      "init_msg": {
+        "kernel_address": "andr1kernel...",
+        "owner": "andr1owner..."
+      }
+    },
+    {
+      "id": "commission_splitter",
+      // Use a custom ADO or an available “conditional splitter” type
+      "ado_type": "conditional_splitter",
+      "version": "1.0.0",
+      "init_msg": {
+        "kernel_address": "andr1kernel...",
+        "owner": "andr1owner...",
+        // Pseudocode for distribution tiers. You could store total
+        // monthly proceeds or total monthly sales count, whichever is relevant.
+        "commission_tiers": [
+          {
+            "min_sales": "0",
+            "max_sales": "1000",
+            "salesperson_rate_percent": "10"
+          },
+          {
+            "min_sales": "1001",
+            "max_sales": "5000",
+            "salesperson_rate_percent": "15"
+          },
+          {
+            "min_sales": "5001",
+            "max_sales": "20000",
+            "salesperson_rate_percent": "20"
+          },
+          {
+            "min_sales": "20001",
+            "max_sales": null, // or some large sentinel
+            "salesperson_rate_percent": "25"
+          }
+        ],
+        "salesperson_address": "andr1salesperson...",
+        "company_address": "andr1company..."
+      }
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+3. Putting It All Together
+--------------------------------------------------------------------------------
+
+1) Deploy/Instantiate the above four contracts in whichever order you prefer (the NFT and Timelock typically come first).  
+2) Mint event ticket NFTs through “tickets_nft” for each event seat.  
+3) When placing a ticket for sale, call the Marketplace’s “ReceiveNft” or “start_sale” function (depending on your usage pattern). Configure the proceeds to go to the “monthly_timelock” as the sale recipient.  
+4) As purchases occur, the Timelock accumulates funds in escrow.  
+5) At the end of the month, invoke Timelock’s “release_funds” specifying that the funds should be released to the “commission_splitter,” which then automatically calculates and disperses commissions to the salesperson and the remainder to the company according to the “commission_tiers” thresholds.  
+
+--------------------------------------------------------------------------------
+4. Notes & Custom Logic
+--------------------------------------------------------------------------------
+
+• Tracking Total Sales:  
+  - The “Conditional Splitter” or a custom aggregator/flow contract must have a way to track the total monthly sales (by count or by amount). You can update this via an Execute message each sale, or you can store the total in the Marketplace.  
+  - At release time, the Splitter queries the total to decide which tier is used.  
+
+• Resetting Monthly Totals:  
+  - If you want each month to start with zero sales, incorporate a “reset” or deploy a fresh Timelock and/or aggregator each month.  
+  - Alternatively, for large or rolling windows, you can keep track of historical sales but still compute the ongoing monthly threshold.  
+
+• Commission Tiers:  
+  - The JSON snippet above shows a very simple approach. Depending on your actual logic, you may handle more granular tiers or a continuous curve.  
+  - If you only want a single “end-of-month” moment, the Timelock can store an “Expiration” condition (e.g., based on time) so that funds do not release until after a specific time has passed.
+
+This configuration gives you an end-to-end Andromeda-based setup:  
+• NFT creation (tickets).  
+• Marketplace listing and sale.  
+• Proceeds locked in a Timelock contract.  
+• Timed or externally triggered release of those proceeds to a Conditional Splitter.  
+• Dynamic commission distribution based on your scaling percentages.  
+
+You would tailor addresses, version numbers, and messages to match your own deployment environment and chain.

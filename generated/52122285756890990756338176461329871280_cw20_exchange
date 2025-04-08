@@ -1,0 +1,15 @@
+Below is a minimal instantiation schema for a CW20 token named “MyProjectToken,” using symbol “MPT,” with 0 decimals, and the user as the unlimited minter (no cap). You may substitute placeholder addresses (e.g. "YOUR_ADDRESS") with the desired values:
+
+{
+  "name": "MyProjectToken",
+  "symbol": "MPT",
+  "decimals": 0,
+  "initial_balances": [],
+  "mint": {
+    "minter": "YOUR_ADDRESS",
+    "cap": null
+  },
+  "marketing": null,
+  "kernel_address": "",
+  "owner": "YOUR_ADDRESS"
+}

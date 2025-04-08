@@ -5,7 +5,7 @@ import time
 
 from openai import OpenAI
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key="...")
 
 
 class Pipeline:

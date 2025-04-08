@@ -1,0 +1,345 @@
+Below is an example of how you could extend the provided “NFT Auction” schema so that it requires any bidder to hold at least 500 of your custom CW20 token before placing a bid. The key addition is a new field in the “InstantiateMsg” (min_holder_balance) that the contract can use internally to check each bidder’s CW20 balance. Everything else follows the structure of the existing Auction schema:
+
+--------------------------------------------------------------------------------
+{
+  "description": {
+    "InstantiateMsg": {
+      "authorized_token_addresses": "Optional list of CW721 contract addresses allowed to list NFTs for auction. If omitted, any CW721 may be used.",
+      "authorized_cw20_address": "Required CW20 token contract address from which bids must come.",
+      "kernel_address": "Address of the kernel contract used for AMP messaging.",
+      "owner": "Optional address of the Auction contract owner. Defaults to sender.",
+      "min_holder_balance": "Minimum number of tokens a bidder must hold in authorized_cw20_address to place a bid."
+    },
+    "StartAuction": {
+      "start_time": "Optional auction start time in milliseconds. If omitted, starts immediately.",
+      "end_time": "Mandatory auction end time in milliseconds.",
+      "coin_denom": "Denomination for bidding. Can be native or the CW20 address specified in authorized_cw20_address.",
+      "buy_now_price": "Optional buy-now price. If matched, the user can buy the NFT immediately.",
+      "min_bid": "Optional minimum starting bid.",
+      "min_raise": "Optional minimum bid increment.",
+      "whitelist": "Optional list of whitelisted addresses. If omitted, the auction is public.",
+      "recipient": "Optional address to receive funds after sale."
+    },
+    "PlaceBid": {
+      "token_id": "ID of the NFT.",
+      "token_address": "NFT contract address."
+    },
+    "UpdateAuction": {
+      "token_id": "NFT ID being auctioned.",
+      "token_address": "NFT contract address.",
+      "start_time": "Optional auction start time in milliseconds.",
+      "end_time": "Mandatory auction end time in milliseconds.",
+      "coin_denom": "Denomination for bidding.",
+      "uses_cw20": "Boolean: true if this auction uses CW20 bids.",
+      "min_bid": "Optional minimum bid.",
+      "min_raise": "Optional minimum raise for next bid.",
+      "whitelist": "Optional whitelist of addresses.",
+      "recipient": "Optional address to receive funds after sale."
+    },
+    "CancelAuction": {
+      "token_id": "NFT ID.",
+      "token_address": "NFT contract address."
+    },
+    "Claim": {
+      "token_id": "NFT ID.",
+      "token_address": "NFT contract address."
+    }
+  },
+  "schema": {
+    "InstantiateMsg": {
+      "type": "object",
+      "required": [
+        "authorized_cw20_address",
+        "kernel_address"
+      ],
+      "properties": {
+        "authorized_token_addresses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Optional list of CW721 addresses allowed to auction NFTs."
+        },
+        "authorized_cw20_address": {
+          "type": "string",
+          "description": "Contract address of the CW20 token used for bidding."
+        },
+        "kernel_address": {
+          "type": "string",
+          "description": "Address of the kernel contract for AMP messaging."
+        },
+        "owner": {
+          "type": "string",
+          "description": "Optional owner of the auction contract. Defaults to message sender."
+        },
+        "min_holder_balance": {
+          "type": "string",
+          "description": "Minimum CW20 token balance (as a string-encoded integer) required to place a bid."
+        }
+      },
+      "example": {
+        "authorized_token_addresses": [
+          "andr1collection..."
+        ],
+        "authorized_cw20_address": "andr1mycw20...",
+        "kernel_address": "kernelandr1abc...",
+        "owner": "ownerandr1xyz...",
+        "min_holder_balance": "500"
+      }
+    },
+    "StartAuction": {
+      "type": "object",
+      "properties": {
+        "start_time": {
+          "type": "object",
+          "description": "Optional start time.",
+          "properties": {
+            "from_now": {
+              "type": "string",
+              "description": "Offset in milliseconds from the current block time."
+            }
+          }
+        },
+        "end_time": {
+          "type": "object",
+          "description": "Mandatory end time.",
+          "properties": {
+            "from_now": {
+              "type": "string",
+              "description": "Offset in milliseconds from the current block time."
+            }
+          },
+          "required": ["from_now"]
+        },
+        "coin_denom": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "native_token": {
+                  "type": "string"
+                }
+              },
+              "required": ["native_token"]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "cw20_token": {
+                  "type": "string"
+                }
+              },
+              "required": ["cw20_token"]
+            }
+          ]
+        },
+        "buy_now_price": {
+          "type": "string"
+        },
+        "min_bid": {
+          "type": "string"
+        },
+        "min_raise": {
+          "type": "string"
+        },
+        "whitelist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "recipient": {
+          "type": "object",
+          "properties": {
+            "address": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": ["end_time", "coin_denom"],
+      "example": {
+        "start_time": {
+          "from_now": "3600000"
+        },
+        "end_time": {
+          "from_now": "7200000"
+        },
+        "coin_denom": {
+          "cw20_token": "andr1mycw20..."
+        },
+        "buy_now_price": "1000",
+        "min_bid": "300",
+        "min_raise": "10",
+        "whitelist": [
+          "andr1allowed1...",
+          "andr1allowed2..."
+        ],
+        "recipient": {
+          "address": "andr1recipient..."
+        }
+      }
+    },
+    "PlaceBid": {
+      "type": "object",
+      "properties": {
+        "token_id": {
+          "type": "string"
+        },
+        "token_address": {
+          "type": "string"
+        }
+      },
+      "required": ["token_id", "token_address"],
+      "example": {
+        "token_id": "token_001",
+        "token_address": "andr1nft..."
+      }
+    },
+    "UpdateAuction": {
+      "type": "object",
+      "properties": {
+        "token_id": {
+          "type": "string"
+        },
+        "token_address": {
+          "type": "string"
+        },
+        "start_time": {
+          "type": "object",
+          "properties": {
+            "from_now": {
+              "type": "string"
+            }
+          }
+        },
+        "end_time": {
+          "type": "object",
+          "description": "Mandatory end time",
+          "properties": {
+            "from_now": {
+              "type": "string"
+            }
+          },
+          "required": ["from_now"]
+        },
+        "coin_denom": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "native_token": {
+                  "type": "string"
+                }
+              },
+              "required": ["native_token"]
+            },
+            {
+              "type": "object",
+              "properties": {
+                "cw20_token": {
+                  "type": "string"
+                }
+              },
+              "required": ["cw20_token"]
+            }
+          ]
+        },
+        "uses_cw20": {
+          "type": "boolean"
+        },
+        "min_bid": {
+          "type": "string"
+        },
+        "min_raise": {
+          "type": "string"
+        },
+        "whitelist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "recipient": {
+          "type": "object",
+          "properties": {
+            "address": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": [
+        "token_id",
+        "token_address",
+        "end_time",
+        "coin_denom",
+        "uses_cw20"
+      ],
+      "example": {
+        "token_id": "token_001",
+        "token_address": "andr1nft...",
+        "start_time": {
+          "from_now": "3600000"
+        },
+        "end_time": {
+          "from_now": "7200000"
+        },
+        "coin_denom": {
+          "cw20_token": "andr1mycw20..."
+        },
+        "uses_cw20": true,
+        "min_bid": "400",
+        "min_raise": "25",
+        "whitelist": [
+          "andr1allowed1...",
+          "andr1allowed3..."
+        ],
+        "recipient": {
+          "address": "andr1recipient..."
+        }
+      }
+    },
+    "CancelAuction": {
+      "type": "object",
+      "properties": {
+        "token_id": {
+          "type": "string"
+        },
+        "token_address": {
+          "type": "string"
+        }
+      },
+      "required": ["token_id", "token_address"],
+      "example": {
+        "token_id": "token_001",
+        "token_address": "andr1nft..."
+      }
+    },
+    "Claim": {
+      "type": "object",
+      "properties": {
+        "token_id": {
+          "type": "string"
+        },
+        "token_address": {
+          "type": "string"
+        }
+      },
+      "required": ["token_id", "token_address"],
+      "example": {
+        "token_id": "token_001",
+        "token_address": "andr1nft..."
+      }
+    }
+  }
+}
+--------------------------------------------------------------------------------
+
+Explanation of Key Points:
+
+• authorized_cw20_address: Set this to your custom CW20 contract address so that bids must be in that token.  
+• min_holder_balance (NEW FIELD): An additional parameter to enforce each bidder must hold at least 500 (or any specified amount) of that CW20 before the contract accepts a bid.  
+• coin_denom in StartAuction or UpdateAuction: Must reference your custom CW20 token address in its cw20_token field (rather than a native_token) so that all bids use CW20.  
+
+With this schema, your contract logic would (at execution time) verify that any bidder meets the min_holder_balance requirement in the authorized_cw20_address contract before allowing them to place a bid.
