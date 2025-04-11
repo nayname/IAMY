@@ -66,7 +66,7 @@ Known Limitations
 
 *   **Hallucinated / Fantasized Code**: The LLM sometimes fabricates or “hallucinates” contract code that may not compile or make logical sense.
     
-*   **Incomplete Edge Cases**: Certain flows, such as auctions with multiple settlement mechanisms or partial vesting rules, may be only partially implemented or missing altogether.
+*   **Incomplete Edge Cases**: Certain flows may be only partially implemented or missing altogether.
     
 *   **Low Fidelity to Gold Standards**: The generated ADO may deviate significantly from known, high-quality templates or standard practices.
     
