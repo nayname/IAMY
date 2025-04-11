@@ -10,9 +10,9 @@ Table of Contents
 
 1.  [Project Overview](#project-overview)
         
-3.  [Available ADO Types](#available-ado-types)
+3.  [Available Generated Objects Types](#available-ado-types)
     
-4.  [Generated examples](#generated-examples)
+4.  [Generated Examples](#generated-examples)
     
 5.  [Known Limitations](#known-limitations)
     
@@ -34,10 +34,10 @@ When building decentralized applications on Andromeda Protocol or similar platfo
     
   
 
-Available ADO Types
+Available Generated Objects Types
 -------------------
 
-This project currently supports generating code for the following seven ADO types:
+This project currently supports generating code for the following seven object types:
 
 1.  **nft\_marketplace**An NFT marketplace that supports listing, selling, and buying NFTs.
     
