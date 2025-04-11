@@ -24,13 +24,13 @@ Table of Contents
 📚 Project Overview
 ----------------
 
-When building decentralized applications on Andromeda Protocol, developers frequently need to define and deploy — smart contracts tailored to their business needs. This project aims to:
+When creating decentralized applications with the Andromeda Protocol, developers regularly need to craft and deploy smart contracts customized to their specific business requirements. This project addresses this challenge by:
 
-*   Accept a user’s intent in natural language (e.g., “I want an NFT marketplace that charges a commission to sellers”).
+*   Accepting a user’s intent in natural language (e.g., “I want an NFT marketplace that charges a commission to sellers”).
     
-*   Process that intent through a Large Language Model.
+*   Processing that intent through a Large Language Model.
     
-*   Output a first draft that implements the specified behavior.
+*   Generating an initial smart contract draft matching the described functionality.
     
   
 
