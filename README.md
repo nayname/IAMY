@@ -39,19 +39,19 @@ Available Generated Objects Types
 
 This project currently supports generating code for the following seven object types:
 
-1.  **nft\_marketplace**An NFT marketplace that supports listing, selling, and buying NFTs.
+1.  **nft\_marketplace** An NFT marketplace that supports listing, selling, and buying NFTs.
     
-2.  **crowdfund**A crowdfund contract that allows users to pledge tokens to reach a funding goal.
+2.  **crowdfund** A crowdfund contract that allows users to pledge tokens to reach a funding goal.
     
-3.  **cw20\_exchange**A token exchange platform that swaps or trades native and CW20 tokens.
+3.  **cw20\_exchange** A token exchange platform that swaps or trades native and CW20 tokens.
     
-4.  **auction\_using\_cw20\_tokens**A timed or open auction mechanism utilizing CW20 tokens for bidding.
+4.  **auction\_using\_cw20\_tokens** A timed or open auction mechanism utilizing CW20 tokens for bidding.
     
-5.  **extended\_marketplace**A more feature-rich marketplace, potentially combining aspects of auctions, direct listings, and advanced settlement logic.
+5.  **extended\_marketplace** A more feature-rich marketplace, potentially combining aspects of auctions, direct listings, and advanced settlement logic.
     
-6.  **commission\_based\_sales**A marketplace or sales mechanism that withholds a commission from each sale for the contract operator.
+6.  **commission\_based\_sales** A marketplace or sales mechanism that withholds a commission from each sale for the contract operator.
     
-7.  **vesting\_and\_staking**Contracts that manage locked or vested tokens and integrate staking functionality.
+7.  **vesting\_and\_staking** Contracts that manage locked or vested tokens and integrate staking functionality.
     
 
 Generated examples
@@ -74,15 +74,15 @@ Known Limitations
 Possible Improvements
 ---------------------
 
-1.  **Refined Class Schemas**By carefully structuring the prompts and the underlying contract class models, we can guide the LLM toward more accurate generation.
+1.  **Refined Class Schemas** By carefully structuring the prompts and the underlying contract class models, we can guide the LLM toward more accurate generation.
     
-2.  **Price/Recall Matrix**Creating a thorough matrix or evaluation scheme around a high-quality gold dataset can give the LLM (or the system orchestrating the LLM) quantitative feedback on how close it is to correct solutions.
+2.  **Price/Recall Matrix** Creating a thorough matrix or evaluation scheme around a high-quality gold dataset can give the LLM (or the system orchestrating the LLM) quantitative feedback on how close it is to correct solutions.
     
-3.  **Finetuning the LLM**Instead of using a general-purpose LLM, training or finetuning on a curated dataset of ADO examples could dramatically reduce hallucinations and improve fidelity.
+3.  **Finetuning the LLM** Instead of using a general-purpose LLM, training or finetuning on a curated dataset of ADO examples could dramatically reduce hallucinations and improve fidelity.
     
-4.  **Prompt Engineering**Carefully engineering prompts—breaking them down into step-by-step instructions or providing more context—can help reduce randomness in the generated code.
+4.  **Prompt Engineering** Carefully engineering prompts—breaking them down into step-by-step instructions or providing more context—can help reduce randomness in the generated code.
     
-5.  **Automated Testing**Creating automated tests or a staging environment where each generated contract is compiled and tested can catch many of the issues before they reach users.
+5.  **Automated Testing** Creating automated tests or a staging environment where each generated contract is compiled and tested can catch many of the issues before they reach users.
     
 
 License
