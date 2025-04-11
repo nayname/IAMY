@@ -8,9 +8,9 @@ This repository contains an open-source Web 3.0 project leveraging advanced Larg
 Table of Contents
 -----------------
 
-1.  [Project Overview](##-project-overview)
+1.  [Project Overview](#-project-overview)
         
-3.  [Available Generated Objects Types](#-supported-object-types)
+3.  [Available Generated Objects Types](#-supported-ado-components-types)
     
 4.  [Generated Examples](#-generated-examples)
     
