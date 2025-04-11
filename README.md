@@ -10,7 +10,7 @@ Table of Contents
 
 1.  [Project Overview](#project-overview)
         
-3.  [Available Generated Objects Types](#available-ado-types)
+3.  [Available Generated Objects Types](#available-generated-objects-types)
     
 4.  [Generated Examples](#generated-examples)
     
