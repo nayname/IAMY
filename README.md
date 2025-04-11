@@ -2,9 +2,6 @@
 
 
 
-[generated scripts
-](http://88.198.17.207:1962/generate)
-
 LLM-based Smart Contract Generator
 =======================
 
@@ -16,9 +13,7 @@ Table of Contents
 -----------------
 
 1.  [Project Overview](#project-overview)
-    
-2.  [Getting Started](#getting-started)
-    
+        
 3.  [Available ADO Types](#available-ado-types)
     
 4.  [Usage](#usage)
@@ -33,7 +28,7 @@ Table of Contents
 Project Overview
 ----------------
 
-When building decentralized applications on Andromeda Protocal or similar platforms, developers frequently need to define and deploy — smart contracts tailored to their business needs. This project aims to:
+When building decentralized applications on Andromeda Protocol or similar platforms, developers frequently need to define and deploy — smart contracts tailored to their business needs. This project aims to:
 
 *   Accept a user’s intent in natural language (e.g., “I want an NFT marketplace that charges a commission to sellers”).
     
@@ -44,19 +39,7 @@ When building decentralized applications on Andromeda Protocal or similar platfo
 
 You can try the contract generation endpoint here:[http://88.198.17.207:1962/generate](http://88.198.17.207:1962/generate)
 
-Getting Started
----------------
-
-To clone and install locally:
-
-Plain textANTLR4BashCC#CSSCoffeeScriptCMakeDartDjangoDockerEJSErlangGitGoGraphQLGroovyHTMLJavaJavaScriptJSONJSXKotlinLaTeXLessLuaMakefileMarkdownMATLABMarkupObjective-CPerlPHPPowerShell.propertiesProtocol BuffersPythonRRubySass (Sass)Sass (Scss)SchemeSQLShellSwiftSVGTSXTypeScriptWebAssemblyYAMLXML`   bashCopyEditgit clone https://github.com/YourOrg/your-ado-generator.git  cd your-ado-generator  # Install dependencies as appropriate for your environment   `
-
-### Prerequisites
-
-*   Python 3.9+ recommended
-    
-*   A local development environment for CosmWasm (optional, for testing the output)
-    
+  
 
 Available ADO Types
 -------------------
@@ -78,16 +61,11 @@ This project currently supports generating code for the following seven ADO type
 7.  **vesting\_and\_staking**Contracts that manage locked or vested tokens and integrate staking functionality.
     
 
-Usage
+Generated
 -----
 
-1.  bashCopyEditpython app.pyThis launches the local server on an available port.
-    
-2.  bashCopyEditcurl -X POST -H "Content-Type: application/json" \\-d '{"intent": "I want a marketplace where people sell NFTs and the contract owner gets 2% of every sale"}' \\http://127.0.0.1:5000/generate
-    
-3.  **Receive the generated ADO contract** as JSON or code snippets:
-    
-    *   Evaluate its accuracy, completeness, and functional correctness before using it in a production environment.
+![alt text](http://88.198.17.207:1962/static/table.png)
+[examples](http://88.198.17.207:1962/generate)
         
 
 Known Limitations
