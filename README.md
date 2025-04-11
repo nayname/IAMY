@@ -1,7 +1,3 @@
-# IAMY
-
-
-
 LLM-based Smart Contract Generator
 =======================
 
