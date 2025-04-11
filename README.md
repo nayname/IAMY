@@ -39,7 +39,7 @@ When creating decentralized applications with the Andromeda Protocol, developers
 
 This project currently supports generating code for the following object types and corresponding Andromeda Apps:
 
-*   **nft\_marketplace** The Marketplace ADO is a smart contract that allows you to sell your NFTs in a marketplace. 
+*   **nft marketplace** The Marketplace ADO is a smart contract that allows you to sell your NFTs in a marketplace. 
     
 *   **cw20** The CW20 ADO is a smart contract to initiate a standard CW20 token. CW20 is a specification for fungible tokens based on CosmWasm. 
     
@@ -49,7 +49,7 @@ This project currently supports generating code for the following object types a
     
 *   **timelock** The Timelock ADO or Escrow ADO is a smart contract built to hold funds (Native coins) for a period of time until the set condition is satisfied. 
     
-*   **cw20\_exchange** The CW20 Exchange ADO is used to sell CW20 tokens for other assets.
+*   **cw20 exchange** The CW20 Exchange ADO is used to sell CW20 tokens for other assets.
   
 *   **crowdfund** A crowdfund contract that allows users to pledge tokens to reach a funding goal.  
     
