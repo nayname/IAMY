@@ -30,28 +30,28 @@ When building decentralized applications on Andromeda Protocol, developers frequ
     
 *   Process that intent through a Large Language Model.
     
-*   Output a first draft of an ADO that implements the specified behavior.
+*   Output a first draft that implements the specified behavior.
     
   
 
-🧩 Supported Object Types
+🧩 Supported ADO Component Types
 -------------------
 
-This project currently supports generating code for the following seven object types:
+This project currently supports generating code for the following object types and corresponding Andromeda Apps:
 
-*   **nft\_marketplace** An NFT marketplace that supports listing, selling, and buying NFTs.
+*   **nft\_marketplace** The Marketplace ADO is a smart contract that allows you to sell your NFTs in a marketplace. 
     
-*   **crowdfund** A crowdfund contract that allows users to pledge tokens to reach a funding goal.
+*   **cw20** The CW20 ADO is a smart contract to initiate a standard CW20 token. CW20 is a specification for fungible tokens based on CosmWasm. 
     
-*   **cw20\_exchange** A token exchange platform that swaps or trades native and CW20 tokens.
+*   **auction** The Auction ADO is a smart contract that allows performing custom auctions on NFTs. 
     
-*   **auction\_using\_cw20\_tokens** A timed or open auction mechanism utilizing CW20 tokens for bidding.
+*   **cw721** The CW721 ADO is a smart contract to allows users to launch their own custom NFT projects. 
     
-*   **extended\_marketplace** A more feature-rich marketplace, potentially combining aspects of auctions, direct listings, and advanced settlement logic.
+*   **timelock** The Timelock ADO or Escrow ADO is a smart contract built to hold funds (Native coins) for a period of time until the set condition is satisfied. 
     
-*   **commission\_based\_sales** A marketplace or sales mechanism that withholds a commission from each sale for the contract operator.
-    
-*   **vesting\_and\_staking** Contracts that manage locked or vested tokens and integrate staking functionality.
+*   **cw20\_exchange** The CW20 Exchange ADO is used to sell CW20 tokens for other assets.
+  
+*   **crowdfund** A crowdfund contract that allows users to pledge tokens to reach a funding goal.  
     
 
 📸 Generated examples
