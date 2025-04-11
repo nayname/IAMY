@@ -51,6 +51,8 @@ This project currently supports generating code for the following object types a
     
 *   **cw20 exchange** The CW20 Exchange ADO is used to sell CW20 tokens for other assets.
   
+*   **splitter** The Splitter ADO is a smart contract used to split funds to a preset number of addresses.  
+  
 *   **crowdfund** A crowdfund contract that allows users to pledge tokens to reach a funding goal.  
     
 
