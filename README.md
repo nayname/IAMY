@@ -32,9 +32,6 @@ When building decentralized applications on Andromeda Protocol or similar platfo
     
 *   Output a first draft of an ADO that implements the specified behavior.
     
-
-You can try the contract generation endpoint here:[http://88.198.17.207:1962/generate](http://88.198.17.207:1962/generate)
-
   
 
 Available ADO Types
