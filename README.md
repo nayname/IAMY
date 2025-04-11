@@ -10,7 +10,7 @@ Table of Contents
 
 1.  [Project Overview](#-project-overview)
         
-3.  [Available Generated Objects Types](#-supported-ado-components-types)
+3.  [Supported ADO Component Types](#-supported-ado-component-types)
     
 4.  [Generated Examples](#-generated-examples)
     
