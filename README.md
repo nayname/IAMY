@@ -85,8 +85,6 @@ Possible Improvements
 5.  **Automated Testing**Creating automated tests or a staging environment where each generated contract is compiled and tested can catch many of the issues before they reach users.
     
 
-We encourage contributors to open pull requests, share prompt engineering insights, or provide improved training data to help make the generator more robust.
-
 License
 -------
 
