@@ -24,7 +24,7 @@ Table of Contents
 📚 Project Overview
 ----------------
 
-When building decentralized applications on Andromeda Protocol or similar platforms, developers frequently need to define and deploy — smart contracts tailored to their business needs. This project aims to:
+When building decentralized applications on Andromeda Protocol, developers frequently need to define and deploy — smart contracts tailored to their business needs. This project aims to:
 
 *   Accept a user’s intent in natural language (e.g., “I want an NFT marketplace that charges a commission to sellers”).
     
