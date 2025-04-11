@@ -8,15 +8,15 @@ This repository contains an open-source Web 3.0 project leveraging advanced Larg
 Table of Contents
 -----------------
 
-1.  [Project Overview](#project-overview)
+1.  [Project Overview](##-project-overview)
         
-3.  [Available Generated Objects Types](#available-generated-objects-types)
+3.  [Available Generated Objects Types](#-supported-object-types)
     
-4.  [Generated Examples](#generated-examples)
+4.  [Generated Examples](#-generated-examples)
     
-5.  [Known Limitations](#known-limitations)
+5.  [Known Limitations](#%EF%B8%8F-known-limitations)
     
-6.  [Possible Improvements](#possible-improvements)
+6.  [Possible Improvements](#-possible-improvements)
     
 7.  [License](#license)
     
