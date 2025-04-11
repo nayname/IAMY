@@ -16,7 +16,7 @@ Table of Contents
         
 3.  [Available ADO Types](#available-ado-types)
     
-4.  [Generated examples](#generated examples)
+4.  [Generated examples](#generated-examples)
     
 5.  [Known Limitations](#known-limitations)
     
