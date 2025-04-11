@@ -39,7 +39,7 @@ When creating decentralized applications with the Andromeda Protocol, developers
 
 This project currently supports generating code for the following object types and corresponding Andromeda Apps:
 
-*   **nft marketplace** The Marketplace ADO is a smart contract that allows you to sell your NFTs in a marketplace. 
+*   **marketplace** The Marketplace ADO is a smart contract that allows you to sell your NFTs in a marketplace. 
     
 *   **cw20** The CW20 ADO is a smart contract to initiate a standard CW20 token. CW20 is a specification for fungible tokens based on CosmWasm. 
     
