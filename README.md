@@ -88,5 +88,3 @@ License
 -------
 
 This project is licensed under the [MIT License](LICENSE.md).
-
-We hope this LLM-based ADO Generator project helps you rapidly prototype ADOs for CosmWasm and beyond. We welcome criticism, feature requests, and pull requests—together, we can improve how decentralized applications get built!
