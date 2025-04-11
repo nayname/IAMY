@@ -16,7 +16,7 @@ Table of Contents
         
 3.  [Available ADO Types](#available-ado-types)
     
-4.  [Usage](#usage)
+4.  [Generated examples](#Generated examples)
     
 5.  [Known Limitations](#known-limitations)
     
@@ -61,7 +61,7 @@ This project currently supports generating code for the following seven ADO type
 7.  **vesting\_and\_staking**Contracts that manage locked or vested tokens and integrate staking functionality.
     
 
-Generated
+Generated examples
 -----
 
 ![alt text](http://88.198.17.207:1962/static/table.png)
