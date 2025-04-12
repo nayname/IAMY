@@ -275,12 +275,13 @@ def generate(query, map):
 
     f = open('config/config_all.json')
     classes_config = json.load(f)
-    prog_context = []
+    prog_context = {"ados_components":[]}
 
     for c in classes_config[class_]["classes"]:
         f = open("config/objects/" + c + ".json", "r")
         context = f.read()
-        prog_context.append(context)
+        prog_context["ados_components"].append(context)
+    prog_context["application_description"] = classes_config[class_]["descr"]
 
     messages = get_context(generate_flex.replace("***QUERY***", query), json.dumps(prog_context))
     request, answer = p.ask_gpt(messages)
