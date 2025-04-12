@@ -49,6 +49,18 @@ def context_from_params(params):
     pass
 
 #
+def validate(class_, answer):
+    """
+    validate output, call to Validator class
+    :return:
+    """
+
+    hash = random.getrandbits(128)
+    f = open("generated/" + str(hash) + "_" + class_, "a")
+    f.write(answer.choices[0].message.content)
+    f.close()
+
+
 def generate(query, map):
     """
     test function to generate script from query
@@ -60,7 +72,9 @@ def generate(query, map):
     f = open("context.json", "r")
     context = f.read()
 
+    #LLM
     p = Pipeline()
+    #classifier
     messages = get_context(
         classify_query.replace("***OPERATIONS***", json.dumps(operations)).replace("***QUERY***", query), context)
     request, answer = p.ask_gpt(messages)
@@ -70,23 +84,23 @@ def generate(query, map):
     class_ = answer.choices[0].message.content.replace('"', '')
     print("Class: ", class_)
 
+    #APP config
     f = open('config/config_all.json')
     classes_config = json.load(f)
     prog_context = {"ados_components":[]}
 
     for c in classes_config[class_]["classes"]:
+        #each ADO config
         f = open("config/objects/" + c + ".json", "r")
         context = f.read()
         prog_context["ados_components"].append(context)
     prog_context["application_description"] = classes_config[class_]["descr"]
 
+    #request contains: app description, components schemes, user query
     messages = get_context(generate_flex.replace("***QUERY***", query), json.dumps(prog_context))
     request, answer = p.ask_gpt(messages)
 
-    hash = random.getrandbits(128)
-    f = open("generated/" + str(hash) + "_" + class_, "a")
-    f.write(answer.choices[0].message.content)
-    f.close()
+    validate(class_, answer)
 
     map.append({"name":str(hash) + "_" + class_, "query":query, "label":class_})
     f = open('generated_map.json', "w")
