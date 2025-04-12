@@ -1,3 +1,6 @@
+"""
+Stub for loading data from a DB
+"""
 import json
 
 import psycopg2

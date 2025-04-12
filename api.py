@@ -23,6 +23,10 @@ app.mount("/static", StaticFiles(directory="generated"), name="generated")
 
 @app.get("/generate", response_class=HTMLResponse)
 async def read_items():
+    """
+    table with generated scripts
+    :return:
+    """
     html_content = """
     <html>
         <head>

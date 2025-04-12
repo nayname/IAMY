@@ -9,9 +9,12 @@ client = OpenAI(api_key="...")
 
 
 class Pipeline:
+    """
+    LLM call
+    """
     embed_model = "text-embedding-ada-002"
     index_name = 'gen-qa-openai-fast'
-    open_ai_model = "gpt-4"#"gpt-3.5-turbo-0125"
+    open_ai_model = "gpt-4o"
     open_ai_model_role = 'assistant'
 
 

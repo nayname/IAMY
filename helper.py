@@ -1,3 +1,7 @@
+"""
+Helper for refining and optimizing prompts, visualizing data and statistics
+"""
+
 import difflib
 import getpass
 import inspect
@@ -24,9 +28,7 @@ import feedparser
 
 
 query_get_label_script = ...
-
 query_get_label_no_script = ...
-
 query_rephrase = ...
 
 def check_types():

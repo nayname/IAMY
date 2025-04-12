@@ -1,30 +1,26 @@
-import collections
-import itertools
 import json
-import os
 import random
-import shutil
-import sys
-import time
-import urllib
-from copy import copy
-from pathlib import Path
-from urlextract import URLExtract
-
-import psycopg2
 
 from lib.pp import Pipeline
 
-lessons = []
+#ados types
 operations = ["nft_marketplace", "crowdfund", "cw20_exchange", "auction_using_cw20_tokens", "extended_marketplace",
               "commission_based_sales", "vesting_and_staking"]
+#unfine-tuned prompt intended for query classification
 classify_query = "Lets pretend that we have an LLM app that generates Andromeda Protocol app contracts" \
                  " using user promtps in natural language. You will be given a user's promt. Based on the context, classify the query to one of the following classes. " \
                  "Classes: ***OPERATIONS***. User's query: ***QUERY***"
+#unfine-tuned prompt intended for script generation
 generate_flex = "You will be given a description of the modules and the schema of the modules. Based on this context and the" \
                 " user's query, generate the schema that fulfills the users intent. User's query: ***QUERY***"
 
 def get_context(query, context):
+    """
+    strings to context for prompt
+    :param query:
+    :param context:
+    :return:
+    """
     messages = []
     messages.append(
             {
@@ -34,17 +30,33 @@ def get_context(query, context):
 
     return messages
 
-#query to params object
+
 def parse_query(query):
+    """
+    query to params object
+    :param query:
+    :return:
+    """
     pass
 
 
-#fill context wit query params
-def context_from_params(query):
+def context_from_params(params):
+    """
+    fill context wit query params
+    :param params:
+    :return:
+    """
     pass
 
-
+#
 def generate(query, map):
+    """
+    test function to generate script from query
+    :param query:
+    :param map:
+    :return:
+    """
+
     f = open("context.json", "r")
     context = f.read()
 
@@ -82,13 +94,15 @@ def generate(query, map):
     f.close()
 
 
-
+#synthesized queries
 f = open('queries.json')
 queries = json.load(f)
 
+#list of all generated scripts (for the frontend)
 f = open('generated_map.json')
 map = json.load(f)
 
+#examples
 generate(queries['nft_marketplace'][0], map)
 generate(queries['crowdfund'][0], map)
 generate(queries['cw20_exchange'][0], map)
