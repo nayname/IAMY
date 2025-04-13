@@ -10,15 +10,17 @@ Table of Contents
 
 1.  [Project Overview](#-project-overview)
         
-3.  [Supported ADO Component Types](#-supported-ado-component-types)
+2.  [Supported ADO Component Types](#-supported-ado-component-types)
+   
+3.  [Usage](#-usage) 
     
-4.  [Generated Examples](#-generated-examples)
+5.  [Generated Examples](#-generated-examples)
     
-5.  [Known Limitations](#%EF%B8%8F-known-limitations)
+6.  [Known Limitations](#%EF%B8%8F-known-limitations)
     
-6.  [Possible Improvements](#-possible-improvements)
+7.  [Possible Improvements](#-possible-improvements)
     
-7.  [License](#license)
+8.  [License](#license)
     
 
 📚 Project Overview
@@ -54,7 +56,17 @@ This project currently supports generating code for the following object types a
 *   **splitter** The Splitter ADO is a smart contract used to split funds to a preset number of addresses.  
   
 *   **crowdfund** A crowdfund contract that allows users to pledge tokens to reach a funding goal.  
-    
+
+💾  Usage
+-----
+
+To generate test examples:
+
+```console
+python create_analyze.py
+```
+
+The scripts are located in the /generated directory
 
 📸 Generated examples
 -----
