@@ -63,7 +63,7 @@ This project currently supports generating code for the following object types a
 To generate test examples:
 
 ```console
-python create_analyze.py
+python create.py
 ```
 
 The scripts are located in the /generated directory
