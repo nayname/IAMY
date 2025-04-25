@@ -39,7 +39,7 @@ When creating decentralized applications with the Andromeda Protocol, developers
 🧩 Supported Object Types
 -------------------
 
-This project currently supports generating code for the following object types and corresponding Andromeda Apps:
+This project currently supports generating code for the following object types (based on CosmWasm framework and Andromeda Digital Objects):
 
 *   **marketplace** The Marketplace ADO is a smart contract that allows you to sell your NFTs in a marketplace. 
     
