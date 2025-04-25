@@ -81,7 +81,7 @@ The scripts are located in the /generated directory
     
 *   **Incomplete Edge Cases**: Certain flows may be only partially implemented or missing altogether.
     
-*   **Deviation from Standards**: The generated ADO may deviate significantly from known, high-quality templates or standard practices.
+*   **Deviation from Standards**: The generated code may deviate significantly from known, high-quality templates or standard practices.
     
 
 🚧 Possible Improvements
