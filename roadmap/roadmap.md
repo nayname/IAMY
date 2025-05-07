@@ -26,11 +26,9 @@ Our mission is to reliably enhance the quality, accuracy, and determinism of lar
 -   Advanced Accuracy and Determinism  
 	-   Deploy advanced pre-inference strategies (synthetic data generation, fine-tuning models).  
 	 -   Refine post-inference methods:  
-		    -   Enhanced static code analysis.  FIlling the gaps find with previous integration of open source  static tools.
+		    -   Enhanced static code analysis.  Filling the gaps found in previous integrations of open-source  static tools.
 	-   Minimal expert human validation for critical scenarios.  Estimated use cases, estimated percent of usage. Technical integration of human-in-the-loop.
-  -   Expanded Collaborations  
-		-   Onboard additional blockchain platforms and strengthen integrations with the ones already in place.
--   Comprehensive Data Strategy  
+ -   Comprehensive Data Strategy  
 	  -   Standardize systematic benchmarking methodology for each use case scenario.  
       -   Build detailed repositories of contract-specific accuracy metrics and binary indicators (automation viability).  
   ----------
