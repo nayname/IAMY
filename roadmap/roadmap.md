@@ -28,6 +28,7 @@ Our mission is to reliably enhance the quality, accuracy, and determinism of lar
 	 -   Refine post-inference methods:  
 		    -   Enhanced static code analysis.  Filling the gaps found in previous integrations of open-source  static tools.
 	-   Minimal expert human validation for critical scenarios.  Estimated use cases, estimated percent of usage. Technical integration of human-in-the-loop.
+ 	-   Identifying distinct components of smart contracts to assess which parts are suitable for dependable automation and which require continued human oversight
  -   Comprehensive Data Strategy  
 	  -   Standardize systematic benchmarking methodology for each use case scenario.  
       -   Build detailed repositories of contract-specific accuracy metrics and binary indicators (automation viability).  
@@ -36,8 +37,9 @@ Our mission is to reliably enhance the quality, accuracy, and determinism of lar
 ### Phase 3: Product Maturity and Broad Market Entry
 
 -   Automation and Security  
-	-   Achieve significant automation coverage (clearly defined scenarios).  
-	-   Establish robust guidelines for scenarios requiring human supervision.  
+	-   Achieve significant automation coverage (clearly defined smart contract scenarios).  
+	-   Establish robust guidelines for scenarios requiring human supervision.
+ 	-   Accuracy prediction for each scenario.    
 -   Data-Driven Differentiation (MOAT)  
 	-   Aggregate and continually update specialized contract-generation datasets.  
 	-   Implement user feedback loops to refine performance metrics and model configurations.  
