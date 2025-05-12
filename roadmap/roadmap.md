@@ -14,8 +14,6 @@ Our mission is to reliably enhance the quality, accuracy, and determinism of lar
 	-   Implement foundational accuracy measurement methodologies:  
 		-   Quantitative benchmarking against public blockchain datasets.  
 		-   Basic static analysis integration post-generation.  Integration of static analyzers and linters.
--   Initial Blockchain Integrations  
-	- Initial pool of blockchain partners
 -   Early Data Collection  
 	-   Begin systematic collection of initial public datasets (smart contracts, technical documents).  
     -   Initiate private dataset gathering (partner-specified user intents and requirements).  
