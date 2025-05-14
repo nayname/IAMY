@@ -38,7 +38,7 @@ Our mission is to reliably enhance the quality, accuracy, and determinism of lar
 	-   Achieve significant automation coverage (clearly defined smart contract scenarios).  
 	-   Establish robust guidelines for scenarios requiring human supervision.
  	-   Accuracy prediction for each scenario.    
--   Data-Driven Differentiation (MOAT)  
+-   Data-Driven Differentiation (moat)  
 	-   Aggregate and continually update specialized contract-generation datasets.  
 	-   Implement user feedback loops to refine performance metrics and model configurations.  
       
