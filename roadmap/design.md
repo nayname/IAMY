@@ -3,7 +3,7 @@
 
 ## Project Overview
 
-The primary objective of our project is to enhance the determinism, reliability, and overall accuracy of large language models (LLMs), especially tailored for mission-critical applications in financial services, beginning with smart contract generation. This document outlines the methodologies, strategies, and technical processes we employ to achieve these objectives.
+The primary objective of our project is to enhance the determinism, reliability, and overall accuracy of large language models (LLMs), especially tailored for mission-critical applications (beginning with smart contract generation). This document outlines the methodologies, strategies, and technical processes we employ to achieve these objectives.
 
 ## Automated Smart Contract Generation
 
