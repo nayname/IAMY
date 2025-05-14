@@ -58,5 +58,5 @@ For each smart contract category, we systematically collect:
 -   **Smart contract scenarios** different use cases for clients smart contracts with corresponding intents.
 -   **Accuracy metrics** for distinct scenarios.   
 -   **Binary indicators** denoting suitability for reliable auto-generation or manual validation for each scenario.
--   **Fine-tuning schemas** optimized per contract type. JSON configs as a contexct for LLM.
+-   **Fine-tuning schemas** optimized per contract type. JSON configs as a context for LLM.
 -   **User feedback and interaction outcomes** for continuous improvement.
