@@ -1,7 +1,7 @@
 
 # Project Roadmap
 
-LLM-Based Smart Contract Generation with Deterministic Outputs
+## LLM-Based Smart Contract Generation with Deterministic Outputs
 
 Our mission is to reliably enhance the quality, accuracy, and determinism of large language model (LLM) outputs, specifically tailored for financial services and blockchain smart-contract generation.
 
