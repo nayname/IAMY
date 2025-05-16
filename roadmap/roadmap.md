@@ -27,6 +27,12 @@ Our mission is to reliably enhance the quality, accuracy, and determinism of lar
 		    -   Enhanced static code analysis.  Filling the gaps found in previous integrations of open-source  static tools.
 	-   Minimal expert human validation for critical scenarios.  Estimated use cases, estimated percent of usage. Technical integration of human-in-the-loop.
  	-   Identifying distinct components of smart contracts to assess which parts are suitable for dependable automation and which require continued human oversight
+-  Initial Agentic Capabilities
+	-  Integrate foundational agent logic enabling automatic retries and schema-validation loops when initial inference outputs do not meet validation standards.
+	-  Prototype early Model Context Protocol (MCP) integration:
+		-  Expose key internal tools (such as schema validation and static analysis) through an MCP-compliant interface.
+		-  Conduct initial testing of MCP-based tool discovery and invocation within a simplified agentic workflow.
+	-  Implement robust logging mechanisms to audit each agent step and MCP interaction.
  -   Comprehensive Data Strategy  
 	  -   Standardize systematic benchmarking methodology for each use case scenario.  
       -   Build detailed repositories of contract-specific accuracy metrics and binary indicators (automation viability).  
