@@ -38,6 +38,11 @@ To ensure that LLM outputs meet stringent accuracy standards, we implement sever
 -   **Post-validation and Human Supervision (post-inference):**
     
     -   Implementing robust post-validation mechanisms, including minimal expert validation, to ensure outputs adhere strictly to industry standards.
+
+- **Agent-based architecture:** Agents automatically enforce retries, schema validations, and structured error-handling logic, thereby significantly reducing unpredictable model outputs and improving reliability.
+
+- **Model Context Protocol (MCP):** MCP standardizes interactions between agents and external systems (static analysis tools, validators, benchmarks), enforcing explicit contracts and schemas. This structured communication layer further ensures consistent, deterministic behavior across system components.
+  
         
 
 ### 2. Data Strategy
