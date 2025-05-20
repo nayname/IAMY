@@ -14,6 +14,8 @@ Our mission is to reliably enhance the quality, accuracy, and determinism of lar
 	-   Implement foundational accuracy measurement methodologies:  
 		-   Quantitative benchmarking against public blockchain datasets.  
 		-   Basic static analysis integration post-generation.  Integration of static analyzers and linters.
+-   Initial Blockchain Integrations  
+	- Preliminary set of target chains for integration
 -   Early Data Collection  
 	-   Begin systematic collection of initial public datasets (smart contracts, technical documents).  
     -   Initiate private dataset gathering (partner-specified user intents and requirements).  
@@ -33,6 +35,9 @@ Our mission is to reliably enhance the quality, accuracy, and determinism of lar
 		    -   Enhanced static code analysis.  Filling the gaps found in previous integrations of open-source  static tools.
 	-   Minimal expert human validation for critical scenarios.  Estimated use cases, estimated percent of usage. Technical integration of human-in-the-loop.
  	-   Identifying distinct components of smart contracts to assess which parts are suitable for dependable automation and which require continued human oversight
+  -   Expanded Collaborations  
+		-   Onboard additional blockchain platforms
+		-   Extending agentic functionality to additional use cases beyond smart contracts.
  -   Comprehensive Data Strategy  
 	  -   Standardize systematic benchmarking methodology for each use case scenario.  
       -   Build detailed repositories of contract-specific accuracy metrics and binary indicators (automation viability).  
