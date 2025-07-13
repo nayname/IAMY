@@ -38,8 +38,9 @@ llm = ChatOpenAI(model="gpt-4o", temperature=0)
 
 
 class GuardrailsOutput(BaseModel):
-    decision: Literal["nft_marketplace", "crowdfund"] = Field(
-        description="Decision on whether the question is related to movies"
+    decision: Literal["nft_marketplace", "crowdfund", "cw20_exchange", "auction_using_cw20_tokens", "extended_marketplace",
+                  "commission_based_sales", "vesting_and_staking"] = Field(
+        description="Choose contract type"
     )
 
 
@@ -54,13 +55,16 @@ def classify(state: InputState) -> OverallState:
     # database_records = None
     # if guardrails_output.decision == "end":
     #     database_records = "This questions is not about movies or their cast. Therefore I cannot answer this question."
-    return {"question": state.get("question"), "next_action": guardrails_output.decision}
+    return {"question": state.get("question"), "label": state.get("label"), "next_action": guardrails_output.decision, "steps": ['guardrails']}
 
 
 def classifier_condition(
         state: OverallState,
-) -> Literal["nft_marketplace", "crowdfund"]:
-    if state.get("next_action") == "nft_marketplace":
-        return "nft_marketplace"
-    elif state.get("next_action") == "crowdfund":
-        return "crowdfund"
+) -> Literal["contract", "no_contract"]:
+    print(f"Received state in detect_entities: {state}")
+    if state.get("next_action") == "nft_marketplace" or state.get("next_action") == "crowdfund" \
+            or state.get("next_action") == "cw20_exchange" or state.get("next_action") == "auction_using_cw20_tokens":
+        return "contract"
+    elif state.get("next_action") == "extended_marketplace" or state.get("next_action") == "commission_based_sales" \
+            or state.get("next_action") == "vesting_and_staking":
+        return "no_contract"

@@ -13,17 +13,15 @@ from lib.states import OverallState, InputState, OutputState
 
 
 class Agent:
-    def __init__(self, query):
-        self.query = query
-
+    def __init__(self, query, label):
         # LLM
         # self.p = Pipeline()
 
         self.graph = StateGraph(OverallState, input_schema=InputState, output_schema=OutputState)
 
         self.graph.add_node("classifier", classify)
-        self.graph.add_node("nft_marketplace", self.generate_contract_answer)
-        self.graph.add_node("crowdfund", self.generate_final_answer)
+        self.graph.add_node("contract", self.generate_contract_answer)
+        self.graph.add_node("no_contract", self.generate_final_answer)
         # self.graph.add_node("JSONGenerator", self.json_generator_node)
         # self.graph.add_node("DocsrsCaller", self.docsrs_node)
 
@@ -33,10 +31,10 @@ class Agent:
             "classifier",
             classifier_condition,
         )
-        self.graph.add_edge("nft_marketplace", END)
-        self.graph.add_edge("crowdfund", END)
+        self.graph.add_edge("contract", END)
+        self.graph.add_edge("no_contract", END)
 
-        self.graph.compile().invoke({"question": query})
+        self.graph.compile().invoke({"question": query, "label": label})
         # langgraph.add_node(guardrails)
         # langgraph.add_node(generate_cypher)
         # langgraph.add_node(validate_cypher)
@@ -96,6 +94,6 @@ class Agent:
 f = open('queries.json')
 queries = json.load(f)
 
-Agent(queries['nft_marketplace'][0])
-Agent(queries['crowdfund'][0])
-Agent(queries['cw20_exchange'][0])
+Agent(queries['nft_marketplace'][0], 'nft_marketplace')
+Agent(queries['crowdfund'][0], 'crowdfund')
+Agent(queries['cw20_exchange'][0], 'cw20_exchange')
