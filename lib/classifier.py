@@ -31,6 +31,23 @@ classify_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
+chat_query = "Lets pretend that we have an LLM app that generates Andromeda Protocol app contracts" \
+                 "using user promtps in natural language. You will be given a user's promt. Based on the context, " \
+                 "classify the query to one of the following classes. " \
+                 "Classes:".replace("***OPERATIONS***", json.dumps(contract_types))
+chat_prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            chat_query,
+        ),
+        (
+            "human",
+            ("{question}"),
+        ),
+    ]
+)
+
 """
 The class categorizes user intents into three groups: smart contract creation, other operations, and miscellaneous.
 """
@@ -45,6 +62,7 @@ class GuardrailsOutput(BaseModel):
 
 
 guardrails_chain = classify_prompt | llm.with_structured_output(GuardrailsOutput)
+chat = chat_prompt
 
 
 def classify(state: InputState) -> OverallState:
