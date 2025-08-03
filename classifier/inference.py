@@ -1,21 +1,83 @@
 import json
 
 import joblib, numpy as np
-import onnxruntime as ort
-from transformers import AutoTokenizer
+import torch
+from peft import PeftModel
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 LABEL_LIST = json.load(open("data/labels.json"))
-THRESH = joblib.load("artifacts/thresh.pkl")
+# id2label = {i: lbl for i, lbl in enumerate(LABEL_LIST)}
 
-sess = ort.InferenceSession("artifacts/deberta_intent.onnx", providers=["CPUExecutionProvider"])
-tok = AutoTokenizer.from_pretrained("microsoft/deberta-v3-large")
 
-def classify(prompt: str, k=5):
-    inputs = tok(prompt, return_tensors="np", truncation=True)
-    ort_inputs = {k: v for k, v in inputs.items() if k in sess.get_inputs()[0].name}
-    logits = sess.run(None, ort_inputs)[0][0]
-    probs = 1 / (1 + np.exp(-logits))
-    return [lbl for lbl, p in zip(LABEL_LIST, probs) if p >= THRESH[lbl]]
+# sess = ort.InferenceSession("artifacts/deberta_intent.onnx", providers=["CPUExecutionProvider"])
+# tok = AutoTokenizer.from_pretrained("microsoft/deberta-v3-large")
 
-if __name__ == "__main__":
-    print(classify("Deploy an NFT marketplace contract"))
+# If you merged LoRA → use the merged dir; else load your fine-tuned dir
+MODEL_DIR = "artifacts/deberta_lora"  # or "artifacts/deberta_lora" if you saved a full HF checkpoint
+tok = AutoTokenizer.from_pretrained(MODEL_DIR)
+model = AutoModelForSequenceClassification.from_pretrained(
+    "microsoft/deberta-v3-large",
+    num_labels=len(LABEL_LIST),
+    problem_type="single_label_classification",
+)
+
+model = PeftModel.from_pretrained(model, MODEL_DIR)
+id2label = [model.config.id2label[i] for i in range(model.config.num_labels)]
+print("model id2label:", id2label)
+print("inference LABEL_LIST:", LABEL_LIST)
+# assert id2label == LABEL_LIST, "Mismatch: reorder LABEL_LIST to match model.config.id2label"
+# load temperature (default to 1.0 if not present)
+# try:
+#     T = float(np.load("artifacts/temperature.npy")[0])
+# except Exception:
+#     T = 1.0
+
+def classify(text: str):
+    with torch.inference_mode():
+        enc = tok(text, return_tensors="pt", truncation=True, max_length=256)
+        logits = model(**enc).logits[0].cpu().numpy()
+    print("logits:", logits)
+    probs = np.exp(logits - logits.max())
+    probs /= probs.sum()
+    print("probs:", probs, "argmax:", probs.argmax(), "label:", id2label[probs.argmax()])
+    # logits = logits / T
+    # softmax
+    pred_id = int(probs.argmax())
+    return {
+        "text": text,
+        "label": id2label[pred_id],
+        "prob": float(probs[pred_id]),
+        "uncertainty": 1.0 - float(probs[pred_id])   # or entropy(probs)
+    }
+
+def check():
+    LABEL_LIST = ['awk', 'find', 'others', 'sort', 'xargs']
+    id2label = {i: l for i, l in enumerate(LABEL_LIST)}
+    label2id = {l: i for i, l in enumerate(LABEL_LIST)}
+
+    SRC = "artifacts/deberta_lora"  # your trained folder (or merged LoRA)
+    DST = "artifacts/deberta_ft_named"  # new folder with names
+
+    model = AutoModelForSequenceClassification.from_pretrained(
+        "microsoft/deberta-v3-large" )
+
+    model = PeftModel.from_pretrained(model, MODEL_DIR)
+    print("num_labels:", model.config.num_labels)  # likely 2
+    print(model.classifier)  # shows out_features=2
+    print(model.state_dict()["classifier.weight"].shape)  # (2, hidden_size)
+    model.config.id2label = id2label
+    model.config.label2id = label2id
+    model.save_pretrained(DST)
+
+    tok = AutoTokenizer.from_pretrained(SRC)
+    tok.save_pretrained(DST)
+
+    model = AutoModelForSequenceClassification.from_pretrained(DST).eval()
+    print("-----------")
+    print([model.config.id2label[i] for i in range(model.config.num_labels)])
+
+check()
+# print(classify("Calculate the md5 sum of the list of files in the current directory"))
+# print(classify("(GNU specific) Display cumulative CPU usage over 5 seconds."))
+# print(classify("test"))
+# print(classify("test"))
