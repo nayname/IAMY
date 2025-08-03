@@ -1,0 +1,833 @@
+[
+	{
+		"intent": "Create a new CosmWasm project called **dex_factory**.",
+		"type": "create_project",
+		"tools": [
+			"project_initialization"
+		],
+		"workflow": "1. Use generate_from_template() to create a new CosmWasm project from the standard template (cargo generate --git https://github.com/CosmWasm/cw-template.git --name dex_factory). 2. Execute setup_dependencies() to install Rust toolchain, wasm32-unknown-unknown target, and required Cargo dependencies (cosmwasm-std, cw-storage-plus, serde). 3. Run configure_workspace() to set up the project structure with proper Cargo.toml configuration including crate-type = ['cdylib']. 4. Call initialize_structure() to create the standard CosmWasm file structure (contract.rs, msg.rs, state.rs, error.rs, lib.rs). 5. Execute setup_neutron_config() to configure the project for Neutron-specific features and dependencies. 6. Optionally run create_demo_project() to generate a basic counter contract implementation as a starting point for the dex_factory functionality."
+	},
+	{
+		"intent": "Generate a starter Neutron contract named **awesome_nft** with sample tests.",
+		"type": "create_and_test_project",
+		"tools": [
+			"contract_testing",
+			"project_initialization"
+		],
+		"workflow": "1. Use ProjectInitializer.generate_from_template() to create the awesome_nft project from CosmWasm template. 2. Execute setup_dependencies() to install Rust, wasm32 target, and testing dependencies. 3. Run configure_workspace() to set up project with test configuration in Cargo.toml. 4. Call initialize_structure() to create contract files and test directory structure. 5. Execute setup_neutron_config() for Neutron-specific NFT functionality. 6. Run create_demo_project() to generate basic NFT contract with mint, transfer, and query functions. 7. Use ContractTester.setup_test_environment() to configure testing framework with cosmwasm-std test utilities. 8. Execute run_unit_tests() to create and run unit tests for contract functions (instantiate, execute, query). 9. Call run_integration_tests() to set up integration tests using Neutron testnet or local environment. 10. Run analyze_coverage() to measure test coverage and identify untested code paths. 11. Execute validate_contracts() to ensure contract compilation and optimization work correctly. 12. Generate_reports() to create comprehensive test documentation and coverage reports."
+	},
+	{
+		"intent": "Set up a multi‑contract workspace called **defi_hub**.",
+		"type": "create_project",
+		"tools": [
+			"project_initialization"
+		],
+		"workflow": "1. Use generate_from_template() to create the defi_hub workspace as a Cargo workspace project. 2. Execute setup_dependencies() to install Rust toolchain and workspace-level dependencies. 3. Run configure_workspace() to set up Cargo.toml with [workspace] configuration, defining multiple contract members (e.g., contracts/dex, contracts/lending, contracts/staking). 4. Call initialize_structure() to create the multi-contract directory structure with shared libraries and individual contract folders. 5. Execute setup_neutron_config() to configure each contract for Neutron-specific modules (ICQ, ICA, Oracle integration). 6. Run create_demo_project() to generate sample contracts for each DeFi component with proper inter-contract communication patterns and shared state management."
+	},
+	{
+		"intent": "Bootstrap **hello_neutron** and point it to **mainnet** settings.",
+		"type": "bootstrap_project",
+		"tools": [
+			"development_environment",
+			"project_initialization"
+		],
+		"workflow": "1. Use ProjectInitializer.generate_from_template() to create hello_neutron project. 2. Execute setup_dependencies() to install required tools and Neutron CLI. 3. Run configure_workspace() with mainnet-specific settings. 4. Call initialize_structure() to create project files. 5. Execute setup_neutron_config() with mainnet configuration (chain-id: neutron-1, RPC: https://rpc-neutron.cosmos.directory). 6. Run create_demo_project() to generate a basic contract. 7. Use EnvironmentManager.setup_ide() to configure development environment for mainnet deployment. 8. Execute install_dependencies() to ensure all mainnet deployment tools are available. 9. Run configure_extensions() to set up wallet connections and mainnet network configurations. 10. Call setup_docker_environment() for contract optimization and deployment preparation. 11. Execute bootstrap_fresh() to initialize the project with mainnet-ready configuration files and deployment scripts."
+	},
+	{
+		"intent": "Clone the template into **vesting_contract** and open it in VS Code.",
+		"type": "bootstrap_project",
+		"tools": [
+			"development_environment",
+			"project_initialization"
+		],
+		"workflow": "1. Use ProjectInitializer.generate_from_template() to clone CosmWasm template into vesting_contract directory. 2. Execute setup_dependencies() to ensure Rust and required tools are installed. 3. Run configure_workspace() to set up the project for vesting contract development. 4. Call initialize_structure() to create vesting-specific contract structure. 5. Execute setup_neutron_config() for Neutron vesting functionality. 6. Run create_demo_project() to generate basic vesting contract logic. 7. Use EnvironmentManager.setup_ide() to launch VS Code with the project. 8. Execute install_dependencies() to install VS Code extensions for Rust and CosmWasm development. 9. Run configure_extensions() to set up Rust analyzer, CosmWasm syntax highlighting, and debugging tools. 10. Call setup_docker_environment() for contract compilation and testing. 11. Execute bootstrap_fresh() to ensure clean development environment setup in VS Code."
+	},
+	{
+		"intent": "Kick‑start project **crowdfund** with a CI pipeline.",
+		"type": "bootstrap_project",
+		"tools": [
+			"development_environment",
+			"project_initialization"
+		],
+		"workflow": "1. Use ProjectInitializer.generate_from_template() to create crowdfund project from template. 2. Execute setup_dependencies() to install development tools and CI requirements. 3. Run configure_workspace() to set up project with CI/CD configuration files. 4. Call initialize_structure() to create project structure including .github/workflows directory. 5. Execute setup_neutron_config() for Neutron-specific crowdfunding features. 6. Run create_demo_project() to generate crowdfunding contract with contribution, withdrawal, and goal tracking. 7. Use EnvironmentManager.setup_ide() to configure development environment. 8. Execute install_dependencies() to install CI tools and testing frameworks. 9. Run configure_extensions() to set up GitHub Actions workflows for automated testing, contract compilation, and deployment. 10. Call setup_docker_environment() to create containerized build and test environments. 11. Execute integrate_cosmopark() to set up automated testing against local Neutron environment. 12. Run bootstrap_fresh() to initialize the complete CI/CD pipeline with automated contract testing, optimization, and deployment to testnet/mainnet."
+	},
+	{
+		"intent": "Spin up **oracle_service** and install every dependency.",
+		"type": "bootstrap_project",
+		"tools": [
+			"development_environment",
+			"project_initialization"
+		],
+		"workflow": "1. Use ProjectInitializer.generate_from_template() to create oracle service project structure from Neutron templates. 2. Execute ProjectInitializer.setup_dependencies() to install Rust, Go, Docker, and Neutron-specific dependencies including neutrond binary and wasm32-unknown-unknown target. 3. Run ProjectInitializer.setup_neutron_config() to configure oracle module settings in app.toml with proper endpoints and parameters. 4. Execute EnvironmentManager.install_dependencies() to install Slinky oracle binary and configure price feeds. 5. Use EnvironmentManager.setup_docker_environment() to containerize oracle services. 6. Run EnvironmentManager.integrate_cosmopark() to set up local development environment with interconnected Neutron and Gaia nodes for testing oracle functionality."
+	},
+	{
+		"intent": "Re‑bootstrap **swap_pool** from scratch (clean the old build first).",
+		"type": "bootstrap_project",
+		"tools": [
+			"development_environment"
+		],
+		"workflow": "1. Execute EnvironmentManager.clean_environment() to remove existing swap_pool build artifacts, Docker containers, and cached dependencies. 2. Run EnvironmentManager.bootstrap_fresh() to initialize clean workspace and reset all configurations. 3. Use EnvironmentManager.install_dependencies() to reinstall required packages including CosmWasm optimizer and Neutron SDK. 4. Execute EnvironmentManager.setup_docker_environment() to rebuild Docker images for swap pool contracts. 5. Run EnvironmentManager.integrate_cosmopark() to establish fresh local blockchain environment for testing swap functionality."
+	},
+	{
+		"intent": "Create a demo project **lottery** with a sample instantiate JSON.",
+		"type": "bootstrap_project",
+		"tools": [
+			"development_environment",
+			"project_initialization"
+		],
+		"workflow": "1. Use ProjectInitializer.generate_from_template() to create lottery project from CosmWasm template using cargo-generate. 2. Execute ProjectInitializer.create_demo_project() to scaffold lottery contract with state management, execute messages for ticket purchase/drawing, and query methods. 3. Run ProjectInitializer.setup_neutron_config() to configure lottery-specific parameters and integrate with Neutron's Cron module for automated drawings. 4. Use EnvironmentManager.setup_docker_environment() to optimize contract for deployment. 5. Execute EnvironmentManager.integrate_cosmopark() to deploy and test lottery contract with sample instantiate JSON containing initial parameters like ticket price, draw frequency, and prize distribution."
+	},
+	{
+		"intent": "Start **airdrop** project and add Docker Compose for local testing.",
+		"type": "bootstrap_project",
+		"tools": [
+			"development_environment",
+			"project_initialization"
+		],
+		"workflow": "1. Execute ProjectInitializer.generate_from_template() to create airdrop project structure with CosmWasm smart contract template. 2. Use ProjectInitializer.initialize_structure() to set up airdrop contract with merkle tree verification, claim tracking, and token distribution logic. 3. Run ProjectInitializer.setup_neutron_config() to integrate with Neutron's native modules for automated distribution. 4. Execute EnvironmentManager.setup_docker_environment() to create Docker Compose configuration with Neutron node, contract deployment, and testing services. 5. Use EnvironmentManager.integrate_cosmopark() to establish multi-chain testing environment for cross-chain airdrop scenarios."
+	},
+	{
+		"intent": "Start **airdrop** project and add Docker Compose for local testing.",
+		"type": "bootstrap_project",
+		"tools": [
+			"development_environment",
+			"project_initialization"
+		],
+		"workflow": "1. Execute ProjectInitializer.generate_from_template() to create airdrop project structure with CosmWasm smart contract template. 2. Use ProjectInitializer.initialize_structure() to set up airdrop contract with merkle tree verification, claim tracking, and token distribution logic. 3. Run ProjectInitializer.setup_neutron_config() to integrate with Neutron's native modules for automated distribution. 4. Execute EnvironmentManager.setup_docker_environment() to create Docker Compose configuration with Neutron node, contract deployment, and testing services. 5. Use EnvironmentManager.integrate_cosmopark() to establish multi-chain testing environment for cross-chain airdrop scenarios."
+	},
+	{
+		"intent": "Format all Rust files in this project.",
+		"type": "format_code",
+		"tools": [
+			"code_formatting"
+		],
+		"workflow": "1. Execute CodeFormatter.create_backups() to safely backup current codebase before formatting changes. 2. Run CodeFormatter.format_workspace() to apply cargo fmt across entire Rust workspace including all crates and modules. 3. Use CodeFormatter.format_contracts() to specifically format CosmWasm contract files with proper structure and conventions. 4. Execute CodeFormatter.validate_style() to verify formatting compliance with Rust and CosmWasm standards. 5. Run CodeFormatter.fix_issues_automatically() to resolve any remaining formatting inconsistencies and ensure code quality."
+	},
+	{
+		"intent": "Please run cargo fmt across the entire workspace.",
+		"type": "format_code",
+		"tools": [
+			"code_formatting"
+		],
+		"workflow": "1. Execute CodeFormatter.create_backups() to preserve original code state before formatting. 2. Run CodeFormatter.format_workspace() to execute 'cargo fmt --all' command across entire workspace targeting all Rust source files. 3. Use CodeFormatter.check_compliance() to verify formatting meets Rust style guidelines. 4. Execute CodeFormatter.validate_style() to ensure consistent code formatting throughout the project. 5. Run CodeFormatter.enforce_standards() to apply any additional project-specific formatting rules."
+	},
+	{
+		"intent": "Can you tidy up the Rust code style for me?",
+		"type": "format_code",
+		"tools": [
+			"code_formatting"
+		],
+		"workflow": "1. Execute CodeFormatter.create_backups() to create safety copies of current code state. 2. Run CodeFormatter.format_workspace() to apply comprehensive Rust formatting using rustfmt. 3. Use CodeFormatter.format_contracts() to ensure CosmWasm-specific formatting standards are applied. 4. Execute CodeFormatter.fix_issues_automatically() to resolve style inconsistencies and improve code readability. 5. Run CodeFormatter.validate_style() to confirm all code meets established style guidelines and standards."
+	},
+	{
+		"intent": "Apply rustfmt to every crate in the repo.",
+		"type": "format_code",
+		"tools": [
+			"code_formatting"
+		],
+		"workflow": "1. Execute CodeFormatter.create_backups() to secure current codebase before applying formatting changes. 2. Run CodeFormatter.format_workspace() to systematically apply rustfmt to each crate in the repository workspace. 3. Use CodeFormatter.check_compliance() to verify each crate meets Rust formatting standards. 4. Execute CodeFormatter.validate_style() to ensure consistent formatting across all crates. 5. Run CodeFormatter.enforce_standards() to apply repository-wide formatting policies and maintain code quality."
+	},
+	{
+		"intent": "Make sure the whole codebase follows standard formatting.",
+		"type": "format_code",
+		"tools": [
+			"code_formatting"
+		],
+		"workflow": "1. Execute CodeFormatter.create_backups() to preserve original code before standardization. 2. Run CodeFormatter.check_compliance() to audit current codebase against standard formatting rules. 3. Use CodeFormatter.format_workspace() to apply standard Rust formatting across entire codebase. 4. Execute CodeFormatter.enforce_standards() to implement and verify adherence to coding standards. 5. Run CodeFormatter.validate_style() to confirm complete compliance with standard formatting requirements."
+	},
+	{
+		"intent": "Clean up the formatting for my CosmWasm contract code.",
+		"type": "format_code",
+		"tools": [
+			"code_formatting"
+		],
+		"workflow": "1. Execute CodeFormatter.create_backups() to safely store current contract code state. 2. Run CodeFormatter.format_contracts() to apply CosmWasm-specific formatting rules and conventions. 3. Use CodeFormatter.validate_style() to ensure contract code meets CosmWasm development standards. 4. Execute CodeFormatter.fix_issues_automatically() to resolve any formatting inconsistencies in contract logic. 5. Run CodeFormatter.check_compliance() to verify contract code follows best practices for smart contract development."
+	},
+	{
+		"intent": "Run cargo fmt --all so everything looks consistent.",
+		"type": "format_code",
+		"tools": [
+			"code_formatting"
+		],
+		"workflow": "1. Execute CodeFormatter.create_backups() to preserve current code state for safety. 2. Run CodeFormatter.format_workspace() to execute 'cargo fmt --all' command for comprehensive formatting. 3. Use CodeFormatter.validate_style() to ensure consistent formatting across all project files. 4. Execute CodeFormatter.check_compliance() to verify uniform code style throughout the workspace. 5. Run CodeFormatter.enforce_standards() to maintain consistent formatting standards across the entire project."
+	},
+	{
+		"intent": "Fix any formatting issues in the Rust sources.",
+		"type": "format_code",
+		"tools": [
+			"code_formatting"
+		],
+		"workflow": "1. Execute CodeFormatter.create_backups() to secure current source code before making changes. 2. Run CodeFormatter.check_compliance() to identify specific formatting issues in Rust sources. 3. Use CodeFormatter.fix_issues_automatically() to resolve detected formatting problems and inconsistencies. 4. Execute CodeFormatter.format_workspace() to apply comprehensive formatting fixes across all Rust source files. 5. Run CodeFormatter.validate_style() to confirm all formatting issues have been successfully resolved."
+	},
+	{
+		"intent": "Standardize the code style before I commit.",
+		"type": "format_code",
+		"tools": [
+			"code_formatting"
+		],
+		"workflow": "1. Execute CodeFormatter.create_backups() to create pre-commit backup of current code state. 2. Run CodeFormatter.check_compliance() to audit code against standardization requirements. 3. Use CodeFormatter.format_workspace() to apply standard formatting across all code files. 4. Execute CodeFormatter.enforce_standards() to ensure adherence to project coding standards. 5. Run CodeFormatter.validate_style() to verify code is ready for commit with proper standardization."
+	},
+	{
+		"intent": "Auto‑format the project in place.",
+		"type": "format_code",
+		"tools": [
+			"code_formatting"
+		],
+		"workflow": "1. Execute CodeFormatter.create_backups() to preserve original project state before in-place formatting. 2. Run CodeFormatter.format_workspace() to automatically format all project files in their current locations. 3. Use CodeFormatter.fix_issues_automatically() to resolve formatting issues without manual intervention. 4. Execute CodeFormatter.validate_style() to confirm successful auto-formatting of the project. 5. Run CodeFormatter.enforce_standards() to ensure auto-formatted code meets all project standards."
+	},
+	{
+		"intent": "How many NTRN tokens are sitting in neutron1h3x4y5z6… right now?",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Execute BalanceQuerier.validate_address() to verify neutron1h3x4y5z6… is a valid Neutron address format. 2. Run BalanceQuerier.query_by_denom() to specifically query NTRN token balance using 'untrn' denomination. 3. Use BalanceQuerier.convert_denominations() to convert micro-NTRN (untrn) to human-readable NTRN format. 4. Execute BalanceQuerier.format_display() to present the balance in clear, readable format. 5. Run BalanceQuerier.get_metadata() to provide additional context about the NTRN token balance and account status."
+	},
+	{
+		"intent": "Check the balance of my dev wallet (neutron19jq…).",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Execute BalanceQuerier.validate_address() to confirm neutron19jq… is properly formatted Neutron address. 2. Run BalanceQuerier.query_all_balances() to retrieve complete balance information for the development wallet. 3. Use BalanceQuerier.categorize_tokens() to organize balances by token type (native, IBC, factory tokens). 4. Execute BalanceQuerier.convert_denominations() to display balances in user-friendly formats. 5. Run BalanceQuerier.format_display() to present comprehensive wallet balance summary for development purposes."
+	},
+	{
+		"intent": "What's the current bank balance for address neutron1test42abc…?",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Execute BalanceQuerier.validate_address() to verify neutron1test42abc… follows correct Neutron address format. 2. Run BalanceQuerier.query_balance() to retrieve current bank module balance for the specified address. 3. Use BalanceQuerier.query_all_balances() to get comprehensive balance information across all denominations. 4. Execute BalanceQuerier.format_display() to present bank balance in clear, organized format. 5. Run BalanceQuerier.get_metadata() to provide additional account information and balance context."
+	},
+	{
+		"intent": "Tell me how much untrn is left on the validator payout account.",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Execute BalanceQuerier.validate_address() to confirm validator payout account address is valid. 2. Run BalanceQuerier.query_by_denom() to specifically query 'untrn' denomination balance. 3. Use BalanceQuerier.convert_denominations() to convert micro-NTRN to readable NTRN amounts. 4. Execute BalanceQuerier.format_display() to present validator payout balance clearly. 5. Run BalanceQuerier.get_metadata() to provide context about validator rewards and payout schedule."
+	},
+	{
+		"intent": "Can you query neutron1contractsink… and show its token balance?",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Execute BalanceQuerier.validate_address() to verify neutron1contractsink… is properly formatted contract address. 2. Run BalanceQuerier.query_all_balances() to retrieve all token balances held by the contract. 3. Use BalanceQuerier.categorize_tokens() to organize tokens by type (native NTRN, IBC tokens, factory tokens). 4. Execute BalanceQuerier.convert_denominations() to display balances in human-readable formats. 5. Run BalanceQuerier.format_display() to present comprehensive token balance summary for the contract address."
+	},
+	{
+		"intent": "I need the exact balance (in micro‑NTRN) for neutron1a2b3c4d5….",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Execute BalanceQuerier.validate_address() to confirm neutron1a2b3c4d5… is valid Neutron address format. 2. Run BalanceQuerier.query_by_denom() to query exact 'untrn' (micro-NTRN) balance without conversion. 3. Use BalanceQuerier.query_balance() to retrieve precise balance information from bank module. 4. Execute BalanceQuerier.format_display() to present exact micro-NTRN amount with full precision. 5. Run BalanceQuerier.get_metadata() to provide additional context about the precise balance query results."
+	},
+	{
+		"intent": "Fetch the wallet balance of the multisig treasury address, please.",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Validate the multisig treasury address format using validate_address() 2. Query the specific balance using query_balance() for the treasury address 3. Format the balance display using format_display() to present readable amounts 4. Get token metadata using get_metadata() to show proper token names and symbols 5. Return formatted balance information for the treasury wallet"
+	},
+	{
+		"intent": "Before I deploy, what funds are available at neutron1deployacct…?",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Validate the deployment account address (neutron1deployacct…) using validate_address() 2. Query all available balances using query_all_balances() to get complete fund overview 3. Categorize tokens using categorize_tokens() to separate native, IBC, and factory tokens 4. Convert denominations using convert_denominations() for better readability 5. Format display using format_display() to show deployment-ready fund summary"
+	},
+	{
+		"intent": "Show me the current token holdings for neutron1airdropdest… on the main gRPC node.",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Validate the airdrop destination address using validate_address() 2. Connect to the main gRPC node endpoint for querying 3. Query all token holdings using query_all_balances() for comprehensive view 4. Categorize tokens using categorize_tokens() to organize by type (native/IBC/factory) 5. Get metadata using get_metadata() for proper token information 6. Format display using format_display() to present current holdings clearly"
+	},
+	{
+		"intent": "Give me the balance of my cold storage address using the default Neutron endpoint.",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Validate the cold storage address format using validate_address() 2. Connect to default Neutron RPC/gRPC endpoint 3. Query balance using query_balance() for the cold storage address 4. Convert denominations using convert_denominations() for readable format 5. Format display using format_display() to show cold storage balance securely"
+	},
+	{
+		"intent": "What tokens do I currently hold in my Neutron wallet neutron1xyz…?",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Validate the wallet address (neutron1xyz…) using validate_address() 2. Query all balances using query_all_balances() to get complete token inventory 3. Categorize tokens using categorize_tokens() to organize holdings by type 4. Get metadata using get_metadata() for token names and symbols 5. Convert denominations using convert_denominations() for user-friendly amounts 6. Format display using format_display() to present wallet holdings clearly"
+	},
+	{
+		"intent": "Show me the full balance list for address neutron1abcd, including any IBC assets.",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Validate address neutron1abcd using validate_address() 2. Query all balances using query_all_balances() to capture native and IBC assets 3. Categorize tokens using categorize_tokens() to specifically identify IBC assets 4. Get metadata using get_metadata() for IBC token information and origin chains 5. Convert denominations using convert_denominations() for readable IBC denom formats 6. Format display using format_display() to show comprehensive balance list with IBC details"
+	},
+	{
+		"intent": "List every coin and amount in wallet neutron1pqr.",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Validate wallet address neutron1pqr using validate_address() 2. Query all balances using query_all_balances() for complete coin inventory 3. Get metadata using get_metadata() for each coin type 4. Convert denominations using convert_denominations() to show proper amounts 5. Format display using format_display() to list every coin with precise amounts"
+	},
+	{
+		"intent": "Give me a breakdown of all assets held by neutron1defg.",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Validate address neutron1defg using validate_address() 2. Query all balances using query_all_balances() for comprehensive asset view 3. Categorize tokens using categorize_tokens() to break down by asset types 4. Get metadata using get_metadata() for detailed asset information 5. Convert denominations using convert_denominations() for proper value representation 6. Format display using format_display() to provide detailed asset breakdown"
+	},
+	{
+		"intent": "Fetch all balances for neutron1k9m… so I can see each denomination.",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Validate address neutron1k9m… using validate_address() 2. Query all balances using query_all_balances() to get every denomination 3. Query by denomination using query_by_denom() for detailed per-denom information 4. Get metadata using get_metadata() for denomination details 5. Convert denominations using convert_denominations() for clear denomination display 6. Format display using format_display() to show each denomination separately"
+	},
+	{
+		"intent": "I need to see my entire token balance sheet—address neutron1lmn.",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Validate address neutron1lmn using validate_address() 2. Query all balances using query_all_balances() for complete balance sheet 3. Categorize tokens using categorize_tokens() to organize balance sheet by categories 4. Get metadata using get_metadata() for comprehensive token information 5. Convert denominations using convert_denominations() for balance sheet format 6. Format display using format_display() to present complete token balance sheet"
+	},
+	{
+		"intent": "Query every denomination held by my account neutron1aaa.",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Validate account address neutron1aaa using validate_address() 2. Query all balances using query_all_balances() to discover all denominations 3. Query by denomination using query_by_denom() for each found denomination 4. Get metadata using get_metadata() for denomination specifications 5. Convert denominations using convert_denominations() for proper denomination display 6. Format display using format_display() to list every denomination held"
+	},
+	{
+		"intent": "How many tokens of each type do I have at neutron1b2c3?",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Validate address neutron1b2c3 using validate_address() 2. Query all balances using query_all_balances() to get token counts 3. Categorize tokens using categorize_tokens() to group by token types 4. Get metadata using get_metadata() for token type information 5. Convert denominations using convert_denominations() for accurate token counts 6. Format display using format_display() to show quantity of each token type"
+	},
+	{
+		"intent": "Display all bank balances for wallet neutron1zxy.",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Validate wallet address neutron1zxy using validate_address() 2. Query all balances using query_all_balances() to get bank module balances 3. Categorize tokens using categorize_tokens() to organize bank balances 4. Get metadata using get_metadata() for bank token information 5. Convert denominations using convert_denominations() for bank balance format 6. Format display using format_display() to show all bank balances clearly"
+	},
+	{
+		"intent": "Retrieve a list of every token balance for this address: neutron1evgh.",
+		"type": "query_balance",
+		"tools": [
+			"balance_querying"
+		],
+		"workflow": "1. Validate address neutron1evgh using validate_address() 2. Query all balances using query_all_balances() to retrieve complete token list 3. Get metadata using get_metadata() for each token in the list 4. Convert denominations using convert_denominations() for proper token balance format 5. Format display using format_display() to present comprehensive token balance list"
+	},
+	{
+		"intent": "Please send 15 NTRN from my main wallet to neutron1x3…9gq.",
+		"type": "transfer_token",
+		"tools": [
+			"token_transfer"
+		],
+		"workflow": "1. Validate both sender and recipient addresses using validate_addresses() 2. Calculate transaction fees using calculate_fees() for the NTRN transfer 3. Prepare native token transfer using transfer_native() for 15 NTRN 4. Sign the transaction using sign_transaction() with main wallet credentials 5. Broadcast transaction using broadcast_transaction() to Neutron network 6. Return transaction hash and confirmation status"
+	},
+	{
+		"intent": "Transfer 0.75 ATOM to cosmos1jh4…7m2 right now.",
+		"type": "transfer_token",
+		"tools": [
+			"token_transfer"
+		],
+		"workflow": "1. Validate sender and recipient addresses using validate_addresses() 2. Identify this as IBC transfer to Cosmos Hub based on cosmos1 prefix 3. Calculate IBC transfer fees using calculate_fees() 4. Prepare IBC transfer using transfer_ibc() for 0.75 ATOM to Cosmos Hub 5. Sign transaction using sign_transaction() for immediate execution 6. Broadcast transaction using broadcast_transaction() with priority for immediate processing"
+	},
+	{
+		"intent": "Pay 500 USDC to my cold‑storage address.",
+		"type": "transfer_token",
+		"tools": [
+			"token_transfer"
+		],
+		"workflow": "1. Validate sender and cold-storage addresses using validate_addresses() 2. Identify USDC token type (likely axlUSDC IBC token) 3. Calculate transfer fees using calculate_fees() for USDC transfer 4. Prepare transfer using transfer_native() or transfer_ibc() based on USDC type 5. Sign transaction using sign_transaction() for cold storage transfer 6. Broadcast transaction using broadcast_transaction() to complete payment"
+	},
+	{
+		"intent": "Move all of my wBTC to bc1q98…ez0—leave the fees on default gas.",
+		"type": "transfer_token",
+		"tools": [
+			"token_transfer"
+		],
+		"workflow": "1. Validate sender address and Bitcoin address bc1q98…ez0 using validate_addresses() 2. Query current wBTC balance to determine 'all' amount 3. Calculate default gas fees using calculate_fees() with standard settings 4. Prepare cross-chain transfer using transfer_ibc() for wBTC to Bitcoin network 5. Sign transaction using sign_transaction() with default gas parameters 6. Broadcast transaction using broadcast_transaction() for complete wBTC transfer"
+	},
+	{
+		"intent": "Send 2500 NTRN from the Ledger account to Alice's Neutron wallet.",
+		"type": "transfer_token",
+		"tools": [
+			"token_transfer"
+		],
+		"workflow": "1. Validate Ledger account and Alice's wallet addresses using validate_addresses() 2. Calculate fees using calculate_fees() for 2500 NTRN transfer 3. Prepare native transfer using transfer_native() for NTRN tokens 4. Handle Ledger signing using sign_transaction() with hardware wallet integration 5. Broadcast transaction using broadcast_transaction() to complete transfer to Alice 6. Return transaction confirmation and Ledger signing status"
+	},
+	{
+		"intent": "Wire 20 stkATOM to neutron1deleg…z9a using the public RPC node.",
+		"type": "transfer_token",
+		"tools": [
+			"token_transfer"
+		],
+		"workflow": "1. Validate sender and recipient addresses using validate_addresses() 2. Configure connection to public RPC node for transaction broadcast 3. Calculate fees using calculate_fees() for stkATOM transfer 4. Prepare transfer using transfer_native() for 20 stkATOM tokens 5. Sign transaction using sign_transaction() for delegation transfer 6. Broadcast transaction using broadcast_transaction() via public RPC endpoint"
+	},
+	{
+		"intent": "I need to forward 1.2 ETH (ERC‑20 bridged) to Bob; use low gas if possible.",
+		"type": "transfer_token",
+		"tools": [
+			"token_transfer"
+		],
+		"workflow": "1. Validate sender and Bob's addresses using validate_addresses() 2. Identify bridged ETH token denomination on Neutron 3. Calculate low gas fees using calculate_fees() with minimum gas settings 4. Prepare transfer using transfer_ibc() for bridged ETH tokens 5. Sign transaction using sign_transaction() with low gas optimization 6. Broadcast transaction using broadcast_transaction() with cost-efficient settings"
+	},
+	{
+		"intent": "Push 1000 NTRN to my Treasuries multisig and sign it with the hot key.",
+		"type": "transfer_token",
+		"tools": [
+			"token_transfer"
+		],
+		"workflow": "1. Validate sender and multisig treasury addresses using validate_addresses() 2. Calculate fees using calculate_fees() for 1000 NTRN transfer 3. Prepare native transfer using transfer_native() to multisig address 4. Handle multisig requirements using handle_multisig() for treasury operations 5. Sign transaction using sign_transaction() with hot key credentials 6. Broadcast transaction using broadcast_transaction() to complete treasury transfer"
+	},
+	{
+		"intent": "Distribute 50 USDT each to these two addresses: ntrn1a… and ntrn1b….",
+		"type": "transfer_token",
+		"tools": [
+			"token_transfer"
+		],
+		"workflow": "1. Validate both recipient addresses (ntrn1a… and ntrn1b…) using validate_addresses() 2. Calculate total fees using calculate_fees() for batch transfer of 100 USDT total 3. Prepare batch transfer using batch_transfer() for 50 USDT to each address 4. Sign transaction using sign_transaction() for the batch operation 5. Broadcast transaction using broadcast_transaction() to execute distribution 6. Return confirmation for both transfers in the batch"
+	},
+	{
+		"intent": "Send whatever testnet tokens are left in this faucet account to neutron1test… so I can clear it.",
+		"type": "transfer_token",
+		"tools": [
+			"token_transfer"
+		],
+		"workflow": "1. Validate faucet and destination addresses using validate_addresses() 2. Query all remaining balances in faucet account 3. Calculate fees using calculate_fees() for clearing all remaining tokens 4. Prepare batch transfer using batch_transfer() for all remaining token types 5. Sign transaction using sign_transaction() to clear faucet account 6. Broadcast transaction using broadcast_transaction() to complete account clearing"
+	},
+	{
+		"intent": "Please compile the smart contract in this workspace and give me the optimized .wasm.",
+		"type": "compile_contract",
+		"tools": [
+			"contract_compilation"
+		],
+		"workflow": "1. Validate contract source code using validate_contract() to ensure compilation readiness 2. Compile source to WebAssembly using compile_wasm() with workspace configuration 3. Optimize the binary using optimize_binary() for size and gas efficiency 4. Generate deployment artifacts using generate_artifacts() including schema and metadata 5. Prepare for deployment using prepare_for_deployment() with final optimizations 6. Return optimized .wasm file with compilation report"
+	},
+	{
+		"intent": "Build an arm64‑optimized binary for the contract I just wrote.",
+		"type": "compile_contract",
+		"tools": [
+			"contract_compilation"
+		],
+		"workflow": "1. Validate contract source using validate_contract() for compilation compatibility 2. Build for ARM64 architecture using build_for_architecture() with arm64 target 3. Compile to WebAssembly using compile_wasm() with ARM64 optimizations 4. Optimize binary using optimize_binary() for ARM64 performance 5. Generate artifacts using generate_artifacts() for ARM64 deployment 6. Return ARM64-optimized binary with architecture-specific optimizations"
+	},
+	{
+		"intent": "Generate a non‑arm64 optimized build of my CosmWasm contract.",
+		"type": "compile_contract",
+		"tools": [
+			"contract_compilation"
+		],
+		"workflow": "1. Validate contract source using validate_contract() for standard compilation 2. Build for x86_64 architecture using build_for_architecture() with standard target 3. Compile to WebAssembly using compile_wasm() with x86_64 optimizations 4. Optimize binary using optimize_binary() for general performance 5. Generate artifacts using generate_artifacts() for standard deployment 6. Return non-ARM64 optimized binary for general use"
+	},
+	{
+		"intent": "Run the Docker optimizer and produce the deployment‑ready .wasm for my token contract.",
+		"type": "compile_contract",
+		"tools": [
+			"contract_compilation"
+		],
+		"workflow": "1. Validate token contract using validate_contract() for deployment readiness 2. Compile contract using compile_wasm() with token-specific configurations 3. Run Docker optimizer using optimize_binary() with cosmwasm/rust-optimizer 4. Generate deployment artifacts using generate_artifacts() including token metadata 5. Prepare for deployment using prepare_for_deployment() with final validation 6. Return deployment-ready .wasm with optimization report"
+	},
+	{
+		"intent": "Create the release build for all contracts in the contracts/ folder and show me the binaries.",
+		"type": "compile_contract",
+		"tools": [
+			"contract_compilation"
+		],
+		"workflow": "1. Validate all contracts in contracts/ folder using validate_contract() for each contract 2. Compile all contracts using compile_wasm() with release configuration 3. Optimize all binaries using optimize_binary() for production deployment 4. Generate artifacts using generate_artifacts() for each contract with metadata 5. Prepare all for deployment using prepare_for_deployment() with release settings 6. Return list of all compiled binaries with build summary"
+	},
+	{
+		"intent": "I need an optimized wasm for this crowdfunding contract—can you build it now?",
+		"type": "compile_contract",
+		"tools": [
+			"contract_compilation"
+		],
+		"workflow": "1. Validate crowdfunding contract using validate_contract() for immediate compilation 2. Compile contract using compile_wasm() with crowdfunding-specific optimizations 3. Optimize binary using optimize_binary() for gas efficiency and size 4. Generate artifacts using generate_artifacts() including crowdfunding schema 5. Prepare for deployment using prepare_for_deployment() with immediate deployment readiness 6. Return optimized wasm for immediate crowdfunding contract deployment"
+	},
+	{
+		"intent": "Execute the build pipeline so I can upload the contract to Neutron.",
+		"type": "compile_contract",
+		"tools": [
+			"contract_compilation"
+		],
+		"workflow": "1. Validate contract for Neutron deployment using validate_contract() 2. Execute full build pipeline using compile_wasm() with Neutron-specific settings 3. Optimize for Neutron network using optimize_binary() with chain-specific optimizations 4. Generate Neutron artifacts using generate_artifacts() with network metadata 5. Prepare for Neutron deployment using prepare_for_deployment() with upload readiness 6. Return deployment-ready contract for Neutron upload"
+	},
+	{
+		"intent": "Compile and optimize the current project; output the final .wasm file.",
+		"type": "compile_contract",
+		"tools": [
+			"contract_compilation"
+		],
+		"workflow": "1. Validate current project using validate_contract() for compilation readiness 2. Compile project using compile_wasm() with current workspace settings 3. Optimize the binary using optimize_binary() for final production use 4. Generate final artifacts using generate_artifacts() with complete metadata 5. Prepare final output using prepare_for_deployment() with optimization report 6. Return final .wasm file with compilation and optimization summary"
+	},
+	{
+		"intent": "Build the CosmWasm code with workspace‑optimizer and tell me where the binary is saved.",
+		"type": "compile_contract",
+		"tools": [
+			"contract_compilation"
+		],
+		"workflow": "1. Validate workspace configuration using validate_contract() for optimizer compatibility 2. Compile using compile_wasm() with workspace-optimizer settings 3. Run workspace optimizer using optimize_binary() with cosmwasm/workspace-optimizer 4. Generate artifacts using generate_artifacts() in workspace structure 5. Prepare for deployment using prepare_for_deployment() with workspace paths 6. Return binary location and workspace optimization results"
+	},
+	{
+		"intent": "Prepare a production‑ready wasm for my auction contract, including size optimization.",
+		"type": "compile_contract",
+		"tools": [
+			"contract_compilation"
+		],
+		"workflow": "1. Validate auction contract using validate_contract() for production readiness 2. Compile with production settings using compile_wasm() for auction functionality 3. Apply size optimization using optimize_binary() with maximum compression 4. Generate production artifacts using generate_artifacts() with auction metadata 5. Prepare for production deployment using prepare_for_deployment() with final validation 6. Return production-ready wasm with size optimization report"
+	},
+	{
+		"intent": "Please run the full test suite for cw20‑base.",
+		"type": "test_contract",
+		"tools": [
+			"contract_testing"
+		],
+		"workflow": "1. Setup test environment using setup_test_environment() for cw20-base testing 2. Validate cw20-base contract using validate_contracts() for test compatibility 3. Run unit tests using run_unit_tests() for all cw20-base functionality 4. Run integration tests using run_integration_tests() for token interactions 5. Analyze test coverage using analyze_coverage() for comprehensive testing 6. Generate test reports using generate_reports() with full test suite results"
+	},
+	{
+		"intent": "Can you execute cargo test on my nft_marketplace contract?",
+		"type": "test_contract",
+		"tools": [
+			"contract_testing"
+		],
+		"workflow": "1. Setup test environment using setup_test_environment() for NFT marketplace testing 2. Validate NFT marketplace contract using validate_contracts() for test execution 3. Run unit tests using run_unit_tests() with cargo test for marketplace functions 4. Execute integration tests using run_integration_tests() for NFT trading scenarios 5. Analyze test coverage using analyze_coverage() for marketplace code coverage 6. Generate test reports using generate_reports() with cargo test results"
+	},
+	{
+		"intent": "I'd like to test the vesting contract—kick off the tests.",
+		"type": "test_contract",
+		"tools": [
+			"contract_testing"
+		],
+		"workflow": "1. Setup test environment using setup_test_environment() for vesting contract testing 2. Validate vesting contract using validate_contracts() for test readiness 3. Run unit tests using run_unit_tests() for vesting logic and schedules 4. Run integration tests using run_integration_tests() for vesting scenarios 5. Analyze coverage using analyze_coverage() for vesting functionality coverage 6. Generate test reports using generate_reports() with comprehensive vesting test results"
+	},
+	{
+		"intent": "Run all unit and integration tests for crowdfund.rs.",
+		"type": "test_contract",
+		"tools": [
+			"contract_testing"
+		],
+		"workflow": "1. Use setup_test_environment() to prepare the testing environment with necessary dependencies and configurations. 2. Execute run_unit_tests() to test individual contract functions in isolation. 3. Execute run_integration_tests() to test contract interactions in a simulated blockchain environment. 4. Use validate_contracts() to ensure contract code meets quality standards. 5. Execute analyze_coverage() to measure test coverage and identify untested code paths. 6. Generate comprehensive test reports using generate_reports() with results from all testing phases."
+	},
+	{
+		"intent": "Make sure the auction contract passes its specs—start the cargo tests.",
+		"type": "test_contract",
+		"tools": [
+			"contract_testing"
+		],
+		"workflow": "1. Use setup_test_environment() to configure the testing environment for the auction contract. 2. Execute run_unit_tests() to run cargo test on individual auction contract functions. 3. Use validate_contracts() to verify the auction contract meets its specifications. 4. Execute run_integration_tests() if unit tests pass to ensure proper contract behavior in realistic scenarios. 5. Generate test reports using generate_reports() to document test results and any failures."
+	},
+	{
+		"intent": "Execute the tests for my staking_rewards CosmWasm contract and show the output.",
+		"type": "test_contract",
+		"tools": [
+			"contract_testing"
+		],
+		"workflow": "1. Use setup_test_environment() to prepare the testing environment for the staking_rewards contract. 2. Execute run_unit_tests() to test individual staking reward functions and logic. 3. Execute run_integration_tests() to test staking reward distribution in a multi-test environment. 4. Use analyze_coverage() to measure test coverage of the staking logic. 5. Generate detailed output reports using generate_reports() showing test results, coverage metrics, and any issues found."
+	},
+	{
+		"intent": "Verify that cw721_extended builds and all tests pass.",
+		"type": "test_contract",
+		"tools": [
+			"contract_testing"
+		],
+		"workflow": "1. Use setup_test_environment() to configure the build and test environment for cw721_extended. 2. Use validate_contracts() to verify the contract compiles successfully to WASM. 3. Execute run_unit_tests() to run all unit tests for NFT functionality. 4. Execute run_integration_tests() to test NFT operations in a realistic blockchain environment. 5. Use analyze_coverage() to ensure comprehensive test coverage. 6. Generate verification reports using generate_reports() confirming successful build and test completion."
+	},
+	{
+		"intent": "Run cargo test on the oracle_adapter contract and return the results.",
+		"type": "test_contract",
+		"tools": [
+			"contract_testing"
+		],
+		"workflow": "1. Use setup_test_environment() to prepare the testing environment for oracle_adapter contract. 2. Execute run_unit_tests() to run cargo test on oracle adapter functions. 3. Use validate_contracts() to ensure the oracle adapter contract is properly structured. 4. Execute run_integration_tests() to test oracle data fetching and processing. 5. Generate detailed test results using generate_reports() showing all test outcomes, failures, and performance metrics."
+	},
+	{
+		"intent": "Launch the entire test suite for commission_sales.",
+		"type": "test_contract",
+		"tools": [
+			"contract_testing"
+		],
+		"workflow": "1. Use setup_test_environment() to configure comprehensive testing environment for commission_sales contract. 2. Execute run_unit_tests() to test individual commission calculation and sales functions. 3. Execute run_integration_tests() to test complete sales workflows and commission distribution. 4. Use validate_contracts() to ensure contract meets business requirements. 5. Use analyze_coverage() to measure test coverage across all contract functionality. 6. Generate comprehensive test suite reports using generate_reports() with full results and recommendations."
+	},
+	{
+		"intent": "Check the multi_sig_wallet contract by running its cargo tests and report any failures.",
+		"type": "test_contract",
+		"tools": [
+			"contract_testing"
+		],
+		"workflow": "1. Use setup_test_environment() to prepare testing environment for multi_sig_wallet contract. 2. Execute run_unit_tests() to test individual multi-signature functions and validation logic. 3. Execute run_integration_tests() to test multi-signature workflows and transaction approval processes. 4. Use validate_contracts() to verify multi-sig security requirements are met. 5. Generate failure reports using generate_reports() highlighting any test failures, security issues, or performance problems found during testing."
+	},
+	{
+		"intent": "Upload the ./artifacts/cw20_token.wasm binary to Neutron and return the new code ID.",
+		"type": "deploy_and_token_transfer",
+		"tools": [
+			"contract_deployment",
+			"token_transfer"
+		],
+		"workflow": "1. Use configure_network() to set up connection to Neutron network with appropriate RPC endpoints. 2. Use manage_signer() to configure the signing key for contract deployment. 3. Use calculate_fees() to estimate gas costs for the contract storage transaction. 4. Execute store_contract() to upload the cw20_token.wasm binary to Neutron blockchain. 5. Use sign_deployment() to sign the storage transaction with the configured signer. 6. Use monitor_transaction() to track the deployment transaction status. 7. Execute extract_code_id() to retrieve and return the new code ID from the successful deployment transaction."
+	},
+	{
+		"intent": "Please store my compiled file target/wasm32/release/nft_market.wasm on Neutron mainnet with default gas.",
+		"type": "deploy_and_token_transfer",
+		"tools": [
+			"contract_deployment",
+			"token_transfer"
+		],
+		"workflow": "1. Use configure_network() to connect to Neutron mainnet with production RPC endpoints. 2. Use manage_signer() to set up the signing key for mainnet deployment. 3. Use calculate_fees() to determine default gas settings for the contract storage. 4. Execute store_contract() to upload the nft_market.wasm file to Neutron mainnet. 5. Use sign_deployment() to sign the transaction with the configured mainnet signer. 6. Use monitor_transaction() to track the deployment progress and confirm successful storage. 7. Execute extract_code_id() to retrieve the assigned code ID for the stored contract."
+	},
+	{
+		"intent": "Push auction.wasm to the chain using the neutron-rpc.polkachu.com:443 gRPC node.",
+		"type": "deploy_and_token_transfer",
+		"tools": [
+			"contract_deployment",
+			"token_transfer"
+		],
+		"workflow": "1. Use configure_network() to set up connection to the specific neutron-rpc.polkachu.com:443 gRPC endpoint. 2. Use manage_signer() to configure the signing key for contract deployment. 3. Use calculate_fees() to estimate gas costs for the auction contract storage. 4. Execute store_contract() to upload auction.wasm to the chain via the specified gRPC node. 5. Use sign_deployment() to sign the storage transaction. 6. Use monitor_transaction() to track deployment status through the gRPC connection. 7. Execute extract_code_id() to retrieve the new code ID from the successful deployment."
+	},
+	{
+		"intent": "Can you submit the optimized WASM in build/optimizer/vesting.wasm and tell me the resulting code_id?",
+		"type": "deploy_and_token_transfer",
+		"tools": [
+			"contract_deployment",
+			"token_transfer"
+		],
+		"workflow": "1. Use configure_network() to establish connection to Neutron network. 2. Use manage_signer() to set up the signing credentials for deployment. 3. Use calculate_fees() to determine appropriate gas settings for the optimized vesting contract. 4. Execute store_contract() to submit the optimized vesting.wasm binary to the blockchain. 5. Use sign_deployment() to sign the submission transaction. 6. Use monitor_transaction() to track the submission progress and wait for confirmation. 7. Execute extract_code_id() to retrieve and return the resulting code_id from the successful deployment."
+	},
+	{
+		"intent": "Deploy (upload) the latest contract binary from ./release/my_dapp.wasm; use my default signer.",
+		"type": "deploy_and_token_transfer",
+		"tools": [
+			"contract_deployment",
+			"token_transfer"
+		],
+		"workflow": "1. Use configure_network() to connect to the target Neutron network. 2. Use manage_signer() to load and configure the default signing key. 3. Use calculate_fees() to estimate gas costs for deploying the dapp contract. 4. Execute store_contract() to upload the my_dapp.wasm binary from the release directory. 5. Use sign_deployment() to sign the deployment transaction with the default signer. 6. Use monitor_transaction() to track the upload progress and confirm successful deployment. 7. Execute extract_code_id() to retrieve the assigned code ID for the deployed contract."
+	},
+	{
+		"intent": "Run neutrond tx wasm store for contracts/launchpad.wasm and show the code ID when it's done.",
+		"type": 10,
+		"tools": [
+			"contract_deployment"
+		],
+		"workflow": "1. Use configure_network() to set up connection to Neutron network for CLI operations. 2. Use manage_signer() to configure the signing key for the neutrond CLI transaction. 3. Execute store_contract() to run the neutrond tx wasm store command for contracts/launchpad.wasm. 4. Use sign_deployment() to handle the transaction signing process. 5. Use monitor_transaction() to track the storage transaction and wait for completion. 6. Execute extract_code_id() to parse the transaction result and display the assigned code ID."
+	},
+	{
+		"intent": "I've rebuilt the staking contract — please upload the new staking.wasm file to Neutron test‑1.",
+		"type": "deploy_and_token_transfer",
+		"tools": [
+			"contract_deployment",
+			"token_transfer"
+		],
+		"workflow": "1. Use configure_network() to connect to Neutron test-1 testnet with appropriate endpoints. 2. Use manage_signer() to set up signing credentials for testnet deployment. 3. Use calculate_fees() to determine gas costs for uploading the rebuilt staking contract. 4. Execute store_contract() to upload the new staking.wasm file to Neutron test-1. 5. Use sign_deployment() to sign the upload transaction for the testnet. 6. Use monitor_transaction() to track the upload progress and confirm successful storage. 7. Execute extract_code_id() to retrieve the new code ID for the updated staking contract."
+	},
+	{
+		"intent": "Store ./out/ibc_bridge.wasm on Neutron with gas auto and signing key alice.",
+		"type": "deploy_and_token_transfer",
+		"tools": [
+			"contract_deployment",
+			"token_transfer"
+		],
+		"workflow": "1. Use configure_network() to establish connection to Neutron network. 2. Use manage_signer() to configure the 'alice' signing key for contract deployment. 3. Use calculate_fees() to set up automatic gas estimation for the transaction. 4. Execute store_contract() to upload the ibc_bridge.wasm file from the out directory. 5. Use sign_deployment() to sign the storage transaction using the alice key. 6. Use monitor_transaction() to track the deployment with auto gas settings. 7. Execute extract_code_id() to retrieve the code ID from the successful storage transaction."
+	},
+	{
+		"intent": "Publish the WASM at /tmp/extended_marketplace.wasm to the blockchain and give me the code ID.",
+		"type": "deploy_and_token_transfer",
+		"tools": [
+			"contract_deployment",
+			"token_transfer"
+		],
+		"workflow": "1. Use configure_network() to connect to the target blockchain network. 2. Use manage_signer() to set up the signing key for contract publication. 3. Use calculate_fees() to estimate gas costs for publishing the marketplace contract. 4. Execute store_contract() to publish the extended_marketplace.wasm from the /tmp directory. 5. Use sign_deployment() to sign the publication transaction. 6. Use monitor_transaction() to track the publishing process and wait for confirmation. 7. Execute extract_code_id() to retrieve and provide the assigned code ID for the published contract."
+	},
+	{
+		"intent": "Take release/treasury.wasm, upload it to Neutron, and confirm once the transaction is successful.",
+		"type": "deploy_and_token_transfer",
+		"tools": [
+			"contract_deployment",
+			"token_transfer"
+		],
+		"workflow": "1. Use configure_network() to establish connection to Neutron network. 2. Use manage_signer() to configure the signing key for treasury contract deployment. 3. Use calculate_fees() to estimate gas costs for the treasury contract upload. 4. Execute store_contract() to upload treasury.wasm from the release directory to Neutron. 5. Use sign_deployment() to sign the upload transaction. 6. Use monitor_transaction() to continuously track the transaction status until completion. 7. Provide confirmation message once monitor_transaction() reports successful transaction completion."
+	},
+	{
+		"intent": "Run the **`deposit`** method on contract `neutron1abcd…` with `{\"deposit\":{\"amount\":\"500untrn\"}}` on the main‑net node `https://rpc.neutron.org:443`.",
+		"type": "interaction_and_token_transfer",
+		"tools": [
+			"contract_interaction",
+			"token_transfer"
+		],
+		"workflow": "1. Use validate_addresses() to verify the neutron1abcd… contract address is valid. 2. Use format_parameters() to properly structure the deposit message with amount 500untrn. 3. Use estimate_gas() to calculate gas requirements for the deposit transaction. 4. Use calculate_fees() to determine transaction fees for the mainnet execution. 5. Execute execute_contract() to call the deposit method on the specified contract via https://rpc.neutron.org:443. 6. Use sign_transaction() to sign the deposit transaction. 7. Use broadcast_transaction() to submit the signed transaction to the mainnet node and confirm execution."
+	},
+	{
+		"intent": "Execute contract `neutron1vault…` to *withdraw* **0.3 NTRN** to my wallet; use **gas auto** and my default signer.",
+		"type": "contract_interaction",
+		"tools": [
+			"contract_interaction"
+		],
+		"workflow": "1. Use format_parameters() to structure the withdraw message for 0.3 NTRN from the vault contract. 2. Use estimate_gas() to automatically calculate optimal gas settings for the withdrawal. 3. Use handle_specialized_contracts() to handle any vault-specific withdrawal logic and requirements. 4. Execute execute_contract() to call the withdraw function on neutron1vault… contract. 5. Use sign_transaction() to sign the withdrawal transaction with the default signer. 6. Monitor the transaction execution to ensure 0.3 NTRN is successfully withdrawn to the user's wallet."
+	},
+	{
+		"intent": "Call **`claim_rewards`** on the LP contract at `neutron1lp…`, gas limit **200 000**.",
+		"type": "interaction_and_token_transfer",
+		"tools": [
+			"contract_interaction",
+			"token_transfer"
+		],
+		"workflow": "1. Use validate_addresses() to verify the neutron1lp… LP contract address is valid. 2. Use format_parameters() to structure the claim_rewards message for the LP contract. 3. Use estimate_gas() to set the gas limit to exactly 200,000 as specified. 4. Use handle_specialized_contracts() to handle LP-specific reward claiming logic. 5. Execute execute_contract() to call claim_rewards on the LP contract. 6. Use sign_transaction() to sign the reward claiming transaction. 7. Use broadcast_transaction() to submit the transaction with the specified gas limit and confirm reward distribution."
+	},
+	{
+		"intent": "Trigger **`transfer`** on the CW‑20 token `neutron1token…` sending **1000 ujuno** to `neutron1dest…`.",
+		"type": "interaction_and_token_transfer",
+		"tools": [
+			"contract_interaction",
+			"token_transfer"
+		],
+		"workflow": "1. Use validate_addresses() to verify both neutron1token… and neutron1dest… addresses are valid. 2. Use format_parameters() to structure the CW-20 transfer message with recipient and 1000 ujuno amount. 3. Use handle_specialized_contracts() to handle CW-20 token-specific transfer logic and validation. 4. Use estimate_gas() to calculate gas requirements for the token transfer. 5. Execute execute_contract() to trigger the transfer function on the CW-20 token contract. 6. Use sign_transaction() to sign the transfer transaction. 7. Use broadcast_transaction() to submit the transaction and confirm 1000 ujuno transfer to the destination address."
+	},
+	{
+		"intent": "Invoke **`delegate`** on staking contract `neutron1stake…` with `{ \"validator\":\"neutronvaloper1…\", \"amount\":\"1000000untrn\" }`.",
+		"type": "contract_interaction",
+		"tools": [
+			"contract_interaction"
+		],
+		"workflow": "1. Use format_parameters() to properly structure the delegate message with validator address neutronvaloper1… and amount 1000000untrn. 2. Use handle_specialized_contracts() to handle staking-specific delegation logic and validation requirements. 3. Use estimate_gas() to calculate gas requirements for the delegation transaction. 4. Execute execute_contract() to invoke the delegate function on the neutron1stake… staking contract. 5. Use sign_transaction() to sign the delegation transaction. 6. Monitor the transaction to confirm successful delegation of 1000000untrn to the specified validator."
+	},
+	{
+		"intent": "Approve the DEX router from my CW‑20 token at `neutron1cw20…` for **500 000** units.",
+		"type": "contract_interaction",
+		"tools": [
+			"contract_interaction"
+		],
+		"workflow": "1. Use format_parameters() to structure the CW-20 approve message for the DEX router with 500,000 units allowance. 2. Use manage_allowances() to handle the approval logic and set the spending allowance for the DEX router. 3. Use handle_specialized_contracts() to handle CW-20 token-specific approval mechanisms. 4. Use estimate_gas() to calculate gas requirements for the approval transaction. 5. Execute execute_contract() to call the approve function on the neutron1cw20… token contract. 6. Use sign_transaction() to sign the approval transaction and grant the DEX router spending rights for 500,000 units."
+	},
+	{
+		"intent": "Send `{\"burn\":{\"amount\":\"2500\"}}` to contract `neutron1cw20…` via node `grpcs.neutron.org:443`, gas auto.",
+		"type": "deployment_and_interaction",
+		"tools": [
+			"contract_deployment",
+			"contract_interaction"
+		],
+		"workflow": "1. Use configure_network() to connect to the grpcs.neutron.org:443 gRPC node. 2. Use format_parameters() to structure the burn message with amount 2500 for the CW-20 token. 3. Use estimate_gas() to automatically calculate optimal gas settings for the burn transaction. 4. Use handle_specialized_contracts() to handle CW-20 token burn logic and validation. 5. Execute execute_contract() to send the burn message to neutron1cw20… contract via the specified gRPC node. 6. Use sign_transaction() to sign the burn transaction. 7. Use monitor_transaction() to track the transaction and confirm successful token burning."
+	},
+	{
+		"intent": "Execute the governance contract `neutron1gov…` to **vote Yes** on proposal #13.",
+		"type": "contract_interaction",
+		"tools": [
+			"contract_interaction"
+		],
+		"workflow": "1. Use format_parameters() to structure the governance vote message with proposal ID 13 and vote option 'Yes'. 2. Use handle_specialized_contracts() to handle governance-specific voting logic and validation requirements. 3. Use estimate_gas() to calculate gas requirements for the governance vote transaction. 4. Execute execute_contract() to call the vote function on the neutron1gov… governance contract. 5. Use sign_transaction() to sign the voting transaction. 6. Monitor the transaction to confirm the Yes vote on proposal #13 has been successfully recorded."
+	},
+	{
+		"intent": "Run **`increment`** on the counter demo contract `neutron1count…` with gas price **0.05 untrn**.",
+		"type": "interaction_and_token_transfer",
+		"tools": [
+			"contract_interaction",
+			"token_transfer"
+		],
+		"workflow": "1. Use validate_addresses() to verify the neutron1count… counter contract address is valid. 2. Use format_parameters() to structure the increment message for the counter demo contract. 3. Use calculate_fees() to set the gas price to exactly 0.05 untrn as specified. 4. Use estimate_gas() to calculate gas limit requirements for the increment operation. 5. Execute execute_contract() to call the increment function on the counter contract. 6. Use sign_transaction() to sign the transaction with the specified gas price. 7. Use broadcast_transaction() to submit the transaction and confirm the counter increment."
+	},
+	{
+		"intent": "Call oracle contract `neutron1oracle…` with `{ \"submit_price\": { \"price\": \"34.56\" } }` using my **Ledger** signer and gas 250 000.",
+		"type": "interaction_and_token_transfer",
+		"tools": [
+			"contract_interaction",
+			"token_transfer"
+		],
+		"workflow": "1. Use validate_addresses() to verify the neutron1oracle… oracle contract address is valid. 2. Use format_parameters() to structure the submit_price message with price value 34.56. 3. Use handle_specialized_contracts() to handle oracle-specific price submission logic and validation. 4. Use estimate_gas() to set the gas limit to exactly 250,000 as specified. 5. Use handle_multisig() to configure Ledger hardware wallet signing for the transaction. 6. Execute execute_contract() to call submit_price on the oracle contract. 7. Use sign_transaction() to sign with the Ledger device and broadcast_transaction() to submit the price data."
+	},
+	{
+		"intent": "What's the config of the DEX contract at neutron1dex… right now?",
+		"type": "query_contract",
+		"tools": [
+			"contract_querying"
+		],
+		"workflow": "1. Use query_specialized_contracts() to handle DEX-specific configuration query methods. 2. Execute query_contract_state() to retrieve the current configuration state from neutron1dex… contract. 3. Use parse_responses() to decode the configuration data returned from the DEX contract. 4. Use format_data() to structure the configuration information in a readable format. 5. Use fetch_metadata() to retrieve any additional DEX metadata and parameter information. 6. Present the formatted DEX configuration data showing current settings, parameters, and operational status."
+	},
+	{
+		"intent": "Check the CW20 token at neutron1token… — how many tokens does neutron1alice… hold?",
+		"type": "query_contract",
+		"tools": [
+			"contract_querying"
+		],
+		"workflow": "1. Use query_specialized_contracts() to handle CW-20 token-specific balance query methods. 2. Execute query_contract_state() to query the balance of neutron1alice… from the neutron1token… CW-20 contract. 3. Use parse_responses() to decode the balance information returned from the token contract. 4. Use format_data() to present the token balance in a readable format with proper denomination. 5. Use fetch_metadata() to retrieve token metadata such as symbol, decimals, and name for context. 6. Display the formatted balance showing how many tokens neutron1alice… currently holds."
+	},
+	{
+		"intent": "Ask the NFT marketplace contract (neutron1market…) for the current highest bid on listing #87.",
+		"type": "query_contract",
+		"tools": [
+			"contract_querying"
+		],
+		"workflow": "1. Use query_specialized_contracts() to handle NFT marketplace-specific bid query methods. 2. Execute query_contract_state() to query the highest bid information for listing #87 from neutron1market… contract. 3. Use parse_responses() to decode the bid data including bidder address, amount, and timestamp. 4. Use format_data() to structure the bid information in a clear, readable format. 5. Use calculate_derived_values() to compute any additional bid metrics like bid history or percentage above floor price. 6. Present the formatted highest bid information for listing #87 including bidder details and bid amount."
+	},
+	{
+		"intent": "Fetch get_state from the crowdfunding contract at neutron1fund…; I want to see how much has been raised.",
+		"type": "query_contract",
+		"tools": [
+			"contract_querying"
+		],
+		"workflow": "1. Use query_specialized_contracts() to handle crowdfunding-specific state query methods. 2. Execute query_contract_state() to call get_state on the neutron1fund… crowdfunding contract. 3. Use parse_responses() to decode the state data including total raised, goal amount, and campaign status. 4. Use calculate_derived_values() to compute progress metrics like percentage of goal reached and remaining amount needed. 5. Use format_data() to present the fundraising information in a clear, organized format. 6. Display the formatted state showing total amount raised, funding goal, progress percentage, and campaign status."
+	},
+	{
+		"intent": "Query the staking rewards contract (neutron1rewards…) for unclaimed rewards owed to neutron1bob….",
+		"type": "query_contract",
+		"tools": [
+			"contract_querying"
+		],
+		"workflow": "1. Use query_specialized_contracts() to handle staking rewards-specific query methods for unclaimed rewards. 2. Execute query_contract_state() to query unclaimed rewards for neutron1bob… from the neutron1rewards… contract. 3. Use parse_responses() to decode the rewards data including amount, reward types, and accumulation period. 4. Use calculate_derived_values() to compute additional metrics like reward rate, time since last claim, and projected future rewards. 5. Use format_data() to structure the rewards information showing amounts, types, and claim status. 6. Present the formatted unclaimed rewards data for neutron1bob… including total amounts and breakdown by reward type."
+	},
+	{
+		"intent": "Retrieve the full allowance record for spender neutron1vault… on the CW20 at neutron1token….",
+		"type": "query_contract",
+		"tools": [
+			"contract_querying"
+		],
+		"workflow": "1. Use query_specialized_contracts() to handle CW-20 token allowance-specific query methods. 2. Execute query_contract_state() to query the allowance record for spender neutron1vault… on the neutron1token… CW-20 contract. 3. Use parse_responses() to decode the allowance data including approved amount, expiration, and permissions. 4. Use format_data() to structure the allowance information in a comprehensive, readable format. 5. Use fetch_metadata() to retrieve token metadata for context about the allowance amounts. 6. Present the complete allowance record showing approved spending amount, remaining allowance, expiration details, and spender permissions."
+	},
+	{
+		"intent": "Does the DAO contract (neutron1dao…) show proposal 42 as passed or still pending?",
+		"type": "query_contract",
+		"tools": [
+			"contract_querying"
+		],
+		"workflow": "1. Use query_specialized_contracts() to handle DAO-specific proposal status query methods. 2. Execute query_contract_state() to query the status of proposal 42 from the neutron1dao… DAO contract. 3. Use parse_responses() to decode the proposal data including status, voting results, and execution state. 4. Use calculate_derived_values() to compute voting metrics like total votes, participation rate, and margin of victory. 5. Use format_data() to present the proposal status information in a clear, definitive format. 6. Display the formatted proposal status clearly indicating whether proposal 42 has passed, is still pending, or has been rejected, along with voting details."
+	},
+	{
+		"intent": "Get the token_uri for NFT ID 4211 from the collection contract at neutron1nft….",
+		"type": "query_contract",
+		"tools": [
+			"contract_querying"
+		],
+		"workflow": "1. Use query_specialized_contracts() to handle NFT collection-specific token URI query methods. 2. Execute query_contract_state() to query the token_uri for NFT ID 4211 from the neutron1nft… collection contract. 3. Use parse_responses() to decode the token URI data and validate the response format. 4. Use fetch_metadata() to retrieve additional NFT metadata from the URI if accessible. 5. Use format_data() to present the token URI information in a structured format. 6. Display the token_uri for NFT ID 4211, and if possible, show additional metadata retrieved from the URI endpoint."
+	},
+	{
+		"intent": "Show me the vesting schedule for beneficiary neutron1charlie… in the vesting contract (neutron1vesting…).",
+		"type": "query_contract",
+		"tools": [
+			"contract_querying"
+		],
+		"workflow": "1. Use query_specialized_contracts() to handle vesting contract-specific schedule query methods. 2. Execute query_contract_state() to query the vesting schedule for beneficiary neutron1charlie… from neutron1vesting… contract. 3. Use parse_responses() to decode the vesting schedule data including cliff periods, vesting amounts, and release dates. 4. Use calculate_derived_values() to compute vesting metrics like vested amount, remaining locked tokens, and next release date. 5. Use format_data() to structure the vesting schedule in a timeline format showing past and future releases. 6. Present the comprehensive vesting schedule for neutron1charlie… including total allocation, vested amounts, release timeline, and current status."
+	},
+	{
+		"intent": "What liquidation price is set in the vault contract at neutron1vault… for position 0xabc123?",
+		"type": "query_contract",
+		"tools": [
+			"contract_querying"
+		],
+		"workflow": "1. Use query_specialized_contracts() to handle vault contract-specific position query methods. 2. Execute query_contract_state() to query the liquidation price for position 0xabc123 from the neutron1vault… contract. 3. Use parse_responses() to decode the position data including liquidation price, collateral ratio, and risk parameters. 4. Use calculate_derived_values() to compute position metrics like current health factor, distance to liquidation, and margin requirements. 5. Use format_data() to present the liquidation information in a clear, risk-focused format. 6. Display the liquidation price for position 0xabc123 along with current position health, collateral status, and risk metrics."
+	}
+]

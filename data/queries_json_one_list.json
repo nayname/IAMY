@@ -1,0 +1,1251 @@
+[
+	{
+		"create_cosmwasm_project": {
+			"intent": "Create a new CosmWasm project called **dex_factory**.",
+			"tools": [
+				{
+					"cargo_generate": "Generate new CosmWasm project from template using cargo-generate with cw-template",
+					"project_initializer": "Initialize project structure with proper Cargo.toml configuration for CosmWasm development",
+					"neutron_sdk_setup": "Add Neutron SDK dependencies for interacting with Neutron-specific modules"
+				}
+			]
+		}
+	},
+	{
+		"generate_starter_contract": {
+			"intent": "Generate a starter Neutron contract named **awesome_nft** with sample tests.",
+			"tools": [
+				{
+					"cosmwasm_template": "Use CosmWasm template to generate basic contract structure with entry points",
+					"test_generator": "Create sample unit tests and integration tests for contract functionality",
+					"neutron_contract_setup": "Configure contract for Neutron-specific features like ICQ and ICA"
+				}
+			]
+		}
+	},
+	{
+		"setup_multi_contract_workspace": {
+			"intent": "Set up a multi‑contract workspace called **defi_hub**.",
+			"tools": [
+				{
+					"cargo_workspace": "Create Cargo workspace configuration for multiple contracts",
+					"project_structure": "Set up directory structure for multiple related contracts",
+					"shared_dependencies": "Configure shared dependencies and common libraries across contracts"
+				}
+			]
+		}
+	},
+	{
+		"bootstrap_with_network_config": {
+			"intent": "Bootstrap **hello_neutron** and point it to **mainnet** settings.",
+			"tools": [
+				{
+					"project_bootstrap": "Initialize new CosmWasm project with Neutron configuration",
+					"network_configurator": "Set up mainnet RPC endpoints, chain-id, and network parameters",
+					"deployment_config": "Configure deployment scripts for mainnet deployment"
+				}
+			]
+		}
+	},
+	{
+		"clone_and_setup_ide": {
+			"intent": "Clone the template into **vesting_contract** and open it in VS Code.",
+			"tools": [
+				{
+					"template_cloner": "Clone CosmWasm template repository to specified directory",
+					"ide_launcher": "Open project in VS Code with proper workspace configuration",
+					"extension_setup": "Configure VS Code extensions for Rust and CosmWasm development"
+				}
+			]
+		}
+	},
+	{
+		"kickstart_with_ci": {
+			"intent": "Kick‑start project **crowdfund** with a CI pipeline.",
+			"tools": [
+				{
+					"project_generator": "Generate new CosmWasm project with CI/CD configuration",
+					"ci_pipeline_setup": "Set up GitHub Actions or similar CI pipeline for testing and deployment",
+					"automated_testing": "Configure automated contract testing and optimization workflows"
+				}
+			]
+		}
+	},
+	{
+		"spinup_with_dependencies": {
+			"intent": "Spin up **oracle_service** and install every dependency.",
+			"tools": [
+				{
+					"project_creator": "Create new CosmWasm project with comprehensive dependency setup",
+					"dependency_installer": "Install all required Rust, CosmWasm, and Neutron dependencies",
+					"development_environment": "Set up complete development environment with all tools"
+				}
+			]
+		}
+	},
+	{
+		"rebootstrap_clean": {
+			"intent": "Re‑bootstrap **swap_pool** from scratch (clean the old build first).",
+			"tools": [
+				{
+					"project_cleaner": "Remove existing build artifacts and clean project directory",
+					"fresh_bootstrap": "Re-initialize project from template with clean state",
+					"build_optimizer": "Set up optimized build configuration for fresh start"
+				}
+			]
+		}
+	},
+	{
+		"create_demo_with_sample": {
+			"intent": "Create a demo project **lottery** with a sample instantiate JSON.",
+			"tools": [
+				{
+					"demo_project_generator": "Create demo CosmWasm project with example functionality",
+					"sample_data_generator": "Generate sample instantiate messages and test data",
+					"documentation_creator": "Create documentation and examples for demo usage"
+				}
+			]
+		}
+	},
+	{
+		"start_with_docker_testing": {
+			"intent": "Start **airdrop** project and add Docker Compose for local testing.",
+			"tools": [
+				{
+					"project_initializer": "Initialize new CosmWasm project for airdrop functionality",
+					"docker_compose_setup": "Set up Docker Compose configuration for local blockchain testing",
+					"cosmopark_integration": "Configure integration with Cosmopark for multi-chain testing environment"
+				}
+			]
+		}
+	},
+	{
+		"airdrop_project_setup": {
+			"intent": "Start **airdrop** project and add Docker Compose for local testing.",
+			"tools": [
+				{
+					"create_airdrop_project": "Initialize a new airdrop smart contract project using Neutron templates and CosmWasm structure",
+					"setup_docker_compose": "Create Docker Compose configuration for local Neutron testing environment with Cosmopark"
+				}
+			]
+		}
+	},
+	{
+		"rust_code_formatting": {
+			"intent": "Format all Rust files in this project.",
+			"tools": [
+				{
+					"cargo_fmt_runner": "Execute cargo fmt command across the entire Rust workspace to format all source files",
+					"rustfmt_config_manager": "Manage rustfmt configuration settings and apply consistent formatting rules"
+				}
+			]
+		}
+	},
+	{
+		"workspace_formatting": {
+			"intent": "Please run cargo fmt across the entire workspace.",
+			"tools": [
+				{
+					"workspace_formatter": "Run cargo fmt --all to format all crates and packages in the workspace",
+					"format_validator": "Validate that all files conform to Rust formatting standards after formatting"
+				}
+			]
+		}
+	},
+	{
+		"code_style_cleanup": {
+			"intent": "Can you tidy up the Rust code style for me?",
+			"tools": [
+				{
+					"style_analyzer": "Analyze current code style and identify formatting inconsistencies",
+					"comprehensive_formatter": "Apply rustfmt with custom configuration for consistent code style"
+				}
+			]
+		}
+	},
+	{
+		"rustfmt_application": {
+			"intent": "Apply rustfmt to every crate in the repo.",
+			"tools": [
+				{
+					"crate_discoverer": "Discover all Rust crates in the repository structure",
+					"multi_crate_formatter": "Apply rustfmt to each discovered crate individually"
+				}
+			]
+		}
+	},
+	{
+		"standard_formatting": {
+			"intent": "Make sure the whole codebase follows standard formatting.",
+			"tools": [
+				{
+					"standard_enforcer": "Enforce Rust standard formatting rules across the entire codebase",
+					"compliance_checker": "Verify that all code follows Rust formatting standards"
+				}
+			]
+		}
+	},
+	{
+		"cosmwasm_formatting": {
+			"intent": "Clean up the formatting for my CosmWasm contract code.",
+			"tools": [
+				{
+					"cosmwasm_formatter": "Format CosmWasm-specific Rust code with appropriate styling for smart contracts",
+					"contract_style_optimizer": "Optimize code style specifically for CosmWasm contract readability"
+				}
+			]
+		}
+	},
+	{
+		"consistent_formatting": {
+			"intent": "Run cargo fmt --all so everything looks consistent.",
+			"tools": [
+				{
+					"consistency_formatter": "Execute cargo fmt --all to ensure consistent formatting across all workspace members",
+					"uniformity_validator": "Validate that formatting is uniform across all project files"
+				}
+			]
+		}
+	},
+	{
+		"formatting_issue_fixer": {
+			"intent": "Fix any formatting issues in the Rust sources.",
+			"tools": [
+				{
+					"issue_detector": "Detect and identify specific formatting issues in Rust source files",
+					"automatic_fixer": "Automatically fix detected formatting issues using rustfmt"
+				}
+			]
+		}
+	},
+	{
+		"pre_commit_formatting": {
+			"intent": "Standardize the code style before I commit.",
+			"tools": [
+				{
+					"pre_commit_formatter": "Format all staged Rust files before committing to version control",
+					"commit_style_validator": "Ensure code meets formatting standards before allowing commit"
+				}
+			]
+		}
+	},
+	{
+		"in_place_formatting": {
+			"intent": "Auto‑format the project in place.",
+			"tools": [
+				{
+					"in_place_formatter": "Format all Rust files in the project directory structure in place",
+					"backup_manager": "Create backups before in-place formatting and provide rollback capability"
+				}
+			]
+		}
+	},
+	{
+		"balance_query_ntrn": {
+			"intent": "How many NTRN tokens are sitting in neutron1h3x4y5z6… right now?",
+			"tools": [
+				{
+					"query_bank_balance_cli": "Query NTRN token balance using neutrond CLI with specific address and denom parameters",
+					"query_bank_balance_rest": "Query balance via REST API endpoint using HTTP GET request to /cosmos/bank/v1beta1/balances/{address}",
+					"query_bank_balance_grpc": "Query balance using gRPC client connection to cosmos.bank.v1beta1.Query/Balance",
+					"parse_address_validation": "Validate neutron address format and ensure it follows bech32 neutron prefix standards"
+				}
+			]
+		}
+	},
+	{
+		"balance_query_dev_wallet": {
+			"intent": "Check the balance of my dev wallet (neutron19jq…).",
+			"tools": [
+				{
+					"query_all_balances_cli": "Query all token balances for the dev wallet address using neutrond query bank balances command",
+					"query_all_balances_rest": "Retrieve all balances via REST API endpoint /cosmos/bank/v1beta1/balances/{address}",
+					"query_all_balances_grpc": "Query all balances using gRPC AllBalances method",
+					"format_balance_display": "Format and display multiple token denominations including NTRN, IBC tokens, and TokenFactory denoms"
+				}
+			]
+		}
+	},
+	{
+		"balance_query_bank_specific": {
+			"intent": "What's the current bank balance for address neutron1test42abc…?",
+			"tools": [
+				{
+					"query_bank_balances": "Query bank module balances for the specified neutron address",
+					"query_balance_by_denom": "Query balance for specific denominations including untrn, IBC tokens, and factory tokens",
+					"validate_neutron_address": "Validate the neutron address format and checksum",
+					"format_balance_response": "Format balance response with proper denomination labels and decimal places"
+				}
+			]
+		}
+	},
+	{
+		"balance_query_untrn_validator": {
+			"intent": "Tell me how much untrn is left on the validator payout account.",
+			"tools": [
+				{
+					"query_untrn_balance": "Query specific untrn (micro-NTRN) balance using --denom=untrn parameter",
+					"query_bank_balance_specific": "Query bank balance for validator payout account with untrn denomination filter",
+					"convert_untrn_to_ntrn": "Convert micro-NTRN (untrn) to NTRN display format with proper decimal conversion",
+					"validate_validator_address": "Validate that the address corresponds to a validator payout account"
+				}
+			]
+		}
+	},
+	{
+		"balance_query_contract_address": {
+			"intent": "Can you query neutron1contractsink… and show its token balance?",
+			"tools": [
+				{
+					"query_contract_balances": "Query all token balances held by the smart contract address",
+					"query_bank_all_balances": "Retrieve all denominations and amounts for the contract address",
+					"identify_token_types": "Identify and categorize different token types (native NTRN, IBC tokens, TokenFactory tokens)",
+					"format_contract_balance": "Format balance display specifically for smart contract addresses"
+				}
+			]
+		}
+	},
+	{
+		"balance_query_micro_ntrn": {
+			"intent": "I need the exact balance (in micro‑NTRN) for neutron1a2b3c4d5….",
+			"tools": [
+				{
+					"query_untrn_precise": "Query exact untrn balance without decimal conversion for precise micro-NTRN amounts",
+					"query_bank_balance_raw": "Get raw balance data in base denomination (untrn) without formatting",
+					"validate_address_format": "Validate neutron address format and ensure proper bech32 encoding",
+					"return_precise_amount": "Return exact micro-NTRN amount as integer without decimal conversion"
+				}
+			]
+		}
+	},
+	{
+		"balance_query_multisig_treasury": {
+			"intent": "Fetch the wallet balance of the multisig treasury address, please.",
+			"tools": [
+				{
+					"query_multisig_balances": "Query all token balances for multisig treasury address",
+					"query_treasury_funds": "Retrieve comprehensive balance information for treasury management",
+					"categorize_treasury_assets": "Categorize different asset types held in treasury (NTRN, IBC tokens, etc.)",
+					"format_treasury_report": "Format balance information suitable for treasury reporting and management"
+				}
+			]
+		}
+	},
+	{
+		"balance_query_pre_deploy": {
+			"intent": "Before I deploy, what funds are available at neutron1deployacct…?",
+			"tools": [
+				{
+					"query_deployment_funds": "Query available funds for contract deployment account",
+					"check_gas_funds": "Verify sufficient NTRN balance for deployment gas fees",
+					"query_all_available_assets": "Check all available token types and amounts for deployment",
+					"estimate_deployment_costs": "Compare available funds against estimated deployment costs"
+				}
+			]
+		}
+	},
+	{
+		"balance_query_grpc_node": {
+			"intent": "Show me the current token holdings for neutron1airdropdest… on the main gRPC node.",
+			"tools": [
+				{
+					"query_grpc_balances": "Query token balances using gRPC connection to main Neutron node",
+					"connect_grpc_endpoint": "Establish gRPC connection to main Neutron network endpoint",
+					"query_airdrop_balances": "Query balances for airdrop destination address",
+					"format_grpc_response": "Format gRPC query response for token holdings display"
+				}
+			]
+		}
+	},
+	{
+		"balance_query_cold_storage": {
+			"intent": "Give me the balance of my cold storage address using the default Neutron endpoint.",
+			"tools": [
+				{
+					"query_default_endpoint": "Query balance using default Neutron RPC/REST endpoint configuration",
+					"query_cold_storage_balance": "Retrieve balance information for cold storage security address",
+					"use_default_neutron_config": "Connect to default Neutron network endpoints for balance queries",
+					"secure_balance_query": "Perform balance query suitable for cold storage address verification"
+				}
+			]
+		}
+	},
+	{
+		"wallet_balance_query": {
+			"intent": "What tokens do I currently hold in my Neutron wallet neutron1xyz…?",
+			"tools": [
+				{
+					"query_bank_balances": "Query all token balances for a specific Neutron address using the bank module's balances endpoint",
+					"query_bank_balance_by_denom": "Query balance for a specific token denomination at a given address",
+					"query_ibc_denoms": "Retrieve information about IBC token denominations available on Neutron",
+					"query_tokenfactory_denoms": "Query TokenFactory-created denominations and their metadata"
+				}
+			]
+		}
+	},
+	{
+		"full_balance_list_query": {
+			"intent": "Show me the full balance list for address neutron1abcd, including any IBC assets.",
+			"tools": [
+				{
+					"query_all_balances": "Retrieve complete list of all token balances including native, IBC, and TokenFactory tokens",
+					"query_ibc_balances": "Specifically query IBC token balances using IBC denomination format",
+					"format_balance_display": "Format and display balance information in human-readable format with token symbols"
+				}
+			]
+		}
+	},
+	{
+		"coin_amount_listing": {
+			"intent": "List every coin and amount in wallet neutron1pqr.",
+			"tools": [
+				{
+					"enumerate_all_coins": "List all coin denominations and their amounts held by the address",
+					"get_token_metadata": "Retrieve token metadata including symbols, decimals, and descriptions",
+					"calculate_total_value": "Calculate total portfolio value if price data is available"
+				}
+			]
+		}
+	},
+	{
+		"asset_breakdown": {
+			"intent": "Give me a breakdown of all assets held by neutron1defg.",
+			"tools": [
+				{
+					"categorize_assets": "Categorize assets by type (native, IBC, TokenFactory, etc.)",
+					"get_asset_details": "Retrieve detailed information about each asset including origin chain",
+					"format_asset_breakdown": "Present assets in organized categories with full details"
+				}
+			]
+		}
+	},
+	{
+		"denomination_fetch": {
+			"intent": "Fetch all balances for neutron1k9m… so I can see each denomination.",
+			"tools": [
+				{
+					"fetch_all_denominations": "Retrieve all token denominations held by the address",
+					"resolve_denom_names": "Convert denomination strings to human-readable token names",
+					"display_denom_balances": "Show balance for each denomination with proper formatting"
+				}
+			]
+		}
+	},
+	{
+		"token_balance_sheet": {
+			"intent": "I need to see my entire token balance sheet—address neutron1lmn.",
+			"tools": [
+				{
+					"generate_balance_sheet": "Create comprehensive balance sheet view of all holdings",
+					"include_staking_balances": "Include staked tokens and delegation information",
+					"show_liquid_vs_locked": "Differentiate between liquid and locked/vested tokens"
+				}
+			]
+		}
+	},
+	{
+		"denomination_query": {
+			"intent": "Query every denomination held by my account neutron1aaa.",
+			"tools": [
+				{
+					"query_held_denominations": "Query all denominations with non-zero balances",
+					"get_denomination_info": "Retrieve information about each denomination including metadata",
+					"list_denomination_sources": "Show origin information for IBC and TokenFactory tokens"
+				}
+			]
+		}
+	},
+	{
+		"token_type_count": {
+			"intent": "How many tokens of each type do I have at neutron1b2c3?",
+			"tools": [
+				{
+					"count_tokens_by_type": "Count and categorize tokens by type (native, IBC, TokenFactory)",
+					"get_token_amounts": "Retrieve specific amounts for each token type",
+					"summarize_holdings": "Provide summary statistics of token holdings"
+				}
+			]
+		}
+	},
+	{
+		"bank_balance_display": {
+			"intent": "Display all bank balances for wallet neutron1zxy.",
+			"tools": [
+				{
+					"query_bank_module": "Query the bank module for all balances",
+					"format_bank_display": "Format bank balances in user-friendly display format",
+					"include_fee_tokens": "Identify which tokens can be used for transaction fees"
+				}
+			]
+		}
+	},
+	{
+		"token_balance_retrieval": {
+			"intent": "Retrieve a list of every token balance for this address: neutron1evgh.",
+			"tools": [
+				{
+					"retrieve_complete_balances": "Retrieve comprehensive list of all token balances",
+					"parse_balance_data": "Parse and structure balance data for presentation",
+					"validate_address_format": "Validate that the provided address is a valid Neutron address"
+				}
+			]
+		}
+	},
+	{
+		"send_ntrn_main_wallet": {
+			"intent": "Please send 15 NTRN from my main wallet to neutron1x3…9gq.",
+			"tools": [
+				{
+					"bank_send": "Send native NTRN tokens from one address to another using the bank module",
+					"wallet_balance_check": "Query wallet balance to ensure sufficient funds before transfer",
+					"transaction_fee_calculator": "Calculate appropriate gas fees for the transaction",
+					"address_validator": "Validate the recipient address format and checksum"
+				}
+			]
+		}
+	},
+	{
+		"transfer_atom_immediate": {
+			"intent": "Transfer 0.75 ATOM to cosmos1jh4…7m2 right now.",
+			"tools": [
+				{
+					"ibc_transfer": "Execute IBC transfer of ATOM tokens to Cosmos Hub using IBC channels",
+					"balance_checker": "Verify sufficient ATOM balance in wallet",
+					"ibc_channel_resolver": "Determine correct IBC channel for Cosmos Hub transfers",
+					"gas_estimator": "Calculate gas fees for IBC transfer transaction"
+				}
+			]
+		}
+	},
+	{
+		"pay_usdc_cold_storage": {
+			"intent": "Pay 500 USDC to my cold‑storage address.",
+			"tools": [
+				{
+					"bank_send": "Transfer USDC tokens (likely axlUSDC IBC denom) to specified address",
+					"balance_validator": "Check available USDC balance before transfer",
+					"address_formatter": "Ensure cold storage address is properly formatted",
+					"fee_calculator": "Calculate transaction fees for USDC transfer"
+				}
+			]
+		}
+	},
+	{
+		"move_wbtc_default_gas": {
+			"intent": "Move all of my wBTC to bc1q98…ez0—leave the fees on default gas.",
+			"tools": [
+				{
+					"balance_query": "Query total wBTC balance to determine transfer amount",
+					"cross_chain_bridge": "Bridge wBTC to Bitcoin network (if supported)",
+					"gas_default_setter": "Use default gas settings for the transaction",
+					"address_converter": "Handle Bitcoin address format conversion if needed"
+				}
+			]
+		}
+	},
+	{
+		"send_ntrn_ledger_alice": {
+			"intent": "Send 2500 NTRN from the Ledger account to Alice's Neutron wallet.",
+			"tools": [
+				{
+					"ledger_signer": "Interface with Ledger hardware wallet for transaction signing",
+					"bank_send": "Execute NTRN transfer using bank module",
+					"address_book": "Resolve 'Alice's Neutron wallet' to actual neutron address",
+					"transaction_builder": "Construct transaction for Ledger signing"
+				}
+			]
+		}
+	},
+	{
+		"wire_stkatom_public_rpc": {
+			"intent": "Wire 20 stkATOM to neutron1deleg…z9a using the public RPC node.",
+			"tools": [
+				{
+					"rpc_connector": "Connect to public RPC node for transaction broadcast",
+					"ibc_transfer": "Transfer stkATOM tokens (likely IBC denomination)",
+					"balance_checker": "Verify sufficient stkATOM balance",
+					"transaction_broadcaster": "Broadcast transaction via public RPC endpoint"
+				}
+			]
+		}
+	},
+	{
+		"forward_eth_low_gas": {
+			"intent": "I need to forward 1.2 ETH (ERC‑20 bridged) to Bob; use low gas if possible.",
+			"tools": [
+				{
+					"bridge_transfer": "Handle bridged ETH transfer (likely axlWETH)",
+					"gas_optimizer": "Set low gas prices for cost-effective transaction",
+					"contact_resolver": "Resolve 'Bob' to actual wallet address",
+					"balance_validator": "Check available bridged ETH balance"
+				}
+			]
+		}
+	},
+	{
+		"push_ntrn_multisig_hotkey": {
+			"intent": "Push 1000 NTRN to my Treasuries multisig and sign it with the hot key.",
+			"tools": [
+				{
+					"multisig_transfer": "Execute transfer to multisig treasury address",
+					"hot_key_signer": "Sign transaction using hot key (non-hardware wallet)",
+					"bank_send": "Transfer NTRN tokens using bank module",
+					"multisig_address_resolver": "Resolve treasury multisig address"
+				}
+			]
+		}
+	},
+	{
+		"distribute_usdt_two_addresses": {
+			"intent": "Distribute 50 USDT each to these two addresses: ntrn1a… and ntrn1b….",
+			"tools": [
+				{
+					"batch_transfer": "Execute multiple transfers in single transaction",
+					"bank_multi_send": "Send USDT to multiple recipients simultaneously",
+					"balance_checker": "Verify sufficient USDT balance for total distribution",
+					"address_validator": "Validate both recipient addresses"
+				}
+			]
+		}
+	},
+	{
+		"clear_testnet_faucet": {
+			"intent": "Send whatever testnet tokens are left in this faucet account to neutron1test… so I can clear it.",
+			"tools": [
+				{
+					"balance_query_all": "Query all token balances in the faucet account",
+					"multi_denom_transfer": "Transfer all different token types to destination",
+					"account_cleaner": "Ensure account is completely emptied of all assets",
+					"testnet_token_handler": "Handle various testnet token denominations"
+				}
+			]
+		}
+	},
+	{
+		"compile_smart_contract": {
+			"intent": "Please compile the smart contract in this workspace and give me the optimized .wasm.",
+			"tools": [
+				{
+					"cargo_wasm_build": "Compile the Rust smart contract to WebAssembly using 'cargo wasm' command",
+					"docker_optimizer": "Run the CosmWasm Rust optimizer using Docker to produce optimized .wasm binary for deployment",
+					"artifact_retrieval": "Locate and retrieve the optimized .wasm file from the artifacts directory"
+				}
+			]
+		}
+	},
+	{
+		"build_arm64_binary": {
+			"intent": "Build an arm64‑optimized binary for the contract I just wrote.",
+			"tools": [
+				{
+					"cargo_build_target": "Build the contract for arm64 architecture using cargo with specific target flags",
+					"rust_optimizer_arm64": "Use CosmWasm rust-optimizer with arm64 support for cross-platform optimization",
+					"binary_verification": "Verify the built binary is correctly compiled for arm64 architecture"
+				}
+			]
+		}
+	},
+	{
+		"build_non_arm64_binary": {
+			"intent": "Generate a non‑arm64 optimized build of my CosmWasm contract.",
+			"tools": [
+				{
+					"cargo_build_x86": "Build the contract for x86_64 architecture using cargo with appropriate target",
+					"rust_optimizer_x86": "Use CosmWasm rust-optimizer for x86_64 optimization",
+					"cross_compilation": "Handle cross-compilation settings for non-arm64 target architectures"
+				}
+			]
+		}
+	},
+	{
+		"docker_optimizer_build": {
+			"intent": "Run the Docker optimizer and produce the deployment‑ready .wasm for my token contract.",
+			"tools": [
+				{
+					"docker_rust_optimizer": "Execute cosmwasm/rust-optimizer Docker container to optimize the contract",
+					"volume_mounting": "Mount project directory and cache volumes for Docker optimization process",
+					"deployment_artifact": "Generate deployment-ready optimized .wasm file in artifacts directory"
+				}
+			]
+		}
+	},
+	{
+		"build_all_contracts": {
+			"intent": "Create the release build for all contracts in the contracts/ folder and show me the binaries.",
+			"tools": [
+				{
+					"workspace_builder": "Build all contracts in the workspace using cargo workspace commands",
+					"batch_optimizer": "Run optimization process on multiple contracts in the contracts directory",
+					"binary_listing": "List and display all generated optimized .wasm binaries with their locations"
+				}
+			]
+		}
+	},
+	{
+		"optimize_crowdfunding_contract": {
+			"intent": "I need an optimized wasm for this crowdfunding contract—can you build it now?",
+			"tools": [
+				{
+					"contract_compiler": "Compile the specific crowdfunding contract using cargo wasm",
+					"wasm_optimizer": "Apply CosmWasm optimization to reduce binary size and gas costs",
+					"contract_validator": "Validate the optimized contract meets deployment requirements"
+				}
+			]
+		}
+	},
+	{
+		"execute_build_pipeline": {
+			"intent": "Execute the build pipeline so I can upload the contract to Neutron.",
+			"tools": [
+				{
+					"build_pipeline": "Run complete build pipeline from source compilation to optimization",
+					"neutron_preparation": "Prepare contract for Neutron network deployment with proper configurations",
+					"upload_readiness": "Ensure contract is ready for upload to Neutron with correct format and size"
+				}
+			]
+		}
+	},
+	{
+		"compile_and_optimize": {
+			"intent": "Compile and optimize the current project; output the final .wasm file.",
+			"tools": [
+				{
+					"project_compiler": "Compile the current CosmWasm project using cargo build tools",
+					"wasm_optimization": "Optimize the compiled WebAssembly for production deployment",
+					"final_output": "Generate and locate the final optimized .wasm file for deployment"
+				}
+			]
+		}
+	},
+	{
+		"workspace_optimizer_build": {
+			"intent": "Build the CosmWasm code with workspace‑optimizer and tell me where the binary is saved.",
+			"tools": [
+				{
+					"workspace_optimizer": "Use CosmWasm workspace-optimizer for multi-contract optimization",
+					"build_execution": "Execute the optimization process across the entire workspace",
+					"binary_location": "Identify and report the location of generated optimized binaries"
+				}
+			]
+		}
+	},
+	{
+		"production_ready_auction": {
+			"intent": "Prepare a production‑ready wasm for my auction contract, including size optimization.",
+			"tools": [
+				{
+					"production_compiler": "Compile auction contract with production-ready settings and optimizations",
+					"size_optimizer": "Apply aggressive size optimization techniques for minimal binary size",
+					"production_validator": "Validate contract meets production deployment standards for Neutron"
+				}
+			]
+		}
+	},
+	{
+		"run_full_test_suite": {
+			"intent": "Please run the full test suite for cw20‑base.",
+			"tools": [
+				{
+					"cargo_test_runner": "Execute cargo test command to run all unit and integration tests for the specified contract",
+					"test_environment_setup": "Initialize testing environment with mock dependencies and test fixtures",
+					"contract_test_validator": "Validate test results and ensure all test cases pass successfully",
+					"test_coverage_analyzer": "Generate test coverage reports and identify untested code paths"
+				}
+			]
+		}
+	},
+	{
+		"execute_cargo_test": {
+			"intent": "Can you execute cargo test on my nft_marketplace contract?",
+			"tools": [
+				{
+					"cargo_test_executor": "Run cargo test command specifically for the nft_marketplace contract module",
+					"rust_test_framework": "Utilize Rust's built-in testing framework for contract validation",
+					"cosmwasm_test_runner": "Execute CosmWasm-specific tests using mock dependencies and test utilities",
+					"test_output_formatter": "Format and display test results in a readable format"
+				}
+			]
+		}
+	},
+	{
+		"test_vesting_contract": {
+			"intent": "I'd like to test the vesting contract—kick off the tests.",
+			"tools": [
+				{
+					"vesting_test_suite": "Execute comprehensive test suite for vesting contract functionality",
+					"cargo_test_launcher": "Launch cargo test with appropriate flags and configurations",
+					"mock_environment_setup": "Set up mock blockchain environment for testing vesting logic",
+					"test_result_reporter": "Generate detailed test reports and identify any failures"
+				}
+			]
+		}
+	},
+	{
+		"run_unit_integration_tests": {
+			"intent": "Run all unit and integration tests for crowdfund.rs.",
+			"tools": [
+				{
+					"unit_test_runner": "Execute unit tests for individual functions and components",
+					"integration_test_executor": "Run integration tests that test component interactions",
+					"cargo_test_manager": "Manage and coordinate different types of test execution",
+					"test_suite_orchestrator": "Orchestrate both unit and integration test execution in sequence"
+				}
+			]
+		}
+	},
+	{
+		"auction_contract_test": {
+			"intent": "Make sure the auction contract passes its specs—start the cargo tests.",
+			"tools": [
+				{
+					"auction_test_validator": "Validate auction contract against its specifications",
+					"cargo_test_runner": "Execute cargo test command for auction contract validation",
+					"spec_compliance_checker": "Verify contract behavior matches defined specifications",
+					"test_assertion_validator": "Validate all test assertions and ensure spec compliance"
+				}
+			]
+		}
+	},
+	{
+		"test_staking_rewards_contract": {
+			"intent": "Execute the tests for my staking_rewards CosmWasm contract and show the output.",
+			"tools": [
+				{
+					"cosmwasm_test_executor": "Execute CosmWasm-specific tests for staking rewards contract",
+					"cargo_test_runner": "Run cargo test with verbose output for detailed results",
+					"test_output_displayer": "Capture and display comprehensive test output and results",
+					"staking_test_validator": "Validate staking rewards logic and contract behavior"
+				}
+			]
+		}
+	},
+	{
+		"verify_cw721_extended": {
+			"intent": "Verify that cw721_extended builds and all tests pass.",
+			"tools": [
+				{
+					"cargo_build_validator": "Verify contract compiles successfully without errors",
+					"cargo_test_executor": "Execute all tests to ensure they pass",
+					"build_test_orchestrator": "Coordinate both build verification and test execution",
+					"cw721_test_suite": "Run CW721-specific test suite for NFT contract validation"
+				}
+			]
+		}
+	},
+	{
+		"test_oracle_adapter": {
+			"intent": "Run cargo test on the oracle_adapter contract and return the results.",
+			"tools": [
+				{
+					"oracle_test_runner": "Execute tests specific to oracle adapter functionality",
+					"cargo_test_executor": "Run cargo test command and capture results",
+					"test_result_collector": "Collect and format test results for return",
+					"oracle_integration_tester": "Test oracle integration and data feed functionality"
+				}
+			]
+		}
+	},
+	{
+		"launch_commission_sales_tests": {
+			"intent": "Launch the entire test suite for commission_sales.",
+			"tools": [
+				{
+					"test_suite_launcher": "Launch comprehensive test suite for commission sales contract",
+					"cargo_test_orchestrator": "Orchestrate execution of all test categories",
+					"commission_test_validator": "Validate commission calculation and sales logic",
+					"full_test_suite_runner": "Execute complete test suite including edge cases"
+				}
+			]
+		}
+	},
+	{
+		"check_multi_sig_wallet": {
+			"intent": "Check the multi_sig_wallet contract by running its cargo tests and report any failures.",
+			"tools": [
+				{
+					"multi_sig_test_runner": "Execute multi-signature wallet specific tests",
+					"cargo_test_executor": "Run cargo test and monitor for failures",
+					"failure_reporter": "Identify, collect, and report any test failures with details",
+					"multi_sig_validator": "Validate multi-signature logic and security requirements"
+				}
+			]
+		}
+	},
+	{
+		"upload_wasm_binary": {
+			"intent": "Upload the ./artifacts/cw20_token.wasm binary to Neutron and return the new code ID.",
+			"tools": [
+				{
+					"wasm_store": "Store a WASM contract binary on Neutron blockchain and return the assigned code ID",
+					"file_reader": "Read the WASM binary file from the specified path",
+					"gas_estimator": "Estimate gas requirements for the store transaction",
+					"transaction_broadcaster": "Broadcast the store transaction to the Neutron network",
+					"code_id_extractor": "Extract and return the code ID from the transaction response"
+				}
+			]
+		}
+	},
+	{
+		"store_compiled_contract": {
+			"intent": "Please store my compiled file target/wasm32/release/nft_market.wasm on Neutron mainnet with default gas.",
+			"tools": [
+				{
+					"wasm_store": "Store a WASM contract binary on Neutron blockchain using default gas settings",
+					"file_reader": "Read the compiled WASM binary from the target directory",
+					"network_selector": "Configure connection to Neutron mainnet",
+					"transaction_broadcaster": "Submit the store transaction with default gas parameters"
+				}
+			]
+		}
+	},
+	{
+		"push_wasm_to_chain": {
+			"intent": "Push auction.wasm to the chain using the neutron-rpc.polkachu.com:443 gRPC node.",
+			"tools": [
+				{
+					"wasm_store": "Store WASM contract binary via specified gRPC endpoint",
+					"grpc_client": "Connect to the specified Neutron gRPC node endpoint",
+					"file_reader": "Read the auction.wasm binary file",
+					"transaction_broadcaster": "Submit store transaction through the gRPC connection"
+				}
+			]
+		}
+	},
+	{
+		"submit_optimized_wasm": {
+			"intent": "Can you submit the optimized WASM in build/optimizer/vesting.wasm and tell me the resulting code_id?",
+			"tools": [
+				{
+					"wasm_store": "Store the optimized WASM binary and retrieve the assigned code ID",
+					"file_reader": "Read the optimized WASM file from the build directory",
+					"transaction_broadcaster": "Submit the store transaction to Neutron",
+					"code_id_extractor": "Parse and return the code ID from the transaction result",
+					"response_formatter": "Format the response to clearly display the resulting code ID"
+				}
+			]
+		}
+	},
+	{
+		"deploy_contract_binary": {
+			"intent": "Deploy (upload) the latest contract binary from ./release/my_dapp.wasm; use my default signer.",
+			"tools": [
+				{
+					"wasm_store": "Upload contract binary to Neutron using the default signing key",
+					"file_reader": "Read the contract binary from the release directory",
+					"signer_manager": "Use the default configured signer for transaction signing",
+					"transaction_broadcaster": "Submit the deployment transaction to the network"
+				}
+			]
+		}
+	},
+	{
+		"run_neutrond_store": {
+			"intent": "Run neutrond tx wasm store for contracts/launchpad.wasm and show the code ID when it's done.",
+			"tools": [
+				{
+					"neutrond_cli": "Execute neutrond tx wasm store command with the specified contract file",
+					"file_reader": "Access the launchpad.wasm file from the contracts directory",
+					"transaction_monitor": "Monitor the transaction execution and completion",
+					"code_id_extractor": "Extract and display the code ID from the command output",
+					"result_formatter": "Format and present the final code ID result"
+				}
+			]
+		}
+	},
+	{
+		"upload_rebuilt_contract": {
+			"intent": "I've rebuilt the staking contract — please upload the new staking.wasm file to Neutron test‑1.",
+			"tools": [
+				{
+					"wasm_store": "Store the rebuilt staking contract on Neutron testnet",
+					"file_reader": "Read the updated staking.wasm binary file",
+					"network_selector": "Configure connection to Neutron test-1 testnet",
+					"transaction_broadcaster": "Submit the store transaction to the testnet"
+				}
+			]
+		}
+	},
+	{
+		"store_with_gas_auto": {
+			"intent": "Store ./out/ibc_bridge.wasm on Neutron with gas auto and signing key alice.",
+			"tools": [
+				{
+					"wasm_store": "Store WASM contract with automatic gas estimation using specified signer",
+					"file_reader": "Read the IBC bridge contract from the out directory",
+					"gas_estimator": "Use automatic gas estimation for the transaction",
+					"signer_manager": "Use the 'alice' signing key for transaction authorization",
+					"transaction_broadcaster": "Submit the store transaction with auto gas settings"
+				}
+			]
+		}
+	},
+	{
+		"publish_wasm_to_blockchain": {
+			"intent": "Publish the WASM at /tmp/extended_marketplace.wasm to the blockchain and give me the code ID.",
+			"tools": [
+				{
+					"wasm_store": "Publish WASM contract to Neutron blockchain and return code ID",
+					"file_reader": "Read the marketplace contract from the temporary directory",
+					"transaction_broadcaster": "Submit the publish transaction to the blockchain",
+					"code_id_extractor": "Extract and return the assigned code ID",
+					"response_formatter": "Present the code ID in a clear format"
+				}
+			]
+		}
+	},
+	{
+		"upload_and_confirm": {
+			"intent": "Take release/treasury.wasm, upload it to Neutron, and confirm once the transaction is successful.",
+			"tools": [
+				{
+					"wasm_store": "Upload the treasury contract binary to Neutron",
+					"file_reader": "Read the treasury.wasm file from the release directory",
+					"transaction_broadcaster": "Submit the upload transaction to Neutron",
+					"transaction_monitor": "Monitor transaction status and wait for confirmation",
+					"success_validator": "Verify and confirm successful transaction completion",
+					"notification_sender": "Provide confirmation notification once upload is successful"
+				}
+			]
+		}
+	},
+	{
+		"contract_execution": {
+			"intent": "Run the **`deposit`** method on contract `neutron1abcd…` with `{\"deposit\":{\"amount\":\"500untrn\"}}` on the main‑net node `https://rpc.neutron.org:443`.",
+			"tools": [
+				{
+					"execute_contract": "Execute a smart contract method with specified parameters on Neutron blockchain",
+					"gas_estimator": "Estimate gas requirements for contract execution transactions",
+					"rpc_client": "Connect to Neutron RPC endpoint for transaction broadcasting",
+					"transaction_signer": "Sign transactions using wallet credentials or key management"
+				}
+			]
+		}
+	},
+	{
+		"contract_withdrawal": {
+			"intent": "Execute contract `neutron1vault…` to *withdraw* **0.3 NTRN** to my wallet; use **gas auto** and my default signer.",
+			"tools": [
+				{
+					"execute_contract": "Execute withdrawal method on vault contract with specified amount",
+					"gas_auto_estimator": "Automatically estimate optimal gas for withdrawal transactions",
+					"wallet_signer": "Use default wallet signer for transaction authentication",
+					"amount_converter": "Convert NTRN amounts to proper denomination (untrn)"
+				}
+			]
+		}
+	},
+	{
+		"lp_rewards_claim": {
+			"intent": "Call **`claim_rewards`** on the LP contract at `neutron1lp…`, gas limit **200 000**.",
+			"tools": [
+				{
+					"execute_contract": "Execute claim_rewards method on liquidity provider contract",
+					"gas_limiter": "Set specific gas limit for transaction execution",
+					"transaction_builder": "Build and format contract execution message",
+					"reward_claimer": "Handle LP reward claiming operations"
+				}
+			]
+		}
+	},
+	{
+		"token_transfer": {
+			"intent": "Trigger **`transfer`** on the CW‑20 token `neutron1token…` sending **1000 ujuno** to `neutron1dest…`.",
+			"tools": [
+				{
+					"cw20_executor": "Execute CW-20 token contract methods for transfers",
+					"token_transfer": "Handle token transfer operations with amount and recipient validation",
+					"address_validator": "Validate Neutron addresses for sender and recipient",
+					"amount_formatter": "Format token amounts according to CW-20 standards"
+				}
+			]
+		}
+	},
+	{
+		"staking_delegation": {
+			"intent": "Invoke **`delegate`** on staking contract `neutron1stake…` with `{ \"validator\":\"neutronvaloper1…\", \"amount\":\"1000000untrn\" }`.",
+			"tools": [
+				{
+					"staking_executor": "Execute staking contract delegation methods",
+					"validator_resolver": "Resolve and validate validator addresses",
+					"amount_validator": "Validate staking amounts and denominations",
+					"delegation_manager": "Handle delegation operations and state tracking"
+				}
+			]
+		}
+	},
+	{
+		"token_approval": {
+			"intent": "Approve the DEX router from my CW‑20 token at `neutron1cw20…` for **500 000** units.",
+			"tools": [
+				{
+					"cw20_approver": "Execute CW-20 token approval operations",
+					"dex_router_interface": "Interface with DEX router contracts for approvals",
+					"allowance_manager": "Manage token allowances and spending limits",
+					"amount_formatter": "Format approval amounts according to token decimals"
+				}
+			]
+		}
+	},
+	{
+		"token_burn": {
+			"intent": "Send `{\"burn\":{\"amount\":\"2500\"}}` to contract `neutron1cw20…` via node `grpcs.neutron.org:443`, gas auto.",
+			"tools": [
+				{
+					"cw20_burner": "Execute token burn operations on CW-20 contracts",
+					"grpc_client": "Connect to Neutron gRPC endpoint for transaction submission",
+					"gas_auto_estimator": "Automatically estimate gas for burn transactions",
+					"burn_validator": "Validate burn amounts and permissions"
+				}
+			]
+		}
+	},
+	{
+		"governance_voting": {
+			"intent": "Execute the governance contract `neutron1gov…` to **vote Yes** on proposal #13.",
+			"tools": [
+				{
+					"governance_executor": "Execute governance contract voting methods",
+					"proposal_resolver": "Resolve proposal IDs and validate voting options",
+					"vote_formatter": "Format voting messages according to governance standards",
+					"dao_interface": "Interface with Neutron DAO governance contracts"
+				}
+			]
+		}
+	},
+	{
+		"counter_increment": {
+			"intent": "Run **`increment`** on the counter demo contract `neutron1count…` with gas price **0.05 untrn**.",
+			"tools": [
+				{
+					"demo_contract_executor": "Execute methods on demo/example contracts",
+					"gas_price_setter": "Set specific gas prices for transactions",
+					"counter_interface": "Interface with counter contract increment methods",
+					"transaction_builder": "Build contract execution messages with custom gas settings"
+				}
+			]
+		}
+	},
+	{
+		"oracle_price_submission": {
+			"intent": "Call oracle contract `neutron1oracle…` with `{ \"submit_price\": { \"price\": \"34.56\" } }` using my **Ledger** signer and gas 250 000.",
+			"tools": [
+				{
+					"oracle_executor": "Execute oracle contract price submission methods",
+					"ledger_signer": "Use Ledger hardware wallet for transaction signing",
+					"price_formatter": "Format price data according to oracle contract requirements",
+					"gas_limiter": "Set specific gas limits for oracle transactions"
+				}
+			]
+		}
+	},
+	{
+		"dex_config_query": {
+			"intent": "What's the config of the DEX contract at neutron1dex… right now?",
+			"tools": [
+				{
+					"query_contract_state": "Query smart contract state using neutrond CLI or REST API to get contract configuration",
+					"parse_contract_response": "Parse and format the JSON response from the contract state query"
+				}
+			]
+		}
+	},
+	{
+		"cw20_balance_check": {
+			"intent": "Check the CW20 token at neutron1token… — how many tokens does neutron1alice… hold?",
+			"tools": [
+				{
+					"query_cw20_balance": "Query CW20 token contract for specific address balance using smart contract query",
+					"format_token_amount": "Format token amounts with proper decimals and denomination"
+				}
+			]
+		}
+	},
+	{
+		"nft_marketplace_bid": {
+			"intent": "Ask the NFT marketplace contract (neutron1market…) for the current highest bid on listing #87.",
+			"tools": [
+				{
+					"query_marketplace_listing": "Query NFT marketplace contract for specific listing information",
+					"parse_bid_data": "Extract and format bid information from marketplace contract response"
+				}
+			]
+		}
+	},
+	{
+		"crowdfunding_state": {
+			"intent": "Fetch get_state from the crowdfunding contract at neutron1fund…; I want to see how much has been raised.",
+			"tools": [
+				{
+					"query_contract_state": "Execute smart contract query to get crowdfunding state",
+					"parse_funding_data": "Extract and format funding amounts and progress from contract state"
+				}
+			]
+		}
+	},
+	{
+		"staking_rewards_query": {
+			"intent": "Query the staking rewards contract (neutron1rewards…) for unclaimed rewards owed to neutron1bob….",
+			"tools": [
+				{
+					"query_staking_rewards": "Query staking rewards contract for specific address unclaimed rewards",
+					"calculate_reward_amounts": "Calculate and format reward amounts with proper denominations"
+				}
+			]
+		}
+	},
+	{
+		"cw20_allowance_check": {
+			"intent": "Retrieve the full allowance record for spender neutron1vault… on the CW20 at neutron1token….",
+			"tools": [
+				{
+					"query_cw20_allowance": "Query CW20 contract for allowance between owner and spender addresses",
+					"format_allowance_data": "Format allowance information including amounts and expiration"
+				}
+			]
+		}
+	},
+	{
+		"dao_proposal_status": {
+			"intent": "Does the DAO contract (neutron1dao…) show proposal 42 as passed or still pending?",
+			"tools": [
+				{
+					"query_dao_proposal": "Query DAO contract for specific proposal status and voting results",
+					"parse_proposal_status": "Parse proposal state and determine if passed, pending, or failed"
+				}
+			]
+		}
+	},
+	{
+		"nft_token_uri": {
+			"intent": "Get the token_uri for NFT ID 4211 from the collection contract at neutron1nft….",
+			"tools": [
+				{
+					"query_nft_token_uri": "Query NFT contract for specific token URI and metadata",
+					"fetch_nft_metadata": "Retrieve and parse NFT metadata from token URI"
+				}
+			]
+		}
+	},
+	{
+		"vesting_schedule_query": {
+			"intent": "Show me the vesting schedule for beneficiary neutron1charlie… in the vesting contract (neutron1vesting…).",
+			"tools": [
+				{
+					"query_vesting_schedule": "Query vesting contract for specific beneficiary schedule",
+					"format_vesting_timeline": "Format vesting schedule with dates, amounts, and release periods"
+				}
+			]
+		}
+	},
+	{
+		"vault_liquidation_price": {
+			"intent": "What liquidation price is set in the vault contract at neutron1vault… for position 0xabc123?",
+			"tools": [
+				{
+					"query_vault_position": "Query vault contract for specific position liquidation parameters",
+					"calculate_liquidation_price": "Calculate and format liquidation price based on position data"
+				}
+			]
+		}
+	}
+]

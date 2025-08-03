@@ -1,0 +1,571 @@
+{"text": "(GNU specific) Calculte and output amount of CPU load taken by all processes belonging to user 'abc'.", "labels": ["awk"]}
+{"text": "(GNU specific) Display cumulative CPU usage over 5 seconds.", "labels": ["awk"]}
+{"text": "(GNU specific) Display numbers of processes in following states: running, sleeping, stopped, and defunct (zombie).", "labels": ["awk"]}
+{"text": "(GNU specific) Display the percentage of CPU usage allocated to user processes.", "labels": ["awk"]}
+{"text": "(GNU specific) Display various information about process currently taking the most CPU time.", "labels": ["awk"]}
+{"text": "(GNU specific) Find the process currently taking the most CPU time.", "labels": ["awk"]}
+{"text": "(Linux specific) Find all loadable modules for current kernel, whose name includes \"\"perf\"\"", "labels": ["find"]}
+{"text": "Add \"\"execute\"\" to the permissions of all directories in the home directory tree", "labels": ["find"]}
+{"text": "Add '.avi' extension to all files/directories with '.mkv' extension under '/volume1/uploads' directory tree", "labels": ["find"]}
+{"text": "Add a date time stamp to every line of output in \"\"ping google.com\"\"", "labels": ["xargs"]}
+{"text": "Add group write permission to all files in the current directory", "labels": ["find"]}
+{"text": "Add read and execute permission to every directory under the current directory", "labels": ["find"]}
+{"text": "Add read permission for 'other' for all files/directories named 'rc.conf' under current directory tree", "labels": ["find"]}
+{"text": "Add the execute and read permission for all and the write permission for the user to the dir_data directory and all of its sub-directories.", "labels": ["find"]}
+{"text": "Append \"\"foo\"\" and \"\"bar\"\" column in file \"\"file\"\" with values dependent on the current table contents", "labels": ["awk"]}
+{"text": "Append all PNG and JPG files to tar archive 'images.tar'", "labels": ["find"]}
+{"text": "Append all regular files modified in the last 24 hours to the \"\"$archive.tar\"\" tar archive", "labels": ["find"]}
+{"text": "Append the parent directory name with a space in all 'text.txt' files in all sub directories of current directory", "labels": ["find"]}
+{"text": "Archive all directories in /path/to/directory/* (only command line arguments, no sub-directories) to files with .tar.gz extension", "labels": ["find"]}
+{"text": "Archive all directories in /path/to/directory/* (only command line arguments, no sub-directories) to files with .tar.gz extension transforming the full paths to relative paths", "labels": ["find"]}
+{"text": "Archive all filepattern-*2009* files/directories under data/ into 2009.tar", "labels": ["find"]}
+{"text": "Archive any files changed in the last day from \"\"remote_host\"\" to \"\"local_dir\"\"", "labels": ["find"]}
+{"text": "Archive the list of 1st level subdirectories in /fss/fin to /fss/fi/outfile.tar.gz", "labels": ["find"]}
+{"text": "Backup all PHP files under the current directory tree", "labels": ["find"]}
+{"text": "Backup all of the Java files in the current directory tree by copying them and appending the suffix .bk to each", "labels": ["find"]}
+{"text": "Calculate and show md5 sums for every files under current directory tree", "labels": ["find"]}
+{"text": "Calculate the md5 sum of \"\"logdir\"\" and print only the hash", "labels": ["awk"]}
+{"text": "Calculate the md5 sum of all files in the current directory and formatting the output by removing parenthesis", "labels": ["find"]}
+{"text": "Calculate the md5 sum of all the file metadata in the current directory tree excluding \"\".svn\"\"", "labels": ["find"]}
+{"text": "Calculate the md5 sum of every \"\".py\"\" file in directory tree \"\"/path\"\"", "labels": ["find"]}
+{"text": "Calculate the md5 sum of the contents of the sorted list of files \"\"$FILES\"\"", "labels": ["sort"]}
+{"text": "Calculate the md5 sum of the list of files in the current directory", "labels": ["find"]}
+{"text": "Calculate the md5sum of all the files with name \"\"MyCProgram.c\"\", ignoring case", "labels": ["find"]}
+{"text": "Calculate the total disk usage for each \"\".jpg\"\" file on the system and prepend the system host name to the output", "labels": ["find"]}
+{"text": "Change all directories under \"\"./bootstrap/cache/\"\" to owner \"\"apache\"\" and group \"\"laravel\"\"", "labels": ["find"]}
+{"text": "Change all directories under \"\"./storage/\"\" to owner \"\"apache\"\" and group \"\"laravel\"\"", "labels": ["find"]}
+{"text": "Change all file permissions to 664 and all directory permissions to 775 in directory tree \"\"htdocs\"\"", "labels": ["find"]}
+{"text": "Change all files in \"\"~\"\" which are owned by the group \"\"vboxusers\"\" to be owned by the user group \"\"kent\"\"", "labels": ["find"]}
+{"text": "Change all files in the current directory tree to owner \"\"xx\"\"", "labels": ["find"]}
+{"text": "Change all files with no user under \"\"/var/www\"\" to have owner \"\"root\"\" and group \"\"apache\"\"", "labels": ["find"]}
+{"text": "Change directory to the directory containing the executable file of command \"\"oracle\"\"", "labels": ["xargs"]}
+{"text": "Change every directory under \"\"/var/www/html/\"\" to have permissions 775", "labels": ["find"]}
+{"text": "Change every file under \"\"/var/www/html/\"\" to have permissions 664", "labels": ["find"]}
+{"text": "Change every reference to the colour red to green in all CSS files", "labels": ["find"]}
+{"text": "Change file permissions on all regular files within a directory", "labels": ["find"]}
+{"text": "Change group ownership to `foo' for files with GID=2000", "labels": ["find"]}
+{"text": "Change mode of all files ending with \"\".php\"\" under the current folder to 755 and write the output to the console and \"\"logfile.txt\"\" file", "labels": ["find"]}
+{"text": "Change permission to 000 of all directories named '.texturedata' under '/path/to/look/in/' directory tree", "labels": ["find"]}
+{"text": "Change permissions for all PHP files under the current directory tree to 755", "labels": ["find"]}
+{"text": "Change permissions for all PHP files under the current directory tree to 755 and print the number of files changed", "labels": ["find"]}
+{"text": "Change permissions of all directories from the current directory tree to 644", "labels": ["find"]}
+{"text": "Change permissions of all directories in the ~/dir_data directory tree in accordance with mode `a+xr,u+w'", "labels": ["find"]}
+{"text": "Change permissions of all files ending \"\".php\"\" under the current directory to 755 and print a count of modified files", "labels": ["find"]}
+{"text": "Change permissions of all files ending in \"\".php\"\" under the current directory to 755 and print a '+' for each file", "labels": ["find"]}
+{"text": "Change permissions of all files ending in \"\".php\"\" under the current directory to 755 and print a count of modified files", "labels": ["find"]}
+{"text": "Change permissions of all regular files from the current directory tree to 644", "labels": ["find"]}
+{"text": "Change permissions of all regular files in the ~/dir_data directory tree in accordance with mode `a-x,u+w'", "labels": ["find"]}
+{"text": "Change permissions to 0755 for all directories in the /path directory tree", "labels": ["find"]}
+{"text": "Change permissions to 500 for all regular files under and below the current directory", "labels": ["find"]}
+{"text": "Change permissions to 600 for all regular .rb files in the current directory tree", "labels": ["find"]}
+{"text": "Change permissions to 644 for *.html files under /usr/local", "labels": ["find"]}
+{"text": "Change permissions to 644 for all regular files under the /path/to/dir/ tree unless these permissions are already set", "labels": ["find"]}
+{"text": "Change permissions to 644 of multiple files with permissions 755", "labels": ["find"]}
+{"text": "Change permissions to 644 of multiple regular files with permissions 755", "labels": ["find"]}
+{"text": "Change permissions to 644 recursively for PHP files.", "labels": ["find"]}
+{"text": "Change permissions to 644 recursively only for files", "labels": ["find"]}
+{"text": "Change permissions to 755 for all directories in the /path/to/dir directory tree", "labels": ["find"]}
+{"text": "Change permissions to 755 recursively only for directories", "labels": ["find"]}
+{"text": "Change permissions to 777 for all directories in the current directory tree", "labels": ["find"]}
+{"text": "Change permissions to u=rw,g=r,o= for all files in the current directory tree", "labels": ["find"]}
+{"text": "Change permissions to u=rw,g=r,o= for all files inside the current directory tree", "labels": ["find"]}
+{"text": "Change permissions to u=rwx,g=rx,o= for all directories in the current directory tree", "labels": ["find"]}
+{"text": "Change permissions to u=rwx,g=rx,o= for all directories inside the current directory tree", "labels": ["find"]}
+{"text": "Change permssions of *.cgi files under directories htdocs and cgi-bin to 755", "labels": ["find"]}
+{"text": "Change string \"\"searc\"\" to \"\"replace\"\" in all files in directory hierarchy", "labels": ["find"]}
+{"text": "Change the owner of all \"\".txt\"\" files in directory tree \"\"/mydir\"\" to \"\"root\"\"", "labels": ["find"]}
+{"text": "Change the owner of all files in \"\"/empty_dir/\"\" to \"\"root\"\" using at most 10 files at a time", "labels": ["xargs"]}
+{"text": "Change the owner of all files in the current directory tree excluding those who match \"\"./var/foo*\"\" to \"\"www-data\"\"", "labels": ["find"]}
+{"text": "Change the ownership of all aluno1's files in the current directory and below to aluno2", "labels": ["find"]}
+{"text": "Change the ownership of all files in the current directory tree from root to www-data", "labels": ["find"]}
+{"text": "Change the ownership of all files in the current directory tree to myuser:a-common-group-name", "labels": ["find"]}
+{"text": "Change the ownership to the user daisy for all directories under current directory that are owned by harry", "labels": ["find"]}
+{"text": "Change the permission of all regular files under current directory tree to 644", "labels": ["find"]}
+{"text": "Change the permission to 0644 for all files under current directory", "labels": ["find"]}
+{"text": "Change the permission to 0755 for all directories under current directory", "labels": ["find"]}
+{"text": "Change the permissions of all regular files whose names end with .mp3 in the directory tree /var/ftp/mp3", "labels": ["find"]}
+{"text": "Change the permissions of every directory in the current directory and all files and directories within them to 700", "labels": ["find"]}
+{"text": "Change the permissions of the current directory and all its subdirectories to 755.", "labels": ["find"]}
+{"text": "Change the user to daisy for directories and subdirectories owned by harry", "labels": ["find"]}
+{"text": "Change to folder where the oracle binary is.", "labels": ["xargs"]}
+{"text": "Change user ownership to `foo' for files with UID=1005", "labels": ["find"]}
+{"text": "Check if content of all top-level *.txt files in the current directory contain only unique lines", "labels": ["sort"]}
+{"text": "Check if directory $some_dir is empty", "labels": ["find"]}
+{"text": "Check if the $somedir directory is empty", "labels": ["find"]}
+{"text": "Check if the contents of file \"\"subset\"\" is a subset of file \"\"set\"\"", "labels": ["sort"]}
+{"text": "Check if the directory tree whose name is given as variable $somedir contains no regular files", "labels": ["find"]}
+{"text": "Clean directories and subdirectories of the temporary files generated during normal use", "labels": ["find"]}
+{"text": "Clean up all zombie processes by instantly killing their parent process with SIGKILL signal.", "labels": ["awk"]}
+{"text": "Clean up all zombie processes by sending SIGTERM signal to their parent process, which requests them to terminate.", "labels": ["awk"]}
+{"text": "Compare *.csv files in the current directory tree with their analogs stored in /some/other/path/", "labels": ["find"]}
+{"text": "Compare *.csv files in the current directory tree with their analogs stored in /some/other/path/ prompting before running `diff'", "labels": ["find"]}
+{"text": "Compare column 3 with column 2 of the next line in \"\"file\"\" and format output as a table", "labels": ["awk"]}
+{"text": "Compare each .xml file under the current directory with a file of the same name in \"\"/destination/dir/2\"\"", "labels": ["find"]}
+{"text": "Compare sorted files 'f1.txt' and 'f2.txt' and print in three columns strings unique for first file, second file, and common ones", "labels": ["sort"]}
+{"text": "Compress all \"\".txt\"\" files in the current directory tree with gzip", "labels": ["find"]}
+{"text": "Compress all *.img files using bzip2", "labels": ["find"]}
+{"text": "Compress all directories found in $LOGDIR wherein a file's data has been modified within the last 24 hours", "labels": ["find"]}
+{"text": "Compress all directories found in directory tree $LOGDIR that have been modified within the last 24 hours", "labels": ["find"]}
+{"text": "Compress all files in directory \"\"$PATH_TO_LOGS\"\" that were last modified more than \"\"$SOME_NUMBER_OF_DAYS\"\" days ago", "labels": ["find"]}
+{"text": "Compress all files in the \"\"$FILE\"\" directory tree that were last modified 30 days ago", "labels": ["find"]}
+{"text": "Compress all files in the \"\"$FILE\"\" directory tree that were last modified 30 days ago and have not already been compressed with gzip", "labels": ["find"]}
+{"text": "Compress all files with '.txt' extension under current directory", "labels": ["xargs"]}
+{"text": "Compress and display the gzip compression ratio of every file on the system that is greater than 100000 bytes and ends in \"\".log\"\"", "labels": ["find"]}
+{"text": "Compress and display the original filename of every file on the system that is greater than 100000 bytes and ends in \"\".log\"\"", "labels": ["find"]}
+{"text": "Compress every file in the current directory tree that matches \"\"*cache.html\"\" and keep the original file", "labels": ["find"]}
+{"text": "Compress every file in the current directory tree with gzip and keep file extensions the same", "labels": ["find"]}
+{"text": "Compress files excluding *.Z files", "labels": ["find"]}
+{"text": "Continuously print the seconds since Unix epoch and the ping time to \"\"google.com\"\"", "labels": ["awk"]}
+{"text": "Continuously send ping requests to broadcast address \"\"10.10.0.255\"\" and print the IP addresses who respond", "labels": ["awk"]}
+{"text": "Convert \"\"595a\"\" into characters and then print the hexadecimal and printable characters of each byte", "labels": ["awk"]}
+{"text": "Copies file 'file.dat' to each top-level directory in the current directory.", "labels": ["xargs"]}
+{"text": "Copies file 'file.txt' to each top-level directory in the current directory.", "labels": ["xargs"]}
+{"text": "Copies file 'file1' to each of directories 'dir1', 'dir2', 'dir3'.", "labels": ["xargs"]}
+{"text": "Copies file 'fileName.txt' to each of directories listed in the 'allFolders.txt' list.", "labels": ["xargs"]}
+{"text": "Copies file 'test' to each of directories like './fs*/*'.", "labels": ["xargs"]}
+{"text": "Copy \"\"fileName.txt\"\" to all directories listed in \"\"allFolders.txt\"\" - names may not contain spaces.", "labels": ["xargs"]}
+{"text": "Count the number of equal lines in \"\"file1.txt\"\" and \"\"file2.txt\"\"", "labels": ["sort"]}
+{"text": "Count the number of times that a single \"\"-----------\\n\"\" separated record contains both \"\"A=2\"\" and \"\"dummy=2\"\" and the number of records that do not have \"\"dummy=2\"\" in compressed file \"\"file.gz\"\"", "labels": ["awk"]}
+{"text": "Count the number of times that a single \"\"-----------\\n\"\" separated record contains both \"\"A=2\"\" and \"\"dummy=2\"\" in compressed file \"\"file.gz\"\"", "labels": ["awk"]}
+{"text": "Count the number of unique duplicate lines in \"\"file1\"\" and \"\"file2\"\" combined", "labels": ["sort"]}
+{"text": "Counts lines in file $file and prints number only.", "labels": ["awk"]}
+{"text": "Counts lines in file fileName ignoring empty lines and lines with spaces only.", "labels": ["awk"]}
+{"text": "Create 5 empty .txt files", "labels": ["xargs"]}
+{"text": "Create a symbolic link in directory \"\"~/newlinks\"\" for each file listed in \"\"results2.txt\"\"", "labels": ["xargs"]}
+{"text": "Create a table containing all information from S43.txt and S44.txt, merging lines where the first field of both files matches, and keeping the line that starts with \"\"Gene\"\" at the start of the file.", "labels": ["sort"]}
+{"text": "Create an empty file with a carriage return character in its name.", "labels": ["xargs"]}
+{"text": "Create empty files (or update timestamps if they exist) with names matching each word in variable \"\"correctFilePathAndName\"\"", "labels": ["xargs"]}
+{"text": "Decompress \"\"file2.txt\"\" and \"\"file1.txt\"\" and print lines in \"\"file1.txt\"\" that match the 5th tab separated field in \"\"file2.txt\"\"", "labels": ["awk"]}
+{"text": "Decompress and sort \"\"$part0\"\" and \"\"$part1\"\" of files in different processes", "labels": ["sort"]}
+{"text": "Delete all but the most recent 5 files", "labels": ["xargs"]}
+{"text": "Delete the 4th tab separated column from the output of \"\"finger\"\"", "labels": ["awk"]}
+{"text": "Determine DISPLAY variable for the session when logged in via SSH", "labels": ["awk"]}
+{"text": "Display a sorted count of all the characters in \"\"filename\"\"", "labels": ["sort"]}
+{"text": "Display all lines contained in 'dax-weekly.csv' in reverse order.", "labels": ["awk"]}
+{"text": "Display compter's hostname", "labels": ["awk"]}
+{"text": "Display file type information for all instances of \"\"file\"\" in the current PATH.", "labels": ["xargs"]}
+{"text": "Display inputfile all on one line (replace newlines by spaces)", "labels": ["awk"]}
+{"text": "Display source and mount point of the file system containing /some/path.", "labels": ["awk"]}
+{"text": "Display the contents of variable \"\"a\"\" converted to lowercase.", "labels": ["awk"]}
+{"text": "Display the mount point of a device file \"\"$path\"\"", "labels": ["awk"]}
+{"text": "Display the named characters in \"\"Test\\rTesting\\r\\nTester\\rTested\"\"", "labels": ["awk"]}
+{"text": "Display the named characters in \"\"line1\\r\\nline2\"\"", "labels": ["awk"]}
+{"text": "Display the sizes and filepaths of all files/directories sorted in ascending order of size", "labels": ["sort"]}
+{"text": "Display the sizes and filepaths of all files/directories sorted in descending order of size", "labels": ["sort"]}
+{"text": "Display variable 'var' without leading and trailing whitespace.", "labels": ["awk"]}
+{"text": "Displays the count of of each unique line read from standard input", "labels": ["sort"]}
+{"text": "Eliminates partially duplicate lines by column, keeping the last occurrence", "labels": ["sort"]}
+{"text": "Execute \"\"awk -F, '$1 ~ /F$/'\"\" on contents of \"\"file.gz\"\"", "labels": ["awk"]}
+{"text": "Execute \"\"script.awk\"\" on \"\"file\"\" and format the output as a table", "labels": ["awk"]}
+{"text": "Execute awk command '{ ...}' on compressed file \"\"FILE\"\"", "labels": ["awk"]}
+{"text": "Execute awk script \"\"script.awk\"\" on \"\"File2\"\" and \"\"File1\"\" and format output as a table", "labels": ["awk"]}
+{"text": "Execute awk script \"\"script.awk\"\" that exists in \"\"$PATH\"\" with argument \"\"arg1\"\"", "labels": ["awk"]}
+{"text": "Execute awk script \"\"script.awk\"\" with 2 arguments both \"\"file.txt\"\" and format the output as a table", "labels": ["awk"]}
+{"text": "Executes 'true'. then makes 'xargs' fail executing 'false' and return 123 exit code.", "labels": ["xargs"]}
+{"text": "Extract any line in \"\"f1\"\" or \"\"f2\"\" which does not appear in the other", "labels": ["sort"]}
+{"text": "Extract any line in \"\"file1\"\" or \"\"file2\"\" which does not appear in the other", "labels": ["sort"]}
+{"text": "Extract any line in \"\"file1.txt\"\" which does not appear as the first \"\";\"\" delimited entry in \"\"file2.txt\"\"", "labels": ["sort"]}
+{"text": "Extract any line in \"\"fileA\"\" which does not appear as the first word of any line in \"\"fileB\"\"", "labels": ["sort"]}
+{"text": "Extract any line in \"\"set1\"\" which does not appear in \"\"set2\"\"", "labels": ["sort"]}
+{"text": "Extract any line in sorted file \"\"A\"\" that does not appear in \"\"B\"\", \"\"C\"\", or \"\"D\"\"", "labels": ["sort"]}
+{"text": "Extract number from $filename of the form \"\"something_12345_else\"\" and set the variable \"\"number\"\" to this number.", "labels": ["awk"]}
+{"text": "Extract the contents of \"\"Input.txt.gz\"\", list the unique first comma separated field prefixed by the number of occurrences", "labels": ["sort"]}
+{"text": "Extract the second-to-last slash-separated path component, ie. \"\"90_2a5\"\" in this case.", "labels": ["xargs"]}
+{"text": "Extract two semicolon-separated fields from specified strings, output them separated by a space.", "labels": ["awk"]}
+{"text": "Extract, sort and print only group names from /etc/group.", "labels": ["sort"]}
+{"text": "File \"\"files.txt\"\" contains a list of files, copy all files listed to host \"\"remote\"\", connecting as ssh user \"\"user\"\", and copying the files to this user's home directory - this will not work with files/directory names containing spaces.", "labels": ["xargs"]}
+{"text": "File 'mydatafile' has a number on each line, display the sum of these numbers rounded to lowest integer.", "labels": ["awk"]}
+{"text": "File 'mydatafile' has a number on each line, display the sum of these numbers.", "labels": ["awk"]}
+{"text": "Filter contents of 'file' through awk commands written in script.awk, display the result.", "labels": ["awk"]}
+{"text": "Filters only directories from long file listing of a current directory, and prints their names.", "labels": ["awk"]}
+{"text": "Filters only directories including hidden ones from long file listing of a current directory, and prints their names.", "labels": ["awk"]}
+{"text": "Filters unique lines by matching against the first column of a .csv file", "labels": ["sort"]}
+{"text": "Find \"\".c\"\" and \"\".h\"\" files in the current directory tree and print line numbers and lines containing \"\"#include\"\"", "labels": ["xargs"]}
+{"text": "Find \"\".c\"\" and \"\".h\"\" files in the current directory tree and print lines containing \"\"#include\"\"", "labels": ["xargs"]}
+{"text": "Find 10 largest files in the current directory and its subdirectories", "labels": ["sort"]}
+{"text": "Find all files/directories with '.in' extension in the directory $directory and its subdirectories", "labels": ["awk"]}
+{"text": "Find all instances of first column with unique rest of line, and output a count for each first column that found in unique lines.", "labels": ["sort"]}
+{"text": "Find and delete all files with a used disk size of 0", "labels": ["awk"]}
+{"text": "Find the \"\"erl\"\" executable in $PATH and read the \"\"RELEASES\"\" file to extract the erlang release number", "labels": ["awk"]}
+{"text": "Finds IP address of 'en0' network interface.", "labels": ["awk"]}
+{"text": "Finds IP address of 'eth0' network interface.", "labels": ["awk"]}
+{"text": "Finds IP address of system network interface, that belongs to 192.168.111 subnet.", "labels": ["awk"]}
+{"text": "Finds PIDs of all running processes, gets executable binary of each process, and prints containing folder of each binary.", "labels": ["xargs"]}
+{"text": "Finds all logged in users.", "labels": ["awk"]}
+{"text": "Finds all user session in system, and shows sorted user names with number of sessions of each user.", "labels": ["sort"]}
+{"text": "Finds files in 'directory' folder with the same name and location but different content than files in 'directory.original' folder and prints location of such files.", "labels": ["xargs"]}
+{"text": "Finds files in 'directory' folder with the same name and location but different content than files in 'directory.original' folder and saves location of such files to 'directories' variable.", "labels": ["xargs"]}
+{"text": "Finds users with X session in system and puts the result in USERS variable.", "labels": ["awk"]}
+{"text": "Finds users with X session in system and puts the result into USERS variable", "labels": ["awk"]}
+{"text": "For each line in 'file', print \"\"result = \"\" followed by the line backwards.", "labels": ["awk"]}
+{"text": "For each line of colon-separated information in files 'empsal' and 'empname' whose first field matches in both files, output: first field of empname, second field of empname, fourth field of empname, and third field of empsal.", "labels": ["sort"]}
+{"text": "For each line of the sorted output of both file1 and file2, print lines whose first field of file2 does not appear as first field of file1.", "labels": ["sort"]}
+{"text": "For each line which has a common first field in file1.csv and file2.txt, output the first 4 fields of file1.csv", "labels": ["sort"]}
+{"text": "For each line which has a common first field in test.1 and test.2, output the first 2 fields of test.2 and the field 2 and 3 of test.1", "labels": ["sort"]}
+{"text": "Format each line as 3 columns based on extraneous columns", "labels": ["awk"]}
+{"text": "From the list of words (one per line) in list1.txt, display the number of occurrences of this word in list2.txt and sort the results from highest to lowest count.", "labels": ["sort"]}
+{"text": "Generates a randomly sorted list of numbers from 1 to 10.", "labels": ["sort"]}
+{"text": "Get IP address of your SSH session", "labels": ["awk"]}
+{"text": "Get current directory name without full path, ie. the part after the last /", "labels": ["awk"]}
+{"text": "Get domain name with 'google' from dig reverse lookup.", "labels": ["awk"]}
+{"text": "Get domain names from file '1.txt' and request TXT DNS record for each one", "labels": ["xargs"]}
+{"text": "Get from file 'File1.txt' strings starting with 'Q', extract only part of them following after '=' sign, and print which ones are not found in 'File2.txt'", "labels": ["sort"]}
+{"text": "Get the current shell's executable name from the output of 'ps'.", "labels": ["awk"]}
+{"text": "Gets IP address of 'en0' network interface.", "labels": ["awk"]}
+{"text": "Gets IP address of 'en0' selected network interface.", "labels": ["awk"]}
+{"text": "Gets IP address of 'en1' network interface.", "labels": ["awk"]}
+{"text": "Gets IP address of 'eth0' network interface.", "labels": ["awk"]}
+{"text": "Gets IP address of eth0 network interface.", "labels": ["awk"]}
+{"text": "Gets IP address of first listed active network interface in system.", "labels": ["awk"]}
+{"text": "Gets IP address of first listed network interface in system.", "labels": ["awk"]}
+{"text": "Gets IP addresses of all active network interfaces on host.", "labels": ["awk"]}
+{"text": "Gets IP addresses of all active network interfaces.", "labels": ["awk"]}
+{"text": "Gets IP addresses of all network interfaces.", "labels": ["awk"]}
+{"text": "Gets MAC address of eth0 network interface.", "labels": ["awk"]}
+{"text": "Gets MAC addresses of all IP4 network interfaces.", "labels": ["awk"]}
+{"text": "Gets MAC addresses of all active network interfaces.", "labels": ["awk"]}
+{"text": "Gets domain name from dig reverse lookup and save in variable 'go'.", "labels": ["awk"]}
+{"text": "Gets domain name from dig reverse lookup.", "labels": ["awk"]}
+{"text": "Gets list of IP addresses of all network interfaces.", "labels": ["awk"]}
+{"text": "Go to first directory specified in PATH which contains the command 'oracle'", "labels": ["xargs"]}
+{"text": "Greps DNS zone transfer info on domain localdomain.com from NS @dc1.localdomain.com, finds strings with any-cased word 'Lawler' and strips last letter from each string.", "labels": ["awk"]}
+{"text": "Greps domain $domain IP name from long dig listing.", "labels": ["awk"]}
+{"text": "Infinitely ping every host listed in \"\"file-of-ips\"\" with at most 50 processes at once", "labels": ["xargs"]}
+{"text": "Inserts \"\"new line\"\" after last occurrence of ScriptAlias in a file", "labels": ["awk"]}
+{"text": "Isolate first comma-delimited field of each line in \"\"file\"\", discard consecutive duplicates, and search \"\"file\"\" for first matching occurrence of that field.", "labels": ["xargs"]}
+{"text": "Join colon-separated information in 3 files LN.txt PH.txt and AD.txt in a cascade fashion: join LN.txt and PH.txt, then join the result with AD.txt", "labels": ["sort"]}
+{"text": "Join columns in \"\"file1\"\" and \"\"file2\"\" if their first field matches and format the output as a table", "labels": ["awk"]}
+{"text": "Join comma-separated data in file1 and file2, including extra non-matching information in both files.", "labels": ["sort"]}
+{"text": "Join comma-separated information in 4 files", "labels": ["sort"]}
+{"text": "Join data in \"\"file1\"\" sorted by the second word of each line with data in \"\"file2\"\" sorted by the first word of each line, keeping the same order as it is found in \"\"file1\"\"", "labels": ["sort"]}
+{"text": "Join data in file1 containing one number per line with data in file2 containing a number and other information per line, keeping the same order as it is found in file1.", "labels": ["sort"]}
+{"text": "Join lines in file \"\"A\"\" with lines in file \"\"B\"\" if the lines share a common first word", "labels": ["sort"]}
+{"text": "Join lines in file \"\"aa\"\" with lines in file \"\"bb\"\" if the lines share a common first word", "labels": ["sort"]}
+{"text": "Join lines in file \"\"aa\"\" with lines in file \"\"bb\"\" if the lines share a common first word and sort the result numerically", "labels": ["sort"]}
+{"text": "Kill all processes which were executed in background by the current shell.", "labels": ["xargs"]}
+{"text": "List \"\".java\"\" files that have the same contents", "labels": ["sort"]}
+{"text": "List \"\".java\"\" files that have the same filename and contents", "labels": ["sort"]}
+{"text": "List absolute path of files in the current directory", "labels": ["xargs"]}
+{"text": "List all IP addresses assigned to current hostname, pausing for user interaction after each page.", "labels": ["awk"]}
+{"text": "List all active cron jobs, displaying only the command.", "labels": ["awk"]}
+{"text": "List all cron jobs where the minute part is either * or a number from 0 to 14.", "labels": ["awk"]}
+{"text": "List all environment variables whose name contains 'ipo', showing only the names of the variables and not their values.", "labels": ["awk"]}
+{"text": "List all files and directories in long list format with a time style of \"\"long-iso\"\" and sort from oldest modifed to newest modified", "labels": ["sort"]}
+{"text": "List all variables (names only) with names containing X.", "labels": ["awk"]}
+{"text": "List any line in \"\"f1\"\" or \"\"f2\"\" which does not appear in the other and delete all tab characters in the output", "labels": ["sort"]}
+{"text": "List common files in directories \"\"1\"\" and \"\"2\"\"", "labels": ["sort"]}
+{"text": "List each directory in the current directory prefixed with its disk usage in human readable format and sorted from smallest to largest", "labels": ["sort"]}
+{"text": "List each file or directory in the current directory prefixed by its filesize in bytes and sorted from smallest to largest", "labels": ["sort"]}
+{"text": "List each file or directory in the current directory prefixed by its human readable filesize and sorted from largest to smallest", "labels": ["sort"]}
+{"text": "List each file or directory in the current directory prefixed with its filesize in MB and sorted from smallest to largest", "labels": ["sort"]}
+{"text": "List each file or directory in the current directory prefixed with its filesize in bytes and sorted from smallest to largest", "labels": ["sort"]}
+{"text": "List each unique case insensitive character in \"\"file\"\" prefixed by number of occurrences", "labels": ["sort"]}
+{"text": "List each unique case insensitive character in \"\"file\"\" prefixed by number of occurrences and sorted from most frequent to least frequent", "labels": ["sort"]}
+{"text": "List each unique character in \"\"file\"\" prefixed by number of occurrences", "labels": ["sort"]}
+{"text": "List each unique character in \"\"file\"\" prefixed by number of occurrences and sorted from most frequent to least frequent", "labels": ["sort"]}
+{"text": "List environment variables whose name matches \"\".*X.*\"\"", "labels": ["awk"]}
+{"text": "List files in \"\"dir1\"\" that are not in \"\"dir2\"\"", "labels": ["sort"]}
+{"text": "List files in directory \"\"one\"\" and \"\"two\"\" that do not exist in the other", "labels": ["sort"]}
+{"text": "List files in directory \"\"one\"\" that exist in directory \"\"two\"\"", "labels": ["sort"]}
+{"text": "List the 10 largest files or directories and their sizes under (and including) \"\"/var\"\"", "labels": ["sort"]}
+{"text": "List the number of occurrences of each unique character in \"\"The quick brown fox jumps over the lazy dog\"\" sorted from most frequent to least frequent", "labels": ["sort"]}
+{"text": "List the unique second \"\"/\"\" delimited field of every line from standard input prefixed by the number of occurrences", "labels": ["sort"]}
+{"text": "List the unique tab delimited field number \"\"$FIELD\"\" in all files, prefix with the number of occurrences, sort from most frequent to least frequent", "labels": ["sort"]}
+{"text": "List unique MD5 digests of all files in the current directory ending in .txt", "labels": ["sort"]}
+{"text": "List unique series of 3 characters in file \"\"$1\"\" prefixed by the number of occurrences and sorted from most frequent to least frequent", "labels": ["sort"]}
+{"text": "Lists all files in a current folder, separating names with comma.", "labels": ["xargs"]}
+{"text": "Lists all files in a current folder, separating names with space.", "labels": ["awk"]}
+{"text": "Locates Erlang distribution, and prints release number from 'RELEASES' file.", "labels": ["awk"]}
+{"text": "Make a copy of file.txt in all directories in current directory - names may not contain spaces.", "labels": ["xargs"]}
+{"text": "Make a copy of file1 in dir1, dir2, and dir3.", "labels": ["xargs"]}
+{"text": "Make a directory in the current working directory with a random 32 alphanumeric character name", "labels": ["xargs"]}
+{"text": "Make directories and parents as needed for each unique second \"\"&\"\" delimited field with \"\" \"\", \"\",\"\", and \"\":\"\" removed in \"\"filetypes.txt\"\"", "labels": ["sort"]}
+{"text": "Make directories for each line in \"\"folder_list.txt\"\"", "labels": ["xargs"]}
+{"text": "Merge 10 already sorted files and display the result, pausing at each page of output.", "labels": ["sort"]}
+{"text": "Merge already sorted files \"\"*.txt\"\" and split the result into files of at most 1000000 lines each with a numeric suffix and a prefix \"\"output\"\"", "labels": ["sort"]}
+{"text": "Merge already sorted files \"\"file*.txt\"\" and split the result into files of at most 100000 lines each with a prefix \"\"sorted_file\"\"", "labels": ["sort"]}
+{"text": "Merge already sorted files in the current directory ending in \"\".$suffix\"\"", "labels": ["sort"]}
+{"text": "Merge already sorted files in the current directory starting with \"\"_tmp\"\" and write the output to \"\"data.tsv.sorted\"\"", "labels": ["sort"]}
+{"text": "Merge colon-separated information from file1 and file2 where first field of both files matches", "labels": ["sort"]}
+{"text": "Merge colon-separated information from file1 and file2 where second field of both files matches, sorting the result based on this field - for each line, output: first 3 fields of first file, followed by first 3 fields of second file.", "labels": ["sort"]}
+{"text": "Merge colon-separated information from standard input and file1.txt where the first field of both files matches, print unpairable lines from both files, replace missing fields with \"\"no-match\"\", and output the second field from standard input and the second and third field from file1.txt", "labels": ["sort"]}
+{"text": "Merge colon-separated information from standard input and file1.txt where the first field of both files matches, print unpairable lines from standard input, replace missing fields with \"\"no-match\"\", and output the second field from standard input and the second and third field from file1.txt", "labels": ["sort"]}
+{"text": "Merge content of decompressed files \"\"$part0\"\", \"\"$part1\"\", and so on", "labels": ["sort"]}
+{"text": "Merge data in file1 and file2 where second field is common in both files", "labels": ["sort"]}
+{"text": "Merge file1 and file2 by outputting all lines where the first comma-separated field of both files matches, followed by extra fields in file1 and those in file2", "labels": ["sort"]}
+{"text": "Move all files and directories in the current directory to \"\"$TARGET\"\" excluding files matching \"\"$EXCLUDE\"\"", "labels": ["xargs"]}
+{"text": "Move all files listed in $i file to dir.$count directory", "labels": ["xargs"]}
+{"text": "Move all files that contain \"\"Subject: \\[SPAM\\]\"\" to \"\"DIR\"\"", "labels": ["xargs"]}
+{"text": "Move all files that contain \"\"Subject: \\[SPAM\\]\"\" to \"\"your_file\"\"", "labels": ["awk"]}
+{"text": "Numberically sort content of file 'files', using for sorting part of second one of dash separated fields beginning from second letter.", "labels": ["sort"]}
+{"text": "Numerically sort IPv4 addresses specified on standard input with presedence to first, second, third, then fourth octet", "labels": ["sort"]}
+{"text": "Numerically sort each line in file \"\"bb\"\" and output the result to console from greatest value to least value", "labels": ["sort"]}
+{"text": "Numerically sort each line in file \"\"out\"\" and print the result to console", "labels": ["sort"]}
+{"text": "Numerically sort each line of standard input", "labels": ["sort"]}
+{"text": "Numerically sort file \"\"file.dat\"\" by the second word of each line and output from greatest value to least value", "labels": ["sort"]}
+{"text": "Numerically sort file \"\"files\"\" by the second \"\"-\"\" separated value of each line ordered from least value to highest value", "labels": ["sort"]}
+{"text": "Numerically sort file \"\"table\"\" by the fourth character of the second field, ignoring leading spaces", "labels": ["sort"]}
+{"text": "Numerically sort file \"\"temp.txt\"\" by the second \"\"-\"\" separated value of each line ordered from highest value to least value", "labels": ["sort"]}
+{"text": "Numerically sort standard input by the second word of each line", "labels": ["sort"]}
+{"text": "Numerically sort standard input by the second word of each line and output from greatest value to least value", "labels": ["sort"]}
+{"text": "Output all lines in 'file' which contain a tab character.", "labels": ["awk"]}
+{"text": "Ping all hosts in file \"\"ips\"\" twice", "labels": ["xargs"]}
+{"text": "Ping every address from 192.168.0.1 to 192.168.0.254 with a timeout of 1 second and filter out no responses", "labels": ["xargs"]}
+{"text": "Prefix all files and directories in the current directory with \"\"Unix_\"\"", "labels": ["xargs"]}
+{"text": "Prefix all files and directories in the current directory with \"\"unix_\"\"", "labels": ["xargs"]}
+{"text": "Prefix all files and folders in the current directory with \"\"PRE_\"\"", "labels": ["xargs"]}
+{"text": "Prepend date to ping output to google.com", "labels": ["xargs"]}
+{"text": "Print \"\"#include\"\" statements found in \"\"file2\"\" that are not in \"\"file1\"\"", "labels": ["sort"]}
+{"text": "Print \"\"$1\"\" or default 10 random lines from standard input", "labels": ["sort"]}
+{"text": "Print \"\"Total generated: \"\" followed by the number of unique lines in \"\"$generated_ports\"\"", "labels": ["sort"]}
+{"text": "Print \"\"echo ping -c 2\"\" on each string in file 'ips'", "labels": ["xargs"]}
+{"text": "Print 'file' file, splitting lines into pieces with no more that 3 words in each one.", "labels": ["xargs"]}
+{"text": "Print a count of all unique entries in \"\"ips.txt\"\" with the most frequent results at the top", "labels": ["sort"]}
+{"text": "Print a count of all unique lines in \"\"ports.txt\"\" sorted from most frequent to least frequent", "labels": ["sort"]}
+{"text": "Print a count of case insensitive duplicate filenames in the current directory", "labels": ["sort"]}
+{"text": "Print a count of duplicate lines in \"\"filename\"\"", "labels": ["sort"]}
+{"text": "Print a count of duplicate lines in \"\"filename\"\" sorted by most frequent", "labels": ["sort"]}
+{"text": "Print a count of each unique line from standard input", "labels": ["sort"]}
+{"text": "Print a count of each unique line from standard input sorted from least frequent to most frequent", "labels": ["sort"]}
+{"text": "Print a count of each unique line in \"\"ip_addresses\"\"", "labels": ["sort"]}
+{"text": "Print a count of each unique line in \"\"ip_addresses.txt\"\" sorted numerically", "labels": ["sort"]}
+{"text": "Print a space separated list of numbers from 1 to 10", "labels": ["xargs"]}
+{"text": "Print a space separated list of numbers from 1 to 10 with no trailing new line", "labels": ["xargs"]}
+{"text": "Print command line of process with pid 17709", "labels": ["xargs"]}
+{"text": "Print file information of command \"\"studio\"\"", "labels": ["xargs"]}
+{"text": "Print joined strings from 'file', using space symbol as separator.", "labels": ["xargs"]}
+{"text": "Print numbers from 1 to 10 using up to 4 processes", "labels": ["xargs"]}
+{"text": "Print space separated numbers from 1 to 10", "labels": ["xargs"]}
+{"text": "Print the base name of the current working directory", "labels": ["xargs"]}
+{"text": "Print the characters in $b that match with any character in $a without printing any whitespace in-between", "labels": ["xargs"]}
+{"text": "Print the grand total disk usage of all files listed in \"\"files.txt\"\"", "labels": ["xargs"]}
+{"text": "Print the text file paths that match 'needle text' in their contents under 'my_folder' recursively", "labels": ["xargs"]}
+{"text": "Prints path to folder that contains file \"\"/path/to/vm.vmwarevm/vm.vmx\"\".", "labels": ["xargs"]}
+{"text": "Recursively change the owner and group of all files in the current directory to \"\"apache\"\"", "labels": ["xargs"]}
+{"text": "Recursively change the ownership of all directories in the current directory excluding \"\"foo\"\" to \"\"Camsoft\"\"", "labels": ["xargs"]}
+{"text": "Recursively find strings in all files under current directory, that matching with comma-separated patterns list in file 'searches-txt'", "labels": ["xargs"]}
+{"text": "Recursively finds all 'STATUS.txt' files containing text 'OPEN' and prints containing folder of them.", "labels": ["xargs"]}
+{"text": "Remove blank lines and replace \"\" \"\" with \"\"/\"\" in \"\"struct.txt\"\" as input to make directories with parents as needed", "labels": ["xargs"]}
+{"text": "Removes 5 oldest files in the current folder.", "labels": ["xargs"]}
+{"text": "Removes all files but $1 newest ones from current folder.", "labels": ["xargs"]}
+{"text": "Removes all files but 5 newest ones from current folder.", "labels": ["xargs"]}
+{"text": "Removes all files from current folder but 3 newest ones", "labels": ["xargs"]}
+{"text": "Removes all files from current folder but 5 newest ones, filtering out directories from initial search.", "labels": ["xargs"]}
+{"text": "Removes all files from current folder but 5 newest ones.", "labels": ["xargs"]}
+{"text": "Removes all top-level empty folders within the current folder.", "labels": ["xargs"]}
+{"text": "Removes everything from current folder but '*ddl*' and '*docs*' files.", "labels": ["xargs"]}
+{"text": "Removes first and last parts of path 'test/90_2a5/Windows' and prints the result.", "labels": ["xargs"]}
+{"text": "Repeat \"\"image.png\"\" 10 times on a single line", "labels": ["xargs"]}
+{"text": "Save number of lines in 'file.txt' file in 'nbLines' variable", "labels": ["xargs"]}
+{"text": "Saves space separated content of $RAW_LOG_DIR in FILES variable", "labels": ["xargs"]}
+{"text": "Search PATH for utilities called \"\"rename\"\", display the type of file (script, executable, ...) for each match found.", "labels": ["xargs"]}
+{"text": "Send reverse requests to get domain name for each address in 'my_ips' list", "labels": ["xargs"]}
+{"text": "Set environment variables using assignments are listed in '.env' file and run 'rails' command with defined environment", "labels": ["xargs"]}
+{"text": "Suffix all files and folders in the current directory with \"\"_SUF\"\"", "labels": ["xargs"]}
+{"text": "Take a file path from standard input and remove it.", "labels": ["xargs"]}
+{"text": "Take first text field from file 'file.txt' as a domain name and get short A record for this one.", "labels": ["xargs"]}
+{"text": "Takes path list from '.exportfiles.text' file, cuts off first two path segments and last one.", "labels": ["xargs"]}
+{"text": "Unzip all files matching \"\"/homes/ndeklein/mzml/*.gz\"\"", "labels": ["xargs"]}
+{"text": "kill a number of background jobs", "labels": ["xargs"]}
+{"text": "kill all active jobs", "labels": ["xargs"]}
+{"text": "kill all background jobs", "labels": ["xargs"]}
+{"text": "set alias \"\"prettyjson\"\" for command 'python -m json.tool'", "labels": ["others"]}
+{"text": "Archive \"\"<SOURCE_DIR>\"\" to \"\"rsyncuser@192.168.1.110:/srv/www/prj112/myfolder\"\"", "labels": ["others"]}
+{"text": "Reports time consumed by command 'sleep 1'.", "labels": ["others"]}
+{"text": "Set variable MYPROGRAMNAME_KERNEL_VERSION to current kernel release name, making this variable visible by subprocesses of current shell.", "labels": ["others"]}
+{"text": "Allocate a pseudo-terminal and execute \"\"screen -r -X ls\"\" which executes \"\"ls\"\" within the screen session on host \"\"example.com\"\"", "labels": ["others"]}
+{"text": "Print list of bash command aliases.", "labels": ["others"]}
+{"text": "run script  \"\"runProgram.sh\"\" as user jetty", "labels": ["others"]}
+{"text": "Copy all *.txt files from the current directory tree to /tmp", "labels": ["others"]}
+{"text": "Unzip \"\"$ip\"\" as input to \"\"pax -r\"\"", "labels": ["others"]}
+{"text": "Copy entire directory structure from dir1 as a subdirectory of dir2, omitting any file or directory named \"\"exclude\"\".", "labels": ["others"]}
+{"text": "Interactively page through the color-coded output of 'ls'.", "labels": ["others"]}
+{"text": "Use the last 100 lines of \"\"file1\"\" as input to \"\"wc -l\"\" and monitor the pipeline with the \"\"bar\"\" command", "labels": ["others"]}
+{"text": "Locate all *.txt files in the current directory tree", "labels": ["others"]}
+{"text": "Calculate the values of the interval from 0 to pi/2 with a step of 1, add a line number, and write the output to standard output and \"\"x.txt\"\"", "labels": ["others"]}
+{"text": "Find all of the hidden files in the current directory and its sub-directories.", "labels": ["others"]}
+{"text": "set alias \"\"m\"\" for command \"\"mplayer -novideo -loop 0\"\"", "labels": ["others"]}
+{"text": "Print the 2nd white space separated fields in \"\"file.txt\"\" as a comma separated list", "labels": ["others"]}
+{"text": "set alias \"\"go\"\" for command 'GOPATH=$(infer-gopath.sh) go'", "labels": ["others"]}
+{"text": "Find all files modified on \"\"Mar 4\"\" and unzip and search their contents for \"\"12345\"\"", "labels": ["others"]}
+{"text": "Go to top level of git tree using relative path", "labels": ["others"]}
+{"text": "set alisa \"\"py\"\" for command \"\"$EDITOR\"\"", "labels": ["others"]}
+{"text": "list all files under the current directory, writing the output to the file some_file, suppressing all error messages", "labels": ["others"]}
+{"text": "Set LANG variable to 'en_US' and prints calendar for a current month.", "labels": ["others"]}
+{"text": "Find all files under current directory and print them by removing the leading ./ in their paths", "labels": ["others"]}
+{"text": "run bash shell as user root", "labels": ["others"]}
+{"text": "Runs 'mpv' command for each *.mpv and *.flv file in a current folder.", "labels": ["others"]}
+{"text": "Lists all running tmux sessions.", "labels": ["others"]}
+{"text": "display all the statistics of the files in the current folder and discard the errors", "labels": ["others"]}
+{"text": "loop over the results of a find command", "labels": ["others"]}
+{"text": "set alias \"\"mycd\"\" for command \"\"cd `echo $1`\"\"", "labels": ["others"]}
+{"text": "Find all *weservice* (case insensitive) files under current directory and restart the services provided by them", "labels": ["others"]}
+{"text": "run command 'bash --rcfile <(echo \"\"source ~/.bashrc; source myfile\"\")' as user root with a bash shell", "labels": ["others"]}
+{"text": "take all the files in the current folder and pass them as argument to a program", "labels": ["others"]}
+{"text": "Updates 'openssl' package, skipping packages with broken dependencies.", "labels": ["others"]}
+{"text": "Send uncompressed contents of \"\"large_file.gz\"\" to \"\"largesplitter\"\"", "labels": ["others"]}
+{"text": "Filters out all comment lines(lines beginning with a '#') from /etc/launchd.conf and pipes the output to launchctl.", "labels": ["others"]}
+{"text": "Save the list of all subdirectories of the current directory as \"\"dirs_to_remove\"\"", "labels": ["others"]}
+{"text": "display all the files in the current folder along with their timestamps and sort them and save them in the file1", "labels": ["others"]}
+{"text": "Dispaly the latest version of Joomla in various folders", "labels": ["others"]}
+{"text": "show all files in the entire file system", "labels": ["others"]}
+{"text": "find all the java script files in a folder and save the list to a file", "labels": ["others"]}
+{"text": "convert all the png images in the current folder to jpg images", "labels": ["others"]}
+{"text": "Search for 'Processed Files' in all $srch* (case insensitive) files under current directory run the sed script 'N;s/(.*)\\n(.*)/\\2 \\1/' on the output and redirect the final output to temp2 file", "labels": ["others"]}
+{"text": "Find all files and directories under current directory without crossing over to other partitions and archive them into path_to_save.cpio.gz", "labels": ["others"]}
+{"text": "Find all *.xml.bz2 files under current directory and run the command find_graph with -build_graph, $i.graph and $i as it's arguments where $i is expanded to each file path", "labels": ["others"]}
+{"text": "Extract rpm \"\"libstdc++-4.9.2-1.fc21.x86_64.rpm\"\"", "labels": ["others"]}
+{"text": "Print the current shell", "labels": ["others"]}
+{"text": "Displays line count in 'filename' every 2 seconds.", "labels": ["others"]}
+{"text": "Find all .txt files in the current directory tree and edit them with `vim'", "labels": ["others"]}
+{"text": "find all normal/regular files in the folder /some/dir and save the output to the file \"\"somefile\"\"", "labels": ["others"]}
+{"text": "run \"\"your_command\"\", letting the user page through the output and move around with the arrow keys - the Q key terminates and returns to the shell prompt.", "labels": ["others"]}
+{"text": "Recursively search for all files whose name contains 'foo', and change the 'foo' in the filenames to 'bar'.", "labels": ["others"]}
+{"text": "Find all files under current directory and write the paths without the leading ./ in the file outputfile", "labels": ["others"]}
+{"text": "Find all hidden files under current directory and remove them excluding the files specified in /tmp/list_files", "labels": ["others"]}
+{"text": "Run script `fixname.sh' for each regular file from the current directory tree", "labels": ["others"]}
+{"text": "Print the file type of the full path of \"\"rename\"\"", "labels": ["others"]}
+{"text": "Print all file/directory paths under current directory", "labels": ["others"]}
+{"text": "Find files/directories under current directory that matches the regex /path/to/something[^/]*$  in their paths", "labels": ["others"]}
+{"text": "Create a new window in an existing screen session and run a script", "labels": ["others"]}
+{"text": "Immediately kill all processes using TCP port 3000 on the system.", "labels": ["others"]}
+{"text": "Find all files under trunk directory and upload them to https://PATH_TO_NEXUS/trunk/", "labels": ["others"]}
+{"text": "Find all *.txt files in directory tree /mnt/msdos suppressing error messages", "labels": ["others"]}
+{"text": "Counts total lines in all *.php files.", "labels": ["others"]}
+{"text": "Print on the standard output the names of all directories that reside in the current directory tree and contain file \"\"YourProgram\"\"", "labels": ["others"]}
+{"text": "display all the statistics of the files in the current folder and discard the errors. ( + symbol at the end is used to give stat bulk input than a single file )", "labels": ["others"]}
+{"text": "set alias \"\"foo\"\" for command \"\"BAR=baz\"\"", "labels": ["others"]}
+{"text": "Export variable \"\"PS1\"\" as the current username \"\"@\"\" the hostname", "labels": ["others"]}
+{"text": "Find files that are writable by both the \u201cother\u201d and the group", "labels": ["others"]}
+{"text": "Write \"\"error\"\" to standard error and do not append to \"\"log\"\"", "labels": ["others"]}
+{"text": "Find all files/directories under /non-existent/directory directory with ~/bin/find", "labels": ["others"]}
+{"text": "display the contents of all the regular files in the current folder and save the output to out.txt", "labels": ["others"]}
+{"text": "Reattach to a screen session", "labels": ["others"]}
+{"text": "Remove group write permission on all files output by \"\"compaudit\"\"", "labels": ["others"]}
+{"text": "Quietly searches pattern in a given strings. Exits with zero status if any match is found, otherwise exits with non-zero.", "labels": ["others"]}
+{"text": "Reattach a session and if necessary detach it first", "labels": ["others"]}
+{"text": "List files under $CURR_DIR which were modified, accessed or whose status were changed $FTIME ago and sort them and remove duplicate entries", "labels": ["others"]}
+{"text": "In a ssh session, set the variable 'user' to the last dot-separated number of the client's IP address.", "labels": ["others"]}
+{"text": "Find all files under /path/you/need, calculate their md5sums and redirect the results to checksums.md5", "labels": ["others"]}
+{"text": "create a tar ball of all pdf files in current folder", "labels": ["others"]}
+{"text": "find all the bit map files (.bmp) in the current folder and convert them to .png", "labels": ["others"]}
+{"text": "Run command with all the file/directory path under whatever directory as arguments", "labels": ["others"]}
+{"text": "Search the system for directories named \"\"needle\"\" suppressing error messages", "labels": ["others"]}
+{"text": "Read the first line in \"\"$1\"\" and save each word in the bash array variable \"\"to_sort\"\"", "labels": ["others"]}
+{"text": "Make directories and parents for each line in \"\"infile\"\" excluding the file name", "labels": ["others"]}
+{"text": "Delete all contents (including new lines) form the files that contain the regex 'string' in maximum 1 level down the / directory excluding other partitions", "labels": ["others"]}
+{"text": "Sort and show top 10 processes by memory usage", "labels": ["others"]}
+{"text": "Read a single sample of raw audio in the form of a number between -32768 and 32767", "labels": ["others"]}
+{"text": "set alias \"\"j7\"\" for command 'JAVA_HOME=`/usr/libexec/java_home -v 1.7`'", "labels": ["others"]}
+{"text": "Print a null delimited list of all *.emlx files/directories under /path/to/folders/ to filelist", "labels": ["others"]}
+{"text": "Count the number of lines in the current git repository", "labels": ["others"]}
+{"text": "Unzip and write \"\"backup.img.gz\"\" to \"\"/dev/sdb\"\"", "labels": ["others"]}
+{"text": "Unzip \"\"archive.tgz\"\" and extract all archives excluding ones matching \"\"apri/fls/filename\"\"", "labels": ["others"]}
+{"text": "Print package information the command \"\"ldconfig\"\" belongs to in rpm", "labels": ["others"]}
+{"text": "Convert all *.ps files under $STARTDIR directory to *.pdf files", "labels": ["others"]}
+{"text": "Find all *.txt files/directories under current directory and execute process once with all of them as arguments", "labels": ["others"]}
+{"text": "create alias subs for command  \"\"du -sch `find ./ -maxdepth 1 -type d`\"\"", "labels": ["others"]}
+{"text": "Compute difference between two dates", "labels": ["others"]}
+{"text": "Recursively search the current directory for unique entries of \"\"searchtext\"\" and replace \"\"matchtext\"\" with \"\"replacetext\"\"", "labels": ["others"]}
+{"text": "Find all *.so files under $S directory and run doexe command with minimal invocation for those files", "labels": ["others"]}
+{"text": "set alias \"\"h\"\" for command \"\"history\"\"", "labels": ["others"]}
+{"text": "Page through the output of running the specified PHP file.", "labels": ["others"]}
+{"text": "Print all lines of \"\"seq 1 10\"\" except the last 3", "labels": ["others"]}
+{"text": "find the file \"\"fluidpoint\"\" in the file system and discard all the errors", "labels": ["others"]}
+{"text": "Run 10 bash processes at most 4 at a time of \"\"echo start N; sleep 3; echo done N\"\" for N ranging from 1 to 10", "labels": ["others"]}
+{"text": "Apply script 'script.ksh' to all files matching pattern 'image\\*.jpg' under the directory tree 'dir'", "labels": ["others"]}
+{"text": "Send email in \"\"mail.tmp\"\" from \"\"noreply@hostname\"\" with subject \"\"Config done!\"\"", "labels": ["others"]}
+{"text": "set alias \"\"ff\"\" for command \"\"find . -name $1\"\"", "labels": ["others"]}
+{"text": "Normalize the path to command \"\"rename\"\" resolving any symlinks, and display what type of file it is.", "labels": ["others"]}
+{"text": "Print the first 2 lines of tree's help message by redirecting it from standard error to standard output", "labels": ["others"]}
+{"text": "Installs 'php-mbstring' package, enabling 'remi' repository.", "labels": ["others"]}
+{"text": "Prefix all files in the current directory with \"\"unix_\"\"", "labels": ["others"]}
+{"text": "Continuously write \"\"Hidden\"\" over the entire \"\"/dev/sdb\"\" disk", "labels": ["others"]}
+{"text": "date --date=\"\"222 days ago\"\" +\"\"%m\"\"", "labels": ["others"]}
+{"text": "Run the PHP script 'yourscript.php', making it immune to SIGHUP signals.", "labels": ["others"]}
+{"text": "Find all files under current directory and run /tmp/clever.sh for each of them with each file path as an argument", "labels": ["others"]}
+{"text": "display the files modified between last 18 to 24 months in the format filename, file size, Last access date, modification date and save the output to the file /dir/dir/output.csv", "labels": ["others"]}
+{"text": "Determine if the kernel is 32 bit or 64 bit", "labels": ["others"]}
+{"text": "Find all directories matching pattern \"\"*log*\"\" in the current directory tree and print the last 2 lines of their 'ls' listing", "labels": ["others"]}
+{"text": "Run the PHP script \"\"newEmptyPHP\"\" redirecting the output to \"\"nohup.out\"\" in the current directory, or in the home directory if that is not possible. The process will not receive or respond to SIGHUP (signal 1) which are sent to it.", "labels": ["others"]}
+{"text": "Unsets shell variable 'latest'.", "labels": ["others"]}
+{"text": "Archive \"\"/path/to/copy\"\" on host \"\"remote\"\" as user \"\"user\"\" to \"\"/local/path\"\" via ssh on port \"\"$portNumber\"\"", "labels": ["others"]}
+{"text": "Execute \"\"xbacklight -set 0% && sleep 20 && xbacklight -set 100%\"\" every 1200 seconds", "labels": ["others"]}
+{"text": "Find all .zip files in the current directory tree and unzip them deleting the archives on success", "labels": ["others"]}
+{"text": "Prints git log message with a custom time format string", "labels": ["others"]}
+{"text": "Find all files in current directory and execute 'echo first; false' for each file", "labels": ["others"]}
+{"text": "Print a list of all files/directories under current directory in myfile.sh file", "labels": ["others"]}
+{"text": "Search the .py files residing in the current directory tree for \"\"something\"\" and save the output to output.txt", "labels": ["others"]}
+{"text": "Kill all instances of \"\"dropbox\"\" owned by the current user", "labels": ["others"]}
+{"text": "change the word \"\"GHBAG\"\" to \"\"stream-agg\"\" in all the file names in current folder which have the word \"\"-GHBAG-\"\" in their name", "labels": ["others"]}
+{"text": "Move all files from the current directory to \"\"targetdirectory\"\"", "labels": ["others"]}
+{"text": "Write list of missing files in Subversion repository to file removedProjs.", "labels": ["others"]}
+{"text": "Rename all *.jpg files to *.jpg$.jpg files under current directory by appending the parent directory name at the beginning of their names", "labels": ["others"]}
+{"text": "Answer \"\"1\"\" repeatedly until \"\"command\"\" exits", "labels": ["others"]}
+{"text": "Find all *.txt files/directories under current directory and execute the python script hello.py with all their paths as arguments", "labels": ["others"]}
+{"text": "Copy the owner and group of \"\"originalfile\"\" to \"\"newfile\"\"", "labels": ["others"]}
+{"text": "Find all files whose names do not begin with \"\"zsh\"\" on ext3 file systems", "labels": ["others"]}
+{"text": "search for all the directories in the current folder and run the print command in the searched folder", "labels": ["others"]}
+{"text": "Find all directories under /home that doesn't contain a file/directory named 'bin'", "labels": ["others"]}
+{"text": "display all the pdf files in a folder which start with a specific word along with their timestamp in sorted order of time and save output to a in remote server", "labels": ["others"]}
+{"text": "Find all *.txt files/directories under current directory discarding errors", "labels": ["others"]}
+{"text": "set alias \"\"dosetit\"\" for command 'eval `setit-sh`'", "labels": ["others"]}
+{"text": "Convert the contents of \"\"infile\"\" from dos to unix style text and display the result as printable characters or backslash escapes", "labels": ["others"]}
+{"text": "Write the standard output and error of \"\"program.sh\"\" to console and append to \"\"log\"\"", "labels": ["others"]}
+{"text": "Delete all but the most recent X files in bash", "labels": ["others"]}
+{"text": "Display mimetype of myfile.txt.", "labels": ["others"]}
+{"text": "Write the standard output and error of \"\"someCommand\"\" to the console and append it to \"\"someFile\"\"", "labels": ["others"]}
+{"text": "run bash in screen and source a file before printing the prompt", "labels": ["others"]}
+{"text": "create an archive excluding files and directories matching {*.png, *.mp3, *.wav, .git, node_modules}", "labels": ["others"]}
+{"text": "find all the regular/normal files ending with \"\".mod\"\" in a folder and send them as input to the remodup command", "labels": ["others"]}
+{"text": "Search directories /path/to/directory/folder{1..50} for .txt files", "labels": ["others"]}
+{"text": "Execute 'python -m unittest discover 2>&1 | pyrg' every second and display with color support", "labels": ["others"]}
+{"text": "find all \"\"tar.gz\"\" files in a folder and sort them according to the name and display the first 2 files", "labels": ["others"]}
+{"text": "Find the sorted and unique parent directory paths appended with : of all the files that are executable by owner under ~/code directory without descending into hidden directories and redirect the output to the file ~/.codepath", "labels": ["others"]}
+{"text": "Write the last line of \"\"$file\"\" to standard output and remove it from \"\"$file\"\"", "labels": ["others"]}
+{"text": "Set the history time format variable \"\"HISTTIMEFORMAT\"\" to \"\"%s \"\" and display up to event 2", "labels": ["others"]}
+{"text": "Close the current screen session", "labels": ["others"]}
+{"text": "Print shared object dependencies of command \"\"YOURAPPNAME\"\"", "labels": ["others"]}
+{"text": "Remove all *.m4a files in the current directory and its subdirectories", "labels": ["others"]}
+{"text": "List all level 1 subdirectories of the current directory printing line \"\"cmd2\"\" after each of them", "labels": ["others"]}
+{"text": "Search directory $dirname for regular files and save the result to $tempfile", "labels": ["others"]}
+{"text": "Search directories /path/to/directory/folder{1..50} for .txt files, outputting only the names of the matched files", "labels": ["others"]}
+{"text": "Search all regular files in the /var/log directory tree for string \"\"19:26\"\"", "labels": ["others"]}
+{"text": "Redirects output of 'time' built-in function and prints only real-time statistic.", "labels": ["others"]}
+{"text": "Create md5sum of a directory", "labels": ["others"]}
+{"text": "display list of all the hidden files in the folder $HOME/projects/ and save the output to the file foo.txt", "labels": ["others"]}
+{"text": "find from / a file called \"\"expect\"\", suppressing any error messages", "labels": ["others"]}
+{"text": "wait for a change in \"\"target-directory\"\" before returning", "labels": ["others"]}
+{"text": "Find files named \"\"AssemblyInfo.cs\"\" in the current directory and below, and run \"\"git diff\"\" on them", "labels": ["others"]}
+{"text": "Find files not matching shell pattern '*/vendor/*'", "labels": ["others"]}
+{"text": "Find all *.so files under current directory and search for mysymbol in their symbol tables", "labels": ["others"]}
+{"text": "display all files in current directory and save the output to a file", "labels": ["others"]}
+{"text": "Print git branch currently checked out in a working directory.", "labels": ["others"]}
+{"text": "Finds binaries names in a list of running processes and prints containing folder of each binary.", "labels": ["others"]}
+{"text": "Unsets shell functions 'ls' and '/bin/ls'.", "labels": ["others"]}
+{"text": "Print mv commands to rename all files under current directory by formatting the filenames with the sed scripts '\\''s/^([^-]*)-\\s*([^\\.]*)/\\L\\1\\E-\\2/'\\'', '\\''s/ /_/g'\\'' and '\\''s/_-/-/g'\\''", "labels": ["others"]}
+{"text": "When a window is closed in a session, automatically renumbers the other windows in numerical order (since v1.7).", "labels": ["others"]}
+{"text": "Print the current user name and inode number of \"\"/home\"\"", "labels": ["others"]}
+{"text": "Dump all MySQL databases over an ssh tunnel to \"\"user@yoursever.com\"\" and use it as input to mysql", "labels": ["others"]}
+{"text": "search for all xml files in current folder and display the copy command to copy them to another folder", "labels": ["others"]}
+{"text": "Installs all packages from a current folder, excluding ones that match pattern '*glob*'.", "labels": ["others"]}
+{"text": "ssh into desired vagrant host \"\"HOST\"\" without running \"\"vagrant ssh\"\"", "labels": ["others"]}
+{"text": "display the contents of all the text files in the current folder and save the output to all.txt.", "labels": ["others"]}
+{"text": "Find x* files/directories under current directory whose status was changed less than 1 day ago and move them to /tmp/other", "labels": ["others"]}
+{"text": "Displays Homebrew\u2019s install path.", "labels": ["others"]}
+{"text": "Continuously send \"\"ok\"\" plus newline to the program \"\"recalcitrant.php\"\"", "labels": ["others"]}
+{"text": "Send text \"\"spawn daemon\"\" and a newline character to the screen session", "labels": ["others"]}
+{"text": "find all the html files in current folder and replace old string with new string", "labels": ["others"]}
+{"text": "Print a sorted list of the extensions of the regular files from the current directory tree, skipping SVN directories", "labels": ["others"]}
+{"text": "find all pdf files in current folder and rename all these files", "labels": ["others"]}
+{"text": "Page through the output of 'some_command' positioning the view at the first occurrence of regular expression 'regex'.", "labels": ["others"]}
+{"text": "Find *.java files under current directory and compress them to myfile.tar", "labels": ["others"]}
+{"text": "find all text files which have extra extensions in the current folder", "labels": ["others"]}
+{"text": "Run the command 'true' with an empty environment variable doFirst", "labels": ["others"]}
+{"text": "Find all files/directories under /path/to/dir/* paths and print the timestamp along with their paths and stat them", "labels": ["others"]}
+{"text": "Recursively finds last 5 modified files in a directory", "labels": ["others"]}
+{"text": "Shifts the positional parameters to the left by 1.", "labels": ["others"]}
+{"text": "set alias \"\"my_command\"\" for command \"\"$oldalias -option 3\"\"", "labels": ["others"]}
+{"text": "search for all text files in the directory \"\"/path/to/inputfiles\"\" and pass them as input to the shell script in exec command and save the output to the file out.txt", "labels": ["others"]}
+{"text": "search for bash and rsync files in the entire file system excluding search in the path /usr/share folder and discard all the errors", "labels": ["others"]}
+{"text": "Request SSH to run \"\"echo foo; sleep 5; echo bar\"\" in the background", "labels": ["others"]}
