@@ -8,7 +8,7 @@ from transformers import (
     AutoTokenizer, AutoModelForSequenceClassification,
     TrainingArguments, Trainer, DataCollatorWithPadding, BitsAndBytesConfig,
 )
-from peft import LoraConfig, get_peft_model
+from peft import LoraConfig, get_peft_model, PeftModel
 from sklearn.preprocessing import MultiLabelBinarizer
 
 MODEL_NAME = "microsoft/deberta-v3-large"
@@ -115,3 +115,10 @@ trainer = Trainer(
 
 trainer.train()
 trainer.save_model("artifacts/deberta_lora")
+tokenizer.save_pretrained("artifacts/deberta_lora")
+
+merged = trainer.model.merge_and_unload()
+merged.save_pretrained("artifacts/deberta_merged_full")
+tokenizer.save_pretrained("artifacts/deberta_merged_full")
+
+print("Saved merged full model to:", MERGED_DIR)

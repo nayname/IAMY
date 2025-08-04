@@ -38,8 +38,6 @@ model = AutoModelForSequenceClassification.from_pretrained(
     # label2id=label2id,
 )
 
-model = PeftModel.from_pretrained(model, "artifacts/deberta_lora")
-
 # ----- 4) Collect logits and integer targets
 logits_list, y_list = [], []
 with torch.no_grad():
