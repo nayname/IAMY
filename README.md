@@ -58,24 +58,20 @@ To run sample generation:
 
 ```bash
 python create.py
+```
 Generated recipes and outputs are stored in /generated.
 
 ⚠️ Known Limitations
-Domain Coverage – Accuracy depends on available recipes. Users can add new resipes.
+- Domain Coverage: The system's accuracy is dependent on the number of available recipes.
+- LLM Hallucinations: While guardrails mitigate this, incomplete recipes can still permit errors.
+- Edge Cases: Complex or unusual situations may require additional validation layers to be effective.
 
-LLM Hallucinations – Mitigated by guardrails, but incomplete recipes can still allow errors.
+🚀  Future Improvements
+- Expand recipe coverage for more backend domains.
+- Implement automated CI testing for all generated outputs.
+- Add metrics and monitoring to track recipe performance and error rates.
 
-Edge Cases – May require additional validation layers.
-
-🚀 Possible Improvements
-Expand recipe coverage for more backend domains.
-
-Automated CI testing of generated outputs.
-
-Metrics & monitoring of recipe performance and error rates.
-
-Community recipe submissions via schema-based PRs.
-
+Allow community recipe submissions through schema-based pull requests.
 📜 License
 MIT License.
 See LICENSE for details.
