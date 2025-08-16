@@ -1,0 +1,61 @@
+{
+    "messages": [
+        {
+            "content": "Query Specific Balance",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "14a76e2d-3dce-4f83-bdf6-c8b8a17b57dd",
+            "example": false
+        },
+        {
+            "content": "{\n  \"Check my Neutron wallet balance\": {\n    \"popularity\": 100,\n    \"command\": \"neutrond query bank balance $WALLET_ADDR --node tcp://grpc.neutron.org:9090\"\n  },\n  \"Look up the balance of a friend\u2019s address\": {\n    \"popularity\": 98,\n    \"command\": \"neutrond query bank balance neutron1friendaddressxyz --node tcp://grpc.neutron.org:9090\"\n  },\n  \"Verify the balance of my validator operator account\": {\n    \"popularity\": 95,\n    \"command\": \"neutrond query bank balance $(neutrond keys show validator --address) --node tcp://grpc.neutron.org:9090\"\n  },\n  \"Get balance at a specific block height\": {\n    \"popularity\": 93,\n    \"command\": \"neutrond query bank balance neutron1abcxyz --node tcp://grpc.neutron.org:9090 --height 123456\"\n  },\n  \"Check my balance on the Neutron testnet\": {\n    \"popularity\": 90,\n    \"command\": \"neutrond query bank balance $WALLET_ADDR --node tcp://grpc-higgs.testnet.neutron.org:9090\"\n  },\n  \"Output my balance as JSON\": {\n    \"popularity\": 88,\n    \"command\": \"neutrond query bank balance $WALLET_ADDR --node tcp://grpc.neutron.org:9090 -o json\"\n  },\n  \"Query only the uNTRN balance of an address\": {\n    \"popularity\": 85,\n    \"command\": \"neutrond query bank balance neutron1xyz uNTRN --node tcp://grpc.neutron.org:9090\"\n  },\n  \"Fetch my balance from a local gRPC node\": {\n    \"popularity\": 82,\n    \"command\": \"neutrond query bank balance $WALLET_ADDR --node tcp://127.0.0.1:9090\"\n  },\n  \"Retrieve an IBC token balance from Neutron\": {\n    \"popularity\": 80,\n    \"command\": \"neutrond query bank balance neutron1xyz ibc/1234567890ABCDEF --node tcp://grpc.neutron.org:9090\"\n  },\n  \"Loop through a list of addresses and print their balances\": {\n    \"popularity\": 78,\n    \"command\": \"for addr in $(cat addresses.txt); do neutrond query bank balance $addr --node tcp://grpc.neutron.org:9090; done\"\n  },\n  \"Store my balance in a shell variable\": {\n    \"popularity\": 75,\n    \"command\": \"BAL=$(neutrond query bank balance $WALLET_ADDR --node tcp://grpc.neutron.org:9090 -o json | jq -r '.amount')\"\n  },\n  \"Check balance using HTTPS gRPC endpoint\": {\n    \"popularity\": 73,\n    \"command\": \"neutrond query bank balance $WALLET_ADDR --node https://grpc.neutron.org:443\"\n  },\n  \"Display balance in human-readable format\": {\n    \"popularity\": 70,\n    \"command\": \"neutrond query bank balance $WALLET_ADDR --node tcp://grpc.neutron.org:9090 -o text\"\n  },\n  \"Query balance of a smart-contract account\": {\n    \"popularity\": 68,\n    \"command\": \"neutrond query bank balance neutron1contractaddressxyz --node tcp://grpc.neutron.org:9090\"\n  },\n  \"Check balance of a cold storage multisig address\": {\n    \"popularity\": 66,\n    \"command\": \"neutrond query bank balance neutron1multisigxyz --node tcp://grpc.neutron.org:9090\"\n  },\n  \"Get balance of an address and save to a file\": {\n    \"popularity\": 64,\n    \"command\": \"neutrond query bank balance neutron1abcxyz --node tcp://grpc.neutron.org:9090 -o json > balance.json\"\n  },\n  \"Query balance with custom timeout\": {\n    \"popularity\": 62,\n    \"command\": \"neutrond query bank balance neutron1abcxyz --node tcp://grpc.neutron.org:9090 --timeout 20s\"\n  },\n  \"Check balance of an address after migrating node endpoints\": {\n    \"popularity\": 60,\n    \"command\": \"neutrond query bank balance neutron1xyzabc --node tcp://new-grpc.neutron.org:9090\"\n  },\n  \"Verify balance on a private Neutron fork\": {\n    \"popularity\": 58,\n    \"command\": \"neutrond query bank balance neutron1privatexyz --node tcp://192.168.10.5:9090\"\n  },\n  \"Use ledger key to check its balance\": {\n    \"popularity\": 56,\n    \"command\": \"neutrond query bank balance $(neutrond keys show ledger --address) --node tcp://grpc.neutron.org:9090\"\n  },\n  \"Query balance with block height equal to latest state sync snapshot\": {\n    \"popularity\": 54,\n    \"command\": \"neutrond query bank balance neutron1xyz --node tcp://grpc.neutron.org:9090 --height $(cat snapshot_height.txt)\"\n  },\n  \"Fetch balance of an address in a bash subshell\": {\n    \"popularity\": 52,\n    \"command\": \"echo $(neutrond query bank balance neutron1xyz --node tcp://grpc.neutron.org:9090 -o json | jq -r '.amount')\"\n  },\n  \"Check balance when behind corporate proxy\": {\n    \"popularity\": 50,\n    \"command\": \"https_proxy=http://proxy.corp:8080 neutrond query bank balance neutron1xyz --node tcp://grpc.neutron.org:9090\"\n  },\n  \"Compare balance between two heights\": {\n    \"popularity\": 48,\n    \"command\": \"diff <(neutrond query bank balance neutron1xyz --node tcp://grpc.neutron.org:9090 --height 100000) <(neutrond query bank balance neutron1xyz --node tcp://grpc.neutron.org:9090 --height 200000)\"\n  },\n  \"Audit balances of top 50 richest addresses\": {\n    \"popularity\": 45,\n    \"command\": \"for addr in $(cat rich_list.txt | head -50); do neutrond query bank balance $addr --node tcp://grpc.neutron.org:9090; done\"\n  },\n  \"Get staking reward account balance\": {\n    \"popularity\": 43,\n    \"command\": \"neutrond query bank balance $(neutrond keys show reward --address) --node tcp://grpc.neutron.org:9090\"\n  },\n  \"Fetch balance using CLI alias\": {\n    \"popularity\": 40,\n    \"command\": \"neutrond query bank balance $WALLET_ADDR --node tcp://grpc.neutron.org:9090\"\n  },\n  \"Print balance of each validator in the network\": {\n    \"popularity\": 38,\n    \"command\": \"for val in $(neutrond query staking validators --node tcp://grpc.neutron.org:9090 -o json | jq -r '.[].operator_address' | sed 's/^neutronvaloper/neutron/'); do neutrond query bank balance $val --node tcp://grpc.neutron.org:9090; done\"\n  },\n  \"Schedule cron job to snapshot balance daily\": {\n    \"popularity\": 36,\n    \"command\": \"echo '0 0 * * * neutrond query bank balance neutron1xyz --node tcp://grpc.neutron.org:9090 -o json >> balance_history.log' | crontab -\"\n  },\n  \"Debug balance query with trace flag\": {\n    \"popularity\": 34,\n    \"command\": \"neutrond query bank balance neutron1xyz --node tcp://grpc.neutron.org:9090 --trace\"\n  }\n}",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 6396,
+                    "prompt_tokens": 584,
+                    "total_tokens": 6980,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 4672,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C57oIu3ufKYh7cErY6rJ4TtFKiRjW",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--947f7b05-65dd-47fb-b778-97297e75cdb7-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 584,
+                "output_tokens": 6396,
+                "total_tokens": 6980,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 4672
+                }
+            }
+        }
+    ]
+}

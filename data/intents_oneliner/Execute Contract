@@ -1,0 +1,124 @@
+{
+    "Execute Contract": {
+        "Claim my vested Neutron tokens": {
+            "popularity": 95,
+            "command": "neutrond tx wasm execute neutron17fcdl6crgsp49ja270fp0pdwm354ar5qqv3mda '{\"claim\":{}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 5000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Increment the counter in my demo contract": {
+            "popularity": 88,
+            "command": "neutrond tx wasm execute $COUNTER_CONTRACT '{\"increment\":{}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 3000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Send 10,000 NTRN from the treasury contract to my wallet": {
+            "popularity": 85,
+            "command": "neutrond tx wasm execute $TREASURY_CONTRACT '{\"transfer\":{\"recipient\":\"neutron1mywalletaddressxxxxxxxxxn\",\"amount\":\"10000000000\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 4000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Swap 100 NTRN to ATOM through the DEX contract": {
+            "popularity": 82,
+            "command": "neutrond tx wasm execute $DEX_CONTRACT '{\"swap\":{\"offer_asset\":\"100000000\",\"ask_denom\":\"uatom\",\"min_receive\":\"0\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 5000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Add liquidity to the NTRN/ATOM pool on the DEX": {
+            "popularity": 80,
+            "command": "neutrond tx wasm execute $DEX_CONTRACT '{\"add_liquidity\":{\"assets\":[{\"info\":{\"native_token\":{\"denom\":\"untrn\"}},\"amount\":\"500000000\"},{\"info\":{\"native_token\":{\"denom\":\"uatom\"}},\"amount\":\"250000\"}],\"slippage_tolerance\":\"0.005\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 6000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Cancel order #12345 on the DEX": {
+            "popularity": 78,
+            "command": "neutrond tx wasm execute $DEX_CONTRACT '{\"cancel_order\":{\"id\":\"12345\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 4000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Schedule my contract to run every 50 blocks using the Cron module": {
+            "popularity": 75,
+            "command": "neutrond tx wasm execute $CRON_CONTRACT '{\"create_schedule\":{\"name\":\"heartbeat\",\"period\":50,\"msgs\":[{\"wasm\":{\"execute\":{\"contract_addr\":\"$MY_CONTRACT\",\"msg\":\"eyJoZWFydGJlYXQiOnt9fQ==\",\"funds\":[]}}}],\"execution_stage\":\"EXECUTION_STAGE_END_BLOCKER\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.4 --fees 8000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Register an interchain query to track ATOM/USDC price on Osmosis": {
+            "popularity": 74,
+            "command": "neutrond tx wasm execute $ICQ_CONTRACT '{\"register_query\":{\"connection_id\":\"connection-0\",\"query_type\":\"kv\",\"kv_keys\":[{\"key\":\"prices/atom_usdc\",\"path\":\"/osmosis.pricefeed.v1beta1.Query/Price\"}],\"update_period\":30,\"deposit\":\"100000untrn\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.4 --fees 7000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Remove interchain query #7 to refund the deposit": {
+            "popularity": 73,
+            "command": "neutrond tx wasm execute $ICQ_CONTRACT '{\"remove_interchain_query\":{\"id\":7}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 4000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Update the update period of interchain query #7 to 60 blocks": {
+            "popularity": 72,
+            "command": "neutrond tx wasm execute $ICQ_CONTRACT '{\"update_interchain_query\":{\"id\":7,\"new_update_period\":60}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 4500untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Stake 500 NTRN on the Cosmos Hub via my ICA controller contract": {
+            "popularity": 70,
+            "command": "neutrond tx wasm execute $ICA_CONTRACT '{\"submit_tx\":{\"connection_id\":\"connection-0\",\"msgs\":[{\"staking\":{\"delegate\":{\"validator\":\"cosmosvaloper1validatorxxx\",\"amount\":{\"denom\":\"untrn\",\"amount\":\"500000000\"}}}}],\"timeout\":600}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.5 --fees 9000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Withdraw protocol fees from the contract to the DAO treasury": {
+            "popularity": 68,
+            "command": "neutrond tx wasm execute $FEE_COLLECTOR_CONTRACT '{\"withdraw_fees\":{\"recipient\":\"neutron1daowalletxxxxxxxxxxxxxxxxx\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 5000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Burn the collected fees using the FeeBurner contract": {
+            "popularity": 67,
+            "command": "neutrond tx wasm execute $FEEBURNER_CONTRACT '{\"burn\":{}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 4000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Refund unused ICA fees for channel-8 sequence 42": {
+            "popularity": 65,
+            "command": "neutrond tx wasm execute $FEE_REFUNDER_CONTRACT '{\"refund\":{\"channel_id\":\"channel-8\",\"sequence\":42}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 3500untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Subscribe my contract to AfterValidatorCreated hook events": {
+            "popularity": 63,
+            "command": "neutrond tx wasm execute $HARPOON_CONTRACT '{\"manage_hook_subscription\":{\"address\":\"$MY_CONTRACT\",\"hooks\":[\"HOOK_TYPE_AFTER_VALIDATOR_CREATED\"]}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.4 --fees 6000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Remove all Harpoon hook subscriptions for my contract": {
+            "popularity": 60,
+            "command": "neutrond tx wasm execute $HARPOON_CONTRACT '{\"manage_hook_subscription\":{\"address\":\"$MY_CONTRACT\",\"hooks\":[]}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 4000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Pause my smart contract to stop all executes": {
+            "popularity": 58,
+            "command": "neutrond tx wasm execute $ADMIN_CONTRACT '{\"pause\":{}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.2 --fees 3000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Unpause my smart contract": {
+            "popularity": 57,
+            "command": "neutrond tx wasm execute $ADMIN_CONTRACT '{\"unpause\":{}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.2 --fees 3000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Set a new admin address for my contract": {
+            "popularity": 55,
+            "command": "neutrond tx wasm execute $ADMIN_CONTRACT '{\"update_admin\":{\"new_admin\":\"neutron1newadminxxxxxxxxxxxxxxxxxx\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 3500untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Migrate my contract to code ID 45": {
+            "popularity": 54,
+            "command": "neutrond tx wasm execute $ADMIN_CONTRACT '{\"migrate_contract\":{\"contract\":\"$MY_CONTRACT\",\"new_code_id\":45,\"msg\":{}}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.5 --fees 8000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Change the DAO proposal passing threshold to 60%": {
+            "popularity": 53,
+            "command": "neutrond tx wasm execute $DAO_CONTRACT '{\"update_config\":{\"threshold\":{\"absolute_percentage\":{\"percentage\":\"0.60\"}}}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.4 --fees 7000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Send a GMP cross-chain message to an Ethereum contract": {
+            "popularity": 50,
+            "command": "neutrond tx wasm execute $GMP_CONTRACT '{\"execute_contract\":{\"dest_chain\":\"ethereum\",\"dest_contract_address\":\"0xAbCdEf...\",\"payload\":\"48656c6c6f20457468657265756d\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 2.0 --fees 15000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Place a market order to buy ATOM with 100 NTRN on the DEX": {
+            "popularity": 49,
+            "command": "neutrond tx wasm execute $DEX_CONTRACT '{\"market_order\":{\"side\":\"buy\",\"offer_asset\":{\"native_token\":{\"denom\":\"untrn\"}},\"offer_amount\":\"100000000\",\"ask_denom\":\"uatom\",\"slippage\":\"0.02\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.4 --fees 6000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Claim staking rewards through my rewards contract": {
+            "popularity": 48,
+            "command": "neutrond tx wasm execute $REWARDS_CONTRACT '{\"claim_rewards\":{}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 4000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Set the vault deposit cap to 1,000,000 NTRN": {
+            "popularity": 45,
+            "command": "neutrond tx wasm execute $VAULT_CONTRACT '{\"update_config\":{\"deposit_cap\":\"1000000000000\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.4 --fees 7000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Enable emergency shutdown on my protocol": {
+            "popularity": 44,
+            "command": "neutrond tx wasm execute $PROTOCOL_CONTRACT '{\"emergency_shutdown\":{\"enable\":true}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.5 --fees 8000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Mint 100 CW20 tokens to my address": {
+            "popularity": 40,
+            "command": "neutrond tx wasm execute $CW20_CONTRACT '{\"mint\":{\"recipient\":\"neutron1mywalletaddressxxxxxxxxxn\",\"amount\":\"100\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.2 --fees 3000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Transfer 50 CW20 tokens to another user": {
+            "popularity": 39,
+            "command": "neutrond tx wasm execute $CW20_CONTRACT '{\"transfer\":{\"recipient\":\"neutron1friendxxxxxxxxxxxxxxxxx\",\"amount\":\"50\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.2 --fees 3000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Reset my counter contract back to zero": {
+            "popularity": 38,
+            "command": "neutrond tx wasm execute $COUNTER_CONTRACT '{\"reset\":{}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 3000untrn --node https://rpc-kralum.neutron.org"
+        },
+        "Remove cron schedule with ID 3": {
+            "popularity": 37,
+            "command": "neutrond tx wasm execute $CRON_CONTRACT '{\"remove_schedule\":{\"id\":3}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 4000untrn --node https://rpc-kralum.neutron.org"
+        }
+    }
+}

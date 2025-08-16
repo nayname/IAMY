@@ -1,0 +1,301 @@
+{
+    "messages": [
+        {
+            "content": "Query all balances for a user",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "9c661743-9f83-4c00-b110-fb702bb178ac",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_eSsxEKKxZpL9FAlIaTkKCYjG",
+                        "function": {
+                            "arguments": "{\"query\":\"Neutron Documentation balances query\", \"section\":\"all\", \"max_results\":5}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 421,
+                    "prompt_tokens": 266,
+                    "total_tokens": 687,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 384,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C4CBLxGhhVYZ5bzJ5QgWlybxrNKmq",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--5e8836e6-d306-40b2-abd3-9cb919949775-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "Neutron Documentation balances query",
+                        "section": "all",
+                        "max_results": 5
+                    },
+                    "id": "call_eSsxEKKxZpL9FAlIaTkKCYjG",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 266,
+                "output_tokens": 421,
+                "total_tokens": 687,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 384
+                }
+            }
+        },
+        {
+            "content": "Found 5 result(s) for \"Neutron Documentation balances query\":\n\n## 1. Neutron Modules\n**File:** /root/neutron/docs/developers/modules/overview.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Neutron Modules\"\n- Line 5: Neutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n- Line 13: Query data from any IBC-connected blockchain\n- Line 73: Most Neutron modules follow consistent patterns when used in CosmWasm smart contracts:\n- Line 77: use neutron_sdk::interchain_queries::...; // for ICQ\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Modules\"\n---\n\n---\n\n\nNeutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n\n\n---\n\n  <Card title=\"Interchain Queries (ICQ)\" icon=\"link\" href=\"/developers/modules/interchain-queries/overview\">\n    Query data from any IBC-connected blockchain\n  </Card>\n```\n\n---\n\n## 2. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"NeutronTemplate\"\n- Line 3: description: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n- Line 7: NeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n- Line 10: <strong>Live Demo:</strong> <a href=\"https://neutrontemplate.deploydon.com\" target=\"_blank\" className=\"text-primary hover:underline\">https://NeutronTemplate.Deploydon.com</a>\n- Line 34: <li>TanStack Query for data fetching</li>\n\n**Content Preview:**\n```\n---\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n\n---\n\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\nicon: \"code\"\n\n---\n\n\nNeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n\n```\n\n---\n\n## 3. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 8: ## Key Advantages of SubQuery\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 4. Neutron DAO Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-dao.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron DAO Contracts\"\n- Line 3: description: \"Addresses and information for Neutron DAO smart contracts\"\n- Line 7: This page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Neutron DAO Core | `neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff` | [cwd-core](https://github.com/neutron-org/neutron-dao) | 325 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\n\n---\n\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\nicon: \"building-columns\"\n\n---\n\n\nThis page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n\n```\n\n---\n\n## 5. Neutron TGE Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-tge.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron TGE Contracts\"\n- Line 3: description: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n- Line 7: This page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Airdrop | `neutron198sxsrjvt2v2lln2ajn82ks76k97mj72mtgl7309jehd0vy8rezs7e6c56` | [cw20-merkle-airdrop](https://github.com/neutron-org/neutron-tge-contracts) | 196 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n\n---\n\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\nicon: \"rocket-launch\"\n\n---\n\n\nThis page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "222dd5e5-4be9-49d9-96b5-b690a240402a",
+            "tool_call_id": "call_eSsxEKKxZpL9FAlIaTkKCYjG",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_Jx0149Nudpw4XBkOREAw1bnm",
+                        "function": {
+                            "arguments": "{\"query\":\"balance\", \"section\":\"all\", \"max_results\":10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 353,
+                    "prompt_tokens": 2311,
+                    "total_tokens": 2664,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 320,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C4CBeEQwSH60gAj4RXE8lTzshNdb0",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--ee16e66e-a5c7-4a61-a3ae-a1ac07eba7dc-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "balance",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_Jx0149Nudpw4XBkOREAw1bnm",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 2311,
+                "output_tokens": 353,
+                "total_tokens": 2664,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 320
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"balance\":\n\n## 1. How To\n**File:** /root/neutron/docs/developers/modules/interchain-queries/how-to.mdx\n**Section:** developers\n**Relevance Score:** 13\n\n**Matching lines:**\n- Line 147: Locate the helper function for registering an Interchain Query that suits your requirements in the [neutron-sdk](https://docs.rs/neutron-sdk/0.11.0/neutron_sdk/interchain_queries/v045/register_queries/index.html). For this example, we'll use the [new_register_balances_query_msg](https://docs.rs/neutron-sdk/0.11.0/neutron_sdk/interchain_queries/v045/register_queries/fn.new_register_balances_query_msg.html) function.\n- Line 159: use neutron_sdk::interchain_queries::v047::register_queries::new_register_balances_query_msg;\n- Line 169: ExecuteMsg::RegisterBalancesQuery {\n- Line 174: } => register_balances_query(env, connection_id, addr, denoms, update_period),\n- Line 178: pub fn register_balances_query(\n\n**Content Preview:**\n```\n\nLocate the helper function for registering an Interchain Query that suits your requirements in the [neutron-sdk](https://docs.rs/neutron-sdk/0.11.0/neutron_sdk/interchain_queries/v045/register_queries/index.html). For this example, we'll use the [new_register_balances_query_msg](https://docs.rs/neutron-sdk/0.11.0/neutron_sdk/interchain_queries/v045/register_queries/fn.new_register_balances_query_msg.html) function.\n\n\n---\n\n   ```rust\nuse neutron_sdk::interchain_queries::v047::register_queries::new_register_balances_query_msg;\n\n\n---\n\n    match msg {\n        ExecuteMsg::RegisterBalancesQuery {\n            connection_id,\n```\n\n---\n\n## 2. Interchain Queries with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_icq.mdx\n**Section:** developers\n**Relevance Score:** 13\n\n**Matching lines:**\n- Line 312: pub balance: Option<CosmosCoin>,\n- Line 358: let balance = response\n- Line 363: .balance\n- Line 365: msg: \"No balance in delegation response\".to_string(),\n- Line 369: denom: balance.denom,\n\n**Content Preview:**\n```\n    #[prost(message, optional, tag = \"2\")]\n    pub balance: Option<CosmosCoin>,\n}\n\n---\n\n    \n    let balance = response\n        .delegation_response\n\n---\n\n        }))?\n        .balance\n        .ok_or_else(|| ContractError::Std(cosmwasm_std::StdError::GenericErr {\n```\n\n---\n\n## 3. Introduction to Indexers\n**File:** /root/neutron/docs/developers/tutorials/indexers/intro.mdx\n**Section:** developers\n**Relevance Score:** 13\n\n**Matching lines:**\n- Line 309: const getCachedUserBalance = async (address) => {\n- Line 310: const cacheKey = `balance:${address}`;\n- Line 311: let balance = await redis.get(cacheKey);\n- Line 313: if (!balance) {\n- Line 314: balance = await database.getUserBalance(address);\n\n**Content Preview:**\n```\n// Redis caching for frequently accessed data\nconst getCachedUserBalance = async (address) => {\n  const cacheKey = `balance:${address}`;\n\n---\n\nconst getCachedUserBalance = async (address) => {\n  const cacheKey = `balance:${address}`;\n  let balance = await redis.get(cacheKey);\n\n---\n\n  const cacheKey = `balance:${address}`;\n  let balance = await redis.get(cacheKey);\n  \n```\n\n---\n\n## 4. Chain Integration Tests\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/chain.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 149: QueryType:           \"balance\",\n- Line 150: Keys:                [][]byte{[]byte(\"balances/cosmos1...\")},\n- Line 257: QueryType:    \"balance\",\n- Line 258: Keys:         [][]byte{balanceKey(gaiaVal.Address.String())},\n\n**Content Preview:**\n```\n        ConnectionId:        \"connection-0\",\n        QueryType:           \"balance\",\n        Keys:                [][]byte{[]byte(\"balances/cosmos1...\")},\n\n---\n\n        QueryType:           \"balance\",\n        Keys:                [][]byte{[]byte(\"balances/cosmos1...\")},\n        TransactionsFilter:  \"\",\n\n---\n\n        ConnectionId: \"connection-0\",\n        QueryType:    \"balance\", \n        Keys:         [][]byte{balanceKey(gaiaVal.Address.String())},\n```\n\n---\n\n## 5. Smart Contract Integration Tests\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/smart-contracts.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 64: // Give accounts some initial balances\n- Line 68: .init_balance(storage, &owner, vec![Coin::new(1000000, \"untrn\")])\n- Line 72: .init_balance(storage, &user, vec![Coin::new(1000000, \"untrn\")])\n- Line 244: .init_balance(storage, &user2, vec![Coin::new(1000000, \"untrn\")])\n\n**Content Preview:**\n```\n        \n        // Give accounts some initial balances\n        app.init_modules(|router, _, storage| {\n\n---\n\n                .bank\n                .init_balance(storage, &owner, vec![Coin::new(1000000, \"untrn\")])\n                .unwrap();\n\n---\n\n                .bank\n                .init_balance(storage, &user, vec![Coin::new(1000000, \"untrn\")])\n                .unwrap();\n```\n\n---\n\n## 6. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 94: - **Query User Data**: Retrieve user-specific state and balances\n- Line 117: GetContractBalance {},\n- Line 140: Seamless wallet integration with connection status, balance display, and transaction handling.\n\n**Content Preview:**\n```\n- **Deposit/Withdraw NTRN**: Users can deposit and withdraw NTRN tokens with state tracking\n- **Query User Data**: Retrieve user-specific state and balances\n\n\n---\n\n    GetGlobalCounter {},\n    GetContractBalance {},\n}\n\n---\n\n  <Card title=\"Wallet Connection\" icon=\"plug\" iconType=\"duotone\">\n    Seamless wallet integration with connection status, balance display, and transaction handling.\n  </Card>\n```\n\n---\n\n## 7. How-to\n**File:** /root/neutron/docs/developers/modules/dex/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 46: - View current token balances on Neutron\n- Line 289: 2. **Position Management**: Regularly monitor and rebalance positions\n\n**Content Preview:**\n```\n- Transfer tokens from other chains to Neutron\n- View current token balances on Neutron\n- Withdraw tokens back to origin chains\n\n---\n\n1. **Fee Tier Selection**: Choose appropriate fee tiers based on pair volatility\n2. **Position Management**: Regularly monitor and rebalance positions\n3. **Risk Assessment**: Understand impermanent loss implications\n```\n\n---\n\n## 8. Explanation\n**File:** /root/neutron/docs/developers/modules/feeburner/explanation.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 52: 2. Retrieves all token balances from this account\n- Line 95: This balanced approach ensures that both token holders and the broader ecosystem benefit from network growth while maintaining the deflationary characteristics essential to Neutron's sovereign tokenomics model.\n\n**Content Preview:**\n```\n1. The module accesses the designated module account\n2. Retrieves all token balances from this account\n3. Processes each token denomination according to the module's rules\n\n---\n\n\nThis balanced approach ensures that both token holders and the broader ecosystem benefit from network growth while maintaining the deflationary characteristics essential to Neutron's sovereign tokenomics model. \n```\n\n---\n\n## 9. How-To Guide\n**File:** /root/neutron/docs/developers/modules/tokenfactory/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 124: **Burn from admin's own balance:**\n- Line 484: **Solution**: Ensure sufficient balance for creation fee.\n\n**Content Preview:**\n```\n\n**Burn from admin's own balance:**\n\n\n---\n\n```\n**Solution**: Ensure sufficient balance for creation fee.\n\n```\n\n---\n\n## 10. Reference\n**File:** /root/neutron/docs/developers/modules/transfer/reference.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 79: **Note:** Contracts must have `fee.ack_fee + fee.timeout_fee + fee.recv_fee` coins on balance.\n- Line 94: - **Fee Management**: Ensure adequate balance for IBC fees before transfers\n\n**Content Preview:**\n```\n\n**Note:** Contracts must have `fee.ack_fee + fee.timeout_fee + fee.recv_fee` coins on balance.\n\n\n---\n\n- **Request Correlation**: Use `sequence_id` and `channel` from response to match with sudo callbacks\n- **Fee Management**: Ensure adequate balance for IBC fees before transfers\n- **Error Recovery**: Failed sudo calls can be resubmitted via contract manager\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "c33f4bbb-d760-43c3-9930-c5a71be8cdb4",
+            "tool_call_id": "call_Jx0149Nudpw4XBkOREAw1bnm",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_Zo3jsbQkfO9QWvl1w4vpreie",
+                        "function": {
+                            "arguments": "{\"query\":\"new_register_balances_query_msg\", \"section\":\"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 743,
+                    "prompt_tokens": 5119,
+                    "total_tokens": 5862,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 704,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 2176
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C4CBmHZaHikkeJsgGjdkYruHhse8T",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--7c0c8e36-b55d-429f-b740-ba5fdde94d0a-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "new_register_balances_query_msg",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_Zo3jsbQkfO9QWvl1w4vpreie",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 5119,
+                "output_tokens": 743,
+                "total_tokens": 5862,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 2176
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 704
+                }
+            }
+        },
+        {
+            "content": "Found 1 result(s) for \"new_register_balances_query_msg\":\n\n## 1. How To\n**File:** /root/neutron/docs/developers/modules/interchain-queries/how-to.mdx\n**Section:** developers\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 147: Locate the helper function for registering an Interchain Query that suits your requirements in the [neutron-sdk](https://docs.rs/neutron-sdk/0.11.0/neutron_sdk/interchain_queries/v045/register_queries/index.html). For this example, we'll use the [new_register_balances_query_msg](https://docs.rs/neutron-sdk/0.11.0/neutron_sdk/interchain_queries/v045/register_queries/fn.new_register_balances_query_msg.html) function.\n- Line 159: use neutron_sdk::interchain_queries::v047::register_queries::new_register_balances_query_msg;\n- Line 185: let msg = new_register_balances_query_msg(\n\n**Content Preview:**\n```\n\nLocate the helper function for registering an Interchain Query that suits your requirements in the [neutron-sdk](https://docs.rs/neutron-sdk/0.11.0/neutron_sdk/interchain_queries/v045/register_queries/index.html). For this example, we'll use the [new_register_balances_query_msg](https://docs.rs/neutron-sdk/0.11.0/neutron_sdk/interchain_queries/v045/register_queries/fn.new_register_balances_query_msg.html) function.\n\n\n---\n\n   ```rust\nuse neutron_sdk::interchain_queries::v047::register_queries::new_register_balances_query_msg;\n\n\n---\n\n) -> NeutronResult<Response> {\n    let msg = new_register_balances_query_msg(\n        env.contract.address,\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "e58a50c8-2b13-407b-91f1-c1d1ccbb754f",
+            "tool_call_id": "call_Zo3jsbQkfO9QWvl1w4vpreie",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "{\n  \"get_native_balance\":\"100\",\n  \"get_all_balances\":\"98\",\n  \"get_cw20_balances\":\"92\",\n  \"register_interchain_balance_icq\":\"85\",\n  \"track_balance_updates\":\"78\",\n  \"get_staked_balance\":\"75\",\n  \"get_unbonding_balance\":\"72\",\n  \"get_rewards_balance\":\"70\",\n  \"get_tokenfactory_balance\":\"68\",\n  \"get_vesting_balance\":\"65\",\n  \"get_module_account_balance\":\"63\",\n  \"get_contract_balance\":\"60\",\n  \"get_interchain_account_balance\":\"58\",\n  \"get_dex_pool_balance\":\"55\",\n  \"get_ibc_channel_balance\":\"52\",\n  \"get_fee_balance\":\"50\",\n  \"get_dao_treasury_balance\":\"48\",\n  \"get_airdrop_balance\":\"46\",\n  \"get_subquery_cached_balance\":\"44\",\n  \"get_supply_balance\":\"42\",\n  \"get_bank_balance\":\"40\",\n  \"get_cli_balance\":\"38\",\n  \"get_rpc_balance\":\"36\",\n  \"get_graphql_balance\":\"34\",\n  \"get_multisig_balance\":\"32\",\n  \"get_historical_balance\":\"30\",\n  \"get_ntrn_balance_cross_chain\":\"28\",\n  \"get_delegator_balance\":\"26\",\n  \"get_sudo_callback_balance\":\"24\",\n  \"get_balance_error_solver\":\"22\"\n}",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 1451,
+                    "prompt_tokens": 5978,
+                    "total_tokens": 7429,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1152,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 4992
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C4CC7IMBOHvjG1bEVaanF3waMdmM5",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--defaa115-5e18-47cd-a9c9-87319ad348b7-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 5978,
+                "output_tokens": 1451,
+                "total_tokens": 7429,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 4992
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1152
+                }
+            }
+        }
+    ]
+}

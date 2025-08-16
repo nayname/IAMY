@@ -1,0 +1,221 @@
+{
+    "messages": [
+        {
+            "content": "Bootstrap Project",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "74ebffd1-0111-4e34-bc18-a118012aa557",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_fWfiCZUv3UYdfTJaaIrXSG5j",
+                        "function": {
+                            "arguments": "{\"query\":\"bootstrap project\", \"section\":\"developers\", \"max_results\":20}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 226,
+                    "prompt_tokens": 261,
+                    "total_tokens": 487,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 192,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C4ByK3vPXILlpX3JyNDTNxAJVyOfm",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--8c01a2be-5172-49bb-9b70-854b704c3093-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "bootstrap project",
+                        "section": "developers",
+                        "max_results": 20
+                    },
+                    "id": "call_fWfiCZUv3UYdfTJaaIrXSG5j",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 261,
+                "output_tokens": 226,
+                "total_tokens": 487,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 192
+                }
+            }
+        },
+        {
+            "content": "Found 12 result(s) for \"bootstrap project\":\n\n## 1. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 12: 1. **Multi-chain Aggregation**: SubQuery can aggregate data not only within a chain but across multiple blockchains all within a single project. This allows the creation of feature-rich dashboard analytics, multi-chain block scanners, or projects that index IBC transactions across zones.\n- Line 44: ### Step 2: Initialize a New Project\n- Line 46: You can start with the Neutron starter project:\n- Line 53: This creates a project with the basic structure and configuration files needed for indexing Neutron data.\n\n**Content Preview:**\n```\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n\n---\n\n\n1. **Multi-chain Aggregation**: SubQuery can aggregate data not only within a chain but across multiple blockchains all within a single project. This allows the creation of feature-rich dashboard analytics, multi-chain block scanners, or projects that index IBC transactions across zones.\n\n\n---\n\n\n### Step 2: Initialize a New Project\n\n```\n\n---\n\n## 2. Interchain Accounts with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_ica.mdx\n**Section:** developers\n**Relevance Score:** 6\n\n**Matching lines:**\n- Line 27: ## Setting Up Your Project\n- Line 29: Start by creating a new CosmWasm project using cargo-generate:\n- Line 80: ### Project Structure\n\n**Content Preview:**\n```\n\n## Setting Up Your Project\n\n\n---\n\n\nStart by creating a new CosmWasm project using cargo-generate:\n\n\n---\n\n\n### Project Structure\n\n```\n\n---\n\n## 3. Interchain Queries with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_icq.mdx\n**Section:** developers\n**Relevance Score:** 6\n\n**Matching lines:**\n- Line 26: ## Setting Up Your Project\n- Line 28: Start by creating a new CosmWasm project using cargo-generate:\n- Line 78: ## Project Structure\n\n**Content Preview:**\n```\n\n## Setting Up Your Project\n\n\n---\n\n\nStart by creating a new CosmWasm project using cargo-generate:\n\n\n---\n\n\n## Project Structure\n\n```\n\n---\n\n## 4. Developer Quickstart\n**File:** /root/neutron/docs/developers/quickstart.mdx\n**Section:** developers\n**Relevance Score:** 5\n\n**Matching lines:**\n- Line 124: <Step title=\"Initialize a New CosmWasm Project\">\n- Line 126: # Generate a new CosmWasm project using the template\n\n**Content Preview:**\n```\n<Steps>\n  <Step title=\"Initialize a New CosmWasm Project\">\n    ```bash\n\n---\n\n    ```bash\n    # Generate a new CosmWasm project using the template\n    cargo generate --git https://github.com/CosmWasm/cw-template.git --name my-neutron-contract\n```\n\n---\n\n## 5. Part 1: Minimal Smart Contract\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-1-minimal-application.mdx\n**Section:** developers\n**Relevance Score:** 5\n\n**Matching lines:**\n- Line 44: ### 1. Initialize the Project\n- Line 47: # Create a new Rust project\n\n**Content Preview:**\n```\n\n### 1. Initialize the Project\n\n\n---\n\n```bash\n# Create a new Rust project\ncargo new --lib minimal-contract\n```\n\n---\n\n## 6. Frequently Asked Questions\n**File:** /root/neutron/docs/developers/faq.mdx\n**Section:** developers\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 43: If you're looking to spin up your own archive node, our <a href=\"https://cosmos-snapshots.neutron.org/\" target=\"_blank\" className=\"text-primary hover:underline\">snapshot service</a> provides a convenient solution, enabling you to skip syncing from scratch. We also offer small pruned snapshots for quick server bootstrapping.\n\n**Content Preview:**\n```\n\nIf you're looking to spin up your own archive node, our <a href=\"https://cosmos-snapshots.neutron.org/\" target=\"_blank\" className=\"text-primary hover:underline\">snapshot service</a> provides a convenient solution, enabling you to skip syncing from scratch. We also offer small pruned snapshots for quick server bootstrapping.\n\n```\n\n---\n\n## 7. Overview\n**File:** /root/neutron/docs/developers/modules/tokenfactory/overview.mdx\n**Section:** developers\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 163: - **Custom Assets**: Create project-specific tokens\n\n**Content Preview:**\n```\n### For Token Issuers\n- **Custom Assets**: Create project-specific tokens\n- **Stablecoins**: Issue collateralized stable tokens\n```\n\n---\n\n## 8. Boilerplates & Scaffolding\n**File:** /root/neutron/docs/developers/sdk/boilerplates.mdx\n**Section:** developers\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 36: Choose a template based on your project needs:\n\n**Content Preview:**\n```\n\nChoose a template based on your project needs:\n\n```\n\n---\n\n## 9. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 228: 1. Get a [Reown/WalletConnect](https://cloud.reown.com/) Project Key\n\n**Content Preview:**\n```\n\n1. Get a [Reown/WalletConnect](https://cloud.reown.com/) Project Key\n2. Update the wallet configuration in `frontend/config/`\n```\n\n---\n\n## 10. Integration Testing Tutorials\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/overview.mdx\n**Section:** developers\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 48: 4. Have a project ready to test\n\n**Content Preview:**\n```\n3. Have completed the [Onboarding Tutorials](/developers/tutorials/onboarding/overview)\n4. Have a project ready to test \n```\n\n---\n\n## 11. Introduction to CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/introduction_to_cosmwasm.mdx\n**Section:** developers\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 314: ### Setting up a New Project\n\n**Content Preview:**\n```\n\n### Setting up a New Project\n\n```\n\n---\n\n## 12. Part 3: Building a Web App\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-3-web-app.mdx\n**Section:** developers\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 24: ## Project Setup\n\n**Content Preview:**\n```\n\n## Project Setup\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "fab9189f-32f9-487c-aaad-67709d5b5fd9",
+            "tool_call_id": "call_fWfiCZUv3UYdfTJaaIrXSG5j",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_O78auAPbomtSaxQ1n4DBnu28",
+                        "function": {
+                            "arguments": "{\"query\":\"bootstrap node\", \"section\":\"operators\", \"max_results\": 20}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 687,
+                    "prompt_tokens": 2530,
+                    "total_tokens": 3217,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 640,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C4ByOUVDts4WN2CMNga3vrlxEsn9Q",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--5d1ad3f1-c2ff-4e9f-bea6-0136606f84c4-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "bootstrap node",
+                        "section": "operators",
+                        "max_results": 20
+                    },
+                    "id": "call_O78auAPbomtSaxQ1n4DBnu28",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 2530,
+                "output_tokens": 687,
+                "total_tokens": 3217,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 640
+                }
+            }
+        },
+        {
+            "content": "Found 9 result(s) for \"bootstrap node\":\n\n## 1. Running a Node\n**File:** /root/neutron/docs/operators/running-a-node.mdx\n**Section:** operators\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Running a Node\"\n- Line 3: description: \"Set up and configure a Neutron node for RPC access or validator operations\"\n- Line 7: This guide will walk you through the process of setting up and running a Neutron node. You can use this setup to operate a standard RPC node for network access or as the foundation for becoming a validator.\n- Line 10: <Card title=\"RPC Node\" icon=\"cloud\" iconType=\"duotone\">\n- Line 13: <Card title=\"Validator Node\" icon=\"server\" iconType=\"duotone\">\n\n**Content Preview:**\n```\n---\ntitle: \"Running a Node\"\ndescription: \"Set up and configure a Neutron node for RPC access or validator operations\"\n\n---\n\ntitle: \"Running a Node\"\ndescription: \"Set up and configure a Neutron node for RPC access or validator operations\"\nicon: \"server\"\n\n---\n\n\nThis guide will walk you through the process of setting up and running a Neutron node. You can use this setup to operate a standard RPC node for network access or as the foundation for becoming a validator.\n\n```\n\n---\n\n## 2. Becoming a Validator\n**File:** /root/neutron/docs/operators/becoming-a-validator.mdx\n**Section:** operators\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 7: This guide will help you join Neutron's validator set after you have [set up your node](/validators/running-a-node) and [configured your oracle service](/validators/oracle-setup).\n- Line 18: <Checkbox title=\"Full Node Setup\">\n- Line 19: A fully synced Neutron node running the latest version\n- Line 37: 2. **Dual Network Requirement**: Operators must run nodes on both mainnet and testnet\n- Line 75: 1. Must run both mainnet and testnet nodes\n\n**Content Preview:**\n```\n\nThis guide will help you join Neutron's validator set after you have [set up your node](/validators/running-a-node) and [configured your oracle service](/validators/oracle-setup).\n\n\n---\n\n<CheckboxGroup>\n  <Checkbox title=\"Full Node Setup\">\n    A fully synced Neutron node running the latest version\n\n---\n\n  <Checkbox title=\"Full Node Setup\">\n    A fully synced Neutron node running the latest version\n  </Checkbox>\n```\n\n---\n\n## 3. Validator Economics\n**File:** /root/neutron/docs/operators/economics/validator-incentives.mdx\n**Section:** operators\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 131: - DAO bootstraps dNTRN liquidity in DeFi protocols\n- Line 154: <Card title=\"Technical Setup\" icon=\"server\" href=\"/validators/running-a-node\">\n- Line 155: Follow the complete node setup guide\n\n**Content Preview:**\n```\n- Creates significant dNTRN (liquid staked derivative) supply\n- DAO bootstraps dNTRN liquidity in DeFi protocols\n- Users can utilize dNTRN across ecosystem while earning staking rewards\n\n---\n\n<CardGroup cols={2}>\n  <Card title=\"Technical Setup\" icon=\"server\" href=\"/validators/running-a-node\">\n    Follow the complete node setup guide\n\n---\n\n  <Card title=\"Technical Setup\" icon=\"server\" href=\"/validators/running-a-node\">\n    Follow the complete node setup guide\n  </Card>\n```\n\n---\n\n## 4. IBC Relayer\n**File:** /root/neutron/docs/operators/ibc-relayer.mdx\n**Section:** operators\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 14: - If running many nodes on a single VM, ensure your open files limit is increased\n- Line 18: In this guide, we will be relaying between Neutron and Cosmos Hub. When setting up your Cosmos Hub and Neutron full nodes, be sure to offset the ports being used in both the `app.toml` and `config.toml` files of the respective chains (we will show how to do this below).\n- Line 20: ## Neutron Node Settings\n- Line 59: ## Target Chain Node Settings\n- Line 251: Perform health check to see if all connected nodes are up and synced:\n\n**Content Preview:**\n```\n- 1TB+ nVME drives\n- If running many nodes on a single VM, ensure your open files limit is increased\n\n\n---\n\n\nIn this guide, we will be relaying between Neutron and Cosmos Hub. When setting up your Cosmos Hub and Neutron full nodes, be sure to offset the ports being used in both the `app.toml` and `config.toml` files of the respective chains (we will show how to do this below).\n\n\n---\n\n\n## Neutron Node Settings\n\n```\n\n---\n\n## 5. ICQ Relayer\n**File:** /root/neutron/docs/operators/icq-relayer.mdx\n**Section:** operators\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 93: ### Neutron Chain Node Settings\n- Line 95: - `RELAYER_NEUTRON_CHAIN_RPC_ADDR` \u2014 RPC address of a Neutron node to interact with (e.g. get events and to submit results)\n- Line 96: - `RELAYER_NEUTRON_CHAIN_REST_ADDR` \u2014 REST address of a Neutron node to interact with (e.g. get registered queries list)\n- Line 109: ### Target Chain Node Settings\n- Line 111: - `RELAYER_TARGET_CHAIN_RPC_ADDR` \u2014 RPC address of a target chain node to interact with (e.g. send queries)\n\n**Content Preview:**\n```\n\n### Neutron Chain Node Settings\n\n\n---\n\n\n- `RELAYER_NEUTRON_CHAIN_RPC_ADDR` \u2014 RPC address of a Neutron node to interact with (e.g. get events and to submit results)\n- `RELAYER_NEUTRON_CHAIN_REST_ADDR` \u2014 REST address of a Neutron node to interact with (e.g. get registered queries list)\n\n---\n\n- `RELAYER_NEUTRON_CHAIN_RPC_ADDR` \u2014 RPC address of a Neutron node to interact with (e.g. get events and to submit results)\n- `RELAYER_NEUTRON_CHAIN_REST_ADDR` \u2014 REST address of a Neutron node to interact with (e.g. get registered queries list)\n- `RELAYER_NEUTRON_CHAIN_HOME_DIR` \u2014 path to keys directory\n```\n\n---\n\n## 6. Oracle Setup\n**File:** /root/neutron/docs/operators/oracle-setup.mdx\n**Section:** operators\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 7: Neutron's High Frequency Oracle is a critical component of the network that provides accurate price data for various assets. As a validator, you must run the Slinky price oracle service alongside your node to meet performance requirements.\n- Line 80: Replace `$USER` with your actual username and adjust the path to the Slinky binary as needed. The `--market-map-endpoint` should point to your node's gRPC port.\n- Line 139: ## Configure Neutron Node\n- Line 141: Edit the Neutron node's `app.toml` file to enable the oracle:\n- Line 234: 1. Make sure the `market-map-endpoint` in your configuration points to the correct gRPC port of your Neutron node.\n\n**Content Preview:**\n```\n\nNeutron's High Frequency Oracle is a critical component of the network that provides accurate price data for various assets. As a validator, you must run the Slinky price oracle service alongside your node to meet performance requirements.\n\n\n---\n\n    <Warning>\n      Replace `$USER` with your actual username and adjust the path to the Slinky binary as needed. The `--market-map-endpoint` should point to your node's gRPC port.\n    </Warning>\n\n---\n\n\n## Configure Neutron Node\n\n```\n\n---\n\n## 7. Operators Overview\n**File:** /root/neutron/docs/operators/overview.mdx\n**Section:** operators\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 7: Neutron network operators maintain critical infrastructure including validators, oracles, relayers, and API/RPC nodes. Following the Mercury upgrade in April 2025, Neutron transitioned to a fully sovereign network with expanded opportunities for network participation.\n- Line 81: Must run both mainnet and testnet nodes with proven reliability\n- Line 84: Sentry node architecture with HSM key management and comprehensive monitoring\n- Line 97: 1. **Eligibility**: Must operate both mainnet and testnet nodes\n- Line 141: <Card title=\"Running a Node\" icon=\"server\" href=\"/operators/running-a-node\">\n\n**Content Preview:**\n```\n\nNeutron network operators maintain critical infrastructure including validators, oracles, relayers, and API/RPC nodes. Following the Mercury upgrade in April 2025, Neutron transitioned to a fully sovereign network with expanded opportunities for network participation.\n\n\n---\n\n  <Card title=\"Dual Network Operation\" icon=\"network-wired\">\n    Must run both mainnet and testnet nodes with proven reliability\n  </Card>\n\n---\n\n  <Card title=\"Security Architecture\" icon=\"shield-halved\">\n    Sentry node architecture with HSM key management and comprehensive monitoring\n  </Card>\n```\n\n---\n\n## 8. Validator Curation Policy\n**File:** /root/neutron/docs/operators/economics/curation-policy.mdx\n**Section:** operators\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 26: - **Architecture**: Proper sentry node setup and network design\n\n**Content Preview:**\n```\n- **Security**: Strong key management practices and security measures\n- **Architecture**: Proper sentry node setup and network design\n- **Monitoring**: Comprehensive monitoring and alerting systems\n```\n\n---\n\n## 9. Validator Penalties\n**File:** /root/neutron/docs/operators/economics/slashing.mdx\n**Section:** operators\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 78: 1. **Eligibility Assessment**: Validators must run both mainnet and testnet nodes\n\n**Content Preview:**\n```\n\n1. **Eligibility Assessment**: Validators must run both mainnet and testnet nodes\n2. **Initial Delegation**: Selected validators receive a small initial delegation\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "10acbc32-a23f-4978-b41e-c944940fe1d9",
+            "tool_call_id": "call_O78auAPbomtSaxQ1n4DBnu28",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "{\n\"Initialize a new CosmWasm project on Neutron\": \"100\",\n\"Bootstrap a Neutron node for RPC access\": \"97\",\n\"Generate a project with the Neutron boilerplate template\": \"95\",\n\"Create a minimal smart-contract using cargo new\": \"93\",\n\"Configure project structure for Interchain Accounts (ICA)\": \"91\",\n\"Configure project structure for Interchain Queries (ICQ)\": \"90\",\n\"Set up a SubQuery indexing project for Neutron\": \"88\",\n\"Install the Rust/CosmWasm toolchain and other dependencies\": \"87\",\n\"Prepare an integration-testing workspace\": \"85\",\n\"Use the NeutronTemplate full-stack demo as a starter\": \"84\",\n\"Add TokenFactory module interaction code to a new project\": \"82\",\n\"Create and populate .env / config files for local and testnet\": \"81\",\n\"Initialize Git and commit the starter sources\": \"80\",\n\"Compile the contract with cargo wasm\": \"79\",\n\"Optimize the Wasm binary for on-chain upload\": \"78\",\n\"Write instantiate/execute/query entry points\": \"77\",\n\"Generate JSON schema files for messages\": \"76\",\n\"Write unit tests for contract logic in Rust\": \"75\",\n\"Run a local Neutron testnet for contract debugging\": \"74\",\n\"Deploy the contract to Neutron testnet\": \"73\",\n\"Interact with the contract via Neutron CLI\": \"72\",\n\"Debug common build or linking errors\": \"71\",\n\"Set up CI workflows for continuous testing\": \"70\",\n\"Add multiple crates to a CosmWasm workspace\": \"69\",\n\"Handle storage and state migrations in a project\": \"68\",\n\"Import and use Neutron-specific SDK crates\": \"67\",\n\"Generate a cw-template project with cargo generate\": \"66\",\n\"Update Cargo.toml dependencies to latest versions\": \"65\",\n\"Add an ICS (ICA) example execution flow\": \"64\",\n\"Use cosmwasm-multi-test for contract tests\": \"63\",\n\"Mock dependencies in unit tests\": \"62\",\n\"Implement on-chain state migration patterns\": \"61\",\n\"Spin up nodes quickly using snapshot playbooks\": \"60\",\n\"Bootstrap a validator node after full sync\": \"59\",\n\"Use Neutron snapshot service to skip initial sync\": \"58\",\n\"Tune config.toml and app.toml for optimal performance\": \"57\",\n\"Expose RPC, REST and gRPC ports securely\": \"56\",\n\"Monitor node health, logs and metrics\": \"55\",\n\"Back up and restore validator keys safely\": \"54\",\n\"Perform a binary upgrade without downtime\": \"53\"\n}",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 1777,
+                    "prompt_tokens": 5432,
+                    "total_tokens": 7209,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1216,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 2432
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C4BycZ6awnX83sIAPPVcPFA5EPa7V",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--5848a48f-ce8f-4eb1-821e-6158ee8faa94-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 5432,
+                "output_tokens": 1777,
+                "total_tokens": 7209,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 2432
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1216
+                }
+            }
+        }
+    ]
+}

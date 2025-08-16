@@ -1,0 +1,29 @@
+{
+    "Migrate Contract": {
+        "Submit DAO proposal to migrate an existing CosmWasm contract to a new code ID": "100",
+        "Upload new WASM bytecode to Neutron chain for migration": "95",
+        "Query current code ID and admin of a contract before migration": "90",
+        "Estimate gas and fees for contract migration": "85",
+        "Simulate contract migration on Neutron testnet before mainnet execution": "80",
+        "Vote on an ongoing MigrateContract governance proposal": "78",
+        "View history of past contract migrations on-chain": "75",
+        "Check Contract Manager failure logs after migration execution": "72",
+        "Change contract admin as part of the migration operation": "70",
+        "Roll back a contract migration via emergency governance action": "68",
+        "Customize migrate message parameters for the new contract version": "66",
+        "Migrate Cron-scheduled contract tasks to the updated code": "64",
+        "Handle IBC acknowledgments safely during contract migration": "62",
+        "Run integration tests to verify migration compatibility": "60",
+        "Update SubQuery indexer mappings for a migrated contract": "58",
+        "Migrate Neutron DAO core contracts to an upgraded code base": "56",
+        "Migrate cross-chain bridge contract to a newer version": "54",
+        "Migrate vesting contract to patch a discovered bug": "52",
+        "Submit a legacy x/gov MigrateContract proposal through Admin module": "50",
+        "Query Admin module to confirm migration execution status": "48",
+        "Audit new WASM code for security issues before migration": "46",
+        "Craft and broadcast `wasm migrate` transaction via neutrond CLI": "44",
+        "Resubmit a failed migration operation captured by Contract Manager": "42",
+        "Generate JSON payload for a migrate-contract governance proposal": "40",
+        "Schedule an automated migration execution window via Cron SubDAO": "38"
+    }
+}

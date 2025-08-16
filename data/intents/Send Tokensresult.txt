@@ -1,0 +1,141 @@
+{
+    "messages": [
+        {
+            "content": "Send Tokens",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "318827c0-9963-4df1-a9a7-cd0165e38b4d",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_qYQqPc1wqAQHB1FtxTmfoit0",
+                        "function": {
+                            "arguments": "{\"query\":\"send tokens Neutron documentation\", \"section\":\"all\", \"max_results\":10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 421,
+                    "prompt_tokens": 266,
+                    "total_tokens": 687,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 384,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C4CCUyT2wqWhIcjop36MeDI9X4XIX",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--7fa1749b-1588-48d3-97f6-734401937c8f-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "send tokens Neutron documentation",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_qYQqPc1wqAQHB1FtxTmfoit0",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 266,
+                "output_tokens": 421,
+                "total_tokens": 687,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 384
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"send tokens Neutron documentation\":\n\n## 1. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n- Line 21: 4. **Developer Experience**: SubQuery provides a seamless developer experience with detailed documentation, examples, and tooling.\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 2. Neutron Modules\n**File:** /root/neutron/docs/developers/modules/overview.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Neutron Modules\"\n- Line 5: Neutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n- Line 73: Most Neutron modules follow consistent patterns when used in CosmWasm smart contracts:\n- Line 77: use neutron_sdk::interchain_queries::...; // for ICQ\n- Line 78: use neutron_sdk::bindings::...; // for other modules\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Modules\"\n---\n\n---\n\n\nNeutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n\n\n---\n\n\nMost Neutron modules follow consistent patterns when used in CosmWasm smart contracts:\n\n```\n\n---\n\n## 3. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"NeutronTemplate\"\n- Line 3: description: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n- Line 7: NeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n- Line 10: <strong>Live Demo:</strong> <a href=\"https://neutrontemplate.deploydon.com\" target=\"_blank\" className=\"text-primary hover:underline\">https://NeutronTemplate.Deploydon.com</a>\n- Line 65: git clone https://github.com/Deploydon/NeutronTemplate.git\n\n**Content Preview:**\n```\n---\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n\n---\n\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\nicon: \"code\"\n\n---\n\n\nNeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n\n```\n\n---\n\n## 4. Neutron DAO Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-dao.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron DAO Contracts\"\n- Line 3: description: \"Addresses and information for Neutron DAO smart contracts\"\n- Line 7: This page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Neutron DAO Core | `neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff` | [cwd-core](https://github.com/neutron-org/neutron-dao) | 325 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\n\n---\n\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\nicon: \"building-columns\"\n\n---\n\n\nThis page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n\n```\n\n---\n\n## 5. Neutron TGE Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-tge.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron TGE Contracts\"\n- Line 3: description: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n- Line 7: This page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Airdrop | `neutron198sxsrjvt2v2lln2ajn82ks76k97mj72mtgl7309jehd0vy8rezs7e6c56` | [cw20-merkle-airdrop](https://github.com/neutron-org/neutron-tge-contracts) | 196 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n\n---\n\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\nicon: \"rocket-launch\"\n\n---\n\n\nThis page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n\n```\n\n---\n\n## 6. Neutron Vesting Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-vesting.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron Vesting Contracts\"\n- Line 3: description: \"Information about Neutron's token vesting smart contracts\"\n- Line 7: This page provides information about the smart contracts that manage token vesting schedules for various Neutron token recipient groups.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Neutron Vesting Investors [no voting power] | `neutron14q5elxj4ghktt7d7d0uw0cs0gqyeay25h5fkree897gjm38gevxqmvqsq5` | [vesting-investors](https://github.com/neutron-org/neutron-tge-contracts) | 28 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Vesting Contracts\"\ndescription: \"Information about Neutron's token vesting smart contracts\"\n\n---\n\ntitle: \"Neutron Vesting Contracts\"\ndescription: \"Information about Neutron's token vesting smart contracts\"\nicon: \"clock\"\n\n---\n\n\nThis page provides information about the smart contracts that manage token vesting schedules for various Neutron token recipient groups.\n\n```\n\n---\n\n## 7. DeFi on Neutron\n**File:** /root/neutron/docs/defi/overview.mdx\n**Section:** defi\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"DeFi on Neutron\"\n- Line 3: description: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\n- Line 7: Neutron is purpose-built for next-generation decentralized finance, offering integrated infrastructure that enables unprecedented capital efficiency, low latency, and seamless composability across a thriving ecosystem of applications.\n- Line 42: Neutron's architectural advantage comes from how its core modules work together to create a unified DeFi experience:\n- Line 45: <strong>The Neutron DeFi advantage:</strong>\n\n**Content Preview:**\n```\n---\ntitle: \"DeFi on Neutron\"\ndescription: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\n\n---\n\ntitle: \"DeFi on Neutron\"\ndescription: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\nicon: \"chart-line\"\n\n---\n\n\nNeutron is purpose-built for next-generation decentralized finance, offering integrated infrastructure that enables unprecedented capital efficiency, low latency, and seamless composability across a thriving ecosystem of applications.\n\n```\n\n---\n\n## 8. Messages\n**File:** /root/neutron/docs/developers/modules/dex/messages.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 5: The Dex module exposes several message types for interacting with the decentralized exchange. Here's a detailed documentation of each message and its expected behavior.\n- Line 45: | `creator` | string | Address of the message sender |\n- Line 59: | `disable_autoswap` | bool | If true, prevents automatic balancing of tokens to match pool ratio |\n- Line 61: | `swap_on_deposit` | bool | If true, allows excess tokens to be swapped to achieve desired ratio |\n- Line 94: | `shares_issued` | []Coin | Share tokens issued to represent the liquidity positions |\n\n**Content Preview:**\n```\n\nThe Dex module exposes several message types for interacting with the decentralized exchange. Here's a detailed documentation of each message and its expected behavior.\n\n\n---\n\n| --- | --- | --- |\n| `creator` | string | Address of the message sender |\n| `receiver` | string | Address to receive the liquidity position (if different from creator) |\n\n---\n\n| --- | --- | --- |\n| `disable_autoswap` | bool | If true, prevents automatic balancing of tokens to match pool ratio |\n| `fail_tx_on_bel` | bool | If true, fails the transaction on bad exchange limit instead of partial fill |\n```\n\n---\n\n## 9. Overview\n**File:** /root/neutron/docs/developers/modules/dex/overview.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 5: The Dex module implements a decentralized exchange on Neutron, providing users with the ability to trade tokens, provide liquidity, and place limit orders. The module introduces a novel AMM design centered around constant-price liquidity pools that offer simplicity, flexibility, and capital efficiency.\n- Line 8: **Duality Orderbook**: This module powers Duality, Neutron's protocol-native orderbook that combines the advantages of orderbooks and AMMs. For a complete overview of Duality's features, architecture, and ecosystem integrations, see the [Duality documentation](/defi/duality).\n- Line 15: The fundamental building block of Neutron DEX is the constant-price liquidity pool, where liquidity is concentrated at specific price points (ticks). This design:\n- Line 23: Neutron DEX supports multiple trading mechanisms:\n- Line 25: - **Market Orders**: Swap tokens at the current market price via multi-hop routing\n\n**Content Preview:**\n```\n\nThe Dex module implements a decentralized exchange on Neutron, providing users with the ability to trade tokens, provide liquidity, and place limit orders. The module introduces a novel AMM design centered around constant-price liquidity pools that offer simplicity, flexibility, and capital efficiency.\n\n\n---\n\n<Info>\n**Duality Orderbook**: This module powers Duality, Neutron's protocol-native orderbook that combines the advantages of orderbooks and AMMs. For a complete overview of Duality's features, architecture, and ecosystem integrations, see the [Duality documentation](/defi/duality).\n</Info>\n\n---\n\n\nThe fundamental building block of Neutron DEX is the constant-price liquidity pool, where liquidity is concentrated at specific price points (ticks). This design:\n\n```\n\n---\n\n## 10. GMP Module\n**File:** /root/neutron/docs/developers/modules/gmp/overview.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 8: This document explains the `gmp` module for the Neutron network.\n- Line 10: The General Message Passing (GMP) module is an IBC middleware that enables cross-chain message passing by embedding structured messages within IBC transfer packet memo fields. This module allows developers to send both tokens and arbitrary data in a single IBC transaction, enabling sophisticated cross-chain interactions without requiring additional infrastructure.\n- Line 48: \"source_address\": \"sender-address\",\n- Line 67: 3. Receiving applications can access both the transferred tokens and the message payload\n- Line 73: - **Sending**: Applications embed GMP messages in transfer memo fields using standard IBC transfer calls\n\n**Content Preview:**\n```\n\nThis document explains the `gmp` module for the Neutron network.\n\n\n---\n\n\nThe General Message Passing (GMP) module is an IBC middleware that enables cross-chain message passing by embedding structured messages within IBC transfer packet memo fields. This module allows developers to send both tokens and arbitrary data in a single IBC transaction, enabling sophisticated cross-chain interactions without requiring additional infrastructure.\n\n\n---\n\n  \"source_chain\": \"chain-identifier\",\n  \"source_address\": \"sender-address\", \n  \"payload\": \"base64-encoded-payload\",\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "50fa79c3-b04c-46d8-9e3e-28c53f6ea97a",
+            "tool_call_id": "call_qYQqPc1wqAQHB1FtxTmfoit0",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "{\n  \"transfer tokens to another Neutron wallet\":\"100\",\n  \"IBC transfer tokens to external Cosmos chain\":\"97\",\n  \"send tokens with General Message Passing\":\"93\",\n  \"embed payload in GMP token transfer\":\"90\",\n  \"batch send tokens to multiple recipients\":\"88\",\n  \"claim airdropped tokens\":\"86\",\n  \"withdraw vested tokens\":\"84\",\n  \"stake tokens to validator\":\"82\",\n  \"unstake tokens to wallet\":\"80\",\n  \"send CW20 tokens\":\"78\",\n  \"provide liquidity by depositing tokens\":\"76\",\n  \"swap tokens on DEX after send\":\"74\",\n  \"transfer tokens from DAO treasury\":\"72\",\n  \"refund failed IBC token transfer\":\"70\",\n  \"send tokens via Neutron CLI\":\"68\",\n  \"send tokens from CosmWasm smart contract\":\"66\",\n  \"set token allowance for contract spend\":\"64\",\n  \"schedule token vesting transfer\":\"62\",\n  \"check IBC transfer status\":\"60\",\n  \"send tokens with low gas fee\":\"58\",\n  \"send tokens using hardware wallet\":\"56\",\n  \"cross-chain token swap via GMP\":\"54\",\n  \"send governance tokens for DAO vote\":\"52\",\n  \"transfer tokens to CW20 vesting contract\":\"50\",\n  \"send tokens under multisig authorization\":\"48\",\n  \"send tokens after passing DAO proposal\":\"46\",\n  \"simulate token transfer for fee estimation\":\"44\",\n  \"send tokens with timeout height\":\"42\",\n  \"send tokens on testnet\":\"40\",\n  \"migrate tokens to new wallet address\":\"38\"\n}",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2712,
+                    "prompt_tokens": 4056,
+                    "total_tokens": 6768,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 2368,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C4CCavtsy2eNJ5Ymj0VV3EmBHzIzp",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--7809ebb4-34f2-4d57-8b6b-b3b96655272f-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 4056,
+                "output_tokens": 2712,
+                "total_tokens": 6768,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 2368
+                }
+            }
+        }
+    ]
+}
