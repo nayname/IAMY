@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Generator</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Use the Inter font family */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Simple spinner animation */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen">
+
+    <div class="w-full max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8">
+
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-900">Natural Language to `neutrond` CLI</h1>
+            <p class="text-gray-500 mt-2">Enter a command in plain English to generate the corresponding  CLI command.</p>
+        </header>
+
+        <!-- Input Form -->
+        <form id="generate-form">
+            <div class="mb-4">
+                <label for="prompt-text" class="block text-sm font-medium text-gray-700 mb-2">Your Command:</label>
+                <textarea id="prompt-text" name="prompt" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow duration-200" placeholder="e.g., Send 10 tokens to my friend's address...">Send 10 NTRN from my default wallet to Bob's address ntrn1bobaddressxx</textarea>
+            </div>
+            <button type="submit" id="submit-button" class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform duration-200 active:scale-95 flex items-center justify-center">
+                <span id="button-text">Generate</span>
+                <div id="spinner" class="spinner hidden ml-3"></div>
+            </button>
+        </form>
+
+        <!-- Results Section -->
+        <div id="results-container" class="mt-8 border-t border-gray-200 pt-6 hidden">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Generated Output</h2>
+
+            <!-- Label -->
+            <div class="mb-4">
+                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Intent / Label</h3>
+                <p id="result-label" class="mt-1 text-lg font-semibold text-blue-700 bg-blue-50 p-3 rounded-md"></p>
+            </div>
+
+            <!-- Parameters -->
+            <div class="mb-4">
+                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Extracted Parameters</h3>
+                <pre id="result-params" class="mt-1 text-sm bg-gray-100 p-4 rounded-md overflow-x-auto"><code></code></pre>
+            </div>
+
+                        <!-- Parameters -->
+            <div class="mb-4">
+                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Base CLI command</h3>
+                <pre id="base-command" class="mt-1 text-sm bg-gray-100 p-4 rounded-md overflow-x-auto"><code></code></pre>
+            </div>
+
+            <!-- Command -->
+            <div>
+                <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Generated Command</h3>
+                <div class="mt-1 bg-gray-800 text-white p-4 rounded-md font-mono text-sm relative">
+                    <pre id="result-command" class="overflow-x-auto"><code></code></pre>
+                    <button id="copy-button" class="absolute top-2 right-2 bg-gray-600 hover:bg-gray-500 text-white text-xs font-semibold py-1 px-2 rounded-md">Copy</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Message Box -->
+        <div id="error-box" class="mt-6 p-4 bg-red-100 text-red-700 border border-red-300 rounded-lg hidden"></div>
+
+    </div>
+
+    <script>
+        const form = document.getElementById('generate-form');
+        const promptText = document.getElementById('prompt-text');
+        const resultsContainer = document.getElementById('results-container');
+        const errorBox = document.getElementById('error-box');
+
+        const resultLabel = document.getElementById('result-label');
+        const resultParams = document.querySelector('#result-params code');
+        const baseCommand = document.querySelector('#base-command code');
+        const resultCommand = document.querySelector('#result-command code');
+
+        const submitButton = document.getElementById('submit-button');
+        const buttonText = document.getElementById('button-text');
+        const spinner = document.getElementById('spinner');
+        const copyButton = document.getElementById('copy-button');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent default form submission
+
+            // --- UI state: Loading ---
+            resultsContainer.classList.add('hidden');
+            errorBox.classList.add('hidden');
+            submitButton.disabled = true;
+            buttonText.textContent = 'Generating...';
+            spinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: promptText.value }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // --- UI state: Success ---
+                resultLabel.textContent = data.label;
+                resultParams.textContent = JSON.stringify(data.params, null, 2);
+                baseCommand.textContent = data.base_command;
+                resultCommand.textContent = data.command;
+                resultsContainer.classList.remove('hidden');
+
+            } catch (error) {
+                // --- UI state: Error ---
+                console.error('Error:', error);
+                errorBox.textContent = `An error occurred: ${error.message}`;
+                errorBox.classList.remove('hidden');
+            } finally {
+                // --- UI state: Reset button ---
+                submitButton.disabled = false;
+                buttonText.textContent = 'Generate';
+                spinner.classList.add('hidden');
+            }
+        });
+
+        // --- Copy to Clipboard ---
+        copyButton.addEventListener('click', () => {
+            const commandText = resultCommand.textContent;
+            // Use a temporary textarea to copy text to preserve formatting
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = commandText;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            // Visual feedback
+            copyButton.textContent = 'Copied!';
+            setTimeout(() => {
+                copyButton.textContent = 'Copy';
+            }, 2000);
+        });
+    </script>
+
+</body>
+</html>

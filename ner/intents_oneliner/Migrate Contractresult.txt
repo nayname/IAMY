@@ -1,0 +1,541 @@
+{
+    "messages": [
+        {
+            "content": "Migrate Contract",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "2873de5b-2f39-467b-ae73-29e5e3e789dc",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_q44kf58l0hzxImQo45iCpDXo",
+                        "function": {
+                            "arguments": "{\"query\": \"neutrond tx wasm execute migrate contract address\", \"section\": \"all\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 300,
+                    "prompt_tokens": 595,
+                    "total_tokens": 895,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 256,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C58ATOlRuFGN2XPC1ZoC3p3XW187e",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--e22f8f15-6381-4727-93e5-7d314cc9f721-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "neutrond tx wasm execute migrate contract address",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_q44kf58l0hzxImQo45iCpDXo",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 595,
+                "output_tokens": 300,
+                "total_tokens": 895,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 256
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"neutrond tx wasm execute migrate contract address\":\n\n## 1. Interchain Accounts with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_ica.mdx\n**Section:** developers\n**Relevance Score:** 22\n\n**Matching lines:**\n- Line 2: title: \"Interchain Accounts with CosmWasm\"\n- Line 3: description: \"Learn how to build smart contracts that utilize interchain accounts to execute transactions on other chains\"\n- Line 6: This tutorial walks through building a smart contract that uses Neutron's Interchain Accounts (ICA) module to execute transactions on remote chains from within your contract.\n- Line 10: Interchain Accounts are a powerful IBC feature that allows a smart contract on Neutron to control accounts on other IBC-connected chains. This enables a wide range of cross-chain applications, from managing assets across chains to controlling governance on remote chains.\n- Line 16: 3. Execute a transaction on a remote chain\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Accounts with CosmWasm\"\ndescription: \"Learn how to build smart contracts that utilize interchain accounts to execute transactions on other chains\"\n\n---\n\ntitle: \"Interchain Accounts with CosmWasm\"\ndescription: \"Learn how to build smart contracts that utilize interchain accounts to execute transactions on other chains\"\n---\n\n---\n\n\nThis tutorial walks through building a smart contract that uses Neutron's Interchain Accounts (ICA) module to execute transactions on remote chains from within your contract.\n\n```\n\n---\n\n## 2. Interchain Queries with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_icq.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Interchain Queries with CosmWasm\"\n- Line 3: description: \"Learn how to build smart contracts that query data from other blockchains using Neutron's ICQ module\"\n- Line 6: This tutorial walks through building a smart contract that uses Neutron's Interchain Query (ICQ) module to query data from other blockchains. You'll learn how to register queries, process the results, and build applications that can react to state changes on connected chains.\n- Line 10: Interchain Queries are a powerful feature of Neutron that allow smart contracts to query the state of other chains in the Cosmos ecosystem. This enables developers to build cross-chain applications that can react to state changes on connected chains.\n- Line 16: 3. Build a simple contract that reacts to state changes on another chain\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Queries with CosmWasm\"\ndescription: \"Learn how to build smart contracts that query data from other blockchains using Neutron's ICQ module\"\n\n---\n\ntitle: \"Interchain Queries with CosmWasm\"\ndescription: \"Learn how to build smart contracts that query data from other blockchains using Neutron's ICQ module\"\n---\n\n---\n\n\nThis tutorial walks through building a smart contract that uses Neutron's Interchain Query (ICQ) module to query data from other blockchains. You'll learn how to register queries, process the results, and build applications that can react to state changes on connected chains.\n\n```\n\n---\n\n## 3. Smart Contract Integration Tests\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/smart-contracts.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Smart Contract Integration Tests\"\n- Line 3: description: \"Test your CosmWasm smart contracts in a realistic chain environment\"\n- Line 6: This tutorial covers testing smart contracts in realistic blockchain environments using `cw-multi-test` and full chain integration tests.\n- Line 11: - Understanding of CosmWasm contract development\n- Line 17: Test individual contract functions in isolation\n\n**Content Preview:**\n```\n---\ntitle: \"Smart Contract Integration Tests\"\ndescription: \"Test your CosmWasm smart contracts in a realistic chain environment\"\n\n---\n\ntitle: \"Smart Contract Integration Tests\"\ndescription: \"Test your CosmWasm smart contracts in a realistic chain environment\"\n---\n\n---\n\n\nThis tutorial covers testing smart contracts in realistic blockchain environments using `cw-multi-test` and full chain integration tests.\n\n```\n\n---\n\n## 4. Introduction to CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/introduction_to_cosmwasm.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Introduction to CosmWasm\"\n- Line 3: description: \"A gentle introduction to smart contract development on Neutron\"\n- Line 6: This tutorial provides a gentle introduction to smart contract development on Neutron using CosmWasm. You'll learn the fundamentals of smart contracts and how to build them step by step.\n- Line 8: ## What is a Smart Contract?\n- Line 10: Let's examine what a smart contract is and how it works under the hood. The following is a minimal contract that stores a counter value which can be incremented and queried by anyone.\n\n**Content Preview:**\n```\n---\ntitle: \"Introduction to CosmWasm\"\ndescription: \"A gentle introduction to smart contract development on Neutron\"\n\n---\n\ntitle: \"Introduction to CosmWasm\"\ndescription: \"A gentle introduction to smart contract development on Neutron\"\n---\n\n---\n\n\nThis tutorial provides a gentle introduction to smart contract development on Neutron using CosmWasm. You'll learn the fundamentals of smart contracts and how to build them step by step.\n\n```\n\n---\n\n## 5. Part 1: Minimal Smart Contract\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-1-minimal-application.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Part 1: Minimal Smart Contract\"\n- Line 3: description: \"Create and deploy a simple yet functional CosmWasm smart contract on Neutron\"\n- Line 6: This tutorial will guide you through creating your first smart contract on Neutron. You'll learn the basics of CosmWasm development and deploy a working application.\n- Line 10: A simple counter contract that:\n- Line 17: - [Rust](https://rustup.rs/) installed with `wasm32-unknown-unknown` target\n\n**Content Preview:**\n```\n---\ntitle: \"Part 1: Minimal Smart Contract\"\ndescription: \"Create and deploy a simple yet functional CosmWasm smart contract on Neutron\"\n\n---\n\ntitle: \"Part 1: Minimal Smart Contract\"\ndescription: \"Create and deploy a simple yet functional CosmWasm smart contract on Neutron\"\n---\n\n---\n\n\nThis tutorial will guide you through creating your first smart contract on Neutron. You'll learn the basics of CosmWasm development and deploy a working application.\n\n```\n\n---\n\n## 6. Bridge Contracts\n**File:** /root/neutron/docs/resources/contracts/bridge.mdx\n**Section:** resources\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: title: \"Bridge Contracts\"\n- Line 3: description: \"Information about Neutron's cross-chain bridge contracts\"\n- Line 7: This page provides information about the smart contracts that enable cross-chain bridging between Neutron and other networks.\n- Line 11: | Contract | Address | Code ID |\n- Line 18: | Contract | Address |\n\n**Content Preview:**\n```\n---\ntitle: \"Bridge Contracts\"\ndescription: \"Information about Neutron's cross-chain bridge contracts\"\n\n---\n\ntitle: \"Bridge Contracts\"\ndescription: \"Information about Neutron's cross-chain bridge contracts\"\nicon: \"bridge\"\n\n---\n\n\nThis page provides information about the smart contracts that enable cross-chain bridging between Neutron and other networks.\n\n```\n\n---\n\n## 7. Neutron DAO Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-dao.mdx\n**Section:** resources\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: title: \"Neutron DAO Contracts\"\n- Line 3: description: \"Addresses and information for Neutron DAO smart contracts\"\n- Line 7: This page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n- Line 11: | Name | Address | Source Code | Code ID |\n- Line 31: | Name | Address | Source Code | Code ID |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\n\n---\n\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\nicon: \"building-columns\"\n\n---\n\n\nThis page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n\n```\n\n---\n\n## 8. Neutron TGE Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-tge.mdx\n**Section:** resources\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: title: \"Neutron TGE Contracts\"\n- Line 3: description: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n- Line 7: This page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n- Line 11: | Name | Address | Source Code | Code ID |\n- Line 13: | Airdrop | `neutron198sxsrjvt2v2lln2ajn82ks76k97mj72mtgl7309jehd0vy8rezs7e6c56` | [cw20-merkle-airdrop](https://github.com/neutron-org/neutron-tge-contracts) | 196 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n\n---\n\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\nicon: \"rocket-launch\"\n\n---\n\n\nThis page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n\n```\n\n---\n\n## 9. Neutron Vesting Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-vesting.mdx\n**Section:** resources\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: title: \"Neutron Vesting Contracts\"\n- Line 3: description: \"Information about Neutron's token vesting smart contracts\"\n- Line 7: This page provides information about the smart contracts that manage token vesting schedules for various Neutron token recipient groups.\n- Line 11: | Name | Address | Source Code | Code ID |\n- Line 13: | Neutron Vesting Investors [no voting power] | `neutron14q5elxj4ghktt7d7d0uw0cs0gqyeay25h5fkree897gjm38gevxqmvqsq5` | [vesting-investors](https://github.com/neutron-org/neutron-tge-contracts) | 28 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Vesting Contracts\"\ndescription: \"Information about Neutron's token vesting smart contracts\"\n\n---\n\ntitle: \"Neutron Vesting Contracts\"\ndescription: \"Information about Neutron's token vesting smart contracts\"\nicon: \"clock\"\n\n---\n\n\nThis page provides information about the smart contracts that manage token vesting schedules for various Neutron token recipient groups.\n\n```\n\n---\n\n## 10. Part 2: Modules & Contracts\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-2-modules-contracts.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Part 2: Modules & Contracts\"\n- Line 3: description: \"Learn how to interact with Neutron modules and other smart contracts\"\n- Line 6: In this tutorial, you'll extend your knowledge by learning how to interact with Neutron's unique modules and call other smart contracts. This is where Neutron's power really shines.\n- Line 11: - Inter-contract communication patterns\n- Line 17: - Completed [Part 1: Minimal Smart Contract](/developers/tutorials/onboarding/part-1-minimal-application)\n\n**Content Preview:**\n```\n---\ntitle: \"Part 2: Modules & Contracts\"\ndescription: \"Learn how to interact with Neutron modules and other smart contracts\"\n\n---\n\ntitle: \"Part 2: Modules & Contracts\"\ndescription: \"Learn how to interact with Neutron modules and other smart contracts\"\n---\n\n---\n\n\nIn this tutorial, you'll extend your knowledge by learning how to interact with Neutron's unique modules and call other smart contracts. This is where Neutron's power really shines.\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "46b94076-7f2e-47ee-a393-fa4976f80c8c",
+            "tool_call_id": "call_q44kf58l0hzxImQo45iCpDXo",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_3ugnqa9qc6mHjlEALAydDFQa",
+                        "function": {
+                            "arguments": "{\"query\": \"cw3 proposal migrate code id\", \"section\": \"all\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 746,
+                    "prompt_tokens": 4162,
+                    "total_tokens": 4908,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 704,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C58AcYZ3hcRoMgVLbgSfQ8Kc6ZMae",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--66cfbfe9-d055-4161-9380-f39015c0d21f-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "cw3 proposal migrate code id",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_3ugnqa9qc6mHjlEALAydDFQa",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 4162,
+                "output_tokens": 746,
+                "total_tokens": 4908,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 704
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"cw3 proposal migrate code id\":\n\n## 1. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 4: icon: \"code\"\n- Line 168: node migrate.js   # Handle migrations\n- Line 266: - **Governance Features**: Add voting and proposal mechanisms\n- Line 300: Source code and latest updates\n\n**Content Preview:**\n```\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\nicon: \"code\"\n---\n\n---\n\nnode deploy.js    # Deploy contract\nnode migrate.js   # Handle migrations  \nnode exec.js      # Execute contract functions\n\n---\n\n- **Multi-token Support**: Extend beyond NTRN to other tokens\n- **Governance Features**: Add voting and proposal mechanisms\n- **Cross-chain Integration**: Utilize Neutron's IBC capabilities\n```\n\n---\n\n## 2. Reference\n**File:** /root/neutron/docs/developers/modules/cron/reference.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 8: The Cron module accepts messages through governance proposals only.\n- Line 12: Creates a new schedule through governance proposal.\n- Line 26: Removes an existing schedule through governance proposal.\n- Line 37: Updates the module parameters through governance proposal.\n- Line 69: string msg = 2;                            // JSON encoded message to be passed to the contract\n\n**Content Preview:**\n```\n\nThe Cron module accepts messages through governance proposals only.\n\n\n---\n\n\nCreates a new schedule through governance proposal.\n\n\n---\n\n\nRemoves an existing schedule through governance proposal.\n\n```\n\n---\n\n## 3. How-to\n**File:** /root/neutron/docs/developers/modules/ibc-rate-limit/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 30: To update the contract address, governance must submit an update-params proposal:\n- Line 33: neutron tx gov submit-proposal update-params proposal.json --from=<key> --chain-id=<chain-id>\n- Line 36: Example proposal.json:\n- Line 256: When transactions are rejected due to rate limits, they will return specific error codes. Here's how to handle them:\n- Line 260: When a transfer exceeds a rate limit, it will return an error with code similar to:\n\n**Content Preview:**\n```\n\nTo update the contract address, governance must submit an update-params proposal:\n\n\n---\n\n```bash\nneutron tx gov submit-proposal update-params proposal.json --from=<key> --chain-id=<chain-id>\n```\n\n---\n\n\nExample proposal.json:\n```json\n```\n\n---\n\n## 4. How-To Guide\n**File:** /root/neutron/docs/developers/modules/tokenfactory/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 407: **Submit parameter change proposal:**\n- Line 410: neutrond tx gov submit-proposal param-change proposal.json \\\n- Line 418: **Example proposal.json:**\n- Line 439: \"code_id\": \"1\",\n- Line 443: \"code_id\": \"5\",\n\n**Content Preview:**\n```\n\n**Submit parameter change proposal:**\n\n\n---\n\n```bash\nneutrond tx gov submit-proposal param-change proposal.json \\\n  --from validator \\\n\n---\n\n\n**Example proposal.json:**\n\n```\n\n---\n\n## 5. Understanding Cron\n**File:** /root/neutron/docs/developers/modules/cron/explanation.mdx\n**Section:** developers\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 29: When a governance proposal creates a schedule, it specifies:\n- Line 71: string msg = 2;                           // JSON-encoded message\n- Line 118: - Only governance proposals can manage schedules\n- Line 252: - **Governance execution**: Implementing approved proposals after timelock\n\n**Content Preview:**\n```\n\nWhen a governance proposal creates a schedule, it specifies:\n- A unique name for identification\n\n---\n\n  string contract = 1;                       // Contract address\n  string msg = 2;                           // JSON-encoded message\n}\n\n---\n\n- All state changes follow proper authorization checks\n- Only governance proposals can manage schedules\n\n```\n\n---\n\n## 6. Mainnet Deployment\n**File:** /root/neutron/docs/resources/contracts/mainnet.mdx\n**Section:** resources\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 31: | Name                                                  |                                                                                                                                                                                        | Source Code                                                                                                                                            | Code ID                                                     |\n- Line 33: | Neutron DAO Core                                      | [neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff](https://neutron.celat.one/neutron-1/contracts/neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff) | [cwd-core](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/cwd-core)                                                                | [325](https://neutron.celat.one/neutron-1/codes/325/info)   |\n- Line 34: | Single Proposal Module                                | [neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh](https://neutron.celat.one/neutron-1/contracts/neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh) | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-single)                                 | [339](https://neutron.celat.one/neutron-1/codes/339/info)   |\n- Line 35: | Single Pre-Proposal Module                            | [neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z](https://neutron.celat.one/neutron-1/contracts/neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z) | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-single)                        | [346](https://neutron.celat.one/neutron-1/codes/346/info)   |\n- Line 36: | Multiple Proposal Module                              | [neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40](https://neutron.celat.one/neutron-1/contracts/neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40) | [cwd-proposal-multiple](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-multiple)                             | [331](https://neutron.celat.one/neutron-1/codes/331/info)   |\n\n**Content Preview:**\n```\n\n| Name                                                  |                                                                                                                                                                                        | Source Code                                                                                                                                            | Code ID                                                     |\n| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |\n\n---\n\n| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- |\n| Neutron DAO Core                                      | [neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff](https://neutron.celat.one/neutron-1/contracts/neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff) | [cwd-core](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/cwd-core)                                                                | [325](https://neutron.celat.one/neutron-1/codes/325/info)   |\n| Single Proposal Module                                | [neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh](https://neutron.celat.one/neutron-1/contracts/neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh) | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-single)                                 | [339](https://neutron.celat.one/neutron-1/codes/339/info)   |\n\n---\n\n| Neutron DAO Core                                      | [neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff](https://neutron.celat.one/neutron-1/contracts/neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff) | [cwd-core](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/cwd-core)                                                                | [325](https://neutron.celat.one/neutron-1/codes/325/info)   |\n| Single Proposal Module                                | [neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh](https://neutron.celat.one/neutron-1/contracts/neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh) | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-single)                                 | [339](https://neutron.celat.one/neutron-1/codes/339/info)   |\n| Single Pre-Proposal Module                            | [neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z](https://neutron.celat.one/neutron-1/contracts/neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z) | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-single)                        | [346](https://neutron.celat.one/neutron-1/codes/346/info)   |\n```\n\n---\n\n## 7. Neutron DAO Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-dao.mdx\n**Section:** resources\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 11: | Name | Address | Source Code | Code ID |\n- Line 14: | Single Proposal Module | `neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh` | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao) | 339 |\n- Line 15: | Single Pre-Proposal Module | `neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z` | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao) | 346 |\n- Line 16: | Multiple Proposal Module | `neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40` | [cwd-proposal-multiple](https://github.com/neutron-org/neutron-dao) | 331 |\n- Line 17: | Multiple Pre-Proposal Module | `neutron1up07dctjqud4fns75cnpejr4frmjtddzsmwgcktlyxd4zekhwecqt2h8u6` | [cwd-pre-propose-multiple](https://github.com/neutron-org/neutron-dao) | 341 |\n\n**Content Preview:**\n```\n\n| Name | Address | Source Code | Code ID |\n|------|---------|------------|---------|\n\n---\n\n| Neutron DAO Core | `neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff` | [cwd-core](https://github.com/neutron-org/neutron-dao) | 325 |\n| Single Proposal Module | `neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh` | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao) | 339 |\n| Single Pre-Proposal Module | `neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z` | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao) | 346 |\n\n---\n\n| Single Proposal Module | `neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh` | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao) | 339 |\n| Single Pre-Proposal Module | `neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z` | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao) | 346 |\n| Multiple Proposal Module | `neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40` | [cwd-proposal-multiple](https://github.com/neutron-org/neutron-dao) | 331 |\n```\n\n---\n\n## 8. Testnet Deployment\n**File:** /root/neutron/docs/resources/contracts/testnet.mdx\n**Section:** resources\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 15: | Name                                   | Address                                                                                                                                                                             | Source Code                                                                                                                                       |\n- Line 18: | Single Proposal Module                 | [neutron19sf2y4dvgt02kczemvhktrwvt4aunrahw8qkjq6u3pehdujwssgqrs5e4h](https://neutron.celat.one/pion-1/contracts/neutron19sf2y4dvgt02kczemvhktrwvt4aunrahw8qkjq6u3pehdujwssgqrs5e4h) | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-single)                            |\n- Line 19: | Single Pre-Proposal Module             | [neutron1fyhj2gq9k4dduahlyy46ffy22ad7lagglcec2acacyzjsd6w5n7qdx5hn4](https://neutron.celat.one/pion-1/contracts/neutron1fyhj2gq9k4dduahlyy46ffy22ad7lagglcec2acacyzjsd6w5n7qdx5hn4) | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-single)                   |\n- Line 20: | Multiple Proposal Module               | [neutron14yu369rhq9pz6clxrvpeyxcuj66ay9k98p2dfh3sc9tlwtcqaxcqpk8rky](https://neutron.celat.one/pion-1/contracts/neutron14yu369rhq9pz6clxrvpeyxcuj66ay9k98p2dfh3sc9tlwtcqaxcqpk8rky) | [cwd-proposal-multiple](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-multiple)                        |\n- Line 21: | Multiple Pre-Proposal Module           | [neutron1a73cny2tvr0wggxkfgw72pmr03jwz6vkg0m3q8dzu4qpd983yfcsmxcurx](https://neutron.celat.one/pion-1/contracts/neutron1a73cny2tvr0wggxkfgw72pmr03jwz6vkg0m3q8dzu4qpd983yfcsmxcurx) | [cwd-pre-propose-multiple](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-multiple)               |\n\n**Content Preview:**\n```\n\n| Name                                   | Address                                                                                                                                                                             | Source Code                                                                                                                                       |\n|----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|\n\n---\n\n| Neutron DAO Core                       | [neutron1kvxlf27r0h7mzjqgdydqdf76dtlyvwz6u9q8tysfae53ajv8urtq4fdkvy](https://neutron.celat.one/pion-1/contracts/neutron1kvxlf27r0h7mzjqgdydqdf76dtlyvwz6u9q8tysfae53ajv8urtq4fdkvy) | [cwd-core](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/cwd-core)                                                           |\n| Single Proposal Module                 | [neutron19sf2y4dvgt02kczemvhktrwvt4aunrahw8qkjq6u3pehdujwssgqrs5e4h](https://neutron.celat.one/pion-1/contracts/neutron19sf2y4dvgt02kczemvhktrwvt4aunrahw8qkjq6u3pehdujwssgqrs5e4h) | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-single)                            |\n| Single Pre-Proposal Module             | [neutron1fyhj2gq9k4dduahlyy46ffy22ad7lagglcec2acacyzjsd6w5n7qdx5hn4](https://neutron.celat.one/pion-1/contracts/neutron1fyhj2gq9k4dduahlyy46ffy22ad7lagglcec2acacyzjsd6w5n7qdx5hn4) | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-single)                   |\n\n---\n\n| Single Proposal Module                 | [neutron19sf2y4dvgt02kczemvhktrwvt4aunrahw8qkjq6u3pehdujwssgqrs5e4h](https://neutron.celat.one/pion-1/contracts/neutron19sf2y4dvgt02kczemvhktrwvt4aunrahw8qkjq6u3pehdujwssgqrs5e4h) | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-single)                            |\n| Single Pre-Proposal Module             | [neutron1fyhj2gq9k4dduahlyy46ffy22ad7lagglcec2acacyzjsd6w5n7qdx5hn4](https://neutron.celat.one/pion-1/contracts/neutron1fyhj2gq9k4dduahlyy46ffy22ad7lagglcec2acacyzjsd6w5n7qdx5hn4) | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-single)                   |\n| Multiple Proposal Module               | [neutron14yu369rhq9pz6clxrvpeyxcuj66ay9k98p2dfh3sc9tlwtcqaxcqpk8rky](https://neutron.celat.one/pion-1/contracts/neutron14yu369rhq9pz6clxrvpeyxcuj66ay9k98p2dfh3sc9tlwtcqaxcqpk8rky) | [cwd-proposal-multiple](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-multiple)                        |\n```\n\n---\n\n## 9. Technical Explanation\n**File:** /root/neutron/docs/developers/modules/admin/explanation.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 22: The keeper manages the module's state and provides the core functionality for proposal execution, whitelisting, and authority verification. It serves as the interface between the message server and the underlying blockchain state.\n- Line 29: ### Dual Proposal System\n- Line 31: The admin module implements a sophisticated dual proposal system to accommodate both legacy and modern governance approaches:\n- Line 33: #### Legacy Proposal Handling\n- Line 35: Legacy proposals follow the traditional Cosmos SDK governance pattern:\n\n**Content Preview:**\n```\n#### Keeper\nThe keeper manages the module's state and provides the core functionality for proposal execution, whitelisting, and authority verification. It serves as the interface between the message server and the underlying blockchain state.\n\n\n---\n\n\n### Dual Proposal System\n\n\n---\n\n\nThe admin module implements a sophisticated dual proposal system to accommodate both legacy and modern governance approaches:\n\n```\n\n---\n\n## 10. How-to\n**File:** /root/neutron/docs/developers/modules/admin/how-to.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 18: - Individual users cannot directly submit proposals or interact with the module\n- Line 27: 1. **Proposal Creation**: Community members create proposals through the DAO interface\n- Line 28: 2. **Community Voting**: NTRN token holders vote on the proposal\n- Line 29: 3. **Proposal Execution**: If approved, the Main DAO contract sends messages to the admin module\n- Line 35: Community Proposal \u2192 DAO Voting \u2192 Main DAO Contract \u2192 Admin Module \u2192 Network Changes\n\n**Content Preview:**\n```\n- Messages are sent using WebAssembly bindings from the Main DAO\n- Individual users cannot directly submit proposals or interact with the module\n- All administrative operations require DAO governance approval\n\n---\n\n\n1. **Proposal Creation**: Community members create proposals through the DAO interface\n2. **Community Voting**: NTRN token holders vote on the proposal\n\n---\n\n1. **Proposal Creation**: Community members create proposals through the DAO interface\n2. **Community Voting**: NTRN token holders vote on the proposal\n3. **Proposal Execution**: If approved, the Main DAO contract sends messages to the admin module\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "27e79477-2da2-4f4c-b9b7-84f62da3edce",
+            "tool_call_id": "call_3ugnqa9qc6mHjlEALAydDFQa",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_n90JHlbll8sjI7iK4JxiYheR",
+                        "function": {
+                            "arguments": "{\"query\": \"migrate \\\"new_code_id\\\" cw3\", \"section\": \"all\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 428,
+                    "prompt_tokens": 10202,
+                    "total_tokens": 10630,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 384,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 4096
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C58ArWEISKfqLnoMEcDlaBunCoNPo",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--c3301ef3-48c9-4883-b2a8-bdd92f0ddaee-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "migrate \"new_code_id\" cw3",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_n90JHlbll8sjI7iK4JxiYheR",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 10202,
+                "output_tokens": 428,
+                "total_tokens": 10630,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 4096
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 384
+                }
+            }
+        },
+        {
+            "content": "Found 3 result(s) for \"migrate \"new_code_id\" cw3\":\n\n## 1. How-to\n**File:** /root/neutron/docs/developers/modules/admin/how-to.mdx\n**Section:** developers\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 98: - **IBC Proposals**: Operations for modules that haven't migrated to SDK 0.47 patterns\n\n**Content Preview:**\n```\n- **WASM Proposals**: Contract instantiation, migration, and administration\n- **IBC Proposals**: Operations for modules that haven't migrated to SDK 0.47 patterns\n\n```\n\n---\n\n## 2. Admin Module\n**File:** /root/neutron/docs/developers/modules/admin/overview.mdx\n**Section:** developers\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 40: 1. **Legacy Proposals**: Traditional governance proposals rooted in the Cosmos SDK's `x/gov` module, supporting predefined proposals like `MigrateContract`, `InstantiateContract`, and parameter changes. These proposals are processed through dedicated handlers and remain supported for backward compatibility with modules like IBC that haven't fully transitioned to SDK 0.47 patterns.\n\n**Content Preview:**\n```\n\n1. **Legacy Proposals**: Traditional governance proposals rooted in the Cosmos SDK's `x/gov` module, supporting predefined proposals like `MigrateContract`, `InstantiateContract`, and parameter changes. These proposals are processed through dedicated handlers and remain supported for backward compatibility with modules like IBC that haven't fully transitioned to SDK 0.47 patterns.\n\n```\n\n---\n\n## 3. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 168: node migrate.js   # Handle migrations\n\n**Content Preview:**\n```\nnode deploy.js    # Deploy contract\nnode migrate.js   # Handle migrations  \nnode exec.js      # Execute contract functions\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "0ab83e7c-024f-49dd-8d94-422f6e776da9",
+            "tool_call_id": "call_n90JHlbll8sjI7iK4JxiYheR",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_Rj0PUsUKtBCOAEW7K02Vs9pk",
+                        "function": {
+                            "arguments": "{\"query\": \"propose msgs wasm migrate contract_addr\", \"section\": \"all\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 810,
+                    "prompt_tokens": 11147,
+                    "total_tokens": 11957,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 768,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C58B1k1JaSW0D39R7a5HFUDeTb1hC",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--487b950d-fd6c-44c8-a1bc-1c1824060abd-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "propose msgs wasm migrate contract_addr",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_Rj0PUsUKtBCOAEW7K02Vs9pk",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 11147,
+                "output_tokens": 810,
+                "total_tokens": 11957,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 768
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"propose msgs wasm migrate contract_addr\":\n\n## 1. Interchain Accounts with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_ica.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Interchain Accounts with CosmWasm\"\n- Line 23: - Have a basic understanding of CosmWasm smart contract development\n- Line 25: - Have completed the [Introduction to CosmWasm](/developers/tutorials/introduction_to_cosmwasm) tutorial\n- Line 29: Start by creating a new CosmWasm project using cargo-generate:\n- Line 32: cargo generate --git https://github.com/CosmWasm/cw-template.git --name neutron-ica-example\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Accounts with CosmWasm\"\ndescription: \"Learn how to build smart contracts that utilize interchain accounts to execute transactions on other chains\"\n\n---\n\n\n- Have a basic understanding of CosmWasm smart contract development\n- Be familiar with [Neutron's architecture](/developers/overview)\n\n---\n\n- Be familiar with [Neutron's architecture](/developers/overview)\n- Have completed the [Introduction to CosmWasm](/developers/tutorials/introduction_to_cosmwasm) tutorial\n\n```\n\n---\n\n## 2. Interchain Queries with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_icq.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Interchain Queries with CosmWasm\"\n- Line 22: - Have a basic understanding of CosmWasm smart contract development\n- Line 24: - Have completed the [Introduction to CosmWasm](/developers/tutorials/introduction_to_cosmwasm) tutorial\n- Line 28: Start by creating a new CosmWasm project using cargo-generate:\n- Line 31: cargo generate --git https://github.com/CosmWasm/cw-template.git --name neutron-icq-example\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Queries with CosmWasm\"\ndescription: \"Learn how to build smart contracts that query data from other blockchains using Neutron's ICQ module\"\n\n---\n\n\n- Have a basic understanding of CosmWasm smart contract development\n- Be familiar with [Neutron's architecture](/developers/overview)\n\n---\n\n- Be familiar with [Neutron's architecture](/developers/overview)\n- Have completed the [Introduction to CosmWasm](/developers/tutorials/introduction_to_cosmwasm) tutorial\n\n```\n\n---\n\n## 3. Introduction to CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/introduction_to_cosmwasm.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Introduction to CosmWasm\"\n- Line 6: This tutorial provides a gentle introduction to smart contract development on Neutron using CosmWasm. You'll learn the fundamentals of smart contracts and how to build them step by step.\n- Line 12: The counter contract template can be found in [this GitHub repository](https://github.com/CosmWasm/cw-template).\n- Line 67: use cosmwasm_std::Addr;\n- Line 97: Neutron utilizes [CosmWasm](https://cosmwasm.com/) as the smart contract execution layer. In CosmWasm, the uploading of a contract's code and the instantiation of a contract are regarded as separate events, unlike on Ethereum. This is to allow a small set of vetted contract archetypes to exist as multiple instances sharing the same base code, but be configured with different parameters (imagine one canonical ERC20, and multiple tokens that use its code).\n\n**Content Preview:**\n```\n---\ntitle: \"Introduction to CosmWasm\"\ndescription: \"A gentle introduction to smart contract development on Neutron\"\n\n---\n\n\nThis tutorial provides a gentle introduction to smart contract development on Neutron using CosmWasm. You'll learn the fundamentals of smart contracts and how to build them step by step.\n\n\n---\n\n\nThe counter contract template can be found in [this GitHub repository](https://github.com/CosmWasm/cw-template).\n\n```\n\n---\n\n## 4. ICTX Explanation\n**File:** /root/neutron/docs/developers/modules/interchaintxs/explanation.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 5: The Interchain Transactions module leverages IBC (Inter-Blockchain Communication) to enable CosmWasm smart contracts on Neutron to control accounts and execute transactions on remote chains. This document explains the key concepts and mechanics behind this functionality.\n- Line 13: A[CosmWasm Contract] -->|MsgRegisterInterchainAccount| B[Interchaintxs Module]\n- Line 14: A -->|MsgSubmitTx| B\n- Line 33: The port ID follows a specific format: `icacontroller-{contract_address}.{interchain_account_id}`. This ensures that each interchain account is uniquely associated with a specific contract and identifier.\n- Line 39: 1. The contract submits a `MsgSubmitTx` message containing one or more messages to execute\n\n**Content Preview:**\n```\n\nThe Interchain Transactions module leverages IBC (Inter-Blockchain Communication) to enable CosmWasm smart contracts on Neutron to control accounts and execute transactions on remote chains. This document explains the key concepts and mechanics behind this functionality.\n\n\n---\n\ngraph TB\n    A[CosmWasm Contract] -->|MsgRegisterInterchainAccount| B[Interchaintxs Module]\n    A -->|MsgSubmitTx| B\n\n---\n\n    A[CosmWasm Contract] -->|MsgRegisterInterchainAccount| B[Interchaintxs Module]\n    A -->|MsgSubmitTx| B\n    B -->|Create ICA| C[IBC Core]\n```\n\n---\n\n## 5. Admin Module\n**File:** /root/neutron/docs/developers/modules/admin/overview.mdx\n**Section:** developers\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 6: The admin module serves as Neutron's central governance mechanism, empowering the **Main DAO contract** to propose and execute critical network operations. Built with Cosmos SDK compatibility and upgraded for SDK 0.50, this module enables secure, controlled administration of the entire Neutron network.\n- Line 32: - **Smart Contract Management**: Executing WebAssembly (WASM) proposals for contract instantiation, migration, and administration\n- Line 40: 1. **Legacy Proposals**: Traditional governance proposals rooted in the Cosmos SDK's `x/gov` module, supporting predefined proposals like `MigrateContract`, `InstantiateContract`, and parameter changes. These proposals are processed through dedicated handlers and remain supported for backward compatibility with modules like IBC that haven't fully transitioned to SDK 0.47 patterns.\n- Line 57: 2. **Message Validation**: The admin module validates that proposed messages are whitelisted and properly formatted\n\n**Content Preview:**\n```\n\nThe admin module serves as Neutron's central governance mechanism, empowering the **Main DAO contract** to propose and execute critical network operations. Built with Cosmos SDK compatibility and upgraded for SDK 0.50, this module enables secure, controlled administration of the entire Neutron network.\n\n\n---\n\n- **Parameter Modifications**: Adjusting module parameters such as transaction fees, validator incentives, and governance thresholds\n- **Smart Contract Management**: Executing WebAssembly (WASM) proposals for contract instantiation, migration, and administration\n- **Network Upgrades**: Coordinating protocol upgrades and consensus parameter changes\n\n---\n\n\n1. **Legacy Proposals**: Traditional governance proposals rooted in the Cosmos SDK's `x/gov` module, supporting predefined proposals like `MigrateContract`, `InstantiateContract`, and parameter changes. These proposals are processed through dedicated handlers and remain supported for backward compatibility with modules like IBC that haven't fully transitioned to SDK 0.47 patterns.\n\n```\n\n---\n\n## 6. Overview\n**File:** /root/neutron/docs/developers/modules/tokenfactory/overview.mdx\n**Section:** developers\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 21: - **Before-Send Hooks**: Implement custom logic for token transfers via CosmWasm contracts\n- Line 88: message MsgSetDenomMetadata {\n- Line 96: message MsgSetBeforeSendHook {\n- Line 99: string contract_addr = 3;\n\n**Content Preview:**\n```\n\n- **Before-Send Hooks**: Implement custom logic for token transfers via CosmWasm contracts\n\n\n---\n\n```protobuf\nmessage MsgSetDenomMetadata {\n  string sender = 1;\n\n---\n\n```protobuf\nmessage MsgSetBeforeSendHook {\n  string sender = 1;\n```\n\n---\n\n## 7. How-to\n**File:** /root/neutron/docs/developers/modules/admin/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 43: Neutron does **not** use the standard Cosmos SDK `gov` module for proposals. All governance goes through the Main DAO contract via WASM execution.\n- Line 53: These interfaces handle the complexity of WASM message formatting and provide user-friendly proposal creation workflows.\n- Line 55: ### Method 2: Direct WASM Execute\n- Line 57: For programmatic proposal submission, use WASM execute messages to the Main DAO contract:\n- Line 60: # Execute a propose message on the Main DAO contract\n\n**Content Preview:**\n```\n<Warning>\nNeutron does **not** use the standard Cosmos SDK `gov` module for proposals. All governance goes through the Main DAO contract via WASM execution.\n</Warning>\n\n---\n\n\nThese interfaces handle the complexity of WASM message formatting and provide user-friendly proposal creation workflows.\n\n\n---\n\n\n### Method 2: Direct WASM Execute\n\n```\n\n---\n\n## 8. How-to\n**File:** /root/neutron/docs/developers/modules/contractmanager/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 12: // Example of a proper IBC acknowledgment handler in CosmWasm\n- Line 52: \"error\": \"codespace: wasm, code: 5\",\n- Line 59: ### Via CosmWasm Contract\n- Line 64: // Query failures from a CosmWasm contract\n- Line 67: contract_address: String,\n\n**Content Preview:**\n```\n```rust\n// Example of a proper IBC acknowledgment handler in CosmWasm\n#[entry_point]\n\n---\n\n      \"id\": \"1\",\n      \"error\": \"codespace: wasm, code: 5\",\n      \"sudo_payload\": \"...\"\n\n---\n\n\n### Via CosmWasm Contract\n\n```\n\n---\n\n## 9. Understanding Cron\n**File:** /root/neutron/docs/developers/modules/cron/explanation.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 32: - One or more CosmWasm contract messages to execute\n- Line 49: - The module constructs `wasmtypes.MsgExecuteContract` messages from the stored schedule data\n- Line 52: - Executes the messages using the WASM message server\n- Line 65: repeated MsgExecuteContract msgs = 3;      // Messages to execute\n- Line 109: - Messages must be properly formatted JSON for CosmWasm contracts\n\n**Content Preview:**\n```\n- The execution period (in blocks)\n- One or more CosmWasm contract messages to execute\n- The execution stage (BEGIN_BLOCKER or END_BLOCKER)\n\n---\n\n3. For each schedule that meets the execution condition:\n   - The module constructs `wasmtypes.MsgExecuteContract` messages from the stored schedule data\n   - Sets the sender as the Cron module account\n\n---\n\n   - Sets funds to empty (no tokens are sent)\n   - Executes the messages using the WASM message server\n   - Updates the schedule's `last_execute_height` to the current block height\n```\n\n---\n\n## 10. How-to\n**File:** /root/neutron/docs/developers/modules/cron/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 11: - Familiarity with CosmWasm contract development\n- Line 48: \"msgs\": [\n- Line 67: - **`msgs`**: Array of contract messages to execute\n- Line 102: use cosmwasm_std::{\n- Line 202: \"msgs\": [\n\n**Content Preview:**\n```\n- Understanding of Neutron governance processes\n- Familiarity with CosmWasm contract development\n- Access to governance proposal submission (for schedule creation)\n\n---\n\n      \"period\": 7200,\n      \"msgs\": [\n        {\n\n---\n\n- **`period`**: Number of blocks between executions\n- **`msgs`**: Array of contract messages to execute\n  - **`contract`**: Address of the contract to call\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "89bd8d98-5d20-4a55-b4b8-1cb22e3c1b8d",
+            "tool_call_id": "call_Rj0PUsUKtBCOAEW7K02Vs9pk",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_lnbASKgOYtluQnqV7U9FLga8",
+                        "function": {
+                            "arguments": "{\"query\": \"\\\"migrate\\\":{\\\"contract_addr\\\"\", \"section\": \"all\", \"max_results\": 20}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 744,
+                    "prompt_tokens": 14693,
+                    "total_tokens": 15437,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 704,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 11136
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C58BFmYDNEeaTm2ViMSpPPvvcS3Q9",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--bc22bb65-bb99-4f74-a0f3-38f45004e7a6-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "\"migrate\":{\"contract_addr\"",
+                        "section": "all",
+                        "max_results": 20
+                    },
+                    "id": "call_lnbASKgOYtluQnqV7U9FLga8",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 14693,
+                "output_tokens": 744,
+                "total_tokens": 15437,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11136
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 704
+                }
+            }
+        },
+        {
+            "content": "No results found for \"\"migrate\":{\"contract_addr\"\". Try different keywords or search terms.",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "09bf976a-af1c-45ba-b56a-f0f9ed76e7bd",
+            "tool_call_id": "call_lnbASKgOYtluQnqV7U9FLga8",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_vMfw66i5Ob6XlGjMLds61CGf",
+                        "function": {
+                            "arguments": "{\"query\": \"cw proposal single \\\"propose\\\" \\\"msgs\\\"\", \"section\": \"all\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 1004,
+                    "prompt_tokens": 15171,
+                    "total_tokens": 16175,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 960,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 14592
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C58BS7pMlsbIWovusxbfkiVJGEkJ1",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--af340c7a-395b-411e-9ee7-8d7039b7dbd9-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "cw proposal single \"propose\" \"msgs\"",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_vMfw66i5Ob6XlGjMLds61CGf",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 15171,
+                "output_tokens": 1004,
+                "total_tokens": 16175,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 14592
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 960
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"cw proposal single \"propose\" \"msgs\"\":\n\n## 1. Understanding Cron\n**File:** /root/neutron/docs/developers/modules/cron/explanation.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 29: When a governance proposal creates a schedule, it specifies:\n- Line 55: 4. **Atomicity**: All messages within a single schedule must succeed, or the entire schedule execution is rolled back.\n- Line 102: - There's a network-wide `limit` parameter (default: configurable) that restricts the number of schedules processed in a single block\n- Line 118: - Only governance proposals can manage schedules\n- Line 134: Supporting multiple messages in a single schedule enables more complex workflows:\n\n**Content Preview:**\n```\n\nWhen a governance proposal creates a schedule, it specifies:\n- A unique name for identification\n\n---\n\n\n4. **Atomicity**: All messages within a single schedule must succeed, or the entire schedule execution is rolled back.\n\n\n---\n\nTo prevent DoS attacks and excessive resource consumption:\n- There's a network-wide `limit` parameter (default: configurable) that restricts the number of schedules processed in a single block\n- If more schedules are due than the limit allows, some are delayed until subsequent blocks\n```\n\n---\n\n## 2. Mainnet Deployment\n**File:** /root/neutron/docs/resources/contracts/mainnet.mdx\n**Section:** resources\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 34: | Single Proposal Module                                | [neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh](https://neutron.celat.one/neutron-1/contracts/neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh) | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-single)                                 | [339](https://neutron.celat.one/neutron-1/codes/339/info)   |\n- Line 35: | Single Pre-Proposal Module                            | [neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z](https://neutron.celat.one/neutron-1/contracts/neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z) | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-single)                        | [346](https://neutron.celat.one/neutron-1/codes/346/info)   |\n- Line 36: | Multiple Proposal Module                              | [neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40](https://neutron.celat.one/neutron-1/contracts/neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40) | [cwd-proposal-multiple](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-multiple)                             | [331](https://neutron.celat.one/neutron-1/codes/331/info)   |\n- Line 37: | Multiple Pre-Proposal Module                          | [neutron1up07dctjqud4fns75cnpejr4frmjtddzsmwgcktlyxd4zekhwecqt2h8u6](https://neutron.celat.one/neutron-1/contracts/neutron1up07dctjqud4fns75cnpejr4frmjtddzsmwgcktlyxd4zekhwecqt2h8u6) | [cwd-pre-propose-multiple](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-multiple)                    | [341](https://neutron.celat.one/neutron-1/codes/341/info)   |\n- Line 38: | Overrule Proposal Module                              | [neutron12pwnhtv7yat2s30xuf4gdk9qm85v4j3e6p44let47pdffpklcxlq56v0te](https://neutron.celat.one/neutron-1/contracts/neutron12pwnhtv7yat2s30xuf4gdk9qm85v4j3e6p44let47pdffpklcxlq56v0te) | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-single)                                 | [339](https://neutron.celat.one/neutron-1/codes/339/info)   |\n\n**Content Preview:**\n```\n| Neutron DAO Core                                      | [neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff](https://neutron.celat.one/neutron-1/contracts/neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff) | [cwd-core](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/cwd-core)                                                                | [325](https://neutron.celat.one/neutron-1/codes/325/info)   |\n| Single Proposal Module                                | [neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh](https://neutron.celat.one/neutron-1/contracts/neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh) | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-single)                                 | [339](https://neutron.celat.one/neutron-1/codes/339/info)   |\n| Single Pre-Proposal Module                            | [neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z](https://neutron.celat.one/neutron-1/contracts/neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z) | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-single)                        | [346](https://neutron.celat.one/neutron-1/codes/346/info)   |\n\n---\n\n| Single Proposal Module                                | [neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh](https://neutron.celat.one/neutron-1/contracts/neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh) | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-single)                                 | [339](https://neutron.celat.one/neutron-1/codes/339/info)   |\n| Single Pre-Proposal Module                            | [neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z](https://neutron.celat.one/neutron-1/contracts/neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z) | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-single)                        | [346](https://neutron.celat.one/neutron-1/codes/346/info)   |\n| Multiple Proposal Module                              | [neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40](https://neutron.celat.one/neutron-1/contracts/neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40) | [cwd-proposal-multiple](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-multiple)                             | [331](https://neutron.celat.one/neutron-1/codes/331/info)   |\n\n---\n\n| Single Pre-Proposal Module                            | [neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z](https://neutron.celat.one/neutron-1/contracts/neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z) | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-single)                        | [346](https://neutron.celat.one/neutron-1/codes/346/info)   |\n| Multiple Proposal Module                              | [neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40](https://neutron.celat.one/neutron-1/contracts/neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40) | [cwd-proposal-multiple](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-multiple)                             | [331](https://neutron.celat.one/neutron-1/codes/331/info)   |\n| Multiple Pre-Proposal Module                          | [neutron1up07dctjqud4fns75cnpejr4frmjtddzsmwgcktlyxd4zekhwecqt2h8u6](https://neutron.celat.one/neutron-1/contracts/neutron1up07dctjqud4fns75cnpejr4frmjtddzsmwgcktlyxd4zekhwecqt2h8u6) | [cwd-pre-propose-multiple](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-multiple)                    | [341](https://neutron.celat.one/neutron-1/codes/341/info)   |\n```\n\n---\n\n## 3. Neutron DAO Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-dao.mdx\n**Section:** resources\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 14: | Single Proposal Module | `neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh` | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao) | 339 |\n- Line 15: | Single Pre-Proposal Module | `neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z` | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao) | 346 |\n- Line 16: | Multiple Proposal Module | `neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40` | [cwd-proposal-multiple](https://github.com/neutron-org/neutron-dao) | 331 |\n- Line 17: | Multiple Pre-Proposal Module | `neutron1up07dctjqud4fns75cnpejr4frmjtddzsmwgcktlyxd4zekhwecqt2h8u6` | [cwd-pre-propose-multiple](https://github.com/neutron-org/neutron-dao) | 341 |\n- Line 18: | Overrule Proposal Module | `neutron12pwnhtv7yat2s30xuf4gdk9qm85v4j3e6p44let47pdffpklcxlq56v0te` | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao) | 339 |\n\n**Content Preview:**\n```\n| Neutron DAO Core | `neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff` | [cwd-core](https://github.com/neutron-org/neutron-dao) | 325 |\n| Single Proposal Module | `neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh` | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao) | 339 |\n| Single Pre-Proposal Module | `neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z` | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao) | 346 |\n\n---\n\n| Single Proposal Module | `neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh` | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao) | 339 |\n| Single Pre-Proposal Module | `neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z` | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao) | 346 |\n| Multiple Proposal Module | `neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40` | [cwd-proposal-multiple](https://github.com/neutron-org/neutron-dao) | 331 |\n\n---\n\n| Single Pre-Proposal Module | `neutron1hulx7cgvpfcvg83wk5h96sedqgn72n026w6nl47uht554xhvj9nsgs8v0z` | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao) | 346 |\n| Multiple Proposal Module | `neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40` | [cwd-proposal-multiple](https://github.com/neutron-org/neutron-dao) | 331 |\n| Multiple Pre-Proposal Module | `neutron1up07dctjqud4fns75cnpejr4frmjtddzsmwgcktlyxd4zekhwecqt2h8u6` | [cwd-pre-propose-multiple](https://github.com/neutron-org/neutron-dao) | 341 |\n```\n\n---\n\n## 4. Testnet Deployment\n**File:** /root/neutron/docs/resources/contracts/testnet.mdx\n**Section:** resources\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 18: | Single Proposal Module                 | [neutron19sf2y4dvgt02kczemvhktrwvt4aunrahw8qkjq6u3pehdujwssgqrs5e4h](https://neutron.celat.one/pion-1/contracts/neutron19sf2y4dvgt02kczemvhktrwvt4aunrahw8qkjq6u3pehdujwssgqrs5e4h) | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-single)                            |\n- Line 19: | Single Pre-Proposal Module             | [neutron1fyhj2gq9k4dduahlyy46ffy22ad7lagglcec2acacyzjsd6w5n7qdx5hn4](https://neutron.celat.one/pion-1/contracts/neutron1fyhj2gq9k4dduahlyy46ffy22ad7lagglcec2acacyzjsd6w5n7qdx5hn4) | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-single)                   |\n- Line 20: | Multiple Proposal Module               | [neutron14yu369rhq9pz6clxrvpeyxcuj66ay9k98p2dfh3sc9tlwtcqaxcqpk8rky](https://neutron.celat.one/pion-1/contracts/neutron14yu369rhq9pz6clxrvpeyxcuj66ay9k98p2dfh3sc9tlwtcqaxcqpk8rky) | [cwd-proposal-multiple](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-multiple)                        |\n- Line 21: | Multiple Pre-Proposal Module           | [neutron1a73cny2tvr0wggxkfgw72pmr03jwz6vkg0m3q8dzu4qpd983yfcsmxcurx](https://neutron.celat.one/pion-1/contracts/neutron1a73cny2tvr0wggxkfgw72pmr03jwz6vkg0m3q8dzu4qpd983yfcsmxcurx) | [cwd-pre-propose-multiple](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-multiple)               |\n- Line 22: | Overrule Proposal Module               | [neutron164w6crv7u0ya0aqqr74ghzt8k4ycwfjrzekxms00vzh07wekj4sq6lk8w7](https://neutron.celat.one/pion-1/contracts/neutron164w6crv7u0ya0aqqr74ghzt8k4ycwfjrzekxms00vzh07wekj4sq6lk8w7) | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-single)                            |\n\n**Content Preview:**\n```\n| Neutron DAO Core                       | [neutron1kvxlf27r0h7mzjqgdydqdf76dtlyvwz6u9q8tysfae53ajv8urtq4fdkvy](https://neutron.celat.one/pion-1/contracts/neutron1kvxlf27r0h7mzjqgdydqdf76dtlyvwz6u9q8tysfae53ajv8urtq4fdkvy) | [cwd-core](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/cwd-core)                                                           |\n| Single Proposal Module                 | [neutron19sf2y4dvgt02kczemvhktrwvt4aunrahw8qkjq6u3pehdujwssgqrs5e4h](https://neutron.celat.one/pion-1/contracts/neutron19sf2y4dvgt02kczemvhktrwvt4aunrahw8qkjq6u3pehdujwssgqrs5e4h) | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-single)                            |\n| Single Pre-Proposal Module             | [neutron1fyhj2gq9k4dduahlyy46ffy22ad7lagglcec2acacyzjsd6w5n7qdx5hn4](https://neutron.celat.one/pion-1/contracts/neutron1fyhj2gq9k4dduahlyy46ffy22ad7lagglcec2acacyzjsd6w5n7qdx5hn4) | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-single)                   |\n\n---\n\n| Single Proposal Module                 | [neutron19sf2y4dvgt02kczemvhktrwvt4aunrahw8qkjq6u3pehdujwssgqrs5e4h](https://neutron.celat.one/pion-1/contracts/neutron19sf2y4dvgt02kczemvhktrwvt4aunrahw8qkjq6u3pehdujwssgqrs5e4h) | [cwd-proposal-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-single)                            |\n| Single Pre-Proposal Module             | [neutron1fyhj2gq9k4dduahlyy46ffy22ad7lagglcec2acacyzjsd6w5n7qdx5hn4](https://neutron.celat.one/pion-1/contracts/neutron1fyhj2gq9k4dduahlyy46ffy22ad7lagglcec2acacyzjsd6w5n7qdx5hn4) | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-single)                   |\n| Multiple Proposal Module               | [neutron14yu369rhq9pz6clxrvpeyxcuj66ay9k98p2dfh3sc9tlwtcqaxcqpk8rky](https://neutron.celat.one/pion-1/contracts/neutron14yu369rhq9pz6clxrvpeyxcuj66ay9k98p2dfh3sc9tlwtcqaxcqpk8rky) | [cwd-proposal-multiple](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-multiple)                        |\n\n---\n\n| Single Pre-Proposal Module             | [neutron1fyhj2gq9k4dduahlyy46ffy22ad7lagglcec2acacyzjsd6w5n7qdx5hn4](https://neutron.celat.one/pion-1/contracts/neutron1fyhj2gq9k4dduahlyy46ffy22ad7lagglcec2acacyzjsd6w5n7qdx5hn4) | [cwd-pre-propose-single](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-single)                   |\n| Multiple Proposal Module               | [neutron14yu369rhq9pz6clxrvpeyxcuj66ay9k98p2dfh3sc9tlwtcqaxcqpk8rky](https://neutron.celat.one/pion-1/contracts/neutron14yu369rhq9pz6clxrvpeyxcuj66ay9k98p2dfh3sc9tlwtcqaxcqpk8rky) | [cwd-proposal-multiple](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/proposal/cwd-proposal-multiple)                        |\n| Multiple Pre-Proposal Module           | [neutron1a73cny2tvr0wggxkfgw72pmr03jwz6vkg0m3q8dzu4qpd983yfcsmxcurx](https://neutron.celat.one/pion-1/contracts/neutron1a73cny2tvr0wggxkfgw72pmr03jwz6vkg0m3q8dzu4qpd983yfcsmxcurx) | [cwd-pre-propose-multiple](https://github.com/neutron-org/neutron-dao/tree/main/contracts/dao/pre-propose/cwd-pre-propose-multiple)               |\n```\n\n---\n\n## 5. Technical Explanation\n**File:** /root/neutron/docs/developers/modules/admin/explanation.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 22: The keeper manages the module's state and provides the core functionality for proposal execution, whitelisting, and authority verification. It serves as the interface between the message server and the underlying blockchain state.\n- Line 29: ### Dual Proposal System\n- Line 31: The admin module implements a sophisticated dual proposal system to accommodate both legacy and modern governance approaches:\n- Line 33: #### Legacy Proposal Handling\n- Line 35: Legacy proposals follow the traditional Cosmos SDK governance pattern:\n\n**Content Preview:**\n```\n#### Keeper\nThe keeper manages the module's state and provides the core functionality for proposal execution, whitelisting, and authority verification. It serves as the interface between the message server and the underlying blockchain state.\n\n\n---\n\n\n### Dual Proposal System\n\n\n---\n\n\nThe admin module implements a sophisticated dual proposal system to accommodate both legacy and modern governance approaches:\n\n```\n\n---\n\n## 6. How-to\n**File:** /root/neutron/docs/developers/modules/admin/how-to.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 18: - Individual users cannot directly submit proposals or interact with the module\n- Line 27: 1. **Proposal Creation**: Community members create proposals through the DAO interface\n- Line 28: 2. **Community Voting**: NTRN token holders vote on the proposal\n- Line 29: 3. **Proposal Execution**: If approved, the Main DAO contract sends messages to the admin module\n- Line 35: Community Proposal \u2192 DAO Voting \u2192 Main DAO Contract \u2192 Admin Module \u2192 Network Changes\n\n**Content Preview:**\n```\n- Messages are sent using WebAssembly bindings from the Main DAO\n- Individual users cannot directly submit proposals or interact with the module\n- All administrative operations require DAO governance approval\n\n---\n\n\n1. **Proposal Creation**: Community members create proposals through the DAO interface\n2. **Community Voting**: NTRN token holders vote on the proposal\n\n---\n\n1. **Proposal Creation**: Community members create proposals through the DAO interface\n2. **Community Voting**: NTRN token holders vote on the proposal\n3. **Proposal Execution**: If approved, the Main DAO contract sends messages to the admin module\n```\n\n---\n\n## 7. Admin Module\n**File:** /root/neutron/docs/developers/modules/admin/overview.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 3: description: \"Central governance module enabling DAO-driven network administration and proposal execution\"\n- Line 12: The admin module provides a unified interface for governance operations, supporting both legacy proposal mechanisms and modern message-based execution. Through careful whitelisting and permission controls, it ensures that only authorized operations can be performed while maintaining the flexibility needed for network evolution.\n- Line 29: The admin module operates on the principle of controlled delegation, where the **Neutron Main DAO contract** acts as the network's administrator with the authority to execute proposals that can significantly change the network state. This includes:\n- Line 32: - **Smart Contract Management**: Executing WebAssembly (WASM) proposals for contract instantiation, migration, and administration\n- Line 36: ### Dual Proposal Mechanism\n\n**Content Preview:**\n```\ntitle: \"Admin Module\"\ndescription: \"Central governance module enabling DAO-driven network administration and proposal execution\"\n---\n\n---\n\n\nThe admin module provides a unified interface for governance operations, supporting both legacy proposal mechanisms and modern message-based execution. Through careful whitelisting and permission controls, it ensures that only authorized operations can be performed while maintaining the flexibility needed for network evolution.\n\n\n---\n\n\nThe admin module operates on the principle of controlled delegation, where the **Neutron Main DAO contract** acts as the network's administrator with the authority to execute proposals that can significantly change the network state. This includes:\n\n```\n\n---\n\n## 8. Reference\n**File:** /root/neutron/docs/developers/modules/admin/reference.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 14: ### MsgSubmitProposal\n- Line 15: Submit a proposal with multiple messages for execution.\n- Line 21: ### MsgSubmitProposalLegacy\n- Line 22: Submit a proposal using legacy format for backward compatibility.\n- Line 25: - `content`: Proposal content in legacy format\n\n**Content Preview:**\n```\n\n### MsgSubmitProposal\nSubmit a proposal with multiple messages for execution.\n\n---\n\n### MsgSubmitProposal\nSubmit a proposal with multiple messages for execution.\n\n\n---\n\n\n### MsgSubmitProposalLegacy\nSubmit a proposal using legacy format for backward compatibility.\n```\n\n---\n\n## 9. How-to\n**File:** /root/neutron/docs/developers/modules/cron/how-to.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 6: This guide provides practical instructions for working with the Cron module, including creating governance proposals for schedules and handling scheduled executions in smart contracts.\n- Line 12: - Access to governance proposal submission (for schedule creation)\n- Line 20: - Schedule management requires proposals to either:\n- Line 25: **No Individual Access**: Unlike other modules, the Cron module does not accept direct user transactions. All schedule management must go through governance proposals.\n- Line 34: ### Step 1: Prepare Your Governance Proposal\n\n**Content Preview:**\n```\n\nThis guide provides practical instructions for working with the Cron module, including creating governance proposals for schedules and handling scheduled executions in smart contracts.\n\n\n---\n\n- Familiarity with CosmWasm contract development\n- Access to governance proposal submission (for schedule creation)\n\n\n---\n\n- Individual users and contracts cannot directly interact with this module\n- Schedule management requires proposals to either:\n  - **Main DAO**: Can create and remove any schedule\n```\n\n---\n\n## 10. Reference\n**File:** /root/neutron/docs/developers/modules/cron/reference.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 8: The Cron module accepts messages through governance proposals only.\n- Line 12: Creates a new schedule through governance proposal.\n- Line 26: Removes an existing schedule through governance proposal.\n- Line 37: Updates the module parameters through governance proposal.\n- Line 178: ### Governance Proposals\n\n**Content Preview:**\n```\n\nThe Cron module accepts messages through governance proposals only.\n\n\n---\n\n\nCreates a new schedule through governance proposal.\n\n\n---\n\n\nRemoves an existing schedule through governance proposal.\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "9b42d60a-1542-48ee-8fbe-adc3bda5e8c5",
+            "tool_call_id": "call_vMfw66i5Ob6XlGjMLds61CGf",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "{\n  \"Upgrade the CW20 NTRN token contract to code ID 777\": {\n    \"popularity\": 90,\n    \"command\": \"neutrond tx wasm execute <dao_contract_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"Upgrade CW20 NTRN token\\\",\\\"description\\\":\\\"Migrate CW20 contract to code id 777\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<cw20_contract_addr>\\\",\\\"new_code_id\\\":777,\\\"msg\\\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y\"\n  },\n  \"Migrate the Main DAO core contract to the latest code ID 325\": {\n    \"popularity\": 85,\n    \"command\": \"neutrond tx wasm execute <dao_contract_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"Core DAO migration\\\",\\\"description\\\":\\\"Move DAO core to code id 325\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<dao_core_addr>\\\",\\\"new_code_id\\\":325,\\\"msg\\\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y\"\n  },\n  \"Upgrade the Single-Proposal module on mainnet to code ID 339\": {\n    \"popularity\": 80,\n    \"command\": \"neutrond tx wasm execute <dao_contract_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"Upgrade Single-Proposal module\\\",\\\"description\\\":\\\"Migrate to code id 339\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<single_proposal_module_addr>\\\",\\\"new_code_id\\\":339,\\\"msg\\\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id neutron-1 --gas auto --gas-adjustment 1.3 -y\"\n  },\n  \"Run an emergency migration of the bridge relayer contract to code ID 212\": {\n    \"popularity\": 60,\n    \"command\": \"neutrond tx wasm execute <dao_contract_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"Emergency bridge relayer upgrade\\\",\\\"description\\\":\\\"Hot-fix migration to code id 212\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<bridge_relayer_addr>\\\",\\\"new_code_id\\\":212,\\\"msg\\\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y\"\n  },\n  \"Update the airdrop contract to new code ID 196\": {\n    \"popularity\": 55,\n    \"command\": \"neutrond tx wasm execute <dao_contract_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"Airdrop contract upgrade\\\",\\\"description\\\":\\\"Migrate merkle-airdrop to code id 196\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<airdrop_contract_addr>\\\",\\\"new_code_id\\\":196,\\\"msg\\\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y\"\n  },\n  \"Migrate the investors vesting contract to code ID 28 with updated schedule\": {\n    \"popularity\": 50,\n    \"command\": \"neutrond tx wasm execute <dao_contract_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"Investors vesting upgrade\\\",\\\"description\\\":\\\"Move vesting contract to code id 28 and apply new release plan\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<vesting_contract_addr>\\\",\\\"new_code_id\\\":28,\\\"msg\\\":{\\\"new_release_timestamp\\\":1700000000}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y\"\n  },\n  \"Patch the multisig treasury contract to code ID 410 using a custom migrate message\": {\n    \"popularity\": 45,\n    \"command\": \"neutrond tx wasm execute <dao_contract_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"Treasury multisig patch\\\",\\\"description\\\":\\\"Migrate to code id 410 with new threshold\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<treasury_multisig_addr>\\\",\\\"new_code_id\\\":410,\\\"msg\\\":{\\\"new_threshold\\\":\\\"0.6\\\"}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y\"\n  },\n  \"Move the interchain query helper contract to beta code ID 500\": {\n    \"popularity\": 40,\n    \"command\": \"neutrond tx wasm execute <dao_contract_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"ICQ helper beta migration\\\",\\\"description\\\":\\\"Upgrade helper contract to code id 500\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<icq_helper_addr>\\\",\\\"new_code_id\\\":500,\\\"msg\\\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y\"\n  },\n  \"Migrate the TokenFactory before-send hook contract to code ID 65\": {\n    \"popularity\": 35,\n    \"command\": \"neutrond tx wasm execute <dao_contract_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"TokenFactory hook upgrade\\\",\\\"description\\\":\\\"Migrate before-send hook to code id 65\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<before_send_hook_addr>\\\",\\\"new_code_id\\\":65,\\\"msg\\\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y\"\n  },\n  \"Upgrade the Cron scheduler registry contract to code ID 123\": {\n    \"popularity\": 30,\n    \"command\": \"neutrond tx wasm execute <dao_contract_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"Cron registry upgrade\\\",\\\"description\\\":\\\"Scheduler contract migration to code id 123\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<cron_registry_addr>\\\",\\\"new_code_id\\\":123,\\\"msg\\\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y\"\n  },\n  \"Migrate the IBC rate-limit contract to code ID 88\": {\n    \"popularity\": 25,\n    \"command\": \"neutrond tx wasm execute <dao_contract_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"IBC rate-limit contract upgrade\\\",\\\"description\\\":\\\"Move to code id 88\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<rate_limit_addr>\\\",\\\"new_code_id\\\":88,\\\"msg\\\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y\"\n  },\n  \"Switch the validator-set keeper contract to code ID 444\": {\n    \"popularity\": 20,\n    \"command\": \"neutrond tx wasm execute <dao_contract_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"Validator-set keeper migration\\\",\\\"description\\\":\\\"Upgrade contract to code id 444\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<valset_keeper_addr>\\\",\\\"new_code_id\\\":444,\\\"msg\\\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y\"\n  },\n  \"Upgrade the cw1-subkeys access control contract to code ID 456\": {\n    \"popularity\": 15,\n    \"command\": \"neutrond tx wasm execute <dao_contract_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"cw1-subkeys upgrade\\\",\\\"description\\\":\\\"Migrate access contract to code id 456\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<subkeys_contract_addr>\\\",\\\"new_code_id\\\":456,\\\"msg\\\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y\"\n  },\n  \"Migrate the liquidation module borrower registry contract to code ID 789\": {\n    \"popularity\": 10,\n    \"command\": \"neutrond tx wasm execute <dao_contract_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"Borrower registry upgrade\\\",\\\"description\\\":\\\"Migrate to code id 789\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<borrower_registry_addr>\\\",\\\"new_code_id\\\":789,\\\"msg\\\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y\"\n  },\n  \"Testnet: migrate the demo counter contract to code ID 42\": {\n    \"popularity\": 5,\n    \"command\": \"neutrond tx wasm execute <testnet_dao_addr> '{\\\"propose\\\":{\\\"title\\\":\\\"Testnet counter upgrade\\\",\\\"description\\\":\\\"Migrate demo counter to code id 42\\\",\\\"msgs\\\":[{\\\"wasm\\\":{\\\"migrate\\\":{\\\"contract_addr\\\":\\\"<counter_contract_addr>\\\",\\\"new_code_id\\\":42,\\\"msg\\\":{}}}}]}}' --node <grpc_node_testnet> --from <key> --chain-id pion-1 --gas auto --gas-adjustment 1.3 -y\"\n  }\n}",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 3346,
+                    "prompt_tokens": 23019,
+                    "total_tokens": 26365,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1280,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 15104
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C58BjKGOLAqIc18AuPCB2PA3RrCD9",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--a62e9f2f-e3c7-4d5d-9d1e-83603d4caae1-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 23019,
+                "output_tokens": 3346,
+                "total_tokens": 26365,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 15104
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1280
+                }
+            }
+        }
+    ]
+}

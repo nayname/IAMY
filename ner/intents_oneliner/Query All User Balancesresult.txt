@@ -1,0 +1,141 @@
+{
+    "messages": [
+        {
+            "content": "Query All User Balances",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "5e2302e5-e907-4ee3-bcf2-5efca4be7ea5",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_3C1u0V5hVp0A0b4Ry7NsIHEB",
+                        "function": {
+                            "arguments": "{\"query\":\"neutrond query bank balances\", \"section\":\"developers\", \"max_results\":10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 358,
+                    "prompt_tokens": 584,
+                    "total_tokens": 942,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 320,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C57oxUE5C4m7sPo71mbB2UlT3Pluf",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--a1e13012-0d1a-4e9b-9d57-639c94d0374c-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "neutrond query bank balances",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_3C1u0V5hVp0A0b4Ry7NsIHEB",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 584,
+                "output_tokens": 358,
+                "total_tokens": 942,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 320
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"neutrond query bank balances\":\n\n## 1. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 8: ## Key Advantages of SubQuery\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 2. Cosmopark Tutorial\n**File:** /root/neutron/docs/developers/tutorials/onboarding/cosmopark.mdx\n**Section:** developers\n**Relevance Score:** 14\n\n**Matching lines:**\n- Line 48: git clone https://github.com/neutron-org/neutron-query-relayer.git\n- Line 126: Access the node using the standard `neutrond` CLI:\n- Line 129: # Example: Query account balance\n- Line 130: neutrond q bank balances neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --node http://localhost:26657\n- Line 143: # Example: Query account\n\n**Content Preview:**\n```\ngit clone https://github.com/neutron-org/neutron-integration-tests.git\ngit clone https://github.com/neutron-org/neutron-query-relayer.git\n\n\n---\n\n\nAccess the node using the standard `neutrond` CLI:\n\n\n---\n\n```bash\n# Example: Query account balance\nneutrond q bank balances neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2 --node http://localhost:26657\n```\n\n---\n\n## 3. Smart Contract Integration Tests\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/smart-contracts.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 45: use neutron_sdk::bindings::{msg::NeutronMsg, query::NeutronQuery};\n- Line 47: use crate::contract::{execute, instantiate, query};\n- Line 48: use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};\n- Line 64: // Give accounts some initial balances\n- Line 67: .bank\n\n**Content Preview:**\n```\nuse cw_multi_test::{App, ContractWrapper, Executor};\nuse neutron_sdk::bindings::{msg::NeutronMsg, query::NeutronQuery};\n\n\n---\n\n\nuse crate::contract::{execute, instantiate, query};\nuse crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};\n\n---\n\nuse crate::contract::{execute, instantiate, query};\nuse crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};\n\n```\n\n---\n\n## 4. SDK & Developer Tools\n**File:** /root/neutron/docs/developers/sdk.mdx\n**Section:** developers\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 80: - Query functions for accessing chain data\n- Line 92: // Query tokens\n- Line 93: const balances = await client.getAllBalances('neutron1...');\n- Line 97: typeUrl: '/cosmos.bank.v1beta1.MsgSend',\n\n**Content Preview:**\n```\n- TypeScript types for all Neutron modules\n- Query functions for accessing chain data\n- Transaction builders for Neutron-specific messages\n\n---\n\n\n// Query tokens\nconst balances = await client.getAllBalances('neutron1...');\n\n---\n\n// Query tokens\nconst balances = await client.getAllBalances('neutron1...');\n\n```\n\n---\n\n## 5. How-to\n**File:** /root/neutron/docs/developers/modules/admin/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 61: neutrond tx wasm execute neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh \\\n- Line 75: neutrond tx wasm submit-proposal proposal.json \\\n- Line 163: ## Querying the Admin Module\n- Line 165: While you cannot submit proposals directly, you can query the admin module's state using standard query commands:\n- Line 168: # Query module parameters (if available)\n\n**Content Preview:**\n```\n# Execute a propose message on the Main DAO contract\nneutrond tx wasm execute neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh \\\n  '{\"propose\": {\"msg\": {\"propose_single\": {\"title\": \"Your Proposal Title\", \"description\": \"Your proposal description\", \"msgs\": [/* your admin module messages */]}}}}' \\\n\n---\n\n# Submit proposal via WASM module\nneutrond tx wasm submit-proposal proposal.json \\\n  --from=<your-key> \\\n\n---\n\n\n## Querying the Admin Module\n\n```\n\n---\n\n## 6. How-to\n**File:** /root/neutron/docs/developers/modules/contractmanager/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 37: To check if your contract has experienced any failures, you can use the Contract Manager query functionality:\n- Line 42: neutrond query contractmanager failures [contract-address]\n- Line 61: You can query failures from within another contract using bindings:\n- Line 64: // Query failures from a CosmWasm contract\n- Line 65: pub fn query_failures(\n\n**Content Preview:**\n```\n\nTo check if your contract has experienced any failures, you can use the Contract Manager query functionality:\n\n\n---\n\n```bash\nneutrond query contractmanager failures [contract-address]\n```\n\n---\n\n\nYou can query failures from within another contract using bindings:\n\n```\n\n---\n\n## 7. How-to\n**File:** /root/neutron/docs/developers/modules/cron/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 80: neutrond tx gov submit-proposal [proposal-file.json] \\\n- Line 342: ### Querying Schedules\n- Line 348: neutrond query cron list-schedule\n- Line 351: neutrond query cron show-schedule <schedule-name>\n- Line 354: neutrond query cron params\n\n**Content Preview:**\n```\n# Submit governance proposal\nneutrond tx gov submit-proposal [proposal-file.json] \\\n  --from=<your-key> \\\n\n---\n\n\n### Querying Schedules\n\n\n---\n\n# List all schedules\nneutrond query cron list-schedule\n\n```\n\n---\n\n## 8. Reference\n**File:** /root/neutron/docs/developers/modules/cron/reference.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 105: ## Query Methods\n- Line 113: neutrond query cron params\n- Line 127: neutrond query cron show-schedule [schedule-name]\n- Line 141: neutrond query cron list-schedule\n- Line 163: ### Query Commands\n\n**Content Preview:**\n```\n\n## Query Methods\n\n\n---\n\n```bash\nneutrond query cron params\n```\n\n---\n\n```bash\nneutrond query cron show-schedule [schedule-name]\n```\n```\n\n---\n\n## 9. How-to\n**File:** /root/neutron/docs/developers/modules/dex/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 46: - View current token balances on Neutron\n- Line 52: All DEX functionality is available through the `neutrond` command-line interface using positional arguments.\n- Line 59: neutrond tx dex deposit \\\n- Line 87: neutrond tx dex deposit \\\n- Line 106: neutrond tx dex withdrawal \\\n\n**Content Preview:**\n```\n- Transfer tokens from other chains to Neutron\n- View current token balances on Neutron\n- Withdraw tokens back to origin chains\n\n---\n\n\nAll DEX functionality is available through the `neutrond` command-line interface using positional arguments.\n\n\n---\n\n```bash\nneutrond tx dex deposit \\\n  alice \\\n```\n\n---\n\n## 10. How-to\n**File:** /root/neutron/docs/developers/modules/dynamicfees/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 60: neutrond tx gov submit-proposal proposal.json \\\n- Line 73: neutrond tx gov vote 123 yes \\\n- Line 127: ## Querying Module Information\n- Line 129: ### Query Current Parameters\n- Line 132: # Query current asset prices\n\n**Content Preview:**\n```\n```bash\nneutrond tx gov submit-proposal proposal.json \\\n  --from your-key \\\n\n---\n\n# Vote yes on proposal ID 123\nneutrond tx gov vote 123 yes \\\n  --from your-key \\\n\n---\n\n\n## Querying Module Information\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "3526b882-5190-40ea-9173-c800a1b38b4a",
+            "tool_call_id": "call_3C1u0V5hVp0A0b4Ry7NsIHEB",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "{\n  \"Show my wallet balance on Neutron mainnet\": {\n    \"popularity\": 100,\n    \"command\": \"neutrond query bank balances $WALLET_ADDR --node https://grpc-kaiyo-1.neutron.org:443\"\n  },\n  \"Check the token balances for a specific address\": {\n    \"popularity\": 95,\n    \"command\": \"neutrond query bank balances neutron1p9w4hdv0p04e6h4xprnvu7e4ve9twy0y0ghkde --node https://grpc-kaiyo-1.neutron.org:443\"\n  },\n  \"Get my testnet account balances\": {\n    \"popularity\": 90,\n    \"command\": \"neutrond query bank balances $TESTNET_ADDR --node https://grpc-pion-1.neutron.org:443\"\n  },\n  \"Display my wallet's balances in human-readable units\": {\n    \"popularity\": 85,\n    \"command\": \"neutrond query bank balances $WALLET_ADDR --node https://grpc-kaiyo-1.neutron.org:443 | jq -r '.balances[] | \\\"\\\\(.amount/1000000) NTRN - \\\\(.denom)\\\"'\"\n  },\n  \"Get only my NTRN token balance\": {\n    \"popularity\": 80,\n    \"command\": \"neutrond query bank balances $WALLET_ADDR --node https://grpc-kaiyo-1.neutron.org:443 | jq -r '.balances[] | select(.denom==\\\"untrn\\\")'\"\n  },\n  \"Query my balance using an environment variable for the node URL\": {\n    \"popularity\": 75,\n    \"command\": \"neutrond query bank balances $ADDR --node $GRPC_NODE\"\n  },\n  \"Check the balance of my friend\u2019s address\": {\n    \"popularity\": 70,\n    \"command\": \"neutrond query bank balances neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz --node https://grpc-kaiyo-1.neutron.org:443\"\n  },\n  \"Fetch balances and convert uNTRN to NTRN using jq\": {\n    \"popularity\": 68,\n    \"command\": \"neutrond query bank balances $WALLET_ADDR --node https://grpc-kaiyo-1.neutron.org:443 | jq '.balances[] | select(.denom==\\\"untrn\\\") | (.amount|tonumber)/1000000'\"\n  },\n  \"Check the balance of a multisig wallet\": {\n    \"popularity\": 65,\n    \"command\": \"neutrond query bank balances neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv --node https://grpc-kaiyo-1.neutron.org:443\"\n  },\n  \"Check how many IBC tokens are in my account\": {\n    \"popularity\": 60,\n    \"command\": \"neutrond query bank balances $WALLET_ADDR --node https://grpc-kaiyo-1.neutron.org:443 | jq '.balances[] | select(.denom|startswith(\\\"ibc/\\\"))'\"\n  },\n  \"Get my balances from a local full node\": {\n    \"popularity\": 55,\n    \"command\": \"neutrond query bank balances $WALLET_ADDR --node tcp://localhost:9090\"\n  },\n  \"Retrieve balances from a remote gRPC endpoint\": {\n    \"popularity\": 50,\n    \"command\": \"neutrond query bank balances $ADDR --node grpc://neutron-grpc.publicawesome.dev:9090\"\n  },\n  \"Check my balance from inside a Docker container\": {\n    \"popularity\": 45,\n    \"command\": \"docker exec -it neutron-node neutrond query bank balances $ADDR --node grpc://localhost:9090\"\n  },\n  \"Query the balance of my Ledger hardware wallet address\": {\n    \"popularity\": 40,\n    \"command\": \"neutrond query bank balances $LEDGER_ADDR --node https://grpc-kaiyo-1.neutron.org:443\"\n  },\n  \"Verify an address currently has zero balance\": {\n    \"popularity\": 35,\n    \"command\": \"neutrond query bank balances $EMPTY_ADDR --node https://grpc-kaiyo-1.neutron.org:443 | jq '.balances == []'\"\n  },\n  \"Output my balances as raw JSON\": {\n    \"popularity\": 33,\n    \"command\": \"neutrond query bank balances $ADDR --node https://grpc-kaiyo-1.neutron.org:443 --output json\"\n  },\n  \"Show the treasury wallet balance for our DAO\": {\n    \"popularity\": 30,\n    \"command\": \"neutrond query bank balances neutron1treasury0v0k985ku6zgga9r3e7tczspyj9aqeq9 --node https://grpc-kaiyo-1.neutron.org:443\"\n  },\n  \"Confirm a faucet deposit by querying my balance\": {\n    \"popularity\": 28,\n    \"command\": \"neutrond query bank balances $FAUCET_ADDR --node https://grpc-pion-1.neutron.org:443\"\n  },\n  \"Schedule a daily balance check with cron\": {\n    \"popularity\": 25,\n    \"command\": \"echo '0 8 * * * neutrond query bank balances $ADDR --node https://grpc-kaiyo-1.neutron.org:443 >> $HOME/neutron_balances.log' | crontab -\"\n  },\n  \"Double-check my balance before sending a transaction\": {\n    \"popularity\": 22,\n    \"command\": \"neutrond query bank balances $FROM_ADDR --node https://grpc-kaiyo-1.neutron.org:443\"\n  },\n  \"Loop over a list of addresses and show each balance\": {\n    \"popularity\": 20,\n    \"command\": \"for a in $(cat addresses.txt); do neutrond query bank balances $a --node https://grpc-kaiyo-1.neutron.org:443; done\"\n  },\n  \"Get my balance at a specific block height\": {\n    \"popularity\": 18,\n    \"command\": \"neutrond query bank balances $ADDR --node https://grpc-kaiyo-1.neutron.org:443 --height 1234567\"\n  },\n  \"Filter and show only IBC denomination balances\": {\n    \"popularity\": 16,\n    \"command\": \"neutrond query bank balances $ADDR --node https://grpc-kaiyo-1.neutron.org:443 | jq '.balances[] | select(.denom | test(\\\"^ibc/\\\"))'\"\n  },\n  \"Write my balance to a file for later processing\": {\n    \"popularity\": 14,\n    \"command\": \"neutrond query bank balances $ADDR --node https://grpc-kaiyo-1.neutron.org:443 > ~/balances/$(date +%F).json\"\n  },\n  \"Query my balance over a secure (TLS) gRPC connection\": {\n    \"popularity\": 12,\n    \"command\": \"neutrond query bank balances $ADDR --node grpcs://grpc-kaiyo-1.neutron.org:443\"\n  },\n  \"Fetch balances in protobuf format\": {\n    \"popularity\": 10,\n    \"command\": \"neutrond query bank balances $ADDR --node https://grpc-kaiyo-1.neutron.org:443 --output protobuf\"\n  },\n  \"Get balances using the test validator mnemonic address\": {\n    \"popularity\": 9,\n    \"command\": \"neutrond query bank balances $(neutrond keys show validator -a --keyring-backend test) --node http://localhost:9090\"\n  },\n  \"Check balances for an address stored in a shell variable\": {\n    \"popularity\": 7,\n    \"command\": \"neutrond query bank balances $MY_NEUTRON_ADDR --node $GRPC_NODE\"\n  },\n  \"Validate that my new account has the expected airdrop balance\": {\n    \"popularity\": 5,\n    \"command\": \"neutrond query bank balances neutron1aird70p7nz6n7dag9nxxxz5z4m5tgrq9yfy9fx --node https://grpc-kaiyo-1.neutron.org:443\"\n  },\n  \"Quickly view balances with a shortened address placeholder\": {\n    \"popularity\": 3,\n    \"command\": \"neutrond query bank balances <address> --node https://grpc-kaiyo-1.neutron.org:443\"\n  }\n}",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 6814,
+                    "prompt_tokens": 3490,
+                    "total_tokens": 10304,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 4928,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C57p3tMwOoSbh0sPV1SxSCFqWMcWU",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--1e34a8a8-1ee9-4a66-bdaa-03982573b0a6-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 3490,
+                "output_tokens": 6814,
+                "total_tokens": 10304,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 4928
+                }
+            }
+        }
+    ]
+}

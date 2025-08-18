@@ -1,0 +1,64 @@
+{
+    "Migrate Contract": {
+        "Upgrade the CW20 NTRN token contract to code ID 777": {
+            "popularity": 90,
+            "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"Upgrade CW20 NTRN token\",\"description\":\"Migrate CW20 contract to code id 777\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<cw20_contract_addr>\",\"new_code_id\":777,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y"
+        },
+        "Migrate the Main DAO core contract to the latest code ID 325": {
+            "popularity": 85,
+            "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"Core DAO migration\",\"description\":\"Move DAO core to code id 325\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<dao_core_addr>\",\"new_code_id\":325,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y"
+        },
+        "Upgrade the Single-Proposal module on mainnet to code ID 339": {
+            "popularity": 80,
+            "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"Upgrade Single-Proposal module\",\"description\":\"Migrate to code id 339\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<single_proposal_module_addr>\",\"new_code_id\":339,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id neutron-1 --gas auto --gas-adjustment 1.3 -y"
+        },
+        "Run an emergency migration of the bridge relayer contract to code ID 212": {
+            "popularity": 60,
+            "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"Emergency bridge relayer upgrade\",\"description\":\"Hot-fix migration to code id 212\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<bridge_relayer_addr>\",\"new_code_id\":212,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y"
+        },
+        "Update the airdrop contract to new code ID 196": {
+            "popularity": 55,
+            "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"Airdrop contract upgrade\",\"description\":\"Migrate merkle-airdrop to code id 196\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<airdrop_contract_addr>\",\"new_code_id\":196,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y"
+        },
+        "Migrate the investors vesting contract to code ID 28 with updated schedule": {
+            "popularity": 50,
+            "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"Investors vesting upgrade\",\"description\":\"Move vesting contract to code id 28 and apply new release plan\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<vesting_contract_addr>\",\"new_code_id\":28,\"msg\":{\"new_release_timestamp\":1700000000}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y"
+        },
+        "Patch the multisig treasury contract to code ID 410 using a custom migrate message": {
+            "popularity": 45,
+            "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"Treasury multisig patch\",\"description\":\"Migrate to code id 410 with new threshold\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<treasury_multisig_addr>\",\"new_code_id\":410,\"msg\":{\"new_threshold\":\"0.6\"}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y"
+        },
+        "Move the interchain query helper contract to beta code ID 500": {
+            "popularity": 40,
+            "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"ICQ helper beta migration\",\"description\":\"Upgrade helper contract to code id 500\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<icq_helper_addr>\",\"new_code_id\":500,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y"
+        },
+        "Migrate the TokenFactory before-send hook contract to code ID 65": {
+            "popularity": 35,
+            "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"TokenFactory hook upgrade\",\"description\":\"Migrate before-send hook to code id 65\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<before_send_hook_addr>\",\"new_code_id\":65,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y"
+        },
+        "Upgrade the Cron scheduler registry contract to code ID 123": {
+            "popularity": 30,
+            "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"Cron registry upgrade\",\"description\":\"Scheduler contract migration to code id 123\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<cron_registry_addr>\",\"new_code_id\":123,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y"
+        },
+        "Migrate the IBC rate-limit contract to code ID 88": {
+            "popularity": 25,
+            "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"IBC rate-limit contract upgrade\",\"description\":\"Move to code id 88\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<rate_limit_addr>\",\"new_code_id\":88,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y"
+        },
+        "Switch the validator-set keeper contract to code ID 444": {
+            "popularity": 20,
+            "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"Validator-set keeper migration\",\"description\":\"Upgrade contract to code id 444\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<valset_keeper_addr>\",\"new_code_id\":444,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y"
+        },
+        "Upgrade the cw1-subkeys access control contract to code ID 456": {
+            "popularity": 15,
+            "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"cw1-subkeys upgrade\",\"description\":\"Migrate access contract to code id 456\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<subkeys_contract_addr>\",\"new_code_id\":456,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y"
+        },
+        "Migrate the liquidation module borrower registry contract to code ID 789": {
+            "popularity": 10,
+            "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"Borrower registry upgrade\",\"description\":\"Migrate to code id 789\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<borrower_registry_addr>\",\"new_code_id\":789,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y"
+        },
+        "Testnet: migrate the demo counter contract to code ID 42": {
+            "popularity": 5,
+            "command": "neutrond tx wasm execute <testnet_dao_addr> '{\"propose\":{\"title\":\"Testnet counter upgrade\",\"description\":\"Migrate demo counter to code id 42\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<counter_contract_addr>\",\"new_code_id\":42,\"msg\":{}}}}]}}' --node <grpc_node_testnet> --from <key> --chain-id pion-1 --gas auto --gas-adjustment 1.3 -y"
+        }
+    }
+}

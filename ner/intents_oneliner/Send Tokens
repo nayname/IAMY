@@ -1,0 +1,124 @@
+{
+    "Send Tokens": {
+        "Send 10 NTRN from my default wallet to Bob's address": {
+            "popularity": 100,
+            "command": "neutrond tx bank send mywallet ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 10000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto -y"
+        },
+        "Transfer 100 NTRN to my exchange deposit address with automatic gas calculation": {
+            "popularity": 95,
+            "command": "neutrond tx bank send mywallet ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx 100000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto -y"
+        },
+        "Move 5 NTRN from my main key to my savings wallet": {
+            "popularity": 90,
+            "command": "neutrond tx bank send main ntrn1savingsxxxxxxxxxxxxxxxxxxxxxxxxxxxx 5000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto -y"
+        },
+        "Send 1 NTRN with a memo saying 'Thanks!'": {
+            "popularity": 85,
+            "command": "neutrond tx bank send mywallet ntrn1friendxxxxxxxxxxxxxxxxxxxxxxxxxxxx 1000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --memo \\\"Thanks!\\\" -y"
+        },
+        "Send 20 NTRN and set a manual fee of 500untrn": {
+            "popularity": 80,
+            "command": "neutrond tx bank send mywallet ntrn1otherxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 20000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --fees 500untrn --gas 200000 -y"
+        },
+        "Send 50 NTRN with higher gas price for faster inclusion": {
+            "popularity": 75,
+            "command": "neutrond tx bank send mywallet ntrn1fastxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 50000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --gas-prices 0.05untrn -y"
+        },
+        "Send 0.5 NTRN using my Ledger hardware wallet": {
+            "popularity": 70,
+            "command": "neutrond tx bank send ledger ntrn1depositxxxxxxxxxxxxxxxxxxxxxxxxxxxx 500000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto -y"
+        },
+        "Quickly send small amount 0.1 NTRN without interactive confirmation": {
+            "popularity": 65,
+            "command": "neutrond tx bank send mywallet ntrn1quickxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 100000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto -y"
+        },
+        "Send 3 NTRN using file keyring backend": {
+            "popularity": 60,
+            "command": "neutrond tx bank send mywallet ntrn1filewalletxxxxxxxxxxxxxxxxxxxxxxxx 3000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --keyring-backend file --gas auto -y"
+        },
+        "Generate an unsigned send transaction for 2 NTRN to sign offline later": {
+            "popularity": 55,
+            "command": "neutrond tx bank send mywallet ntrn1offlinexxxxxxxxxxxxxxxxxxxxxxxxxx 2000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --generate-only > unsigned_send.json"
+        },
+        "Broadcast a 2 NTRN transfer in async mode": {
+            "popularity": 50,
+            "command": "neutrond tx bank send mywallet ntrn1asyncxxxxxxxxxxxxxxxxxxxxxxxx 2000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --broadcast-mode async -y"
+        },
+        "Send 0.2 NTRN with low fees allowed": {
+            "popularity": 45,
+            "command": "neutrond tx bank send mywallet ntrn1lowfeexxxxxxxxxxxxxxxxxxxxxxxxxx 200000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas 80000 --fees 50untrn -y"
+        },
+        "Send 7 NTRN specifying gas-adjustment factor 1.5": {
+            "popularity": 40,
+            "command": "neutrond tx bank send mywallet ntrn1adjustxxxxxxxxxxxxxxxxxxxxxxxxxx 7000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --gas-adjustment 1.5 -y"
+        },
+        "Send 11 NTRN providing account number and sequence manually": {
+            "popularity": 35,
+            "command": "neutrond tx bank send mywallet ntrn1manualseqxxxxxxxxxxxxxxxxxxxxxxx 11000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --account-number 12345 --sequence 7 -y"
+        },
+        "Send 9 NTRN to a smart contract address": {
+            "popularity": 30,
+            "command": "neutrond tx bank send mywallet ntrn1contractxxxxxxxxxxxxxxxxxxxxxxxx 9000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto -y"
+        },
+        "Send 4 NTRN to a multisig account": {
+            "popularity": 28,
+            "command": "neutrond tx bank send mywallet ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx 4000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto -y"
+        },
+        "Send 0.01 NTRN on the testnet chain": {
+            "popularity": 26,
+            "command": "neutrond tx bank send mywallet ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx 10000untrn --node https://rpc.testnet.neutron.org:443 --chain-id neutron-testnet-1 --gas auto -y"
+        },
+        "Send 1000untrn to the burn address to remove supply": {
+            "popularity": 22,
+            "command": "neutrond tx bank send mywallet ntrn1dead000000000000000000000000000000000000 1000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas 80000 --fees 100untrn -y"
+        },
+        "Send 8 NTRN overriding the broadcast-mode to block": {
+            "popularity": 20,
+            "command": "neutrond tx bank send mywallet ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx 8000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --broadcast-mode block -y"
+        },
+        "Send 6 NTRN using legacy Amino JSON signing": {
+            "popularity": 18,
+            "command": "neutrond tx bank send mywallet ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx 6000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --sign-mode amino-json -y"
+        },
+        "Send 12 NTRN with gas amount explicitly set to 200000": {
+            "popularity": 16,
+            "command": "neutrond tx bank send mywallet ntrn1manualgasxxxxxxxxxxxxxxxxxxxxxxxx 12000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas 200000 --gas-prices 0.025untrn -y"
+        },
+        "Simulate a transfer of 13 NTRN before broadcasting": {
+            "popularity": 14,
+            "command": "neutrond tx bank send mywallet ntrn1simulatexxxxxxxxxxxxxxxxxxxxxxxx 13000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas simulate --gas-prices 0.025untrn"
+        },
+        "Send 0.3 NTRN with IBC denomination ibc/XYZ": {
+            "popularity": 12,
+            "command": "neutrond tx bank send mywallet cosmos1destinationxxxxxxxxxxxxxxxxxxxx 300000ibc/XYZ --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto -y"
+        },
+        "Send 15 NTRN using keyring-backend pass": {
+            "popularity": 10,
+            "command": "neutrond tx bank send mywallet ntrn1passbackendxxxxxxxxxxxxxxxxxxxxxxx 15000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --keyring-backend pass --gas auto -y"
+        },
+        "Send 2 NTRN and wait only for async acknowledgment": {
+            "popularity": 8,
+            "command": "neutrond tx bank send mywallet ntrn1asyncackxxxxxxxxxxxxxxxxxxxxxxxx 2000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --broadcast-mode async -y"
+        },
+        "Send 5 NTRN quickly using broadcast-mode sync": {
+            "popularity": 7,
+            "command": "neutrond tx bank send mywallet ntrn1syncxxxxxxxxxxxxxxxxxxxxxxxxxxx 5000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --broadcast-mode sync -y"
+        },
+        "Send 0.25 NTRN to an uppercase Bech32 address": {
+            "popularity": 6,
+            "command": "neutrond tx bank send mywallet NTRN1UPPERCASEADDRESSXXXXXXXXXXXX 250000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto -y"
+        },
+        "Send 14 NTRN using a custom RPC node URL": {
+            "popularity": 5,
+            "command": "neutrond tx bank send mywallet ntrn1customnodexxxxxxxxxxxxxxxxxxxx 14000000untrn --node https://my.custom.node:26657 --chain-id neutron-1 --gas auto -y"
+        },
+        "Send 1.1 NTRN with a timeout height of 1000000": {
+            "popularity": 3,
+            "command": "neutrond tx bank send mywallet ntrn1timeoutxxxxxxxxxxxxxxxxxxxxxxxx 1100000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --timeout-height 1000000 -y"
+        },
+        "Send 0.05 NTRN specifying a fee-granter address": {
+            "popularity": 1,
+            "command": "neutrond tx bank send mywallet ntrn1smallxxxxxxxxxxxxxxxxxxxxxxxxxx 50000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --fee-granter ntrn1feegranter0000000000000000000 -y"
+        }
+    }
+}
