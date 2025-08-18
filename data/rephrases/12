@@ -1,0 +1,812 @@
+[
+    {
+        "label": "Execute Contract",
+        "query": "Enable emergency shutdown on my protocol",
+        "command": "neutrond tx wasm execute $PROTOCOL_CONTRACT '{\"emergency_shutdown\":{\"enable\":true}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.5 --fees 8000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Please enable emergency shutdown for $PROTOCOL_CONTRACT from mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Activate the emergency shutdown mode on the protocol contract $PROTOCOL_CONTRACT using mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "I want to trigger emergency shutdown at $PROTOCOL_CONTRACT with mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "From mywallet, turn on emergency shutdown on $PROTOCOL_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Use mywallet to initiate the emergency shutdown function for $PROTOCOL_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Emergency shutdown should be enabled on contract $PROTOCOL_CONTRACT via mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Enable an emergency shutdown using mywallet for $PROTOCOL_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Trigger the emergency shutdown flag on $PROTOCOL_CONTRACT from wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Please activate emergency shutdown at the protocol contract address $PROTOCOL_CONTRACT with wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Set emergency shutdown to true on $PROTOCOL_CONTRACT using mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Mint 100 CW20 tokens to my address",
+        "command": "neutrond tx wasm execute $CW20_CONTRACT '{\"mint\":{\"recipient\":\"neutron1mywalletaddressxxxxxxxxxn\",\"amount\":\"100\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.2 --fees 3000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Please mint 100 CW20 tokens for neutron1mywalletaddressxxxxxxxxxn via $CW20_CONTRACT from mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Mint 100 tokens of CW20 to address neutron1mywalletaddressxxxxxxxxxn using mywallet on $CW20_CONTRACT",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "I would like to mint 100 CW20 for neutron1mywalletaddressxxxxxxxxxn from wallet mywallet through $CW20_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Using mywallet, mint exactly 100 CW20 units to neutron1mywalletaddressxxxxxxxxxn via contract $CW20_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Please have contract $CW20_CONTRACT mint 100 of the CW20 token for neutron1mywalletaddressxxxxxxxxxn using mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "B-WASM_MSG",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Minting 100 CW20 tokens to neutron1mywalletaddressxxxxxxxxxn, sent from mywallet through $CW20_CONTRACT",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Issue a mint of 100 CW20 to neutron1mywalletaddressxxxxxxxxxn with mywallet on $CW20_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Using contract $CW20_CONTRACT, mint 100 CW20 tokens for recipient neutron1mywalletaddressxxxxxxxxxn via mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "B-WASM_MSG",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Mywallet should mint 100 CW20 to address neutron1mywalletaddressxxxxxxxxxn using contract $CW20_CONTRACT",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "B-WASM_MSG",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Request to mint 100 units for neutron1mywalletaddressxxxxxxxxxn from mywallet on $CW20_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Transfer 50 CW20 tokens to another user",
+        "command": "neutrond tx wasm execute $CW20_CONTRACT '{\"transfer\":{\"recipient\":\"neutron1friendxxxxxxxxxxxxxxxxx\",\"amount\":\"50\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.2 --fees 3000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Transfer 50 CW20 tokens to neutron1friendxxxxxxxxxxxxxxxxx through $CW20_CONTRACT from mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Using mywallet, transfer 50 of the CW20 token to address neutron1friendxxxxxxxxxxxxxxxxx via contract $CW20_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "B-WASM_MSG",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Please execute a transfer of 50 CW20 to neutron1friendxxxxxxxxxxxxxxxxx using $CW20_CONTRACT and wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Send 50 CW20 tokens from mywallet to neutron1friendxxxxxxxxxxxxxxxxx via the $CW20_CONTRACT transfer function",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "B-WASM_MSG",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Initiate transfer 50 to neutron1friendxxxxxxxxxxxxxxxxx through $CW20_CONTRACT with sender mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "B-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "mywallet should transfer exactly 50 CW20 to neutron1friendxxxxxxxxxxxxxxxxx on $CW20_CONTRACT",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Transfer 50 tokens of type CW20 from wallet mywallet to recipient neutron1friendxxxxxxxxxxxxxxxxx via $CW20_CONTRACT",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Execute transfer on $CW20_CONTRACT sending 50 CW20 to neutron1friendxxxxxxxxxxxxxxxxx from mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Move 50 CW20 tokens to neutron1friendxxxxxxxxxxxxxxxxx, using mywallet, with contract $CW20_CONTRACT transfer",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "Please transfer 50 CW20 from mywallet account to the address neutron1friendxxxxxxxxxxxxxxxxx through contract $CW20_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Reset my counter contract back to zero",
+        "command": "neutrond tx wasm execute $COUNTER_CONTRACT '{\"reset\":{}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 3000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Reset the counter on $COUNTER_CONTRACT using mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Please execute reset for contract $COUNTER_CONTRACT from mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Using wallet mywallet, reset my counter contract $COUNTER_CONTRACT to zero",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Reset $COUNTER_CONTRACT with mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "I need to reset the counter stored in contract $COUNTER_CONTRACT using mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Perform a reset action on $COUNTER_CONTRACT from wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "mywallet should reset the counter contract $COUNTER_CONTRACT now",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Execute reset on contract $COUNTER_CONTRACT via mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Please reset counter to zero, contract is $COUNTER_CONTRACT, wallet is mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Trigger the reset message for $COUNTER_CONTRACT using the wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Remove cron schedule with ID 3",
+        "command": "neutrond tx wasm execute $CRON_CONTRACT '{\"remove_schedule\":{\"id\":3}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 4000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Remove schedule with ID 3 on $CRON_CONTRACT using mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Using mywallet, please remove schedule 3 from contract $CRON_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Execute remove_schedule for ID 3 on $CRON_CONTRACT via mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Please delete schedule number 3 from the cron contract $CRON_CONTRACT using wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Remove the cron schedule with identifier 3 on contract $CRON_CONTRACT from mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "mywallet should remove schedule 3 through $CRON_CONTRACT",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Initiate removal of schedule 3 on $CRON_CONTRACT using mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Please run remove schedule command id 3 on the contract $CRON_CONTRACT with wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Delete cron schedule 3 via $CRON_CONTRACT, using mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "From mywallet execute remove_schedule id 3 on contract $CRON_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            }
+        ]
+    }
+]

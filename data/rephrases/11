@@ -1,0 +1,811 @@
+[
+    {
+        "label": "Execute Contract",
+        "query": "Change the DAO proposal passing threshold to 60%",
+        "command": "neutrond tx wasm execute $DAO_CONTRACT '{\"update_config\":{\"threshold\":{\"absolute_percentage\":{\"percentage\":\"0.60\"}}}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.4 --fees 7000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Adjust DAO_CONTRACT voting threshold to 60 percent using mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Please update the DAO_CONTRACT so proposals need 60% support through mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Set proposal pass ratio to 0.60 on DAO_CONTRACT with mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Change threshold of DAO_CONTRACT to sixty percent via mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Using mywallet increase DAO_CONTRACT quorum requirement to 60 %",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "I want the DAO_CONTRACT threshold raised to 60 percent with mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "mywallet should set DAO_CONTRACT passing bar at 0.60",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "Modify DAO_CONTRACT so that 60 percent yes votes are required using mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Schedule a config update on DAO_CONTRACT to 60% threshold via mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Raise the DAO_CONTRACT proposal threshold from 50 to 60 percent with mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WALLET"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Send a GMP cross-chain message to an Ethereum contract",
+        "command": "neutrond tx wasm execute $GMP_CONTRACT '{\"execute_contract\":{\"dest_chain\":\"ethereum\",\"dest_contract_address\":\"0xAbCdEf...\",\"payload\":\"48656c6c6f20457468657265756d\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 2.0 --fees 15000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Use mywallet to send a cross chain call from GMP_CONTRACT to ethereum address 0xAbCdEf... with payload 48656c6c6f20457468657265756d",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "Send GMP_CONTRACT message over to ethereum contract 0xAbCdEf... carrying 48656c6c6f20457468657265756d using mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Please execute_contract on GMP_CONTRACT targeting ethereum 0xAbCdEf... and include payload 48656c6c6f20457468657265756d via mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Fire off a GMP cross chain message from mywallet using GMP_CONTRACT to ethereum address 0xAbCdEf... with hex 48656c6c6f20457468657265756d",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "GMP_CONTRACT should relay 48656c6c6f20457468657265756d to 0xAbCdEf... on ethereum via mywallet",
+                "bio_tags": [
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Using mywallet send 48656c6c6f20457468657265756d payload from GMP_CONTRACT to ethereum contract 0xAbCdEf...",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "relay a message to ethereum 0xAbCdEf... with data 48656c6c6f20457468657265756d via GMP_CONTRACT and mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Cross send 48656c6c6f20457468657265756d from GMP_CONTRACT toward ethereum address 0xAbCdEf... by mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Execute GMP transaction on mywallet to call 0xAbCdEf... on ethereum with payload 48656c6c6f20457468657265756d using GMP_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "mywallet wants GMP_CONTRACT to execute on ethereum destination 0xAbCdEf... sending 48656c6c6f20457468657265756d",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Place a market order to buy ATOM with 100 NTRN on the DEX",
+        "command": "neutrond tx wasm execute $DEX_CONTRACT '{\"market_order\":{\"side\":\"buy\",\"offer_asset\":{\"native_token\":{\"denom\":\"untrn\"}},\"offer_amount\":\"100000000\",\"ask_denom\":\"uatom\",\"slippage\":\"0.02\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.4 --fees 6000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Place a buy order on DEX_CONTRACT to acquire ATOM using 100 NTRN from mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Buy 100 NTRN worth of ATOM through mywallet on DEX_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Execute market buy for 100 NTRN into ATOM via DEX_CONTRACT using mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "With mywallet convert 100 NTRN to ATOM on the DEX_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Please market order ATOM for 100 NTRN using DEX_CONTRACT from mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "I want to spend 100 NTRN to get ATOM through DEX_CONTRACT with mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Use DEX_CONTRACT to buy ATOM costing 100 NTRN via mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Open a position of 100 NTRN into ATOM on DEX_CONTRACT with mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Swap 100 NTRN for ATOM using mywallet at DEX_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "mywallet should execute a dex market order on DEX_CONTRACT buying ATOM with 100 NTRN",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Claim staking rewards through my rewards contract",
+        "command": "neutrond tx wasm execute $REWARDS_CONTRACT '{\"claim_rewards\":{}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 4000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Claim my staking rewards from REWARDS_CONTRACT with mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Using mywallet trigger claim_rewards on REWARDS_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Please have REWARDS_CONTRACT distribute my rewards to mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Execute the claim on REWARDS_CONTRACT via mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "mywallet wants to collect staking payouts from REWARDS_CONTRACT",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Fetch accrued rewards using mywallet through REWARDS_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Redeem all earnings on REWARDS_CONTRACT with mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Call claim_rewards in REWARDS_CONTRACT from mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Use mywallet to claim rewards via REWARDS_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Collect my staking rewards now through REWARDS_CONTRACT using mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Set the vault deposit cap to 1,000,000 NTRN",
+        "command": "neutrond tx wasm execute $VAULT_CONTRACT '{\"update_config\":{\"deposit_cap\":\"1000000000000\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.4 --fees 7000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Set VAULT_CONTRACT deposit cap to 1000000 NTRN with mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Using mywallet raise the vault limit on VAULT_CONTRACT to 1,000,000 NTRN",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM"
+                ]
+            },
+            {
+                "rephrase": "Please update VAULT_CONTRACT deposit_cap so it allows 1000000 NTRN",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM"
+                ]
+            },
+            {
+                "rephrase": "Increase the maximum deposits to 1000000 NTRN in VAULT_CONTRACT via mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "mywallet should set a cap of 1,000,000 NTRN on VAULT_CONTRACT",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Cap VAULT_CONTRACT deposits at 1000000 NTRN using mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Update config for VAULT_CONTRACT to limit funds to 1000000 NTRN through mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Apply a deposit cap of 1,000,000 NTRN on VAULT_CONTRACT via mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Set 1000000 NTRN as the vault ceiling in VAULT_CONTRACT with mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Limit VAULT_CONTRACT to hold no more than 1,000,000 NTRN using mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "B-DENOM",
+                    "O",
+                    "B-WALLET"
+                ]
+            }
+        ]
+    }
+]

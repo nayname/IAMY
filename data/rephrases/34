@@ -1,0 +1,895 @@
+[
+    {
+        "label": "Send Tokens",
+        "query": "Send 4 NTRN to a multisig account",
+        "command": "neutrond tx bank send mywallet ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx 4000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto -y",
+        "generated_examples": [
+            {
+                "rephrase": "Send 4 NTRN from mywallet to ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx on neutron-1 via https://rpc.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please transfer four NTRN to the multisig ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx using mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "With gas auto send 4 NTRN from mywallet to ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Initiate a transfer of 4 NTRN on chain neutron-1 to address ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx using wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Dispatch 4 NTRN from account mywallet to ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx via the rpc https://rpc.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Could you move 4 NTRN to ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx using mywallet on neutron-1",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Send exactly 4 NTRN from mywallet towards the multisig address ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx with gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Use mywallet to forward 4 NTRN to ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx via https://rpc.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I want to send 4 NTRN on neutron-1 from mywallet to ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx with rpc https://rpc.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please broadcast 4 NTRN from wallet mywallet to the address ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx using gas auto on chain neutron-1",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Send Tokens",
+        "query": "Send 0.01 NTRN on the testnet chain",
+        "command": "neutrond tx bank send mywallet ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx 10000untrn --node https://rpc.testnet.neutron.org:443 --chain-id neutron-testnet-1 --gas auto -y",
+        "generated_examples": [
+            {
+                "rephrase": "Transfer 0.01 NTRN from mywallet to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx on neutron-testnet-1",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Please send exactly 0.01 NTRN to the test address ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx using mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "From mywallet dispatch 0.01 NTRN to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx through the node https://rpc.testnet.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Initiate a transfer of 0.01 NTRN on the neutron-testnet-1 chain to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx using wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Send 0.01 NTRN with gas auto from mywallet to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Use rpc https://rpc.testnet.neutron.org:443 to move 0.01 NTRN from mywallet over to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "I want to forward 0.01 NTRN to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx using mywallet on neutron-testnet-1",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Please broadcast 0.01 NTRN from wallet mywallet on chain neutron-testnet-1 to address ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Move precisely 0.01 NTRN through node https://rpc.testnet.neutron.org:443 from mywallet to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Send a tiny amount of 0.01 NTRN using gas auto from mywallet to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx via neutron-testnet-1",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Send Tokens",
+        "query": "Send 1000untrn to the burn address to remove supply",
+        "command": "neutrond tx bank send mywallet ntrn1dead000000000000000000000000000000000000 1000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas 80000 --fees 100untrn -y",
+        "generated_examples": [
+            {
+                "rephrase": "Send 1000untrn from mywallet to ntrn1dead000000000000000000000000000000000000 on neutron-1 with gas 80000 and fee 100untrn",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-FEES"
+                ]
+            },
+            {
+                "rephrase": "Please burn 1000untrn by transferring it from mywallet to address ntrn1dead000000000000000000000000000000000000",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Use node https://rpc.neutron.org:443 to send 1000untrn from mywallet to ntrn1dead000000000000000000000000000000000000",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Burn supply by moving 1000untrn to ntrn1dead000000000000000000000000000000000000 using wallet mywallet with fee 100untrn",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-FEES"
+                ]
+            },
+            {
+                "rephrase": "Transfer 1000untrn from mywallet to the burn address ntrn1dead000000000000000000000000000000000000 on chain neutron-1",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "I want to send 1000untrn with gas 80000 and fees 100untrn from mywallet to ntrn1dead000000000000000000000000000000000000",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Execute a burn by sending 1000untrn on neutron-1 via https://rpc.neutron.org:443 using wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Please dispatch 1000untrn with gas 80000 from mywallet to burn address ntrn1dead000000000000000000000000000000000000 on neutron-1",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Send 1000untrn from mywallet to ntrn1dead000000000000000000000000000000000000 via node https://rpc.neutron.org:443 with fee 100untrn",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-FEES"
+                ]
+            },
+            {
+                "rephrase": "Burn tokens by forwarding 1000untrn using gas 80000 and fees 100untrn from mywallet to ntrn1dead000000000000000000000000000000000000",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Send Tokens",
+        "query": "Send 8 NTRN overriding the broadcast-mode to block",
+        "command": "neutrond tx bank send mywallet ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx 8000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --broadcast-mode block -y",
+        "generated_examples": [
+            {
+                "rephrase": "Send 8 NTRN from mywallet to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx on neutron-1",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Please transfer exactly 8 NTRN to address ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx using wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Override mode to block and move 8 NTRN from mywallet to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Using gas auto transfer 8 NTRN on chain neutron-1 to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx via wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Forward 8 NTRN through node https://rpc.neutron.org:443 from mywallet to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "I need to send 8 NTRN to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx using mywallet with gas auto on neutron-1",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Dispatch 8 NTRN from mywallet towards the address ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx via rpc https://rpc.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Execute a transaction of 8 NTRN on neutron-1 from mywallet to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx with broadcast mode block",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Send eight NTRN from mywallet to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx using gas auto through https://rpc.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please move 8 NTRN to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx via mywallet using chain neutron-1",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Send Tokens",
+        "query": "Send 6 NTRN using legacy Amino JSON signing",
+        "command": "neutrond tx bank send mywallet ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx 6000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --sign-mode amino-json -y",
+        "generated_examples": [
+            {
+                "rephrase": "Send 6 NTRN from mywallet to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx on neutron-1",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Please transfer six NTRN to address ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx using wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Move 6 NTRN from mywallet to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx with gas auto",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Using rpc https://rpc.neutron.org:443 dispatch 6 NTRN to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx via mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Initiate a transfer of 6 NTRN on chain neutron-1 to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx using wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Forward six NTRN from mywallet towards ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx via https://rpc.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please send 6 NTRN using gas auto from mywallet to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Execute transaction of 6 NTRN on neutron-1 from mywallet to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx with sign mode amino",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Move 6 NTRN through node https://rpc.neutron.org:443 from wallet mywallet to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Send six NTRN from mywallet to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx via neutron-1 with gas auto",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "O",
+                    "B-GAS"
+                ]
+            }
+        ]
+    }
+]

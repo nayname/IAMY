@@ -1,0 +1,941 @@
+[
+    {
+        "label": "Query Contract State",
+        "query": "Show details of cron schedule named daily",
+        "command": "neutrond query wasm contract-state smart <cron_contract_address> '{\"show_schedule\":{\"name\":\"daily\"}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "Query the smart contract <cron_contract_address> for its daily schedule using message '{\"show_schedule\":{\"name\":\"daily\"}}' via node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please show me the cron schedule called daily from contract <cron_contract_address> with the query '{\"show_schedule\":{\"name\":\"daily\"}}' on <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Get details of the daily cron job by querying <cron_contract_address> using '{\"show_schedule\":{\"name\":\"daily\"}}' through node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show the cron schedule named daily on contract <cron_contract_address> with node <grpc_node> and message '{\"show_schedule\":{\"name\":\"daily\"}}'",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "Using <grpc_node> query smart contract <cron_contract_address> for its daily schedule via '{\"show_schedule\":{\"name\":\"daily\"}}'",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "I want to retrieve the daily schedule from <cron_contract_address> by sending '{\"show_schedule\":{\"name\":\"daily\"}}' to node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Can you pull the daily cron schedule using '{\"show_schedule\":{\"name\":\"daily\"}}' for contract <cron_contract_address> through <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Cron contract <cron_contract_address> should be queried with '{\"show_schedule\":{\"name\":\"daily\"}}' on node <grpc_node> to see its daily task",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Display the schedule named daily by sending '{\"show_schedule\":{\"name\":\"daily\"}}' to <cron_contract_address> via <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Need to see daily cron on <cron_contract_address> use '{\"show_schedule\":{\"name\":\"daily\"}}' and node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Contract State",
+        "query": "Check stored IBC failures for my contract",
+        "command": "neutrond query wasm contract-state smart <contractmanager_contract_address> '{\"failures\":{}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "Check the stored IBC failures on contract <contractmanager_contract_address> using '{\"failures\":{}}' via node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please query <contractmanager_contract_address> for its failures list with the message '{\"failures\":{}}' on <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I want to see any IBC error records run '{\"failures\":{}}' against contract <contractmanager_contract_address> through node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Retrieve failure entries from <contractmanager_contract_address> via '{\"failures\":{}}' and <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show me failures stored in the contract <contractmanager_contract_address> using node <grpc_node> with query '{\"failures\":{}}'",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "Using <grpc_node> query smart contract <contractmanager_contract_address> for IBC failures by sending '{\"failures\":{}}'",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "Fetch the list of recorded failures from <contractmanager_contract_address> with message '{\"failures\":{}}' through <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Contract <contractmanager_contract_address> should return its failures state when '{\"failures\":{}}' is executed on node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Run failures query '{\"failures\":{}}' against <contractmanager_contract_address> using <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Need to check failure logs send '{\"failures\":{}}' to contract <contractmanager_contract_address> via node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Contract State",
+        "query": "List contracts subscribed to staking hooks via Harpoon",
+        "command": "neutrond query wasm contract-state smart <harpoon_contract_address> '{\"subscribed_contracts\":{}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "List all contracts subscribed to staking hooks from Harpoon by querying <harpoon_contract_address> with '{\"subscribed_contracts\":{}}' on node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please show me which addresses are subscribed by Harpoon message '{\"subscribed_contracts\":{}}' against contract <harpoon_contract_address> via <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Get the subscribed contracts list using '{\"subscribed_contracts\":{}}' for <harpoon_contract_address> through node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query <harpoon_contract_address> on <grpc_node> with '{\"subscribed_contracts\":{}}' to see staking hook subscriptions",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Using node <grpc_node> ask contract <harpoon_contract_address> which contracts are subscribed via '{\"subscribed_contracts\":{}}'",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "I need the staking hooks subscription list run '{\"subscribed_contracts\":{}}' against Harpoon contract <harpoon_contract_address> through <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show subscriptions maintained by Harpoon using message '{\"subscribed_contracts\":{}}' on node <grpc_node> for contract <harpoon_contract_address>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Can you fetch subscribed contracts from <harpoon_contract_address> via <grpc_node> with '{\"subscribed_contracts\":{}}'",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "Need list of staking-hook subscribers query message '{\"subscribed_contracts\":{}}' to contract <harpoon_contract_address> using <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "List subscriber addresses by sending '{\"subscribed_contracts\":{}}' to <harpoon_contract_address> on node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Contract State",
+        "query": "Fetch DAO staked balance for my wallet",
+        "command": "neutrond query wasm contract-state smart <dao_staking_contract_address> '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "Fetch my DAO staked balance by querying <dao_staking_contract_address> with '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' on node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please get the staked amount for wallet <wallet_address> from contract <dao_staking_contract_address> using message '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' through <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I need to know how much I have staked run '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' against <dao_staking_contract_address> via node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Using <grpc_node> query DAO staking contract <dao_staking_contract_address> with '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}'",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "Get staked_balance for <wallet_address> from <dao_staking_contract_address> by sending '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' on <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show my DAO stake via message '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' to contract <dao_staking_contract_address> through node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please query stake holdings use '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' against <dao_staking_contract_address> on <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I want my staked balance run the JSON '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' on contract <dao_staking_contract_address> via node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Using message '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' query <dao_staking_contract_address> at <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Check how much is staked for me by sending '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' to <dao_staking_contract_address> using node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Contract State",
+        "query": "Retrieve current bridged supply across chains",
+        "command": "neutrond query wasm contract-state smart <bridge_contract_address> '{\"current_supply\":{}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "Retrieve the current bridged supply by querying <bridge_contract_address> with '{\"current_supply\":{}}' on node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please show me current_supply from contract <bridge_contract_address> using message '{\"current_supply\":{}}' via <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Get the total amount of tokens bridged run '{\"current_supply\":{}}' against <bridge_contract_address> through node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Using node <grpc_node> query <bridge_contract_address> for current bridged supply via '{\"current_supply\":{}}'",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "I want to see how much supply is currently bridged message '{\"current_supply\":{}}' to contract <bridge_contract_address> over <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show current_supply using '{\"current_supply\":{}}' on contract <bridge_contract_address> through node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Run the query '{\"current_supply\":{}}' against <bridge_contract_address> at <grpc_node> to fetch bridged supply",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Bridge contract <bridge_contract_address> should return current supply when '{\"current_supply\":{}}' is executed on node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Need the amount of tokens bridged query <bridge_contract_address> using <grpc_node> and message '{\"current_supply\":{}}'",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "What is the current bridged supply send '{\"current_supply\":{}}' to <bridge_contract_address> via node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    }
+]

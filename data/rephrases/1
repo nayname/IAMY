@@ -1,0 +1,672 @@
+[
+    {
+        "label": "Query All User Balances",
+        "query": "Show my wallet balance on Neutron mainnet",
+        "command": "neutrond query bank balances $WALLET_ADDR --node https://grpc-kaiyo-1.neutron.org:443",
+        "generated_examples": [
+            {
+                "rephrase": "Please show the balance of my wallet on the Neutron mainnet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "I-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Could you display my wallet balance on Neutron mainnet please",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "I-CHAIN_ID",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "I want to see what my wallet holds on Neutron mainnet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "I-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Get the balances for address neutron1xyz on the Neutron mainnet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "I-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "What is the balance on Kaiyo mainnet for my wallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "I-CHAIN_ID",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Give me the current funds in address neutron1abcd on mainnet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Check balance for neutron1p9w4hdv0p04e6h4xprnvu7e4ve9twy0y0ghkde",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "How much NTRN do I have in my wallet on Neutron mainnet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "I-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Print balances in my primary wallet on Neutron mainnet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "I-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Balance inquiry for wallet neutron1abcd on Neutron mainnet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CHAIN_ID",
+                    "I-CHAIN_ID"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Check the token balances for a specific address",
+        "command": "neutrond query bank balances neutron1p9w4hdv0p04e6h4xprnvu7e4ve9twy0y0ghkde --node https://grpc-kaiyo-1.neutron.org:443",
+        "generated_examples": [
+            {
+                "rephrase": "Show balances for neutron1p9w4hdv0p04e6h4xprnvu7e4ve9twy0y0ghkde",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "I want to see tokens held by address neutron1p9w4hdv0p04e6h4xprnvu7e4ve9twy0y0ghkde",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Please get the balances of neutron1p9w4hdv0p04e6h4xprnvu7e4ve9twy0y0ghkde",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Fetch all coins for account neutron1p9w4hdv0p04e6h4xprnvu7e4ve9twy0y0ghkde",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "What does address neutron1p9w4hdv0p04e6h4xprnvu7e4ve9twy0y0ghkde hold",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Give me token balances for neutron1p9w4hdv0p04e6h4xprnvu7e4ve9twy0y0ghkde",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Check every balance in neutron1p9w4hdv0p04e6h4xprnvu7e4ve9twy0y0ghkde",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "List available funds for neutron1p9w4hdv0p04e6h4xprnvu7e4ve9twy0y0ghkde",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Retrieve balances belonging to neutron1p9w4hdv0p04e6h4xprnvu7e4ve9twy0y0ghkde",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Balance query address neutron1p9w4hdv0p04e6h4xprnvu7e4ve9twy0y0ghkde",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Get my testnet account balances",
+        "command": "neutrond query bank balances $TESTNET_ADDR --node https://grpc-pion-1.neutron.org:443",
+        "generated_examples": [
+            {
+                "rephrase": "Show my testnet account balances",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "I-WALLET",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "I need to view the balance of address neutron1testxyz on testnet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Please get balances for my testnet wallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "I-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Fetch the funds in neutron1testxyz",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "What does my testnet wallet contain",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "I-WALLET",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Give me balances on Pion for neutron1testxyz",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "List coins in my testnet account please",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "I-WALLET",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Retrieve balances for neutron1testxyz on the test network",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "I-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Balance check for my testnet wallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "I-WALLET"
+                ]
+            },
+            {
+                "rephrase": "How many tokens does neutron1testxyz have on Pion testnet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "I-CHAIN_ID"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Display my wallet's balances in human-readable units",
+        "command": "neutrond query bank balances $WALLET_ADDR --node https://grpc-kaiyo-1.neutron.org:443 | jq -r '.balances[] | \"\\(.amount/1000000) NTRN - \\(.denom)\"'",
+        "generated_examples": [
+            {
+                "rephrase": "Show my wallet balances in human readable format",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Display balances for address neutron1abcd in a human-friendly form",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Could you print my wallet's balances with readable units",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Give me the balance for my wallet in an easy to read format",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "I want to see my wallet balances nicely formatted",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Print out the account neutron1abcd balances in a readable way",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please show balances for my wallet but make them human readable",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Make the balance list for my wallet easy to read",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Show wallet neutron1abcd balances in human format",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Display my wallet amounts using friendly units",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Get only my NTRN token balance",
+        "command": "neutrond query bank balances $WALLET_ADDR --node https://grpc-kaiyo-1.neutron.org:443 | jq -r '.balances[] | select(.denom==\"untrn\")'",
+        "generated_examples": [
+            {
+                "rephrase": "Show me only my NTRN balance",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "B-DENOM",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "I want the NTRN token amount in my wallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "I-DENOM",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Please retrieve my NTRN coin balance",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "B-DENOM",
+                    "I-DENOM",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Tell me how much NTRN my wallet has",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Give only the NTRN balance for wallet neutron1abcd",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Show just NTRN for my address neutron1abcd",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Fetch NTRN only from my wallet",
+                "bio_tags": [
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Get my wallet's NTRN balance",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET",
+                    "B-DENOM",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Return the amount of NTRN held by neutron1abcd",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "How many NTRN tokens are in my wallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "I-DENOM",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "I-WALLET"
+                ]
+            }
+        ]
+    }
+]

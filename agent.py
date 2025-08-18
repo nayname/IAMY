@@ -1,6 +1,6 @@
 import json
 
-from create import generate_code
+# from create import generate_code
 from lib.classifier import classifier_condition, classify
 # from lib.json_gen import generate_json
 # from iamy.docsrs_client import call_docsrs

@@ -1,0 +1,790 @@
+[
+    {
+        "label": "Query All User Balances",
+        "query": "Query my balance using an environment variable for the node URL",
+        "command": "neutrond query bank balances $ADDR --node $GRPC_NODE",
+        "generated_examples": [
+            {
+                "rephrase": "Get the balance of $ADDR through the node endpoint set in $GRPC_NODE",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show me how many coins are in $ADDR using $GRPC_NODE as the node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Retrieve account balances for $ADDR via the gRPC node $GRPC_NODE",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please query $ADDR balance with the node specified by $GRPC_NODE",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Could you check funds on $ADDR connecting to $GRPC_NODE",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Use $GRPC_NODE to fetch all balances belonging to $ADDR",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "I need to know the holdings of address $ADDR from the node $GRPC_NODE",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Run a balance check on $ADDR while pointing at $GRPC_NODE",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Balance request: address $ADDR, node URL $GRPC_NODE",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Using $GRPC_NODE get the current balance for wallet $ADDR",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Check the balance of my friend\u2019s address",
+        "command": "neutrond query bank balances neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz --node https://grpc-kaiyo-1.neutron.org:443",
+        "generated_examples": [
+            {
+                "rephrase": "Show balance for neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz via https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I need to check how many tokens my friend has at neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz using https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please retrieve balances for address neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz from node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Using the endpoint https://grpc-kaiyo-1.neutron.org:443 get the balance of neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Fetch my friend\u2019s account info at neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz through https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query balances on neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz using grpc node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show me the coins for neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz via the node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Balance lookup: neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I want the balance for address neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz pulled from https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Use https://grpc-kaiyo-1.neutron.org:443 to get the balance held at neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Fetch balances and convert uNTRN to NTRN using jq",
+        "command": "neutrond query bank balances $WALLET_ADDR --node https://grpc-kaiyo-1.neutron.org:443 | jq '.balances[] | select(.denom==\"untrn\") | (.amount|tonumber)/1000000'",
+        "generated_examples": [
+            {
+                "rephrase": "Get the uNTRN balance of $WALLET_ADDR through https://grpc-kaiyo-1.neutron.org:443 and convert it to NTRN",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please query $WALLET_ADDR on https://grpc-kaiyo-1.neutron.org:443 and show only the untrn amount",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Retrieve balances for $WALLET_ADDR via node https://grpc-kaiyo-1.neutron.org:443 filtering for the denom uNTRN",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM"
+                ]
+            },
+            {
+                "rephrase": "Use https://grpc-kaiyo-1.neutron.org:443 to pull the untrn holdings from $WALLET_ADDR",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "How much uNTRN does address $WALLET_ADDR contain according to https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Convert the micro denomination untrn from $WALLET_ADDR using the node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show balances but limit results to uNTRN for $WALLET_ADDR through https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Filter $WALLET_ADDR balances on https://grpc-kaiyo-1.neutron.org:443 so that only untrn is printed",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Using the node https://grpc-kaiyo-1.neutron.org:443 grab uNTRN balance for wallet $WALLET_ADDR and divide by one million",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please convert uNTRN amount held by $WALLET_ADDR fetched via https://grpc-kaiyo-1.neutron.org:443 into standard NTRN",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Check the balance of a multisig wallet",
+        "command": "neutrond query bank balances neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv --node https://grpc-kaiyo-1.neutron.org:443",
+        "generated_examples": [
+            {
+                "rephrase": "Check balance of multisig neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv via https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please retrieve funds for the multisig address neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv using https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "What is the balance held in neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv when queried through https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Using https://grpc-kaiyo-1.neutron.org:443 get the account info for neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Show coins in multisig wallet neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv via node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Get balances for neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv using the gRPC endpoint https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Could you list the balance of multisig address neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv through https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Balance query for neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv at node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I want to see funds inside neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv with data from https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Using the kaiyo node https://grpc-kaiyo-1.neutron.org:443 show balances for neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Check how many IBC tokens are in my account",
+        "command": "neutrond query bank balances $WALLET_ADDR --node https://grpc-kaiyo-1.neutron.org:443 | jq '.balances[] | select(.denom|startswith(\"ibc/\"))'",
+        "generated_examples": [
+            {
+                "rephrase": "List ibc/ token balances for $WALLET_ADDR through https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Using node https://grpc-kaiyo-1.neutron.org:443 show only IBC coins in wallet $WALLET_ADDR",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Fetch balances for $WALLET_ADDR and filter on ibc/ denominations via https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please return all IBC tokens that $WALLET_ADDR holds using https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "How many ibc/ assets are present for address $WALLET_ADDR when querying with https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show the subset of balances beginning with ibc/ for $WALLET_ADDR via node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Use https://grpc-kaiyo-1.neutron.org:443 to pull only IBC denom balances from wallet $WALLET_ADDR",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "I want just ibc/ coins for $WALLET_ADDR sourced through https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Filter $WALLET_ADDR balances by IBC using the endpoint https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query via https://grpc-kaiyo-1.neutron.org:443 and display ibc/ balance for $WALLET_ADDR",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            }
+        ]
+    }
+]

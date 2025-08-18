@@ -1,0 +1,1078 @@
+[
+    {
+        "label": "Upload Contract",
+        "query": "Upload a contract and pay fees in untrn with a custom gas price",
+        "command": "neutrond tx wasm store ./artifacts/fee_contract.wasm --from mykey --chain-id neutron-1 --node https://rpc-kralum.neutron-1.neutron.org:443 --gas auto --gas-prices 0.025untrn -y",
+        "generated_examples": [
+            {
+                "rephrase": "Upload the ./artifacts/fee_contract.wasm code from mykey on chain neutron-1 via https://rpc-kralum.neutron-1.neutron.org:443 using auto gas and a fee rate of 0.025 untrn",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "I-FEES"
+                ]
+            },
+            {
+                "rephrase": "Please store ./artifacts/fee_contract.wasm on neutron-1 from wallet mykey via https://rpc-kralum.neutron-1.neutron.org:443 set gas to auto and charge 0.025untrn per gas",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Initiate an upload of the artifact located at ./artifacts/fee_contract.wasm using mykey with auto gas gas price 0.025 untrn against neutron-1 through https://rpc-kralum.neutron-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "I-FEES",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Use the RPC https://rpc-kralum.neutron-1.neutron.org:443 to store ./artifacts/fee_contract.wasm from mykey on neutron-1 employing auto gas and a 0.025untrn fee rate",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Store fee contract ./artifacts/fee_contract.wasm with wallet mykey chain neutron-1 node https://rpc-kralum.neutron-1.neutron.org:443 gas auto gas price set to 0.025 untrn",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "I-FEES"
+                ]
+            },
+            {
+                "rephrase": "Upload ./artifacts/fee_contract.wasm on neutron-1 using mykey over https://rpc-kralum.neutron-1.neutron.org:443 with gas set to auto and fees of 0.025untrn",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FEES"
+                ]
+            },
+            {
+                "rephrase": "Please push the fee_contract.wasm located at ./artifacts/fee_contract.wasm from mykey to the neutron-1 network via https://rpc-kralum.neutron-1.neutron.org:443 with auto gas and 0.025 untrn fee",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "I-FEES",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Execute a wasm store for ./artifacts/fee_contract.wasm choose mykey as signer RPC endpoint https://rpc-kralum.neutron-1.neutron.org:443 chain neutron-1 gas auto fee 0.025untrn",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "B-FEES"
+                ]
+            },
+            {
+                "rephrase": "I want to upload ./artifacts/fee_contract.wasm using account mykey on neutron-1 with auto gas via https://rpc-kralum.neutron-1.neutron.org:443 and a gas price of 0.025 untrn",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "I-FEES"
+                ]
+            },
+            {
+                "rephrase": "Store the contract file ./artifacts/fee_contract.wasm to neutron-1 using mykey RPC https://rpc-kralum.neutron-1.neutron.org:443 auto gas and 0.025untrn fees",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-NODE",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Upload Contract",
+        "query": "Upload my contract but broadcast the transaction in sync mode",
+        "command": "neutrond tx wasm store ./artifacts/my_contract.wasm --from mykey --chain-id neutron-1 --node https://rpc-kralum.neutron-1.neutron.org:443 --gas auto -y --broadcast-mode sync",
+        "generated_examples": [
+            {
+                "rephrase": "Upload ./artifacts/my_contract.wasm from mykey on neutron-1 via https://rpc-kralum.neutron-1.neutron.org:443 using auto gas and broadcast it in sync mode",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please store my wasm code at ./artifacts/my_contract.wasm with account mykey chain neutron-1 node https://rpc-kralum.neutron-1.neutron.org:443 auto gas broadcast sync",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Initiate a sync-mode broadcast that uploads ./artifacts/my_contract.wasm via https://rpc-kralum.neutron-1.neutron.org:443 using signer mykey on neutron-1 with auto gas",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-GAS",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Upload my_contract.wasm ./artifacts/my_contract.wasm using mykey target neutron-1 endpoint https://rpc-kralum.neutron-1.neutron.org:443 gas auto broadcast-mode sync",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Send the store tx for ./artifacts/my_contract.wasm with wallet mykey on neutron-1 using auto gas through https://rpc-kralum.neutron-1.neutron.org:443 and broadcast sync",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Use auto gas to upload ./artifacts/my_contract.wasm via https://rpc-kralum.neutron-1.neutron.org:443 signer mykey network neutron-1 broadcast in sync mode",
+                "bio_tags": [
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "From mykey store ./artifacts/my_contract.wasm on neutron-1 contacting https://rpc-kralum.neutron-1.neutron.org:443 gas auto broadcast sync",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Make a sync broadcast of the store action for ./artifacts/my_contract.wasm with auto gas node https://rpc-kralum.neutron-1.neutron.org:443 chain neutron-1 signer mykey",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Upload the artifact ./artifacts/my_contract.wasm over https://rpc-kralum.neutron-1.neutron.org:443 auto gas account mykey neutron-1 broadcast sync",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-NODE",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "B-CHAIN_ID",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Sync broadcast wanted store ./artifacts/my_contract.wasm using mykey on neutron-1 via https://rpc-kralum.neutron-1.neutron.org:443 with gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-GAS"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Upload Contract",
+        "query": "Upload a contract to a local devnet",
+        "command": "neutrond tx wasm store ./artifacts/dev_contract.wasm --from local --chain-id localnet --node tcp://localhost:26657 --gas auto -y",
+        "generated_examples": [
+            {
+                "rephrase": "Upload ./artifacts/dev_contract.wasm from local to the localnet chain using node tcp://localhost:26657 with gas auto",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Please store my dev contract located at ./artifacts/dev_contract.wasm on localnet via tcp://localhost:26657 using wallet local and auto gas",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-GAS",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Initiate a wasm store for ./artifacts/dev_contract.wasm with signer local network localnet endpoint tcp://localhost:26657 gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Use node tcp://localhost:26657 to upload ./artifacts/dev_contract.wasm on localnet as local with gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Upload the dev contract ./artifacts/dev_contract.wasm using wallet local chain-id localnet rpc tcp://localhost:26657 gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "From account local send ./artifacts/dev_contract.wasm to localnet through tcp://localhost:26657 with auto gas",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Deploy ./artifacts/dev_contract.wasm on the devnet localnet using node tcp://localhost:26657 signer local gas auto",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Store the contract file ./artifacts/dev_contract.wasm wallet local chain localnet rpc tcp://localhost:26657 gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Upload ./artifacts/dev_contract.wasm set chain-id to localnet node tcp://localhost:26657 from local gas auto",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Use gas auto to store ./artifacts/dev_contract.wasm on localnet via tcp://localhost:26657 with signer local",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Upload Contract",
+        "query": "Upload a contract using my Ledger hardware wallet",
+        "command": "neutrond tx wasm store ./artifacts/my_contract.wasm --from ledger --keyring-backend test --chain-id neutron-1 --node https://rpc-kralum.neutron-1.neutron.org:443 --gas auto -y",
+        "generated_examples": [
+            {
+                "rephrase": "Upload ./artifacts/my_contract.wasm with the ledger wallet to neutron-1 through https://rpc-kralum.neutron-1.neutron.org:443 using auto gas",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please store my_contract.wasm located at ./artifacts/my_contract.wasm signer ledger network neutron-1 rpc https://rpc-kralum.neutron-1.neutron.org:443 gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Use the Ledger account ledger to push ./artifacts/my_contract.wasm to neutron-1 via https://rpc-kralum.neutron-1.neutron.org:443 gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Store ./artifacts/my_contract.wasm on neutron-1 using ledger wallet endpoint https://rpc-kralum.neutron-1.neutron.org:443 auto gas",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "B-GAS",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "I need to upload ./artifacts/my_contract.wasm via https://rpc-kralum.neutron-1.neutron.org:443 with auto gas chain neutron-1 signer ledger",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Deploy the contract file at ./artifacts/my_contract.wasm using ledger on neutron-1 through https://rpc-kralum.neutron-1.neutron.org:443 with gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Use auto gas to store ./artifacts/my_contract.wasm from ledger onto neutron-1 RPC https://rpc-kralum.neutron-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Send a wasm store transaction for ./artifacts/my_contract.wasm with wallet ledger RPC endpoint https://rpc-kralum.neutron-1.neutron.org:443 chain neutron-1 gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Store ./artifacts/my_contract.wasm using ledger as the signer chain-id neutron-1 node https://rpc-kralum.neutron-1.neutron.org:443 gas auto",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Ledger wallet should upload ./artifacts/my_contract.wasm to neutron-1 via https://rpc-kralum.neutron-1.neutron.org:443 and use gas auto",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "B-GAS"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Upload Contract",
+        "query": "Generate the store-contract transaction JSON without broadcasting",
+        "command": "neutrond tx wasm store ./artifacts/my_contract.wasm --from mykey --chain-id neutron-1 --node https://rpc-kralum.neutron-1.neutron.org:443 --gas auto --generate-only > store_contract.json",
+        "generated_examples": [
+            {
+                "rephrase": "Generate only the store tx for ./artifacts/my_contract.wasm using mykey on neutron-1 via https://rpc-kralum.neutron-1.neutron.org:443 with auto gas no broadcast",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please create the store transaction JSON for ./artifacts/my_contract.wasm signer mykey network neutron-1 node https://rpc-kralum.neutron-1.neutron.org:443 gas auto but do not broadcast",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Prepare but don't send the store command for ./artifacts/my_contract.wasm with wallet mykey chain neutron-1 rpc https://rpc-kralum.neutron-1.neutron.org:443 gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Generate-only mode store ./artifacts/my_contract.wasm from mykey on neutron-1 using https://rpc-kralum.neutron-1.neutron.org:443 gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "I just want the unsigned tx for ./artifacts/my_contract.wasm account mykey chain neutron-1 node https://rpc-kralum.neutron-1.neutron.org:443 gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Create but don't broadcast a wasm store of ./artifacts/my_contract.wasm using mykey on neutron-1 with node https://rpc-kralum.neutron-1.neutron.org:443 and auto gas",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Generate offline tx ./artifacts/my_contract.wasm signer mykey chain neutron-1 rpc https://rpc-kralum.neutron-1.neutron.org:443 gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Prepare the JSON file for storing ./artifacts/my_contract.wasm using mykey account set chain-id neutron-1 node https://rpc-kralum.neutron-1.neutron.org:443 gas auto no broadcast",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Without sending it build the tx that stores ./artifacts/my_contract.wasm use mykey rpc https://rpc-kralum.neutron-1.neutron.org:443 chain neutron-1 gas auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Generate-only store for ./artifacts/my_contract.wasm signer is mykey node https://rpc-kralum.neutron-1.neutron.org:443 chain neutron-1 gas auto skip broadcast",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-CHAIN_ID",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O"
+                ]
+            }
+        ]
+    }
+]

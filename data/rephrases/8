@@ -1,0 +1,890 @@
+[
+    {
+        "label": "Execute Contract",
+        "query": "Cancel order #12345 on the DEX",
+        "command": "neutrond tx wasm execute $DEX_CONTRACT '{\"cancel_order\":{\"id\":\"12345\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 4000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Please cancel order 12345 on $DEX_CONTRACT using mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "With mywallet execute a cancellation of order 12345 through the DEX contract $DEX_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Cancel the DEX order number 12345 from mywallet against $DEX_CONTRACT",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "I want mywallet to submit a cancel order for id 12345 to $DEX_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Using mywallet please instruct $DEX_CONTRACT to cancel order 12345",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "Make the DEX contract $DEX_CONTRACT revoke order 12345 via mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "mywallet should cancel the trade with id 12345 on $DEX_CONTRACT",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Please run a cancel_order message for 12345 using contract $DEX_CONTRACT from mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Send cancel order command 12345 to $DEX_CONTRACT with mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Instruct the DEX smart contract $DEX_CONTRACT to cancel order number 12345 from mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WALLET"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Schedule my contract to run every 50 blocks using the Cron module",
+        "command": "neutrond tx wasm execute $CRON_CONTRACT '{\"create_schedule\":{\"name\":\"heartbeat\",\"period\":50,\"msgs\":[{\"wasm\":{\"execute\":{\"contract_addr\":\"$MY_CONTRACT\",\"msg\":\"eyJoZWFydGJlYXQiOnt9fQ==\",\"funds\":[]}}}],\"execution_stage\":\"EXECUTION_STAGE_END_BLOCKER\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.4 --fees 8000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Set up a heartbeat schedule every 50 blocks on $CRON_CONTRACT using mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "With mywallet register a recurring task named heartbeat that fires each 50 blocks via $CRON_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Schedule my contract $CRON_CONTRACT to ping every 50 blocks paying from mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Create a cron job called heartbeat with period 50 blocks on $CRON_CONTRACT via mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Use mywallet to establish the heartbeat schedule every 50 block interval in $CRON_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Register heartbeat to run every 50 blocks on the cron contract $CRON_CONTRACT from mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Set heartbeat schedule period 50 blocks via $CRON_CONTRACT charge mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Every 50 blocks trigger heartbeat by scheduling it on $CRON_CONTRACT using mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "mywallet wants to create a heartbeat cron that executes every 50 blocks on $CRON_CONTRACT",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Please configure $CRON_CONTRACT to run heartbeat once each 50 blocks using mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WALLET"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Register an interchain query to track ATOM/USDC price on Osmosis",
+        "command": "neutrond tx wasm execute $ICQ_CONTRACT '{\"register_query\":{\"connection_id\":\"connection-0\",\"query_type\":\"kv\",\"kv_keys\":[{\"key\":\"prices/atom_usdc\",\"path\":\"/osmosis.pricefeed.v1beta1.Query/Price\"}],\"update_period\":30,\"deposit\":\"100000untrn\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.4 --fees 7000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Use mywallet to register a query on $ICQ_CONTRACT that keeps track of ATOM slash USDC price on Osmosis",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "Register an interchain price query for ATOM slash USDC on Osmosis using mywallet and $ICQ_CONTRACT",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Please set up an ICQ on $ICQ_CONTRACT to monitor ATOM/USDC prices every block charging mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "mywallet wants to register a KV query tracking prices slash atom_usdc via $ICQ_CONTRACT",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Create an interchain query on $ICQ_CONTRACT for the ATOM to USDC rate with funds from mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Register pricefeed query ATOM slash USDC on Osmosis using $ICQ_CONTRACT from mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Use wallet mywallet to create a query for ATOM\u2013USDC pricing via $ICQ_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Request $ICQ_CONTRACT to watch the ATOM/USDC pair fee payer mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "From mywallet set up ICP query for atom_usdc price on $ICQ_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Create a new ATOM slash USDC monitoring ICQ through contract $ICQ_CONTRACT using mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Remove interchain query #7 to refund the deposit",
+        "command": "neutrond tx wasm execute $ICQ_CONTRACT '{\"remove_interchain_query\":{\"id\":7}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 4000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Please remove interchain query 7 with mywallet on $ICQ_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Using mywallet delete ICQ number 7 from contract $ICQ_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Cancel interchain query id 7 via $ICQ_CONTRACT payer mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Remove ICQ 7 on $ICQ_CONTRACT using wallet mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Mywallet should drop interchain query #7 from $ICQ_CONTRACT",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Ask $ICQ_CONTRACT to remove query id 7 funded by mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Delete interchain query number 7 use mywallet on $ICQ_CONTRACT",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Through mywallet request deletion of ICQ 7 at $ICQ_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "I need to remove ICQ id 7 contract is $ICQ_CONTRACT wallet mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Drop interchain query 7 on $ICQ_CONTRACT and refund to mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Update the update period of interchain query #7 to 60 blocks",
+        "command": "neutrond tx wasm execute $ICQ_CONTRACT '{\"update_interchain_query\":{\"id\":7,\"new_update_period\":60}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 4500untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Please change ICQ 7 to update every 60 blocks on $ICQ_CONTRACT with mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Update the period of interchain query number 7 to 60 using mywallet on $ICQ_CONTRACT",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "mywallet should set new update period 60 blocks for ICQ id 7 on $ICQ_CONTRACT",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Change the update frequency to 60 for interchain query 7 via contract $ICQ_CONTRACT using mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Set ICQ 7 to refresh every 60 blocks on $ICQ_CONTRACT with wallet mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Using $ICQ_CONTRACT update interchain query id 7 so that its period becomes 60 blocks charged to mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Please bump the update period of ICQ #7 to sixty using wallet mywallet and contract $ICQ_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Update period for query 7 to 60 blocks on $ICQ_CONTRACT signer mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Have mywallet modify ICQ 7 so it updates every 60 on contract $ICQ_CONTRACT",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Set the new_update_period of interchain query 7 to 60 through $ICQ_CONTRACT from mywallet",
+                "bio_tags": [
+                    "B-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "I-WASM_MSG",
+                    "O",
+                    "I-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WALLET"
+                ]
+            }
+        ]
+    }
+]

@@ -1,0 +1,672 @@
+[
+    {
+        "label": "Query Specific Balance",
+        "query": "Get staking reward account balance",
+        "command": "neutrond query bank balance $(neutrond keys show reward --address) --node tcp://grpc.neutron.org:9090",
+        "generated_examples": [
+            {
+                "rephrase": "Show me the balance of the reward wallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "What's the current balance in wallet reward",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Fetch balance for the staking rewards account named reward",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Give me reward account balance please",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Balance of reward key",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Check reward wallet funds",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Retrieve the amount held in reward",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Display how much is in the reward account",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Print reward wallet balance now",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Can you tell me the balance for reward",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Specific Balance",
+        "query": "Fetch balance using CLI alias",
+        "command": "neutrond query bank balance $WALLET_ADDR --node tcp://grpc.neutron.org:9090",
+        "generated_examples": [
+            {
+                "rephrase": "Fetch the bank balance for WALLET_ADDR",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Show me how much is in address WALLET_ADDR",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Get balance of WALLET_ADDR via CLI",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Query WALLET_ADDR for its current balance",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Using the alias WALLET_ADDR retrieve the balance",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "What is the neutrons in WALLET_ADDR right now",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Balance check on WALLET_ADDR please",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Could you print balance for WALLET_ADDR",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "I want to know the balance stored at WALLET_ADDR",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Report the current funds in WALLET_ADDR",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Specific Balance",
+        "query": "Print balance of each validator in the network",
+        "command": "for val in $(neutrond query staking validators --node tcp://grpc.neutron.org:9090 -o json | jq -r '.[].operator_address' | sed 's/^neutronvaloper/neutron/'); do neutrond query bank balance $val --node tcp://grpc.neutron.org:9090; done",
+        "generated_examples": [
+            {
+                "rephrase": "Print the balance of every validator",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Show each validator's bank balance",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Give me the balance for all validators on the network",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "List balances belonging to each validator",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Retrieve every validator balance available",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "I'd like to see the balances for validators",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Display validator balances across the chain",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Enumerate the balance of validators in the network",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Provide balances for each validator address",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Output the bank balance per validator",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Specific Balance",
+        "query": "Schedule cron job to snapshot balance daily",
+        "command": "echo '0 0 * * * neutrond query bank balance neutron1xyz --node tcp://grpc.neutron.org:9090 -o json >> balance_history.log' | crontab -",
+        "generated_examples": [
+            {
+                "rephrase": "Create a daily cron to store the balance of neutron1xyz into balance_history.log",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-FILE_PATH"
+                ]
+            },
+            {
+                "rephrase": "Schedule a job that writes neutron1xyz balance into balance_history.log every day",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Set up cron to snapshot the balance of neutron1xyz to balance_history.log nightly",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-FILE_PATH",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Every day at midnight log neutron1xyz balance into balance_history.log via cron",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Add a cron entry to record neutron1xyz balance in balance_history.log daily",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Cron job: save neutron1xyz balance to balance_history.log each day",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Configure cron so that balance_history.log receives neutron1xyz balance daily",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please write a cron task to append the balance of neutron1xyz to balance_history.log every 24h",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Schedule balance snapshots of neutron1xyz into balance_history.log on a daily basis",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Make cron capture neutron1xyz funds and append to balance_history.log",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Specific Balance",
+        "query": "Debug balance query with trace flag",
+        "command": "neutrond query bank balance neutron1xyz --node tcp://grpc.neutron.org:9090 --trace",
+        "generated_examples": [
+            {
+                "rephrase": "Query the balance of neutron1xyz with the trace flag enabled",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Run a traced balance check on neutron1xyz",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Get neutron1xyz balance using --trace",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please retrieve the balance for neutron1xyz with tracing",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Debug balance query by running trace on neutron1xyz",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "I need a verbose balance readout for neutron1xyz",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Show neutron1xyz funds while enabling trace",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Execute a balance command on neutron1xyz with the trace switch",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Enable tracing and fetch the balance for neutron1xyz",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Trace option balance query on neutron1xyz address",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O"
+                ]
+            }
+        ]
+    }
+]

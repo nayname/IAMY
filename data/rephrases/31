@@ -1,0 +1,913 @@
+[
+    {
+        "label": "Send Tokens",
+        "query": "Send 10 NTRN from my default wallet to Bob's address",
+        "command": "neutrond tx bank send mywallet ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 10000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto -y",
+        "generated_examples": [
+            {
+                "rephrase": "Please send 10 NTRN from mywallet to ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Transfer ten NTRN to ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx using mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Use mywallet to send a 10 NTRN payment over to Bob at ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Send 10 NTRN right now to ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx from the wallet named mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "I need to move 10 NTRN out of mywallet and into address ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Execute a transfer of 10 NTRN via mywallet to the beneficiary ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Using mywallet dispatch 10 NTRN to ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx on neutron-1",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Please process a 10 NTRN send from mywallet towards ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx with automatic gas",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-GAS",
+                    "I-GAS"
+                ]
+            },
+            {
+                "rephrase": "Could you please wire 10 NTRN from mywallet to the destination ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx using the RPC https://rpc.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Send exactly 10 NTRN from mywallet to ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx with gas set to auto",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-GAS"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Send Tokens",
+        "query": "Transfer 100 NTRN to my exchange deposit address with automatic gas calculation",
+        "command": "neutrond tx bank send mywallet ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx 100000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto -y",
+        "generated_examples": [
+            {
+                "rephrase": "Please transfer 100 NTRN from mywallet to ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx with auto gas",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-GAS",
+                    "I-GAS"
+                ]
+            },
+            {
+                "rephrase": "Send 100 NTRN to my exchange address ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx using mywallet",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Initiate a 100 NTRN bank send via mywallet for ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Move one hundred NTRN from mywallet to the deposit address ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx on neutron-1",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Using node https://rpc.neutron.org:443 send 100 NTRN from mywallet to ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Please dispatch 100 NTRN to ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx powered by mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "I want mywallet to send 100 NTRN automatically to the exchange address ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Send 100 NTRN with auto gas setting from mywallet to ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-GAS",
+                    "I-GAS",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Prepare a transaction sending 100 NTRN to ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx using mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Deposit 100 NTRN through mywallet into ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx automatically",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "B-GAS"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Send Tokens",
+        "query": "Move 5 NTRN from my main key to my savings wallet",
+        "command": "neutrond tx bank send main ntrn1savingsxxxxxxxxxxxxxxxxxxxxxxxxxxxx 5000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto -y",
+        "generated_examples": [
+            {
+                "rephrase": "Move 5 NTRN from main to ntrn1savingsxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Please send 5 NTRN using the key main over to address ntrn1savingsxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Transfer five NTRN to my savings account ntrn1savingsxxxxxxxxxxxxxxxxxxxxxxxxxxxx from main",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Send 5 NTRN via main key to the destination ntrn1savingsxxxxxxxxxxxxxxxxxxxxxxxxxxxx with auto gas",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-GAS",
+                    "I-GAS"
+                ]
+            },
+            {
+                "rephrase": "Use main to dispatch 5 NTRN into ntrn1savingsxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "I want to transfer 5 NTRN from main onto address ntrn1savingsxxxxxxxxxxxxxxxxxxxxxxxxxxxx on neutron-1",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Main should send exactly 5 NTRN to ntrn1savingsxxxxxxxxxxxxxxxxxxxxxxxxxxxx now",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Execute a bank send of 5 NTRN from main toward ntrn1savingsxxxxxxxxxxxxxxxxxxxxxxxxxxxx using auto gas",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-GAS",
+                    "I-GAS"
+                ]
+            },
+            {
+                "rephrase": "Make a payment of five NTRN going out of main and into ntrn1savingsxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Please process transfer 5 NTRN to ntrn1savingsxxxxxxxxxxxxxxxxxxxxxxxxxxxx from the wallet main",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Send Tokens",
+        "query": "Send 1 NTRN with a memo saying 'Thanks!'",
+        "command": "neutrond tx bank send mywallet ntrn1friendxxxxxxxxxxxxxxxxxxxxxxxxxxxx 1000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --gas auto --memo \"Thanks!\" -y",
+        "generated_examples": [
+            {
+                "rephrase": "Send 1 NTRN from mywallet to ntrn1friendxxxxxxxxxxxxxxxxxxxxxxxxxxxx with memo Thanks!",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-MEMO"
+                ]
+            },
+            {
+                "rephrase": "Transfer one NTRN to ntrn1friendxxxxxxxxxxxxxxxxxxxxxxxxxxxx using mywallet and include the message Thanks!",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-MEMO"
+                ]
+            },
+            {
+                "rephrase": "Please send 1 NTRN with the note Thanks! from mywallet to ntrn1friendxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-MEMO",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Make a payment of 1 NTRN to ntrn1friendxxxxxxxxxxxxxxxxxxxxxxxxxxxx memo Thanks! using mywallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-MEMO",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Send exactly one NTRN from mywallet to ntrn1friendxxxxxxxxxxxxxxxxxxxxxxxxxxxx with a memo of Thanks!",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-MEMO"
+                ]
+            },
+            {
+                "rephrase": "Use mywallet to gift 1 NTRN to ntrn1friendxxxxxxxxxxxxxxxxxxxxxxxxxxxx and write Thanks! in the memo field",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-MEMO",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please dispatch 1 NTRN along with memo Thanks! using mywallet to ntrn1friendxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-MEMO",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Add a memo that says Thanks! then send 1 NTRN from mywallet to ntrn1friendxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-MEMO",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "I want to tip my friend with 1 NTRN include memo Thanks! from mywallet to ntrn1friendxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-MEMO",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Create a transaction of 1 NTRN using mywallet send it to ntrn1friendxxxxxxxxxxxxxxxxxxxxxxxxxxxx memo Thanks!",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-MEMO"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Send Tokens",
+        "query": "Send 20 NTRN and set a manual fee of 500untrn",
+        "command": "neutrond tx bank send mywallet ntrn1otherxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 20000000untrn --node https://rpc.neutron.org:443 --chain-id neutron-1 --fees 500untrn --gas 200000 -y",
+        "generated_examples": [
+            {
+                "rephrase": "Send 20 NTRN from mywallet to ntrn1otherxxxxxxxxxxxxxxxxxxxxxxxxxxxxx with fee 500 untrn and gas 200000",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "I-FEES",
+                    "O",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Transfer twenty NTRN using mywallet to ntrn1otherxxxxxxxxxxxxxxxxxxxxxxxxxxxxx costs 500 untrn in fees gas set to 200000",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-FEES",
+                    "I-FEES",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Please move 20 NTRN to ntrn1otherxxxxxxxxxxxxxxxxxxxxxxxxxxxxx from mywallet using 200000 gas and a fee of 500 untrn",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-GAS",
+                    "I-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "I-FEES"
+                ]
+            },
+            {
+                "rephrase": "Send 20 NTRN and charge fees 500 untrn gas 200000 from wallet mywallet to ntrn1otherxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "I-FEES",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Create a transaction using mywallet to send 20 NTRN to ntrn1otherxxxxxxxxxxxxxxxxxxxxxxxxxxxxx with gas set at 200000 and fee 500 untrn",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "I-FEES"
+                ]
+            },
+            {
+                "rephrase": "Mywallet should transfer twenty NTRN to ntrn1otherxxxxxxxxxxxxxxxxxxxxxxxxxxxxx with a fee of five hundred untrn and gas 200000",
+                "bio_tags": [
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "I-FEES",
+                    "I-FEES",
+                    "O",
+                    "O",
+                    "B-GAS"
+                ]
+            },
+            {
+                "rephrase": "Set gas to 200000 and fee to 500 untrn then send 20 NTRN from mywallet to ntrn1otherxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FEES",
+                    "I-FEES",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Use node https://rpc.neutron.org:443 to send 20 NTRN from mywallet to ntrn1otherxxxxxxxxxxxxxxxxxxxxxxxxxxxxx with 200000 gas and 500 untrn fee",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-GAS",
+                    "I-GAS",
+                    "O",
+                    "B-FEES",
+                    "I-FEES",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please execute a transfer of 20 NTRN to ntrn1otherxxxxxxxxxxxxxxxxxxxxxxxxxxxxx via mywallet paying 500 untrn fees and consuming 200000 gas",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-FEES",
+                    "I-FEES",
+                    "O",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "I-GAS"
+                ]
+            },
+            {
+                "rephrase": "Send twenty NTRN to ntrn1otherxxxxxxxxxxxxxxxxxxxxxxxxxxxxx using mywallet gas 200000 fee 500 untrn",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "B-FEES",
+                    "I-FEES"
+                ]
+            }
+        ]
+    }
+]

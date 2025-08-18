@@ -1,0 +1,847 @@
+[
+    {
+        "label": "Query Contract State",
+        "query": "Check my CW20 token balance",
+        "command": "neutrond query wasm contract-state smart <cw20_contract_address> '{\"balance\":{\"address\":\"<wallet_address>\"}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "Query my CW20 balance from contract <cw20_contract_address> for wallet <wallet_address> using node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please check how many tokens I own in contract <cw20_contract_address> at address <wallet_address> via <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show balance of wallet <wallet_address> against CW20 contract <cw20_contract_address> on node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Fetch my token holdings from <cw20_contract_address> for account <wallet_address> using <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I need to know the CW20 balance for <wallet_address> on contract <cw20_contract_address> through node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Balance inquiry wallet <wallet_address> contract <cw20_contract_address> node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Tell me what my wallet <wallet_address> holds in the CW20 deployed at <cw20_contract_address> using the node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Check balance on CW20 contract <cw20_contract_address> for my address <wallet_address> via node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "How many CW20 tokens does <wallet_address> have according to contract <cw20_contract_address> using node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Give me the CW20 balance for wallet <wallet_address> from contract <cw20_contract_address> on <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Contract State",
+        "query": "Get CW20 token info like name, symbol and supply",
+        "command": "neutrond query wasm contract-state smart <cw20_contract_address> '{\"token_info\":{}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "Retrieve token information from CW20 contract <cw20_contract_address> using node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show me the name symbol and supply of contract <cw20_contract_address> via <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query token_info on <cw20_contract_address> with node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I want details about the CW20 at <cw20_contract_address> using the gRPC node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Provide token metadata for contract <cw20_contract_address> on node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Give me CW20 token info stored in <cw20_contract_address> via node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Fetch the token_info query result of <cw20_contract_address> using <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Need contract info for <cw20_contract_address> node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Pull the basic details of CW20 contract <cw20_contract_address> through <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "What is the supply and symbol of tokens at <cw20_contract_address> via node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Contract State",
+        "query": "Get token info from the bridge contract",
+        "command": "neutrond query wasm contract-state smart <bridge_contract_address> '{\"token_info\":{}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "Retrieve token details from bridge contract <bridge_contract_address> using node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show token_info for bridge address <bridge_contract_address> via <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query the bridge contract <bridge_contract_address> for token info on <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I want to see name and supply from contract <bridge_contract_address> using <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Get bridge token metadata at <bridge_contract_address> with node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Fetch token_info smart query on bridge <bridge_contract_address> through <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Provide token stats for the bridge contract address <bridge_contract_address> via node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Need token info from bridge contract <bridge_contract_address> node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Can you tell me the token data for <bridge_contract_address> using gRPC <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show bridge token info address <bridge_contract_address> on node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Contract State",
+        "query": "Check current bridge limits for a denom on the bridge contract",
+        "command": "neutrond query wasm contract-state smart <bridge_contract_address> '{\"bridge_limits\":{}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "Check bridge limits on contract <bridge_contract_address> via node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query the current limits from the bridge at <bridge_contract_address> using <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Retrieve bridge_limits smart query for <bridge_contract_address> node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show me denomination limits configured in bridge contract <bridge_contract_address> through node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Need to see bridge transfer caps for <bridge_contract_address> using node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "What are the bridge limits set in contract <bridge_contract_address> via <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Bridge contract <bridge_contract_address> limits query on <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Fetch current bridge_limits for address <bridge_contract_address> using node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Display the bridge caps from <bridge_contract_address> with node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show bridge rate limits stored in contract <bridge_contract_address> on node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Contract State",
+        "query": "Check my vesting balance in Neutron Vesting contract",
+        "command": "neutrond query wasm contract-state smart <vesting_contract_address> '{\"vesting_info\":{\"address\":\"<wallet_address>\"}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "Check vesting balance for wallet <wallet_address> in contract <vesting_contract_address> via node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Retrieve my vesting amount using wallet <wallet_address> from contract <vesting_contract_address> on <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "How much of my vested NTRN is left wallet <wallet_address> contract <vesting_contract_address> node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show my vesting schedule balance at address <wallet_address> from vesting contract <vesting_contract_address> using node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please provide vesting info for wallet <wallet_address> on contract <vesting_contract_address> via <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Fetch vesting_info smart query of <vesting_contract_address> for account <wallet_address> with node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I want to see how many tokens are still vesting for <wallet_address> in <vesting_contract_address> using <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Get the balance still locked in vesting contract <vesting_contract_address> for wallet <wallet_address> via node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show vesting tokens for my account <wallet_address> contract <vesting_contract_address> on node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Display vesting_info from contract <vesting_contract_address> for address <wallet_address> using node <grpc_node>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    }
+]

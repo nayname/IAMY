@@ -1,571 +1,847 @@
-{"text": "(GNU specific) Calculte and output amount of CPU load taken by all processes belonging to user 'abc'.", "labels": ["awk"]}
-{"text": "(GNU specific) Display cumulative CPU usage over 5 seconds.", "labels": ["awk"]}
-{"text": "(GNU specific) Display numbers of processes in following states: running, sleeping, stopped, and defunct (zombie).", "labels": ["awk"]}
-{"text": "(GNU specific) Display the percentage of CPU usage allocated to user processes.", "labels": ["awk"]}
-{"text": "(GNU specific) Display various information about process currently taking the most CPU time.", "labels": ["awk"]}
-{"text": "(GNU specific) Find the process currently taking the most CPU time.", "labels": ["awk"]}
-{"text": "(Linux specific) Find all loadable modules for current kernel, whose name includes \"\"perf\"\"", "labels": ["find"]}
-{"text": "Add \"\"execute\"\" to the permissions of all directories in the home directory tree", "labels": ["find"]}
-{"text": "Add '.avi' extension to all files/directories with '.mkv' extension under '/volume1/uploads' directory tree", "labels": ["find"]}
-{"text": "Add a date time stamp to every line of output in \"\"ping google.com\"\"", "labels": ["xargs"]}
-{"text": "Add group write permission to all files in the current directory", "labels": ["find"]}
-{"text": "Add read and execute permission to every directory under the current directory", "labels": ["find"]}
-{"text": "Add read permission for 'other' for all files/directories named 'rc.conf' under current directory tree", "labels": ["find"]}
-{"text": "Add the execute and read permission for all and the write permission for the user to the dir_data directory and all of its sub-directories.", "labels": ["find"]}
-{"text": "Append \"\"foo\"\" and \"\"bar\"\" column in file \"\"file\"\" with values dependent on the current table contents", "labels": ["awk"]}
-{"text": "Append all PNG and JPG files to tar archive 'images.tar'", "labels": ["find"]}
-{"text": "Append all regular files modified in the last 24 hours to the \"\"$archive.tar\"\" tar archive", "labels": ["find"]}
-{"text": "Append the parent directory name with a space in all 'text.txt' files in all sub directories of current directory", "labels": ["find"]}
-{"text": "Archive all directories in /path/to/directory/* (only command line arguments, no sub-directories) to files with .tar.gz extension", "labels": ["find"]}
-{"text": "Archive all directories in /path/to/directory/* (only command line arguments, no sub-directories) to files with .tar.gz extension transforming the full paths to relative paths", "labels": ["find"]}
-{"text": "Archive all filepattern-*2009* files/directories under data/ into 2009.tar", "labels": ["find"]}
-{"text": "Archive any files changed in the last day from \"\"remote_host\"\" to \"\"local_dir\"\"", "labels": ["find"]}
-{"text": "Archive the list of 1st level subdirectories in /fss/fin to /fss/fi/outfile.tar.gz", "labels": ["find"]}
-{"text": "Backup all PHP files under the current directory tree", "labels": ["find"]}
-{"text": "Backup all of the Java files in the current directory tree by copying them and appending the suffix .bk to each", "labels": ["find"]}
-{"text": "Calculate and show md5 sums for every files under current directory tree", "labels": ["find"]}
-{"text": "Calculate the md5 sum of \"\"logdir\"\" and print only the hash", "labels": ["awk"]}
-{"text": "Calculate the md5 sum of all files in the current directory and formatting the output by removing parenthesis", "labels": ["find"]}
-{"text": "Calculate the md5 sum of all the file metadata in the current directory tree excluding \"\".svn\"\"", "labels": ["find"]}
-{"text": "Calculate the md5 sum of every \"\".py\"\" file in directory tree \"\"/path\"\"", "labels": ["find"]}
-{"text": "Calculate the md5 sum of the contents of the sorted list of files \"\"$FILES\"\"", "labels": ["sort"]}
-{"text": "Calculate the md5 sum of the list of files in the current directory", "labels": ["find"]}
-{"text": "Calculate the md5sum of all the files with name \"\"MyCProgram.c\"\", ignoring case", "labels": ["find"]}
-{"text": "Calculate the total disk usage for each \"\".jpg\"\" file on the system and prepend the system host name to the output", "labels": ["find"]}
-{"text": "Change all directories under \"\"./bootstrap/cache/\"\" to owner \"\"apache\"\" and group \"\"laravel\"\"", "labels": ["find"]}
-{"text": "Change all directories under \"\"./storage/\"\" to owner \"\"apache\"\" and group \"\"laravel\"\"", "labels": ["find"]}
-{"text": "Change all file permissions to 664 and all directory permissions to 775 in directory tree \"\"htdocs\"\"", "labels": ["find"]}
-{"text": "Change all files in \"\"~\"\" which are owned by the group \"\"vboxusers\"\" to be owned by the user group \"\"kent\"\"", "labels": ["find"]}
-{"text": "Change all files in the current directory tree to owner \"\"xx\"\"", "labels": ["find"]}
-{"text": "Change all files with no user under \"\"/var/www\"\" to have owner \"\"root\"\" and group \"\"apache\"\"", "labels": ["find"]}
-{"text": "Change directory to the directory containing the executable file of command \"\"oracle\"\"", "labels": ["xargs"]}
-{"text": "Change every directory under \"\"/var/www/html/\"\" to have permissions 775", "labels": ["find"]}
-{"text": "Change every file under \"\"/var/www/html/\"\" to have permissions 664", "labels": ["find"]}
-{"text": "Change every reference to the colour red to green in all CSS files", "labels": ["find"]}
-{"text": "Change file permissions on all regular files within a directory", "labels": ["find"]}
-{"text": "Change group ownership to `foo' for files with GID=2000", "labels": ["find"]}
-{"text": "Change mode of all files ending with \"\".php\"\" under the current folder to 755 and write the output to the console and \"\"logfile.txt\"\" file", "labels": ["find"]}
-{"text": "Change permission to 000 of all directories named '.texturedata' under '/path/to/look/in/' directory tree", "labels": ["find"]}
-{"text": "Change permissions for all PHP files under the current directory tree to 755", "labels": ["find"]}
-{"text": "Change permissions for all PHP files under the current directory tree to 755 and print the number of files changed", "labels": ["find"]}
-{"text": "Change permissions of all directories from the current directory tree to 644", "labels": ["find"]}
-{"text": "Change permissions of all directories in the ~/dir_data directory tree in accordance with mode `a+xr,u+w'", "labels": ["find"]}
-{"text": "Change permissions of all files ending \"\".php\"\" under the current directory to 755 and print a count of modified files", "labels": ["find"]}
-{"text": "Change permissions of all files ending in \"\".php\"\" under the current directory to 755 and print a '+' for each file", "labels": ["find"]}
-{"text": "Change permissions of all files ending in \"\".php\"\" under the current directory to 755 and print a count of modified files", "labels": ["find"]}
-{"text": "Change permissions of all regular files from the current directory tree to 644", "labels": ["find"]}
-{"text": "Change permissions of all regular files in the ~/dir_data directory tree in accordance with mode `a-x,u+w'", "labels": ["find"]}
-{"text": "Change permissions to 0755 for all directories in the /path directory tree", "labels": ["find"]}
-{"text": "Change permissions to 500 for all regular files under and below the current directory", "labels": ["find"]}
-{"text": "Change permissions to 600 for all regular .rb files in the current directory tree", "labels": ["find"]}
-{"text": "Change permissions to 644 for *.html files under /usr/local", "labels": ["find"]}
-{"text": "Change permissions to 644 for all regular files under the /path/to/dir/ tree unless these permissions are already set", "labels": ["find"]}
-{"text": "Change permissions to 644 of multiple files with permissions 755", "labels": ["find"]}
-{"text": "Change permissions to 644 of multiple regular files with permissions 755", "labels": ["find"]}
-{"text": "Change permissions to 644 recursively for PHP files.", "labels": ["find"]}
-{"text": "Change permissions to 644 recursively only for files", "labels": ["find"]}
-{"text": "Change permissions to 755 for all directories in the /path/to/dir directory tree", "labels": ["find"]}
-{"text": "Change permissions to 755 recursively only for directories", "labels": ["find"]}
-{"text": "Change permissions to 777 for all directories in the current directory tree", "labels": ["find"]}
-{"text": "Change permissions to u=rw,g=r,o= for all files in the current directory tree", "labels": ["find"]}
-{"text": "Change permissions to u=rw,g=r,o= for all files inside the current directory tree", "labels": ["find"]}
-{"text": "Change permissions to u=rwx,g=rx,o= for all directories in the current directory tree", "labels": ["find"]}
-{"text": "Change permissions to u=rwx,g=rx,o= for all directories inside the current directory tree", "labels": ["find"]}
-{"text": "Change permssions of *.cgi files under directories htdocs and cgi-bin to 755", "labels": ["find"]}
-{"text": "Change string \"\"searc\"\" to \"\"replace\"\" in all files in directory hierarchy", "labels": ["find"]}
-{"text": "Change the owner of all \"\".txt\"\" files in directory tree \"\"/mydir\"\" to \"\"root\"\"", "labels": ["find"]}
-{"text": "Change the owner of all files in \"\"/empty_dir/\"\" to \"\"root\"\" using at most 10 files at a time", "labels": ["xargs"]}
-{"text": "Change the owner of all files in the current directory tree excluding those who match \"\"./var/foo*\"\" to \"\"www-data\"\"", "labels": ["find"]}
-{"text": "Change the ownership of all aluno1's files in the current directory and below to aluno2", "labels": ["find"]}
-{"text": "Change the ownership of all files in the current directory tree from root to www-data", "labels": ["find"]}
-{"text": "Change the ownership of all files in the current directory tree to myuser:a-common-group-name", "labels": ["find"]}
-{"text": "Change the ownership to the user daisy for all directories under current directory that are owned by harry", "labels": ["find"]}
-{"text": "Change the permission of all regular files under current directory tree to 644", "labels": ["find"]}
-{"text": "Change the permission to 0644 for all files under current directory", "labels": ["find"]}
-{"text": "Change the permission to 0755 for all directories under current directory", "labels": ["find"]}
-{"text": "Change the permissions of all regular files whose names end with .mp3 in the directory tree /var/ftp/mp3", "labels": ["find"]}
-{"text": "Change the permissions of every directory in the current directory and all files and directories within them to 700", "labels": ["find"]}
-{"text": "Change the permissions of the current directory and all its subdirectories to 755.", "labels": ["find"]}
-{"text": "Change the user to daisy for directories and subdirectories owned by harry", "labels": ["find"]}
-{"text": "Change to folder where the oracle binary is.", "labels": ["xargs"]}
-{"text": "Change user ownership to `foo' for files with UID=1005", "labels": ["find"]}
-{"text": "Check if content of all top-level *.txt files in the current directory contain only unique lines", "labels": ["sort"]}
-{"text": "Check if directory $some_dir is empty", "labels": ["find"]}
-{"text": "Check if the $somedir directory is empty", "labels": ["find"]}
-{"text": "Check if the contents of file \"\"subset\"\" is a subset of file \"\"set\"\"", "labels": ["sort"]}
-{"text": "Check if the directory tree whose name is given as variable $somedir contains no regular files", "labels": ["find"]}
-{"text": "Clean directories and subdirectories of the temporary files generated during normal use", "labels": ["find"]}
-{"text": "Clean up all zombie processes by instantly killing their parent process with SIGKILL signal.", "labels": ["awk"]}
-{"text": "Clean up all zombie processes by sending SIGTERM signal to their parent process, which requests them to terminate.", "labels": ["awk"]}
-{"text": "Compare *.csv files in the current directory tree with their analogs stored in /some/other/path/", "labels": ["find"]}
-{"text": "Compare *.csv files in the current directory tree with their analogs stored in /some/other/path/ prompting before running `diff'", "labels": ["find"]}
-{"text": "Compare column 3 with column 2 of the next line in \"\"file\"\" and format output as a table", "labels": ["awk"]}
-{"text": "Compare each .xml file under the current directory with a file of the same name in \"\"/destination/dir/2\"\"", "labels": ["find"]}
-{"text": "Compare sorted files 'f1.txt' and 'f2.txt' and print in three columns strings unique for first file, second file, and common ones", "labels": ["sort"]}
-{"text": "Compress all \"\".txt\"\" files in the current directory tree with gzip", "labels": ["find"]}
-{"text": "Compress all *.img files using bzip2", "labels": ["find"]}
-{"text": "Compress all directories found in $LOGDIR wherein a file's data has been modified within the last 24 hours", "labels": ["find"]}
-{"text": "Compress all directories found in directory tree $LOGDIR that have been modified within the last 24 hours", "labels": ["find"]}
-{"text": "Compress all files in directory \"\"$PATH_TO_LOGS\"\" that were last modified more than \"\"$SOME_NUMBER_OF_DAYS\"\" days ago", "labels": ["find"]}
-{"text": "Compress all files in the \"\"$FILE\"\" directory tree that were last modified 30 days ago", "labels": ["find"]}
-{"text": "Compress all files in the \"\"$FILE\"\" directory tree that were last modified 30 days ago and have not already been compressed with gzip", "labels": ["find"]}
-{"text": "Compress all files with '.txt' extension under current directory", "labels": ["xargs"]}
-{"text": "Compress and display the gzip compression ratio of every file on the system that is greater than 100000 bytes and ends in \"\".log\"\"", "labels": ["find"]}
-{"text": "Compress and display the original filename of every file on the system that is greater than 100000 bytes and ends in \"\".log\"\"", "labels": ["find"]}
-{"text": "Compress every file in the current directory tree that matches \"\"*cache.html\"\" and keep the original file", "labels": ["find"]}
-{"text": "Compress every file in the current directory tree with gzip and keep file extensions the same", "labels": ["find"]}
-{"text": "Compress files excluding *.Z files", "labels": ["find"]}
-{"text": "Continuously print the seconds since Unix epoch and the ping time to \"\"google.com\"\"", "labels": ["awk"]}
-{"text": "Continuously send ping requests to broadcast address \"\"10.10.0.255\"\" and print the IP addresses who respond", "labels": ["awk"]}
-{"text": "Convert \"\"595a\"\" into characters and then print the hexadecimal and printable characters of each byte", "labels": ["awk"]}
-{"text": "Copies file 'file.dat' to each top-level directory in the current directory.", "labels": ["xargs"]}
-{"text": "Copies file 'file.txt' to each top-level directory in the current directory.", "labels": ["xargs"]}
-{"text": "Copies file 'file1' to each of directories 'dir1', 'dir2', 'dir3'.", "labels": ["xargs"]}
-{"text": "Copies file 'fileName.txt' to each of directories listed in the 'allFolders.txt' list.", "labels": ["xargs"]}
-{"text": "Copies file 'test' to each of directories like './fs*/*'.", "labels": ["xargs"]}
-{"text": "Copy \"\"fileName.txt\"\" to all directories listed in \"\"allFolders.txt\"\" - names may not contain spaces.", "labels": ["xargs"]}
-{"text": "Count the number of equal lines in \"\"file1.txt\"\" and \"\"file2.txt\"\"", "labels": ["sort"]}
-{"text": "Count the number of times that a single \"\"-----------\\n\"\" separated record contains both \"\"A=2\"\" and \"\"dummy=2\"\" and the number of records that do not have \"\"dummy=2\"\" in compressed file \"\"file.gz\"\"", "labels": ["awk"]}
-{"text": "Count the number of times that a single \"\"-----------\\n\"\" separated record contains both \"\"A=2\"\" and \"\"dummy=2\"\" in compressed file \"\"file.gz\"\"", "labels": ["awk"]}
-{"text": "Count the number of unique duplicate lines in \"\"file1\"\" and \"\"file2\"\" combined", "labels": ["sort"]}
-{"text": "Counts lines in file $file and prints number only.", "labels": ["awk"]}
-{"text": "Counts lines in file fileName ignoring empty lines and lines with spaces only.", "labels": ["awk"]}
-{"text": "Create 5 empty .txt files", "labels": ["xargs"]}
-{"text": "Create a symbolic link in directory \"\"~/newlinks\"\" for each file listed in \"\"results2.txt\"\"", "labels": ["xargs"]}
-{"text": "Create a table containing all information from S43.txt and S44.txt, merging lines where the first field of both files matches, and keeping the line that starts with \"\"Gene\"\" at the start of the file.", "labels": ["sort"]}
-{"text": "Create an empty file with a carriage return character in its name.", "labels": ["xargs"]}
-{"text": "Create empty files (or update timestamps if they exist) with names matching each word in variable \"\"correctFilePathAndName\"\"", "labels": ["xargs"]}
-{"text": "Decompress \"\"file2.txt\"\" and \"\"file1.txt\"\" and print lines in \"\"file1.txt\"\" that match the 5th tab separated field in \"\"file2.txt\"\"", "labels": ["awk"]}
-{"text": "Decompress and sort \"\"$part0\"\" and \"\"$part1\"\" of files in different processes", "labels": ["sort"]}
-{"text": "Delete all but the most recent 5 files", "labels": ["xargs"]}
-{"text": "Delete the 4th tab separated column from the output of \"\"finger\"\"", "labels": ["awk"]}
-{"text": "Determine DISPLAY variable for the session when logged in via SSH", "labels": ["awk"]}
-{"text": "Display a sorted count of all the characters in \"\"filename\"\"", "labels": ["sort"]}
-{"text": "Display all lines contained in 'dax-weekly.csv' in reverse order.", "labels": ["awk"]}
-{"text": "Display compter's hostname", "labels": ["awk"]}
-{"text": "Display file type information for all instances of \"\"file\"\" in the current PATH.", "labels": ["xargs"]}
-{"text": "Display inputfile all on one line (replace newlines by spaces)", "labels": ["awk"]}
-{"text": "Display source and mount point of the file system containing /some/path.", "labels": ["awk"]}
-{"text": "Display the contents of variable \"\"a\"\" converted to lowercase.", "labels": ["awk"]}
-{"text": "Display the mount point of a device file \"\"$path\"\"", "labels": ["awk"]}
-{"text": "Display the named characters in \"\"Test\\rTesting\\r\\nTester\\rTested\"\"", "labels": ["awk"]}
-{"text": "Display the named characters in \"\"line1\\r\\nline2\"\"", "labels": ["awk"]}
-{"text": "Display the sizes and filepaths of all files/directories sorted in ascending order of size", "labels": ["sort"]}
-{"text": "Display the sizes and filepaths of all files/directories sorted in descending order of size", "labels": ["sort"]}
-{"text": "Display variable 'var' without leading and trailing whitespace.", "labels": ["awk"]}
-{"text": "Displays the count of of each unique line read from standard input", "labels": ["sort"]}
-{"text": "Eliminates partially duplicate lines by column, keeping the last occurrence", "labels": ["sort"]}
-{"text": "Execute \"\"awk -F, '$1 ~ /F$/'\"\" on contents of \"\"file.gz\"\"", "labels": ["awk"]}
-{"text": "Execute \"\"script.awk\"\" on \"\"file\"\" and format the output as a table", "labels": ["awk"]}
-{"text": "Execute awk command '{ ...}' on compressed file \"\"FILE\"\"", "labels": ["awk"]}
-{"text": "Execute awk script \"\"script.awk\"\" on \"\"File2\"\" and \"\"File1\"\" and format output as a table", "labels": ["awk"]}
-{"text": "Execute awk script \"\"script.awk\"\" that exists in \"\"$PATH\"\" with argument \"\"arg1\"\"", "labels": ["awk"]}
-{"text": "Execute awk script \"\"script.awk\"\" with 2 arguments both \"\"file.txt\"\" and format the output as a table", "labels": ["awk"]}
-{"text": "Executes 'true'. then makes 'xargs' fail executing 'false' and return 123 exit code.", "labels": ["xargs"]}
-{"text": "Extract any line in \"\"f1\"\" or \"\"f2\"\" which does not appear in the other", "labels": ["sort"]}
-{"text": "Extract any line in \"\"file1\"\" or \"\"file2\"\" which does not appear in the other", "labels": ["sort"]}
-{"text": "Extract any line in \"\"file1.txt\"\" which does not appear as the first \"\";\"\" delimited entry in \"\"file2.txt\"\"", "labels": ["sort"]}
-{"text": "Extract any line in \"\"fileA\"\" which does not appear as the first word of any line in \"\"fileB\"\"", "labels": ["sort"]}
-{"text": "Extract any line in \"\"set1\"\" which does not appear in \"\"set2\"\"", "labels": ["sort"]}
-{"text": "Extract any line in sorted file \"\"A\"\" that does not appear in \"\"B\"\", \"\"C\"\", or \"\"D\"\"", "labels": ["sort"]}
-{"text": "Extract number from $filename of the form \"\"something_12345_else\"\" and set the variable \"\"number\"\" to this number.", "labels": ["awk"]}
-{"text": "Extract the contents of \"\"Input.txt.gz\"\", list the unique first comma separated field prefixed by the number of occurrences", "labels": ["sort"]}
-{"text": "Extract the second-to-last slash-separated path component, ie. \"\"90_2a5\"\" in this case.", "labels": ["xargs"]}
-{"text": "Extract two semicolon-separated fields from specified strings, output them separated by a space.", "labels": ["awk"]}
-{"text": "Extract, sort and print only group names from /etc/group.", "labels": ["sort"]}
-{"text": "File \"\"files.txt\"\" contains a list of files, copy all files listed to host \"\"remote\"\", connecting as ssh user \"\"user\"\", and copying the files to this user's home directory - this will not work with files/directory names containing spaces.", "labels": ["xargs"]}
-{"text": "File 'mydatafile' has a number on each line, display the sum of these numbers rounded to lowest integer.", "labels": ["awk"]}
-{"text": "File 'mydatafile' has a number on each line, display the sum of these numbers.", "labels": ["awk"]}
-{"text": "Filter contents of 'file' through awk commands written in script.awk, display the result.", "labels": ["awk"]}
-{"text": "Filters only directories from long file listing of a current directory, and prints their names.", "labels": ["awk"]}
-{"text": "Filters only directories including hidden ones from long file listing of a current directory, and prints their names.", "labels": ["awk"]}
-{"text": "Filters unique lines by matching against the first column of a .csv file", "labels": ["sort"]}
-{"text": "Find \"\".c\"\" and \"\".h\"\" files in the current directory tree and print line numbers and lines containing \"\"#include\"\"", "labels": ["xargs"]}
-{"text": "Find \"\".c\"\" and \"\".h\"\" files in the current directory tree and print lines containing \"\"#include\"\"", "labels": ["xargs"]}
-{"text": "Find 10 largest files in the current directory and its subdirectories", "labels": ["sort"]}
-{"text": "Find all files/directories with '.in' extension in the directory $directory and its subdirectories", "labels": ["awk"]}
-{"text": "Find all instances of first column with unique rest of line, and output a count for each first column that found in unique lines.", "labels": ["sort"]}
-{"text": "Find and delete all files with a used disk size of 0", "labels": ["awk"]}
-{"text": "Find the \"\"erl\"\" executable in $PATH and read the \"\"RELEASES\"\" file to extract the erlang release number", "labels": ["awk"]}
-{"text": "Finds IP address of 'en0' network interface.", "labels": ["awk"]}
-{"text": "Finds IP address of 'eth0' network interface.", "labels": ["awk"]}
-{"text": "Finds IP address of system network interface, that belongs to 192.168.111 subnet.", "labels": ["awk"]}
-{"text": "Finds PIDs of all running processes, gets executable binary of each process, and prints containing folder of each binary.", "labels": ["xargs"]}
-{"text": "Finds all logged in users.", "labels": ["awk"]}
-{"text": "Finds all user session in system, and shows sorted user names with number of sessions of each user.", "labels": ["sort"]}
-{"text": "Finds files in 'directory' folder with the same name and location but different content than files in 'directory.original' folder and prints location of such files.", "labels": ["xargs"]}
-{"text": "Finds files in 'directory' folder with the same name and location but different content than files in 'directory.original' folder and saves location of such files to 'directories' variable.", "labels": ["xargs"]}
-{"text": "Finds users with X session in system and puts the result in USERS variable.", "labels": ["awk"]}
-{"text": "Finds users with X session in system and puts the result into USERS variable", "labels": ["awk"]}
-{"text": "For each line in 'file', print \"\"result = \"\" followed by the line backwards.", "labels": ["awk"]}
-{"text": "For each line of colon-separated information in files 'empsal' and 'empname' whose first field matches in both files, output: first field of empname, second field of empname, fourth field of empname, and third field of empsal.", "labels": ["sort"]}
-{"text": "For each line of the sorted output of both file1 and file2, print lines whose first field of file2 does not appear as first field of file1.", "labels": ["sort"]}
-{"text": "For each line which has a common first field in file1.csv and file2.txt, output the first 4 fields of file1.csv", "labels": ["sort"]}
-{"text": "For each line which has a common first field in test.1 and test.2, output the first 2 fields of test.2 and the field 2 and 3 of test.1", "labels": ["sort"]}
-{"text": "Format each line as 3 columns based on extraneous columns", "labels": ["awk"]}
-{"text": "From the list of words (one per line) in list1.txt, display the number of occurrences of this word in list2.txt and sort the results from highest to lowest count.", "labels": ["sort"]}
-{"text": "Generates a randomly sorted list of numbers from 1 to 10.", "labels": ["sort"]}
-{"text": "Get IP address of your SSH session", "labels": ["awk"]}
-{"text": "Get current directory name without full path, ie. the part after the last /", "labels": ["awk"]}
-{"text": "Get domain name with 'google' from dig reverse lookup.", "labels": ["awk"]}
-{"text": "Get domain names from file '1.txt' and request TXT DNS record for each one", "labels": ["xargs"]}
-{"text": "Get from file 'File1.txt' strings starting with 'Q', extract only part of them following after '=' sign, and print which ones are not found in 'File2.txt'", "labels": ["sort"]}
-{"text": "Get the current shell's executable name from the output of 'ps'.", "labels": ["awk"]}
-{"text": "Gets IP address of 'en0' network interface.", "labels": ["awk"]}
-{"text": "Gets IP address of 'en0' selected network interface.", "labels": ["awk"]}
-{"text": "Gets IP address of 'en1' network interface.", "labels": ["awk"]}
-{"text": "Gets IP address of 'eth0' network interface.", "labels": ["awk"]}
-{"text": "Gets IP address of eth0 network interface.", "labels": ["awk"]}
-{"text": "Gets IP address of first listed active network interface in system.", "labels": ["awk"]}
-{"text": "Gets IP address of first listed network interface in system.", "labels": ["awk"]}
-{"text": "Gets IP addresses of all active network interfaces on host.", "labels": ["awk"]}
-{"text": "Gets IP addresses of all active network interfaces.", "labels": ["awk"]}
-{"text": "Gets IP addresses of all network interfaces.", "labels": ["awk"]}
-{"text": "Gets MAC address of eth0 network interface.", "labels": ["awk"]}
-{"text": "Gets MAC addresses of all IP4 network interfaces.", "labels": ["awk"]}
-{"text": "Gets MAC addresses of all active network interfaces.", "labels": ["awk"]}
-{"text": "Gets domain name from dig reverse lookup and save in variable 'go'.", "labels": ["awk"]}
-{"text": "Gets domain name from dig reverse lookup.", "labels": ["awk"]}
-{"text": "Gets list of IP addresses of all network interfaces.", "labels": ["awk"]}
-{"text": "Go to first directory specified in PATH which contains the command 'oracle'", "labels": ["xargs"]}
-{"text": "Greps DNS zone transfer info on domain localdomain.com from NS @dc1.localdomain.com, finds strings with any-cased word 'Lawler' and strips last letter from each string.", "labels": ["awk"]}
-{"text": "Greps domain $domain IP name from long dig listing.", "labels": ["awk"]}
-{"text": "Infinitely ping every host listed in \"\"file-of-ips\"\" with at most 50 processes at once", "labels": ["xargs"]}
-{"text": "Inserts \"\"new line\"\" after last occurrence of ScriptAlias in a file", "labels": ["awk"]}
-{"text": "Isolate first comma-delimited field of each line in \"\"file\"\", discard consecutive duplicates, and search \"\"file\"\" for first matching occurrence of that field.", "labels": ["xargs"]}
-{"text": "Join colon-separated information in 3 files LN.txt PH.txt and AD.txt in a cascade fashion: join LN.txt and PH.txt, then join the result with AD.txt", "labels": ["sort"]}
-{"text": "Join columns in \"\"file1\"\" and \"\"file2\"\" if their first field matches and format the output as a table", "labels": ["awk"]}
-{"text": "Join comma-separated data in file1 and file2, including extra non-matching information in both files.", "labels": ["sort"]}
-{"text": "Join comma-separated information in 4 files", "labels": ["sort"]}
-{"text": "Join data in \"\"file1\"\" sorted by the second word of each line with data in \"\"file2\"\" sorted by the first word of each line, keeping the same order as it is found in \"\"file1\"\"", "labels": ["sort"]}
-{"text": "Join data in file1 containing one number per line with data in file2 containing a number and other information per line, keeping the same order as it is found in file1.", "labels": ["sort"]}
-{"text": "Join lines in file \"\"A\"\" with lines in file \"\"B\"\" if the lines share a common first word", "labels": ["sort"]}
-{"text": "Join lines in file \"\"aa\"\" with lines in file \"\"bb\"\" if the lines share a common first word", "labels": ["sort"]}
-{"text": "Join lines in file \"\"aa\"\" with lines in file \"\"bb\"\" if the lines share a common first word and sort the result numerically", "labels": ["sort"]}
-{"text": "Kill all processes which were executed in background by the current shell.", "labels": ["xargs"]}
-{"text": "List \"\".java\"\" files that have the same contents", "labels": ["sort"]}
-{"text": "List \"\".java\"\" files that have the same filename and contents", "labels": ["sort"]}
-{"text": "List absolute path of files in the current directory", "labels": ["xargs"]}
-{"text": "List all IP addresses assigned to current hostname, pausing for user interaction after each page.", "labels": ["awk"]}
-{"text": "List all active cron jobs, displaying only the command.", "labels": ["awk"]}
-{"text": "List all cron jobs where the minute part is either * or a number from 0 to 14.", "labels": ["awk"]}
-{"text": "List all environment variables whose name contains 'ipo', showing only the names of the variables and not their values.", "labels": ["awk"]}
-{"text": "List all files and directories in long list format with a time style of \"\"long-iso\"\" and sort from oldest modifed to newest modified", "labels": ["sort"]}
-{"text": "List all variables (names only) with names containing X.", "labels": ["awk"]}
-{"text": "List any line in \"\"f1\"\" or \"\"f2\"\" which does not appear in the other and delete all tab characters in the output", "labels": ["sort"]}
-{"text": "List common files in directories \"\"1\"\" and \"\"2\"\"", "labels": ["sort"]}
-{"text": "List each directory in the current directory prefixed with its disk usage in human readable format and sorted from smallest to largest", "labels": ["sort"]}
-{"text": "List each file or directory in the current directory prefixed by its filesize in bytes and sorted from smallest to largest", "labels": ["sort"]}
-{"text": "List each file or directory in the current directory prefixed by its human readable filesize and sorted from largest to smallest", "labels": ["sort"]}
-{"text": "List each file or directory in the current directory prefixed with its filesize in MB and sorted from smallest to largest", "labels": ["sort"]}
-{"text": "List each file or directory in the current directory prefixed with its filesize in bytes and sorted from smallest to largest", "labels": ["sort"]}
-{"text": "List each unique case insensitive character in \"\"file\"\" prefixed by number of occurrences", "labels": ["sort"]}
-{"text": "List each unique case insensitive character in \"\"file\"\" prefixed by number of occurrences and sorted from most frequent to least frequent", "labels": ["sort"]}
-{"text": "List each unique character in \"\"file\"\" prefixed by number of occurrences", "labels": ["sort"]}
-{"text": "List each unique character in \"\"file\"\" prefixed by number of occurrences and sorted from most frequent to least frequent", "labels": ["sort"]}
-{"text": "List environment variables whose name matches \"\".*X.*\"\"", "labels": ["awk"]}
-{"text": "List files in \"\"dir1\"\" that are not in \"\"dir2\"\"", "labels": ["sort"]}
-{"text": "List files in directory \"\"one\"\" and \"\"two\"\" that do not exist in the other", "labels": ["sort"]}
-{"text": "List files in directory \"\"one\"\" that exist in directory \"\"two\"\"", "labels": ["sort"]}
-{"text": "List the 10 largest files or directories and their sizes under (and including) \"\"/var\"\"", "labels": ["sort"]}
-{"text": "List the number of occurrences of each unique character in \"\"The quick brown fox jumps over the lazy dog\"\" sorted from most frequent to least frequent", "labels": ["sort"]}
-{"text": "List the unique second \"\"/\"\" delimited field of every line from standard input prefixed by the number of occurrences", "labels": ["sort"]}
-{"text": "List the unique tab delimited field number \"\"$FIELD\"\" in all files, prefix with the number of occurrences, sort from most frequent to least frequent", "labels": ["sort"]}
-{"text": "List unique MD5 digests of all files in the current directory ending in .txt", "labels": ["sort"]}
-{"text": "List unique series of 3 characters in file \"\"$1\"\" prefixed by the number of occurrences and sorted from most frequent to least frequent", "labels": ["sort"]}
-{"text": "Lists all files in a current folder, separating names with comma.", "labels": ["xargs"]}
-{"text": "Lists all files in a current folder, separating names with space.", "labels": ["awk"]}
-{"text": "Locates Erlang distribution, and prints release number from 'RELEASES' file.", "labels": ["awk"]}
-{"text": "Make a copy of file.txt in all directories in current directory - names may not contain spaces.", "labels": ["xargs"]}
-{"text": "Make a copy of file1 in dir1, dir2, and dir3.", "labels": ["xargs"]}
-{"text": "Make a directory in the current working directory with a random 32 alphanumeric character name", "labels": ["xargs"]}
-{"text": "Make directories and parents as needed for each unique second \"\"&\"\" delimited field with \"\" \"\", \"\",\"\", and \"\":\"\" removed in \"\"filetypes.txt\"\"", "labels": ["sort"]}
-{"text": "Make directories for each line in \"\"folder_list.txt\"\"", "labels": ["xargs"]}
-{"text": "Merge 10 already sorted files and display the result, pausing at each page of output.", "labels": ["sort"]}
-{"text": "Merge already sorted files \"\"*.txt\"\" and split the result into files of at most 1000000 lines each with a numeric suffix and a prefix \"\"output\"\"", "labels": ["sort"]}
-{"text": "Merge already sorted files \"\"file*.txt\"\" and split the result into files of at most 100000 lines each with a prefix \"\"sorted_file\"\"", "labels": ["sort"]}
-{"text": "Merge already sorted files in the current directory ending in \"\".$suffix\"\"", "labels": ["sort"]}
-{"text": "Merge already sorted files in the current directory starting with \"\"_tmp\"\" and write the output to \"\"data.tsv.sorted\"\"", "labels": ["sort"]}
-{"text": "Merge colon-separated information from file1 and file2 where first field of both files matches", "labels": ["sort"]}
-{"text": "Merge colon-separated information from file1 and file2 where second field of both files matches, sorting the result based on this field - for each line, output: first 3 fields of first file, followed by first 3 fields of second file.", "labels": ["sort"]}
-{"text": "Merge colon-separated information from standard input and file1.txt where the first field of both files matches, print unpairable lines from both files, replace missing fields with \"\"no-match\"\", and output the second field from standard input and the second and third field from file1.txt", "labels": ["sort"]}
-{"text": "Merge colon-separated information from standard input and file1.txt where the first field of both files matches, print unpairable lines from standard input, replace missing fields with \"\"no-match\"\", and output the second field from standard input and the second and third field from file1.txt", "labels": ["sort"]}
-{"text": "Merge content of decompressed files \"\"$part0\"\", \"\"$part1\"\", and so on", "labels": ["sort"]}
-{"text": "Merge data in file1 and file2 where second field is common in both files", "labels": ["sort"]}
-{"text": "Merge file1 and file2 by outputting all lines where the first comma-separated field of both files matches, followed by extra fields in file1 and those in file2", "labels": ["sort"]}
-{"text": "Move all files and directories in the current directory to \"\"$TARGET\"\" excluding files matching \"\"$EXCLUDE\"\"", "labels": ["xargs"]}
-{"text": "Move all files listed in $i file to dir.$count directory", "labels": ["xargs"]}
-{"text": "Move all files that contain \"\"Subject: \\[SPAM\\]\"\" to \"\"DIR\"\"", "labels": ["xargs"]}
-{"text": "Move all files that contain \"\"Subject: \\[SPAM\\]\"\" to \"\"your_file\"\"", "labels": ["awk"]}
-{"text": "Numberically sort content of file 'files', using for sorting part of second one of dash separated fields beginning from second letter.", "labels": ["sort"]}
-{"text": "Numerically sort IPv4 addresses specified on standard input with presedence to first, second, third, then fourth octet", "labels": ["sort"]}
-{"text": "Numerically sort each line in file \"\"bb\"\" and output the result to console from greatest value to least value", "labels": ["sort"]}
-{"text": "Numerically sort each line in file \"\"out\"\" and print the result to console", "labels": ["sort"]}
-{"text": "Numerically sort each line of standard input", "labels": ["sort"]}
-{"text": "Numerically sort file \"\"file.dat\"\" by the second word of each line and output from greatest value to least value", "labels": ["sort"]}
-{"text": "Numerically sort file \"\"files\"\" by the second \"\"-\"\" separated value of each line ordered from least value to highest value", "labels": ["sort"]}
-{"text": "Numerically sort file \"\"table\"\" by the fourth character of the second field, ignoring leading spaces", "labels": ["sort"]}
-{"text": "Numerically sort file \"\"temp.txt\"\" by the second \"\"-\"\" separated value of each line ordered from highest value to least value", "labels": ["sort"]}
-{"text": "Numerically sort standard input by the second word of each line", "labels": ["sort"]}
-{"text": "Numerically sort standard input by the second word of each line and output from greatest value to least value", "labels": ["sort"]}
-{"text": "Output all lines in 'file' which contain a tab character.", "labels": ["awk"]}
-{"text": "Ping all hosts in file \"\"ips\"\" twice", "labels": ["xargs"]}
-{"text": "Ping every address from 192.168.0.1 to 192.168.0.254 with a timeout of 1 second and filter out no responses", "labels": ["xargs"]}
-{"text": "Prefix all files and directories in the current directory with \"\"Unix_\"\"", "labels": ["xargs"]}
-{"text": "Prefix all files and directories in the current directory with \"\"unix_\"\"", "labels": ["xargs"]}
-{"text": "Prefix all files and folders in the current directory with \"\"PRE_\"\"", "labels": ["xargs"]}
-{"text": "Prepend date to ping output to google.com", "labels": ["xargs"]}
-{"text": "Print \"\"#include\"\" statements found in \"\"file2\"\" that are not in \"\"file1\"\"", "labels": ["sort"]}
-{"text": "Print \"\"$1\"\" or default 10 random lines from standard input", "labels": ["sort"]}
-{"text": "Print \"\"Total generated: \"\" followed by the number of unique lines in \"\"$generated_ports\"\"", "labels": ["sort"]}
-{"text": "Print \"\"echo ping -c 2\"\" on each string in file 'ips'", "labels": ["xargs"]}
-{"text": "Print 'file' file, splitting lines into pieces with no more that 3 words in each one.", "labels": ["xargs"]}
-{"text": "Print a count of all unique entries in \"\"ips.txt\"\" with the most frequent results at the top", "labels": ["sort"]}
-{"text": "Print a count of all unique lines in \"\"ports.txt\"\" sorted from most frequent to least frequent", "labels": ["sort"]}
-{"text": "Print a count of case insensitive duplicate filenames in the current directory", "labels": ["sort"]}
-{"text": "Print a count of duplicate lines in \"\"filename\"\"", "labels": ["sort"]}
-{"text": "Print a count of duplicate lines in \"\"filename\"\" sorted by most frequent", "labels": ["sort"]}
-{"text": "Print a count of each unique line from standard input", "labels": ["sort"]}
-{"text": "Print a count of each unique line from standard input sorted from least frequent to most frequent", "labels": ["sort"]}
-{"text": "Print a count of each unique line in \"\"ip_addresses\"\"", "labels": ["sort"]}
-{"text": "Print a count of each unique line in \"\"ip_addresses.txt\"\" sorted numerically", "labels": ["sort"]}
-{"text": "Print a space separated list of numbers from 1 to 10", "labels": ["xargs"]}
-{"text": "Print a space separated list of numbers from 1 to 10 with no trailing new line", "labels": ["xargs"]}
-{"text": "Print command line of process with pid 17709", "labels": ["xargs"]}
-{"text": "Print file information of command \"\"studio\"\"", "labels": ["xargs"]}
-{"text": "Print joined strings from 'file', using space symbol as separator.", "labels": ["xargs"]}
-{"text": "Print numbers from 1 to 10 using up to 4 processes", "labels": ["xargs"]}
-{"text": "Print space separated numbers from 1 to 10", "labels": ["xargs"]}
-{"text": "Print the base name of the current working directory", "labels": ["xargs"]}
-{"text": "Print the characters in $b that match with any character in $a without printing any whitespace in-between", "labels": ["xargs"]}
-{"text": "Print the grand total disk usage of all files listed in \"\"files.txt\"\"", "labels": ["xargs"]}
-{"text": "Print the text file paths that match 'needle text' in their contents under 'my_folder' recursively", "labels": ["xargs"]}
-{"text": "Prints path to folder that contains file \"\"/path/to/vm.vmwarevm/vm.vmx\"\".", "labels": ["xargs"]}
-{"text": "Recursively change the owner and group of all files in the current directory to \"\"apache\"\"", "labels": ["xargs"]}
-{"text": "Recursively change the ownership of all directories in the current directory excluding \"\"foo\"\" to \"\"Camsoft\"\"", "labels": ["xargs"]}
-{"text": "Recursively find strings in all files under current directory, that matching with comma-separated patterns list in file 'searches-txt'", "labels": ["xargs"]}
-{"text": "Recursively finds all 'STATUS.txt' files containing text 'OPEN' and prints containing folder of them.", "labels": ["xargs"]}
-{"text": "Remove blank lines and replace \"\" \"\" with \"\"/\"\" in \"\"struct.txt\"\" as input to make directories with parents as needed", "labels": ["xargs"]}
-{"text": "Removes 5 oldest files in the current folder.", "labels": ["xargs"]}
-{"text": "Removes all files but $1 newest ones from current folder.", "labels": ["xargs"]}
-{"text": "Removes all files but 5 newest ones from current folder.", "labels": ["xargs"]}
-{"text": "Removes all files from current folder but 3 newest ones", "labels": ["xargs"]}
-{"text": "Removes all files from current folder but 5 newest ones, filtering out directories from initial search.", "labels": ["xargs"]}
-{"text": "Removes all files from current folder but 5 newest ones.", "labels": ["xargs"]}
-{"text": "Removes all top-level empty folders within the current folder.", "labels": ["xargs"]}
-{"text": "Removes everything from current folder but '*ddl*' and '*docs*' files.", "labels": ["xargs"]}
-{"text": "Removes first and last parts of path 'test/90_2a5/Windows' and prints the result.", "labels": ["xargs"]}
-{"text": "Repeat \"\"image.png\"\" 10 times on a single line", "labels": ["xargs"]}
-{"text": "Save number of lines in 'file.txt' file in 'nbLines' variable", "labels": ["xargs"]}
-{"text": "Saves space separated content of $RAW_LOG_DIR in FILES variable", "labels": ["xargs"]}
-{"text": "Search PATH for utilities called \"\"rename\"\", display the type of file (script, executable, ...) for each match found.", "labels": ["xargs"]}
-{"text": "Send reverse requests to get domain name for each address in 'my_ips' list", "labels": ["xargs"]}
-{"text": "Set environment variables using assignments are listed in '.env' file and run 'rails' command with defined environment", "labels": ["xargs"]}
-{"text": "Suffix all files and folders in the current directory with \"\"_SUF\"\"", "labels": ["xargs"]}
-{"text": "Take a file path from standard input and remove it.", "labels": ["xargs"]}
-{"text": "Take first text field from file 'file.txt' as a domain name and get short A record for this one.", "labels": ["xargs"]}
-{"text": "Takes path list from '.exportfiles.text' file, cuts off first two path segments and last one.", "labels": ["xargs"]}
-{"text": "Unzip all files matching \"\"/homes/ndeklein/mzml/*.gz\"\"", "labels": ["xargs"]}
-{"text": "kill a number of background jobs", "labels": ["xargs"]}
-{"text": "kill all active jobs", "labels": ["xargs"]}
-{"text": "kill all background jobs", "labels": ["xargs"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
-{"text": "test", "labels": ["others"]}
+{"text": "Check my CW20 token balance", "labels": ["query_contract"]}
+{"text": "Get CW20 token info like name, symbol and supply", "labels": ["query_contract"]}
+{"text": "Get token info from the bridge contract", "labels": ["query_contract"]}
+{"text": "Check current bridge limits for a denom on the bridge contract", "labels": ["query_contract"]}
+{"text": "Check my vesting balance in Neutron Vesting contract", "labels": ["query_contract"]}
+{"text": "See if my TGE allocation is already claimed", "labels": ["query_contract"]}
+{"text": "Get global vesting status from TGE contract", "labels": ["query_contract"]}
+{"text": "Query rate limit quotas for channel-0 and untrn", "labels": ["query_contract"]}
+{"text": "Get DAO core configuration", "labels": ["query_contract"]}
+{"text": "List the latest 30 DAO proposals", "labels": ["query_contract"]}
+{"text": "View details of DAO proposal #42", "labels": ["query_contract"]}
+{"text": "Get metadata of NFT with id 123", "labels": ["query_contract"]}
+{"text": "Get cw721 contract info", "labels": ["query_contract"]}
+{"text": "Read current counter value from minimal counter contract", "labels": ["query_contract"]}
+{"text": "List all scheduled cron jobs", "labels": ["query_contract"]}
+{"text": "Show details of cron schedule named daily", "labels": ["query_contract"]}
+{"text": "Check stored IBC failures for my contract", "labels": ["query_contract"]}
+{"text": "List contracts subscribed to staking hooks via Harpoon", "labels": ["query_contract"]}
+{"text": "Fetch DAO staked balance for my wallet", "labels": ["query_contract"]}
+{"text": "Retrieve current bridged supply across chains", "labels": ["query_contract"]}
+{"text": "Check if an interchain query with ID 1 is registered", "labels": ["query_contract"]}
+{"text": "Get group members of CW4 DAO group", "labels": ["query_contract"]}
+{"text": "View token factory denom configuration", "labels": ["query_contract"]}
+{"text": "Get admin list from CW1 subkeys contract", "labels": ["query_contract"]}
+{"text": "Query service global fee parameters", "labels": ["query_contract"]}
+{"text": "Claim my vested Neutron tokens", "labels": ["execute"]}
+{"text": "Increment the counter in my demo contract", "labels": ["execute"]}
+{"text": "Send 10,000 NTRN from the treasury contract to my wallet", "labels": ["execute"]}
+{"text": "Swap 100 NTRN to ATOM through the DEX contract", "labels": ["execute"]}
+{"text": "Add liquidity to the NTRN/ATOM pool on the DEX", "labels": ["execute"]}
+{"text": "Cancel order #12345 on the DEX", "labels": ["execute"]}
+{"text": "Schedule my contract to run every 50 blocks using the Cron module", "labels": ["execute"]}
+{"text": "Register an interchain query to track ATOM/USDC price on Osmosis", "labels": ["execute"]}
+{"text": "Remove interchain query #7 to refund the deposit", "labels": ["execute"]}
+{"text": "Update the update period of interchain query #7 to 60 blocks", "labels": ["execute"]}
+{"text": "Stake 500 NTRN on the Cosmos Hub via my ICA controller contract", "labels": ["execute"]}
+{"text": "Withdraw protocol fees from the contract to the DAO treasury", "labels": ["execute"]}
+{"text": "Burn the collected fees using the FeeBurner contract", "labels": ["execute"]}
+{"text": "Refund unused ICA fees for channel-8 sequence 42", "labels": ["execute"]}
+{"text": "Subscribe my contract to AfterValidatorCreated hook events", "labels": ["execute"]}
+{"text": "Remove all Harpoon hook subscriptions for my contract", "labels": ["execute"]}
+{"text": "Pause my smart contract to stop all executes", "labels": ["execute"]}
+{"text": "Unpause my smart contract", "labels": ["execute"]}
+{"text": "Set a new admin address for my contract", "labels": ["execute"]}
+{"text": "Migrate my contract to code ID 45", "labels": ["execute"]}
+{"text": "Change the DAO proposal passing threshold to 60%", "labels": ["execute"]}
+{"text": "Send a GMP cross-chain message to an Ethereum contract", "labels": ["execute"]}
+{"text": "Place a market order to buy ATOM with 100 NTRN on the DEX", "labels": ["execute"]}
+{"text": "Claim staking rewards through my rewards contract", "labels": ["execute"]}
+{"text": "Set the vault deposit cap to 1,000,000 NTRN", "labels": ["execute"]}
+{"text": "Enable emergency shutdown on my protocol", "labels": ["execute"]}
+{"text": "Mint 100 CW20 tokens to my address", "labels": ["execute"]}
+{"text": "Transfer 50 CW20 tokens to another user", "labels": ["execute"]}
+{"text": "Reset my counter contract back to zero", "labels": ["execute"]}
+{"text": "Remove cron schedule with ID 3", "labels": ["execute"]}
+{"text": "Show my wallet balance on Neutron mainnet", "labels": ["query_balance"]}
+{"text": "Check the token balances for a specific address", "labels": ["query_balance"]}
+{"text": "Get my testnet account balances", "labels": ["query_balance"]}
+{"text": "Display my wallet's balances in human-readable units", "labels": ["query_balance"]}
+{"text": "Get only my NTRN token balance", "labels": ["query_balance"]}
+{"text": "Query my balance using an environment variable for the node URL", "labels": ["query_balance"]}
+{"text": "Check the balance of my friend\u2019s address", "labels": ["query_balance"]}
+{"text": "Fetch balances and convert uNTRN to NTRN using jq", "labels": ["query_balance"]}
+{"text": "Check the balance of a multisig wallet", "labels": ["query_balance"]}
+{"text": "Check how many IBC tokens are in my account", "labels": ["query_balance"]}
+{"text": "Get my balances from a local full node", "labels": ["query_balance"]}
+{"text": "Retrieve balances from a remote gRPC endpoint", "labels": ["query_balance"]}
+{"text": "Check my balance from inside a Docker container", "labels": ["query_balance"]}
+{"text": "Query the balance of my Ledger hardware wallet address", "labels": ["query_balance"]}
+{"text": "Verify an address currently has zero balance", "labels": ["query_balance"]}
+{"text": "Output my balances as raw JSON", "labels": ["query_balance"]}
+{"text": "Show the treasury wallet balance for our DAO", "labels": ["query_balance"]}
+{"text": "Confirm a faucet deposit by querying my balance", "labels": ["query_balance"]}
+{"text": "Schedule a daily balance check with cron", "labels": ["query_balance"]}
+{"text": "Double-check my balance before sending a transaction", "labels": ["query_balance"]}
+{"text": "Loop over a list of addresses and show each balance", "labels": ["query_balance"]}
+{"text": "Get my balance at a specific block height", "labels": ["query_balance"]}
+{"text": "Filter and show only IBC denomination balances", "labels": ["query_balance"]}
+{"text": "Write my balance to a file for later processing", "labels": ["query_balance"]}
+{"text": "Query my balance over a secure (TLS) gRPC connection", "labels": ["query_balance"]}
+{"text": "Fetch balances in protobuf format", "labels": ["query_balance"]}
+{"text": "Get balances using the test validator mnemonic address", "labels": ["query_balance"]}
+{"text": "Check balances for an address stored in a shell variable", "labels": ["query_balance"]}
+{"text": "Validate that my new account has the expected airdrop balance", "labels": ["query_balance"]}
+{"text": "Quickly view balances with a shortened address placeholder", "labels": ["query_balance"]}
+{"text": "Upgrade the CW20 NTRN token contract to code ID 777", "labels": ["execute"]}
+{"text": "Migrate the Main DAO core contract to the latest code ID 325", "labels": ["execute"]}
+{"text": "Upgrade the Single-Proposal module on mainnet to code ID 339", "labels": ["execute"]}
+{"text": "Run an emergency migration of the bridge relayer contract to code ID 212", "labels": ["execute"]}
+{"text": "Update the airdrop contract to new code ID 196", "labels": ["execute"]}
+{"text": "Migrate the investors vesting contract to code ID 28 with updated schedule", "labels": ["execute"]}
+{"text": "Patch the multisig treasury contract to code ID 410 using a custom migrate message", "labels": ["execute"]}
+{"text": "Move the interchain query helper contract to beta code ID 500", "labels": ["execute"]}
+{"text": "Migrate the TokenFactory before-send hook contract to code ID 65", "labels": ["execute"]}
+{"text": "Upgrade the Cron scheduler registry contract to code ID 123", "labels": ["execute"]}
+{"text": "Migrate the IBC rate-limit contract to code ID 88", "labels": ["execute"]}
+{"text": "Switch the validator-set keeper contract to code ID 444", "labels": ["execute"]}
+{"text": "Upgrade the cw1-subkeys access control contract to code ID 456", "labels": ["execute"]}
+{"text": "Migrate the liquidation module borrower registry contract to code ID 789", "labels": ["execute"]}
+{"text": "Testnet: migrate the demo counter contract to code ID 42", "labels": ["execute"]}
+{"text": "Send 10 NTRN from my default wallet to Bob's address", "labels": ["send"]}
+{"text": "Transfer 100 NTRN to my exchange deposit address with automatic gas calculation", "labels": ["send"]}
+{"text": "Move 5 NTRN from my main key to my savings wallet", "labels": ["send"]}
+{"text": "Send 1 NTRN with a memo saying 'Thanks!'", "labels": ["send"]}
+{"text": "Send 20 NTRN and set a manual fee of 500untrn", "labels": ["send"]}
+{"text": "Send 50 NTRN with higher gas price for faster inclusion", "labels": ["send"]}
+{"text": "Send 0.5 NTRN using my Ledger hardware wallet", "labels": ["send"]}
+{"text": "Quickly send small amount 0.1 NTRN without interactive confirmation", "labels": ["send"]}
+{"text": "Send 3 NTRN using file keyring backend", "labels": ["send"]}
+{"text": "Generate an unsigned send transaction for 2 NTRN to sign offline later", "labels": ["send"]}
+{"text": "Broadcast a 2 NTRN transfer in async mode", "labels": ["send"]}
+{"text": "Send 0.2 NTRN with low fees allowed", "labels": ["send"]}
+{"text": "Send 7 NTRN specifying gas-adjustment factor 1.5", "labels": ["send"]}
+{"text": "Send 11 NTRN providing account number and sequence manually", "labels": ["send"]}
+{"text": "Send 9 NTRN to a smart contract address", "labels": ["send"]}
+{"text": "Send 4 NTRN to a multisig account", "labels": ["send"]}
+{"text": "Send 0.01 NTRN on the testnet chain", "labels": ["send"]}
+{"text": "Send 1000untrn to the burn address to remove supply", "labels": ["send"]}
+{"text": "Send 8 NTRN overriding the broadcast-mode to block", "labels": ["send"]}
+{"text": "Send 6 NTRN using legacy Amino JSON signing", "labels": ["send"]}
+{"text": "Send 12 NTRN with gas amount explicitly set to 200000", "labels": ["send"]}
+{"text": "Simulate a transfer of 13 NTRN before broadcasting", "labels": ["send"]}
+{"text": "Send 0.3 NTRN with IBC denomination ibc/XYZ", "labels": ["send"]}
+{"text": "Send 15 NTRN using keyring-backend pass", "labels": ["send"]}
+{"text": "Send 2 NTRN and wait only for async acknowledgment", "labels": ["send"]}
+{"text": "Send 5 NTRN quickly using broadcast-mode sync", "labels": ["send"]}
+{"text": "Send 0.25 NTRN to an uppercase Bech32 address", "labels": ["send"]}
+{"text": "Send 14 NTRN using a custom RPC node URL", "labels": ["send"]}
+{"text": "Send 1.1 NTRN with a timeout height of 1000000", "labels": ["send"]}
+{"text": "Send 0.05 NTRN specifying a fee-granter address", "labels": ["send"]}
+{"text": "Upload my compiled smart contract to Neutron mainnet with automatic gas estimation", "labels": ["upload"]}
+{"text": "Upload a CosmWasm contract to the Pion testnet", "labels": ["upload"]}
+{"text": "Upload a contract and allow anyone to instantiate it", "labels": ["upload"]}
+{"text": "Upload a contract but restrict instantiation to my wallet only", "labels": ["upload"]}
+{"text": "Upload a large contract with a manually-set high gas limit", "labels": ["upload"]}
+{"text": "Upload a contract and pay fees in untrn with a custom gas price", "labels": ["upload"]}
+{"text": "Upload my contract but broadcast the transaction in sync mode", "labels": ["upload"]}
+{"text": "Upload a contract to a local devnet", "labels": ["upload"]}
+{"text": "Upload a contract using my Ledger hardware wallet", "labels": ["upload"]}
+{"text": "Generate the store-contract transaction JSON without broadcasting", "labels": ["upload"]}
+{"text": "Upload a contract and sign the transaction offline later", "labels": ["upload"]}
+{"text": "Upload a contract with an explicit gas-adjustment factor", "labels": ["upload"]}
+{"text": "Upload a contract and wait for block confirmation (block mode)", "labels": ["upload"]}
+{"text": "Upload a gzipped contract after decompressing on-the-fly", "labels": ["upload"]}
+{"text": "Upload a contract directly from a GitHub release asset", "labels": ["upload"]}
+{"text": "Prepare a multisig store-contract transaction for later signing", "labels": ["upload"]}
+{"text": "Upload a contract with a higher gas price to speed up inclusion", "labels": ["upload"]}
+{"text": "Simulate a contract upload to estimate gas without broadcasting", "labels": ["upload"]}
+{"text": "Upload a contract and attach a memo to the transaction", "labels": ["upload"]}
+{"text": "Create an offline JSON for a large multisig contract upload with manual gas", "labels": ["upload"]}
+{"text": "Check my Neutron wallet balance", "labels": ["query_balance"]}
+{"text": "Look up the balance of a friend\u2019s address", "labels": ["query_balance"]}
+{"text": "Verify the balance of my validator operator account", "labels": ["query_balance"]}
+{"text": "Get balance at a specific block height", "labels": ["query_balance"]}
+{"text": "Check my balance on the Neutron testnet", "labels": ["query_balance"]}
+{"text": "Output my balance as JSON", "labels": ["query_balance"]}
+{"text": "Query only the uNTRN balance of an address", "labels": ["query_balance"]}
+{"text": "Fetch my balance from a local gRPC node", "labels": ["query_balance"]}
+{"text": "Retrieve an IBC token balance from Neutron", "labels": ["query_balance"]}
+{"text": "Loop through a list of addresses and print their balances", "labels": ["query_balance"]}
+{"text": "Store my balance in a shell variable", "labels": ["query_balance"]}
+{"text": "Check balance using HTTPS gRPC endpoint", "labels": ["query_balance"]}
+{"text": "Display balance in human-readable format", "labels": ["query_balance"]}
+{"text": "Query balance of a smart-contract account", "labels": ["query_balance"]}
+{"text": "Check balance of a cold storage multisig address", "labels": ["query_balance"]}
+{"text": "Get balance of an address and save to a file", "labels": ["query_balance"]}
+{"text": "Query balance with custom timeout", "labels": ["query_balance"]}
+{"text": "Check balance of an address after migrating node endpoints", "labels": ["query_balance"]}
+{"text": "Verify balance on a private Neutron fork", "labels": ["query_balance"]}
+{"text": "Use ledger key to check its balance", "labels": ["query_balance"]}
+{"text": "Query balance with block height equal to latest state sync snapshot", "labels": ["query_balance"]}
+{"text": "Fetch balance of an address in a bash subshell", "labels": ["query_balance"]}
+{"text": "Check balance when behind corporate proxy", "labels": ["query_balance"]}
+{"text": "Compare balance between two heights", "labels": ["query_balance"]}
+{"text": "Audit balances of top 50 richest addresses", "labels": ["query_balance"]}
+{"text": "Get staking reward account balance", "labels": ["query_balance"]}
+{"text": "Fetch balance using CLI alias", "labels": ["query_balance"]}
+{"text": "Print balance of each validator in the network", "labels": ["query_balance"]}
+{"text": "Schedule cron job to snapshot balance daily", "labels": ["query_balance"]}
+{"text": "Debug balance query with trace flag", "labels": ["query_balance"]}
+{"text": "Please migrate the investors vesting contract to code id 28", "labels": ["execute"]}
+{"text": "Initiate a migration for the investors vesting contract at code ID 28", "labels": ["execute"]}
+{"text": "Upgrade investors vesting contract by moving it to code 28", "labels": ["execute"]}
+{"text": "Shift the investors vesting contract onto new code identifier 28", "labels": ["execute"]}
+{"text": "Move investors' vesting contract to code version 28 with the updated schedule", "labels": ["execute"]}
+{"text": "Carry out migration of the investors vesting contract targeting code id 28", "labels": ["execute"]}
+{"text": "Please upgrade the investors vesting contract to code id number 28", "labels": ["execute"]}
+{"text": "Execute migration so that investors vesting contract runs on code 28", "labels": ["execute"]}
+{"text": "Investors vesting contract should be migrated over to code id 28 today", "labels": ["execute"]}
+{"text": "Let us move the investors' vesting contract onto code release 28", "labels": ["execute"]}
+{"text": "Please patch the multisig treasury contract to code ID 410", "labels": ["execute"]}
+{"text": "Upgrade the multisig treasury contract by migrating it to code 410", "labels": ["execute"]}
+{"text": "Apply custom migration sending multisig treasury contract over to code id 410", "labels": ["execute"]}
+{"text": "Move the multisig treasury contract to new code identifier 410 now", "labels": ["execute"]}
+{"text": "Migrate multisig treasury contract into code version 410 using custom message", "labels": ["execute"]}
+{"text": "Initiate a patch that shifts multisig treasury contract onto code 410", "labels": ["execute"]}
+{"text": "We need the multisig treasury contract migrated to code id number 410", "labels": ["execute"]}
+{"text": "Ensure that multisig treasury contract runs under code ID 410", "labels": ["execute"]}
+{"text": "Upgrade multisig treasury contract to code 410 with the new threshold setting", "labels": ["execute"]}
+{"text": "Patch multisig treasury contract over to code identifier 410 immediately", "labels": ["execute"]}
+{"text": "Move the interchain query helper contract to code ID 500", "labels": ["execute"]}
+{"text": "Please upgrade interchain query helper contract so it uses code 500", "labels": ["execute"]}
+{"text": "Initiate beta migration moving interchain query helper contract onto code id 500", "labels": ["execute"]}
+{"text": "Shift interchain query helper contract to new code identifier 500", "labels": ["execute"]}
+{"text": "Upgrade the interchain query helper contract into code version 500 now", "labels": ["execute"]}
+{"text": "Migrate interchain query helper contract over to code 500", "labels": ["execute"]}
+{"text": "Apply beta code id 500 to the interchain query helper contract", "labels": ["execute"]}
+{"text": "Ensure interchain query helper contract is running under code ID 500", "labels": ["execute"]}
+{"text": "We must migrate the interchain query helper contract to code identifier 500", "labels": ["execute"]}
+{"text": "Please shift interchain query helper contract onto code release 500 asap", "labels": ["execute"]}
+{"text": "Please upgrade TokenFactory before-send hook contract into code 65", "labels": ["execute"]}
+{"text": "Shift the TokenFactory before-send hook contract over to code id 65", "labels": ["execute"]}
+{"text": "Move TokenFactory before-send hook contract onto new code identifier 65", "labels": ["execute"]}
+{"text": "Apply migration so TokenFactory before-send hook contract runs on code 65", "labels": ["execute"]}
+{"text": "We need the TokenFactory before-send hook contract migrated to code version 65", "labels": ["execute"]}
+{"text": "Initiate upgrade of TokenFactory before-send hook contract to code ID 65", "labels": ["execute"]}
+{"text": "TokenFactory before-send hook contract should be switched to code 65", "labels": ["execute"]}
+{"text": "Please move the TokenFactory before-send hook contract into code identifier 65 asap", "labels": ["execute"]}
+{"text": "Upgrade TokenFactory before-send hook contract to code release 65 immediately", "labels": ["execute"]}
+{"text": "Please migrate Cron scheduler registry contract into code 123", "labels": ["execute"]}
+{"text": "Shift Cron scheduler registry contract over to code id 123", "labels": ["execute"]}
+{"text": "Move the Cron scheduler registry contract onto new code identifier 123", "labels": ["execute"]}
+{"text": "Apply upgrade so Cron scheduler registry contract runs on code version 123", "labels": ["execute"]}
+{"text": "We need Cron scheduler registry contract migrated to code ID 123", "labels": ["execute"]}
+{"text": "Initiate registry upgrade moving Cron scheduler registry contract to code 123", "labels": ["execute"]}
+{"text": "Ensure that Cron scheduler registry contract is running under code ID 123", "labels": ["execute"]}
+{"text": "Patch Cron scheduler registry contract to code identifier 123 immediately", "labels": ["execute"]}
+{"text": "Cron scheduler registry contract should be upgraded to code release 123 asap", "labels": ["execute"]}
+{"text": "Send 4 NTRN from mywallet to ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx on neutron-1 via https://rpc.neutron.org:443", "labels": ["send"]}
+{"text": "Please transfer four NTRN to the multisig ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx using mywallet", "labels": ["send"]}
+{"text": "With gas auto send 4 NTRN from mywallet to ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Initiate a transfer of 4 NTRN on chain neutron-1 to address ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx using wallet mywallet", "labels": ["send"]}
+{"text": "Dispatch 4 NTRN from account mywallet to ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx via the rpc https://rpc.neutron.org:443", "labels": ["send"]}
+{"text": "Could you move 4 NTRN to ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx using mywallet on neutron-1", "labels": ["send"]}
+{"text": "Send exactly 4 NTRN from mywallet towards the multisig address ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx with gas auto", "labels": ["send"]}
+{"text": "Use mywallet to forward 4 NTRN to ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx via https://rpc.neutron.org:443", "labels": ["send"]}
+{"text": "I want to send 4 NTRN on neutron-1 from mywallet to ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx with rpc https://rpc.neutron.org:443", "labels": ["send"]}
+{"text": "Please broadcast 4 NTRN from wallet mywallet to the address ntrn1multisigxxxxxxxxxxxxxxxxxxxxxxxx using gas auto on chain neutron-1", "labels": ["send"]}
+{"text": "Transfer 0.01 NTRN from mywallet to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx on neutron-testnet-1", "labels": ["send"]}
+{"text": "Please send exactly 0.01 NTRN to the test address ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx using mywallet", "labels": ["send"]}
+{"text": "From mywallet dispatch 0.01 NTRN to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx through the node https://rpc.testnet.neutron.org:443", "labels": ["send"]}
+{"text": "Initiate a transfer of 0.01 NTRN on the neutron-testnet-1 chain to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx using wallet mywallet", "labels": ["send"]}
+{"text": "Send 0.01 NTRN with gas auto from mywallet to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Use rpc https://rpc.testnet.neutron.org:443 to move 0.01 NTRN from mywallet over to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "I want to forward 0.01 NTRN to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx using mywallet on neutron-testnet-1", "labels": ["send"]}
+{"text": "Please broadcast 0.01 NTRN from wallet mywallet on chain neutron-testnet-1 to address ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Move precisely 0.01 NTRN through node https://rpc.testnet.neutron.org:443 from mywallet to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Send a tiny amount of 0.01 NTRN using gas auto from mywallet to ntrn1testxxxxxxxxxxxxxxxxxxxxxxxxxxx via neutron-testnet-1", "labels": ["send"]}
+{"text": "Send 1000untrn from mywallet to ntrn1dead000000000000000000000000000000000000 on neutron-1 with gas 80000 and fee 100untrn", "labels": ["send"]}
+{"text": "Please burn 1000untrn by transferring it from mywallet to address ntrn1dead000000000000000000000000000000000000", "labels": ["send"]}
+{"text": "Use node https://rpc.neutron.org:443 to send 1000untrn from mywallet to ntrn1dead000000000000000000000000000000000000", "labels": ["send"]}
+{"text": "Burn supply by moving 1000untrn to ntrn1dead000000000000000000000000000000000000 using wallet mywallet with fee 100untrn", "labels": ["send"]}
+{"text": "Transfer 1000untrn from mywallet to the burn address ntrn1dead000000000000000000000000000000000000 on chain neutron-1", "labels": ["send"]}
+{"text": "I want to send 1000untrn with gas 80000 and fees 100untrn from mywallet to ntrn1dead000000000000000000000000000000000000", "labels": ["send"]}
+{"text": "Execute a burn by sending 1000untrn on neutron-1 via https://rpc.neutron.org:443 using wallet mywallet", "labels": ["send"]}
+{"text": "Please dispatch 1000untrn with gas 80000 from mywallet to burn address ntrn1dead000000000000000000000000000000000000 on neutron-1", "labels": ["send"]}
+{"text": "Send 1000untrn from mywallet to ntrn1dead000000000000000000000000000000000000 via node https://rpc.neutron.org:443 with fee 100untrn", "labels": ["send"]}
+{"text": "Burn tokens by forwarding 1000untrn using gas 80000 and fees 100untrn from mywallet to ntrn1dead000000000000000000000000000000000000", "labels": ["send"]}
+{"text": "Send 8 NTRN from mywallet to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx on neutron-1", "labels": ["send"]}
+{"text": "Please transfer exactly 8 NTRN to address ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx using wallet mywallet", "labels": ["send"]}
+{"text": "Override mode to block and move 8 NTRN from mywallet to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Using gas auto transfer 8 NTRN on chain neutron-1 to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx via wallet mywallet", "labels": ["send"]}
+{"text": "Forward 8 NTRN through node https://rpc.neutron.org:443 from mywallet to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "I need to send 8 NTRN to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx using mywallet with gas auto on neutron-1", "labels": ["send"]}
+{"text": "Dispatch 8 NTRN from mywallet towards the address ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx via rpc https://rpc.neutron.org:443", "labels": ["send"]}
+{"text": "Execute a transaction of 8 NTRN on neutron-1 from mywallet to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx with broadcast mode block", "labels": ["send"]}
+{"text": "Send eight NTRN from mywallet to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx using gas auto through https://rpc.neutron.org:443", "labels": ["send"]}
+{"text": "Please move 8 NTRN to ntrn1blockmodexxxxxxxxxxxxxxxxxxxxxxx via mywallet using chain neutron-1", "labels": ["send"]}
+{"text": "Send 6 NTRN from mywallet to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx on neutron-1", "labels": ["send"]}
+{"text": "Please transfer six NTRN to address ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx using wallet mywallet", "labels": ["send"]}
+{"text": "Move 6 NTRN from mywallet to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx with gas auto", "labels": ["send"]}
+{"text": "Using rpc https://rpc.neutron.org:443 dispatch 6 NTRN to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx via mywallet", "labels": ["send"]}
+{"text": "Initiate a transfer of 6 NTRN on chain neutron-1 to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx using wallet mywallet", "labels": ["send"]}
+{"text": "Forward six NTRN from mywallet towards ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx via https://rpc.neutron.org:443", "labels": ["send"]}
+{"text": "Please send 6 NTRN using gas auto from mywallet to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Execute transaction of 6 NTRN on neutron-1 from mywallet to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx with sign mode amino", "labels": ["send"]}
+{"text": "Move 6 NTRN through node https://rpc.neutron.org:443 from wallet mywallet to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Send six NTRN from mywallet to ntrn1aminoxxxxxxxxxxxxxxxxxxxxxxxx via neutron-1 with gas auto", "labels": ["send"]}
+{"text": "Get the balance of $ADDR through the node endpoint set in $GRPC_NODE", "labels": ["query_balance"]}
+{"text": "Show me how many coins are in $ADDR using $GRPC_NODE as the node", "labels": ["query_balance"]}
+{"text": "Retrieve account balances for $ADDR via the gRPC node $GRPC_NODE", "labels": ["query_balance"]}
+{"text": "Please query $ADDR balance with the node specified by $GRPC_NODE", "labels": ["query_balance"]}
+{"text": "Could you check funds on $ADDR connecting to $GRPC_NODE", "labels": ["query_balance"]}
+{"text": "Use $GRPC_NODE to fetch all balances belonging to $ADDR", "labels": ["query_balance"]}
+{"text": "I need to know the holdings of address $ADDR from the node $GRPC_NODE", "labels": ["query_balance"]}
+{"text": "Run a balance check on $ADDR while pointing at $GRPC_NODE", "labels": ["query_balance"]}
+{"text": "Balance request: address $ADDR, node URL $GRPC_NODE", "labels": ["query_balance"]}
+{"text": "Using $GRPC_NODE get the current balance for wallet $ADDR", "labels": ["query_balance"]}
+{"text": "Show balance for neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz via https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "I need to check how many tokens my friend has at neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz using https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Please retrieve balances for address neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz from node https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Using the endpoint https://grpc-kaiyo-1.neutron.org:443 get the balance of neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz", "labels": ["query_balance"]}
+{"text": "Fetch my friend\u2019s account info at neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz through https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Query balances on neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz using grpc node https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Show me the coins for neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz via the node https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Balance lookup: neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz node https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "I want the balance for address neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz pulled from https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Use https://grpc-kaiyo-1.neutron.org:443 to get the balance held at neutron1girl3646dpuk3h2flgly6qywvhqygz5tnpuwcz", "labels": ["query_balance"]}
+{"text": "Get the uNTRN balance of $WALLET_ADDR through https://grpc-kaiyo-1.neutron.org:443 and convert it to NTRN", "labels": ["query_balance"]}
+{"text": "Please query $WALLET_ADDR on https://grpc-kaiyo-1.neutron.org:443 and show only the untrn amount", "labels": ["query_balance"]}
+{"text": "Retrieve balances for $WALLET_ADDR via node https://grpc-kaiyo-1.neutron.org:443 filtering for the denom uNTRN", "labels": ["query_balance"]}
+{"text": "Use https://grpc-kaiyo-1.neutron.org:443 to pull the untrn holdings from $WALLET_ADDR", "labels": ["query_balance"]}
+{"text": "How much uNTRN does address $WALLET_ADDR contain according to https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Convert the micro denomination untrn from $WALLET_ADDR using the node https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Show balances but limit results to uNTRN for $WALLET_ADDR through https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Filter $WALLET_ADDR balances on https://grpc-kaiyo-1.neutron.org:443 so that only untrn is printed", "labels": ["query_balance"]}
+{"text": "Using the node https://grpc-kaiyo-1.neutron.org:443 grab uNTRN balance for wallet $WALLET_ADDR and divide by one million", "labels": ["query_balance"]}
+{"text": "Please convert uNTRN amount held by $WALLET_ADDR fetched via https://grpc-kaiyo-1.neutron.org:443 into standard NTRN", "labels": ["query_balance"]}
+{"text": "Check balance of multisig neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv via https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Please retrieve funds for the multisig address neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv using https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "What is the balance held in neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv when queried through https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Using https://grpc-kaiyo-1.neutron.org:443 get the account info for neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv", "labels": ["query_balance"]}
+{"text": "Show coins in multisig wallet neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv via node https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Get balances for neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv using the gRPC endpoint https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Could you list the balance of multisig address neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv through https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Balance query for neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv at node https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "I want to see funds inside neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv with data from https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Using the kaiyo node https://grpc-kaiyo-1.neutron.org:443 show balances for neutron1multi9hk4p0u4jxedn60tqe6fzkcd5ma6h379rv", "labels": ["query_balance"]}
+{"text": "List ibc/ token balances for $WALLET_ADDR through https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Adjust DAO_CONTRACT voting threshold to 60 percent using mywallet", "labels": ["execute"]}
+{"text": "Please update the DAO_CONTRACT so proposals need 60% support through mywallet", "labels": ["execute"]}
+{"text": "Set proposal pass ratio to 0.60 on DAO_CONTRACT with mywallet", "labels": ["execute"]}
+{"text": "Change threshold of DAO_CONTRACT to sixty percent via mywallet", "labels": ["execute"]}
+{"text": "Using mywallet increase DAO_CONTRACT quorum requirement to 60 %", "labels": ["execute"]}
+{"text": "I want the DAO_CONTRACT threshold raised to 60 percent with mywallet", "labels": ["execute"]}
+{"text": "mywallet should set DAO_CONTRACT passing bar at 0.60", "labels": ["execute"]}
+{"text": "Use mywallet to send a cross chain call from GMP_CONTRACT to ethereum address 0xAbCdEf... with payload 48656c6c6f20457468657265756d", "labels": ["execute"]}
+{"text": "Place a buy order on DEX_CONTRACT to acquire ATOM using 100 NTRN from mywallet", "labels": ["execute"]}
+{"text": "Claim my staking rewards from REWARDS_CONTRACT with mywallet", "labels": ["execute"]}
+{"text": "Set VAULT_CONTRACT deposit cap to 1000000 NTRN with mywallet", "labels": ["execute"]}
+{"text": "Store the contract located at ./artifacts/my_contract.wasm using the offline_key wallet so I can sign later.", "labels": ["upload"]}
+{"text": "Please upload ./artifacts/my_contract.wasm from the key offline_key and generate an unsigned transaction.", "labels": ["upload"]}
+{"text": "I want to store the wasm file ./artifacts/my_contract.wasm using offline_key but sign offline.", "labels": ["upload"]}
+{"text": "Create a generate-only tx that stores ./artifacts/my_contract.wasm with the wallet offline_key.", "labels": ["upload"]}
+{"text": "Prepare an unsigned store transaction for ./artifacts/my_contract.wasm and sign it later with offline_key", "labels": ["upload"]}
+{"text": "Upload the artifact at ./artifacts/my_contract.wasm through the offline_key account without broadcasting.", "labels": ["upload"]}
+{"text": "Use offline_key to stage a contract upload of ./artifacts/my_contract.wasm for later signing.", "labels": ["upload"]}
+{"text": "Generate only the transaction to store ./artifacts/my_contract.wasm using wallet offline_key.", "labels": ["upload"]}
+{"text": "I need to put ./artifacts/my_contract.wasm on chain later, please create an unsigned tx with offline_key.", "labels": ["upload"]}
+{"text": "Stage the wasm binary ./artifacts/my_contract.wasm under offline_key without immediate broadcast.", "labels": ["upload"]}
+{"text": "Upload ./artifacts/my_contract.wasm with mykey and set gas to auto with a 1.5 adjustment.", "labels": ["upload"]}
+{"text": "Please store the contract ./artifacts/my_contract.wasm using wallet mykey, gas auto and gas-adjustment 1.5.", "labels": ["upload"]}
+{"text": "I want to upload ./artifacts/my_contract.wasm from mykey setting gas as auto and adjustment 1.5.", "labels": ["upload"]}
+{"text": "Store ./artifacts/my_contract.wasm using the wallet mykey with auto gas and 1.5 adjustment factor.", "labels": ["upload"]}
+{"text": "Use mykey to push ./artifacts/my_contract.wasm and specify gas auto plus gas-adjustment 1.5.", "labels": ["upload"]}
+{"text": "Please load the wasm file ./artifacts/my_contract.wasm with wallet mykey and gas set to auto with adjustment 1.5.", "labels": ["upload"]}
+{"text": "Upload ./artifacts/my_contract.wasm via mykey using auto gas and a 1.5 gas-adjustment.", "labels": ["upload"]}
+{"text": "Set gas to auto and adjustment to 1.5 while storing ./artifacts/my_contract.wasm from mykey.", "labels": ["upload"]}
+{"text": "I need ./artifacts/my_contract.wasm uploaded with auto gas and 1.5 adjustment using mykey.", "labels": ["upload"]}
+{"text": "Store contract ./artifacts/my_contract.wasm through the key mykey setting gas auto and adjustment factor 1.5.", "labels": ["upload"]}
+{"text": "Please upload ./artifacts/my_contract.wasm using mykey and broadcast in block mode.", "labels": ["upload"]}
+{"text": "Store the contract ./artifacts/my_contract.wasm with wallet mykey, waiting for block confirmation.", "labels": ["upload"]}
+{"text": "I need ./artifacts/my_contract.wasm pushed with mykey and confirmation in the same block.", "labels": ["upload"]}
+{"text": "Broadcast ./artifacts/my_contract.wasm from mykey in block mode so it waits for inclusion.", "labels": ["upload"]}
+{"text": "Upload the code ./artifacts/my_contract.wasm using mykey and confirm once the block is sealed.", "labels": ["upload"]}
+{"text": "Send ./artifacts/my_contract.wasm with wallet mykey and wait for the transaction to finalize in that block.", "labels": ["upload"]}
+{"text": "Using mykey, store ./artifacts/my_contract.wasm and broadcast in block mode for immediate confirmation.", "labels": ["upload"]}
+{"text": "Make a block-mode upload of ./artifacts/my_contract.wasm via mykey.", "labels": ["upload"]}
+{"text": "I would like to submit ./artifacts/my_contract.wasm with key mykey and wait until the block is committed.", "labels": ["upload"]}
+{"text": "Store ./artifacts/my_contract.wasm under mykey and broadcast synchronously at block level.", "labels": ["upload"]}
+{"text": "Decompress ./artifacts/compressed_contract.wasm.gz and upload it with mykey.", "labels": ["upload"]}
+{"text": "Using mykey, pipe the gzipped file ./artifacts/compressed_contract.wasm.gz into the store command.", "labels": ["upload"]}
+{"text": "Please upload the contract from ./artifacts/compressed_contract.wasm.gz after on the fly decompression with mykey.", "labels": ["upload"]}
+{"text": "Gunzip ./artifacts/compressed_contract.wasm.gz and then store it via wallet mykey.", "labels": ["upload"]}
+{"text": "I want to upload the decompressed version of ./artifacts/compressed_contract.wasm.gz using mykey.", "labels": ["upload"]}
+{"text": "With mykey, send the contents of ./artifacts/compressed_contract.wasm.gz to chain after decompression.", "labels": ["upload"]}
+{"text": "Upload compressed file ./artifacts/compressed_contract.wasm.gz by unzipping it on-the-fly through mykey.", "labels": ["upload"]}
+{"text": "Stream-decompress ./artifacts/compressed_contract.wasm.gz and store via mykey.", "labels": ["upload"]}
+{"text": "Please pipe ./artifacts/compressed_contract.wasm.gz through gunzip and upload it with the wallet mykey.", "labels": ["upload"]}
+{"text": "Use mykey to gunzip and store ./artifacts/compressed_contract.wasm.gz in one step.", "labels": ["upload"]}
+{"text": "Download the GitHub asset and store it as /tmp/contract.wasm using mykey.", "labels": ["upload"]}
+{"text": "Using mykey, fetch the contract binary from GitHub release and upload it from /tmp/contract.wasm.", "labels": ["upload"]}
+{"text": "Please upload /tmp/contract.wasm to the chain with wallet mykey after downloading it from GitHub.", "labels": ["upload"]}
+{"text": "Fetch from GitHub then store the file at /tmp/contract.wasm using mykey.", "labels": ["upload"]}
+{"text": "I need to curl the wasm to /tmp/contract.wasm and upload it through mykey.", "labels": ["upload"]}
+{"text": "Use mykey to store the GitHub release artifact located at /tmp/contract.wasm.", "labels": ["upload"]}
+{"text": "Upload /tmp/contract.wasm with mykey after retrieving it from the GitHub release page.", "labels": ["upload"]}
+{"text": "Store the contract file /tmp/contract.wasm through wallet mykey, downloaded from GitHub.", "labels": ["upload"]}
+{"text": "After pulling the asset, send /tmp/contract.wasm to chain via mykey.", "labels": ["upload"]}
+{"text": "Please push /tmp/contract.wasm under mykey once the GitHub download is complete.", "labels": ["upload"]}
+{"text": "Show me the balance of address neutron1mywalletxyz on node tcp://grpc.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Look up balance for neutron1friendaddressxyz on node tcp://grpc.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Check the balance of my validator operator address neutronvaloper1xyzabc on node tcp://grpc.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Check the balance of address neutron1abcxyz at block height 123456 using node tcp://grpc.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Check balance of address neutrontest1myaddr on testnet node tcp://grpc-higgs.testnet.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Please send 10 NTRN from mywallet to ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Transfer ten NTRN to ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx using mywallet", "labels": ["send"]}
+{"text": "Use mywallet to send a 10 NTRN payment over to Bob at ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Send 10 NTRN right now to ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx from the wallet named mywallet", "labels": ["send"]}
+{"text": "I need to move 10 NTRN out of mywallet and into address ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Execute a transfer of 10 NTRN via mywallet to the beneficiary ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Using mywallet dispatch 10 NTRN to ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx on neutron-1", "labels": ["send"]}
+{"text": "Please process a 10 NTRN send from mywallet towards ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx with automatic gas", "labels": ["send"]}
+{"text": "Could you please wire 10 NTRN from mywallet to the destination ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx using the RPC https://rpc.neutron.org:443", "labels": ["send"]}
+{"text": "Send exactly 10 NTRN from mywallet to ntrn1bobaddressxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx with gas set to auto", "labels": ["send"]}
+{"text": "Please transfer 100 NTRN from mywallet to ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx with auto gas", "labels": ["send"]}
+{"text": "Send 100 NTRN to my exchange address ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx using mywallet", "labels": ["send"]}
+{"text": "Initiate a 100 NTRN bank send via mywallet for ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Move one hundred NTRN from mywallet to the deposit address ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx on neutron-1", "labels": ["send"]}
+{"text": "Using node https://rpc.neutron.org:443 send 100 NTRN from mywallet to ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Please dispatch 100 NTRN to ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx powered by mywallet", "labels": ["send"]}
+{"text": "I want mywallet to send 100 NTRN automatically to the exchange address ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Send 100 NTRN with auto gas setting from mywallet to ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Prepare a transaction sending 100 NTRN to ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx using mywallet", "labels": ["send"]}
+{"text": "Deposit 100 NTRN through mywallet into ntrn1exchangexxxxxxxxxxxxxxxxxxxxxxxxxxxxx automatically", "labels": ["send"]}
+{"text": "Move 5 NTRN from main to ntrn1savingsxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Send 1 NTRN from mywallet to ntrn1friendxxxxxxxxxxxxxxxxxxxxxxxxxxxx with memo Thanks!", "labels": ["send"]}
+{"text": "Send 20 NTRN from mywallet to ntrn1otherxxxxxxxxxxxxxxxxxxxxxxxxxxxxx with fee 500 untrn and gas 200000", "labels": ["send"]}
+{"text": "Show me the balance of neutron1abcd1234efgh5678krjqscy0 in raw JSON format please", "labels": ["query_balance"]}
+{"text": "Display the DAO treasury wallet balance at neutron1treasury0v0k985ku6zgga9r3e7tczspyj9aqeq9", "labels": ["query_balance"]}
+{"text": "Check that the faucet sent funds to my wallet neutron1faucetdzn39u2tsyk3v0kup85gprr94s", "labels": ["query_balance"]}
+{"text": "Set up a cron job to query balance for neutron1cronabc9e0s7um5p4kqf80ylue8 every day and append results to /home/user/neutron_balances.log", "labels": ["query_balance"]}
+{"text": "Before I send anything, show the balance of neutron1sender9w0kq34gk5076lax0", "labels": ["query_balance"]}
+{"text": "Please create an offline store contract transaction for ./artifacts/my_contract.wasm on neutron-1 using multisig-wallet with auto gas via https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Generate only a multisig upload message for ./artifacts/my_contract.wasm on neutron-1 with wallet multisig-wallet using gas auto and node https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "I want to build a generate only store transaction for ./artifacts/my_contract.wasm on chain neutron-1 using multisig-wallet with gas set to auto and targeting node https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Prepare ./artifacts/my_contract.wasm for storage using multisig-wallet on neutron-1 with gas auto and create the message offline via https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Make an auto gas store contract draft for multisig-wallet on neutron-1 for ./artifacts/my_contract.wasm using node https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Draft an offline upload of ./artifacts/my_contract.wasm with wallet multisig-wallet on neutron-1 using node https://rpc-kralum.neutron-1.neutron.org:443 and gas auto", "labels": ["upload"]}
+{"text": "Could you generate only the store tx for ./artifacts/my_contract.wasm with multisig-wallet at auto gas on neutron-1 through node https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Set up an auto gas offline contract storage for ./artifacts/my_contract.wasm via https://rpc-kralum.neutron-1.neutron.org:443 using multisig-wallet on neutron-1", "labels": ["upload"]}
+{"text": "Create the unsigned message to store ./artifacts/my_contract.wasm on neutron-1 with auto gas using wallet multisig-wallet and node https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "I need an auto gas generate only store message for multisig-wallet for contract ./artifacts/my_contract.wasm on neutron-1 using the RPC https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Upload ./artifacts/my_contract.wasm from mykey on neutron-1 using node https://rpc-kralum.neutron-1.neutron.org:443 with auto gas and gas price 0.05untrn", "labels": ["upload"]}
+{"text": "Please broadcast the contract ./artifacts/my_contract.wasm via https://rpc-kralum.neutron-1.neutron.org:443 using wallet mykey on neutron-1 with auto gas and fee 0.05untrn", "labels": ["upload"]}
+{"text": "From mykey upload ./artifacts/my_contract.wasm to neutron-1 with auto gas and set gas price to 0.05untrn using node https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Kick off a store transaction for ./artifacts/my_contract.wasm on neutron-1 using mykey with auto gas fee 0.05untrn through node https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Upload the wasm file ./artifacts/my_contract.wasm with wallet mykey on neutron-1 set gas to auto and gas price at 0.05untrn via https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Using the RPC https://rpc-kralum.neutron-1.neutron.org:443 broadcast ./artifacts/my_contract.wasm from mykey to chain neutron-1 with auto gas and 0.05untrn gas prices", "labels": ["upload"]}
+{"text": "Speed the inclusion by sending ./artifacts/my_contract.wasm using mykey on neutron-1 with fee 0.05untrn and gas auto through https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Mykey should upload ./artifacts/my_contract.wasm with auto gas and 0.05untrn fees on neutron-1 via the node https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Initiate a high gas price upload of ./artifacts/my_contract.wasm with wallet mykey on neutron-1 using node https://rpc-kralum.neutron-1.neutron.org:443 gas auto price 0.05untrn", "labels": ["upload"]}
+{"text": "Deploy ./artifacts/my_contract.wasm to neutron-1 from mykey with auto gas and gas prices 0.05untrn using https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Simulate uploading ./artifacts/my_contract.wasm from mykey on neutron-1 with gas simulate via node https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Run a gas simulate dry run for ./artifacts/my_contract.wasm using wallet mykey on neutron-1 through https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Please estimate gas for ./artifacts/my_contract.wasm using simulate mode with wallet mykey on neutron-1 through node https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Carry out a simulate gas upload of ./artifacts/my_contract.wasm with mykey on neutron-1 using the RPC https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "mykey should simulate storing ./artifacts/my_contract.wasm on neutron-1 via https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Do a simulate gas run for contract ./artifacts/my_contract.wasm using node https://rpc-kralum.neutron-1.neutron.org:443 and wallet mykey on neutron-1", "labels": ["upload"]}
+{"text": "Estimate fees by running simulate gas option for ./artifacts/my_contract.wasm with mykey on neutron-1 node https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "I only want to simulate gas for storing ./artifacts/my_contract.wasm via https://rpc-kralum.neutron-1.neutron.org:443 using mykey on neutron-1", "labels": ["upload"]}
+{"text": "Use simulate gas to test upload of ./artifacts/my_contract.wasm with wallet mykey on neutron-1 RPC https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "node https://rpc-kralum.neutron-1.neutron.org:443 should run a simulate gas transaction for ./artifacts/my_contract.wasm using mykey on neutron-1", "labels": ["upload"]}
+{"text": "Upload ./artifacts/my_contract.wasm from mykey on neutron-1 with gas auto via https://rpc-kralum.neutron-1.neutron.org:443 and add the memo Initial contract upload", "labels": ["upload"]}
+{"text": "Generate an offline store message for ./artifacts/my_contract.wasm using multisig-wallet on neutron-1 with gas 2500000 via node https://rpc-kralum.neutron-1.neutron.org:443", "labels": ["upload"]}
+{"text": "Query the smart contract <cron_contract_address> for its daily schedule using message '{\"show_schedule\":{\"name\":\"daily\"}}' via node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Please show me the cron schedule called daily from contract <cron_contract_address> with the query '{\"show_schedule\":{\"name\":\"daily\"}}' on <grpc_node>", "labels": ["query_contract"]}
+{"text": "Get details of the daily cron job by querying <cron_contract_address> using '{\"show_schedule\":{\"name\":\"daily\"}}' through node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Show the cron schedule named daily on contract <cron_contract_address> with node <grpc_node> and message '{\"show_schedule\":{\"name\":\"daily\"}}'", "labels": ["query_contract"]}
+{"text": "Using <grpc_node> query smart contract <cron_contract_address> for its daily schedule via '{\"show_schedule\":{\"name\":\"daily\"}}'", "labels": ["query_contract"]}
+{"text": "I want to retrieve the daily schedule from <cron_contract_address> by sending '{\"show_schedule\":{\"name\":\"daily\"}}' to node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Can you pull the daily cron schedule using '{\"show_schedule\":{\"name\":\"daily\"}}' for contract <cron_contract_address> through <grpc_node>", "labels": ["query_contract"]}
+{"text": "Cron contract <cron_contract_address> should be queried with '{\"show_schedule\":{\"name\":\"daily\"}}' on node <grpc_node> to see its daily task", "labels": ["query_contract"]}
+{"text": "Display the schedule named daily by sending '{\"show_schedule\":{\"name\":\"daily\"}}' to <cron_contract_address> via <grpc_node>", "labels": ["query_contract"]}
+{"text": "Need to see daily cron on <cron_contract_address> use '{\"show_schedule\":{\"name\":\"daily\"}}' and node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Check the stored IBC failures on contract <contractmanager_contract_address> using '{\"failures\":{}}' via node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Please query <contractmanager_contract_address> for its failures list with the message '{\"failures\":{}}' on <grpc_node>", "labels": ["query_contract"]}
+{"text": "I want to see any IBC error records run '{\"failures\":{}}' against contract <contractmanager_contract_address> through node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Retrieve failure entries from <contractmanager_contract_address> via '{\"failures\":{}}' and <grpc_node>", "labels": ["query_contract"]}
+{"text": "Show me failures stored in the contract <contractmanager_contract_address> using node <grpc_node> with query '{\"failures\":{}}'", "labels": ["query_contract"]}
+{"text": "Using <grpc_node> query smart contract <contractmanager_contract_address> for IBC failures by sending '{\"failures\":{}}'", "labels": ["query_contract"]}
+{"text": "Fetch the list of recorded failures from <contractmanager_contract_address> with message '{\"failures\":{}}' through <grpc_node>", "labels": ["query_contract"]}
+{"text": "Contract <contractmanager_contract_address> should return its failures state when '{\"failures\":{}}' is executed on node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Run failures query '{\"failures\":{}}' against <contractmanager_contract_address> using <grpc_node>", "labels": ["query_contract"]}
+{"text": "Need to check failure logs send '{\"failures\":{}}' to contract <contractmanager_contract_address> via node <grpc_node>", "labels": ["query_contract"]}
+{"text": "List all contracts subscribed to staking hooks from Harpoon by querying <harpoon_contract_address> with '{\"subscribed_contracts\":{}}' on node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Please show me which addresses are subscribed by Harpoon message '{\"subscribed_contracts\":{}}' against contract <harpoon_contract_address> via <grpc_node>", "labels": ["query_contract"]}
+{"text": "Get the subscribed contracts list using '{\"subscribed_contracts\":{}}' for <harpoon_contract_address> through node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Query <harpoon_contract_address> on <grpc_node> with '{\"subscribed_contracts\":{}}' to see staking hook subscriptions", "labels": ["query_contract"]}
+{"text": "Using node <grpc_node> ask contract <harpoon_contract_address> which contracts are subscribed via '{\"subscribed_contracts\":{}}'", "labels": ["query_contract"]}
+{"text": "I need the staking hooks subscription list run '{\"subscribed_contracts\":{}}' against Harpoon contract <harpoon_contract_address> through <grpc_node>", "labels": ["query_contract"]}
+{"text": "Show subscriptions maintained by Harpoon using message '{\"subscribed_contracts\":{}}' on node <grpc_node> for contract <harpoon_contract_address>", "labels": ["query_contract"]}
+{"text": "Can you fetch subscribed contracts from <harpoon_contract_address> via <grpc_node> with '{\"subscribed_contracts\":{}}'", "labels": ["query_contract"]}
+{"text": "Need list of staking-hook subscribers query message '{\"subscribed_contracts\":{}}' to contract <harpoon_contract_address> using <grpc_node>", "labels": ["query_contract"]}
+{"text": "List subscriber addresses by sending '{\"subscribed_contracts\":{}}' to <harpoon_contract_address> on node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Fetch my DAO staked balance by querying <dao_staking_contract_address> with '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' on node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Please get the staked amount for wallet <wallet_address> from contract <dao_staking_contract_address> using message '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' through <grpc_node>", "labels": ["query_contract"]}
+{"text": "I need to know how much I have staked run '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' against <dao_staking_contract_address> via node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Using <grpc_node> query DAO staking contract <dao_staking_contract_address> with '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}'", "labels": ["query_contract"]}
+{"text": "Get staked_balance for <wallet_address> from <dao_staking_contract_address> by sending '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' on <grpc_node>", "labels": ["query_contract"]}
+{"text": "Show my DAO stake via message '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' to contract <dao_staking_contract_address> through node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Please query stake holdings use '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' against <dao_staking_contract_address> on <grpc_node>", "labels": ["query_contract"]}
+{"text": "I want my staked balance run the JSON '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' on contract <dao_staking_contract_address> via node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Using message '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' query <dao_staking_contract_address> at <grpc_node>", "labels": ["query_contract"]}
+{"text": "Check how much is staked for me by sending '{\"staked_balance\":{\"address\":\"<wallet_address>\"}}' to <dao_staking_contract_address> using node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Retrieve the current bridged supply by querying <bridge_contract_address> with '{\"current_supply\":{}}' on node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Please show me current_supply from contract <bridge_contract_address> using message '{\"current_supply\":{}}' via <grpc_node>", "labels": ["query_contract"]}
+{"text": "Get the total amount of tokens bridged run '{\"current_supply\":{}}' against <bridge_contract_address> through node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Using node <grpc_node> query <bridge_contract_address> for current bridged supply via '{\"current_supply\":{}}'", "labels": ["query_contract"]}
+{"text": "I want to see how much supply is currently bridged message '{\"current_supply\":{}}' to contract <bridge_contract_address> over <grpc_node>", "labels": ["query_contract"]}
+{"text": "Show current_supply using '{\"current_supply\":{}}' on contract <bridge_contract_address> through node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Run the query '{\"current_supply\":{}}' against <bridge_contract_address> at <grpc_node> to fetch bridged supply", "labels": ["query_contract"]}
+{"text": "Bridge contract <bridge_contract_address> should return current supply when '{\"current_supply\":{}}' is executed on node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Need the amount of tokens bridged query <bridge_contract_address> using <grpc_node> and message '{\"current_supply\":{}}'", "labels": ["query_contract"]}
+{"text": "What is the current bridged supply send '{\"current_supply\":{}}' to <bridge_contract_address> via node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Please broadcast a 2 NTRN transfer from mywallet to ntrn1asyncxxxxxxxxxxxxxxxxxxxxxxxx in async mode", "labels": ["send"]}
+{"text": "Please send 0.2 NTRN from mywallet to ntrn1lowfeexxxxxxxxxxxxxxxxxxxxxxxxxx with a fee of 50untrn", "labels": ["send"]}
+{"text": "Send 7 NTRN from mywallet to ntrn1adjustxxxxxxxxxxxxxxxxxxxxxxxxxx with gas set to auto and gas-adjustment 1.5", "labels": ["send"]}
+{"text": "Send 11 NTRN from mywallet to ntrn1manualseqxxxxxxxxxxxxxxxxxxxxxxx specifying account number 12345 and sequence 7", "labels": ["send"]}
+{"text": "Send 9 NTRN from mywallet to the contract address ntrn1contractxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Show me the balance of WALLET_ADDR using the local node tcp://localhost:9090", "labels": ["query_balance"]}
+{"text": "Get the account balance for ADDR using the gRPC node grpc://neutron-grpc.publicawesome.dev:9090", "labels": ["query_balance"]}
+{"text": "Inside the Docker node please show balances for ADDR via grpc://localhost:9090", "labels": ["query_balance"]}
+{"text": "Show the balance for my Ledger address LEDGER_ADDR using https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Confirm that EMPTY_ADDR has no funds via https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Upload the ./artifacts/fee_contract.wasm code from mykey on chain neutron-1 via https://rpc-kralum.neutron-1.neutron.org:443 using auto gas and a fee rate of 0.025 untrn", "labels": ["upload"]}
+{"text": "Upload ./artifacts/my_contract.wasm from mykey on neutron-1 via https://rpc-kralum.neutron-1.neutron.org:443 using auto gas and broadcast it in sync mode", "labels": ["upload"]}
+{"text": "Upload ./artifacts/dev_contract.wasm from local to the localnet chain using node tcp://localhost:26657 with gas auto", "labels": ["upload"]}
+{"text": "Upload ./artifacts/my_contract.wasm with the ledger wallet to neutron-1 through https://rpc-kralum.neutron-1.neutron.org:443 using auto gas", "labels": ["upload"]}
+{"text": "Generate only the store tx for ./artifacts/my_contract.wasm using mykey on neutron-1 via https://rpc-kralum.neutron-1.neutron.org:443 with auto gas no broadcast", "labels": ["upload"]}
+{"text": "Please have the DAO at <dao_contract_addr> migrate the IBC rate limit contract <rate_limit_addr> to code ID 88 via node <grpc_node> using wallet <key> on chain <chain_id>", "labels": ["execute"]}
+{"text": "Please have DAO <dao_contract_addr> migrate the validator set keeper contract <valset_keeper_addr> to code ID 444 via node <grpc_node> using wallet <key> on chain <chain_id>", "labels": ["execute"]}
+{"text": "Have DAO <dao_contract_addr> migrate the cw1 subkeys contract <subkeys_contract_addr> to code ID 456 using wallet <key> node <grpc_node> on chain <chain_id>", "labels": ["execute"]}
+{"text": "Please have DAO <dao_contract_addr> migrate the borrower registry contract <borrower_registry_addr> to code ID 789 via node <grpc_node> using wallet <key> on chain <chain_id>", "labels": ["execute"]}
+{"text": "On testnet have DAO <testnet_dao_addr> migrate the demo counter contract <counter_contract_addr> to code ID 42 using wallet <key> via node <grpc_node_testnet> on chain pion-1", "labels": ["execute"]}
+{"text": "Loop through addresses.txt to check every wallet balance via https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Show the balance of neutron1pqc82p64s4f2jkcnlq3fddax98j5epax6s2f0g at block 1234567 using https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Show only IBC balances for address neutron1pqc82p64s4f2jkcnlq3fddax98j5epax6s2f0g using node https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Save the balance of address neutron1pqc82p64s4f2jkcnlq3fddax98j5epax6s2f0g to balances/2023-10-05.json using node https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Check the balance of neutron1pqc82p64s4f2jkcnlq3fddax98j5epax6s2f0g using the secure node grpcs://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Please upload ./artifacts/my_contract.wasm to neutron-1 using mykey with gas set to auto", "labels": ["upload"]}
+{"text": "Please upload ./artifacts/my_contract.wasm to pion-1 using testkey with auto gas", "labels": ["upload"]}
+{"text": "Upload ./artifacts/open_contract.wasm to neutron-1 using mykey with auto gas and allow everyone to instantiate", "labels": ["upload"]}
+{"text": "Upload ./artifacts/restricted_contract.wasm to neutron-1 using mykey with auto gas and restrict instantiation to neutron1abcdxxxxxxxxxxxxxxxxxxxx", "labels": ["upload"]}
+{"text": "Upload ./artifacts/big_contract.wasm to neutron-1 using mykey with gas 3000000", "labels": ["upload"]}
+{"text": "Quickly send 5 NTRN from mywallet to ntrn1syncxxxxxxxxxxxxxxxxxxxxxxxxxxx in sync mode", "labels": ["send"]}
+{"text": "Send 0.25 NTRN from mywallet to NTRN1UPPERCASEADDRESSXXXXXXXXXXXX", "labels": ["send"]}
+{"text": "Send 14 NTRN from mywallet to ntrn1customnodexxxxxxxxxxxxxxxxxxxx via node https://my.custom.node:26657", "labels": ["send"]}
+{"text": "Send 1.1 NTRN from mywallet to ntrn1timeoutxxxxxxxxxxxxxxxxxxxxxxxx with timeout height 1000000", "labels": ["send"]}
+{"text": "Send 0.05 NTRN from mywallet to ntrn1smallxxxxxxxxxxxxxxxxxxxxxxxxxx specifying fee-granter ntrn1feegranter0000000000000000000", "labels": ["send"]}
+{"text": "Is the interchain query with id 1 registered on contract <icq_contract_address> using node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Please verify the registration status of interchain query id 1 on <icq_contract_address> via <grpc_node>", "labels": ["query_contract"]}
+{"text": "Check whether query number 1 exists in smart contract <icq_contract_address> using the node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Tell me if the contract <icq_contract_address> has registered the interchain query with id 1 on node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Using gRPC endpoint <grpc_node> query <icq_contract_address> for get_query id 1", "labels": ["query_contract"]}
+{"text": "Find out on <grpc_node> whether get_query 1 returns data from contract <icq_contract_address>", "labels": ["query_contract"]}
+{"text": "I want to check the result of get_query with id 1 against the contract <icq_contract_address> on node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Show me if a query 1 is stored in <icq_contract_address> via the gRPC node <grpc_node>", "labels": ["query_contract"]}
+{"text": "On <grpc_node> confirm registration for interchain query id 1 in contract <icq_contract_address>", "labels": ["query_contract"]}
+{"text": "Use <grpc_node> to ask <icq_contract_address> about get_query 1", "labels": ["query_contract"]}
+{"text": "Run list_members limit 100 on contract <cw4_group_contract_address> with node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Using <grpc_node> query <cw4_group_contract_address> for list_members", "labels": ["query_contract"]}
+{"text": "Please show me list_members for the CW4 contract <cw4_group_contract_address> through node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Check with <grpc_node> whether list_members returns data for <cw4_group_contract_address>", "labels": ["query_contract"]}
+{"text": "Obtain CW4 group member list by calling list_members on <cw4_group_contract_address> using gRPC node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Give me the output of list_members limit 100 from <cw4_group_contract_address> via <grpc_node>", "labels": ["query_contract"]}
+{"text": "Fetch list_members starting at blank with cap 100 for contract <cw4_group_contract_address> on node <grpc_node>", "labels": ["query_contract"]}
+{"text": "I need to run the list_members query against <cw4_group_contract_address> through <grpc_node>", "labels": ["query_contract"]}
+{"text": "List all members in DAO by invoking list_members on contract <cw4_group_contract_address> while connected to <grpc_node>", "labels": ["query_contract"]}
+{"text": "Use node <grpc_node> to ask <cw4_group_contract_address> for its list_members information", "labels": ["query_contract"]}
+{"text": "Show me denom_config for contract <token_factory_denom_contract_address> via node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Using <grpc_node> query <token_factory_denom_contract_address> to retrieve denom_config", "labels": ["query_contract"]}
+{"text": "Get the token factory denomination configuration by running denom_config on <token_factory_denom_contract_address> with node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Please pull denom_config from contract <token_factory_denom_contract_address> through <grpc_node>", "labels": ["query_contract"]}
+{"text": "Fetch configuration details using denom_config on <token_factory_denom_contract_address> node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Fetch admins from contract <cw1_contract_address> via node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Fetch params from contract <globalfee_contract_address> using node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Please show the balance of my wallet on the Neutron mainnet", "labels": ["query_balance"]}
+{"text": "Show balances for neutron1p9w4hdv0p04e6h4xprnvu7e4ve9twy0y0ghkde", "labels": ["query_balance"]}
+{"text": "Show my testnet account balances", "labels": ["query_balance"]}
+{"text": "Show my wallet balances in human readable format", "labels": ["query_balance"]}
+{"text": "Show me only my NTRN balance", "labels": ["query_balance"]}
+{"text": "Please print the balance for neutron1abcd in JSON format via the node tcp://grpc.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Please fetch the uNTRN balance for neutron1xyz using the node tcp://grpc.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Please fetch the balance of neutron1local through the local node tcp://127.0.0.1:9090", "labels": ["query_balance"]}
+{"text": "Fetch the ibc/1234567890ABCDEF balance for neutron1xyz via node tcp://grpc.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Iterate over addresses in addresses.txt and query their balances via node tcp://grpc.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Query my CW20 balance from contract <cw20_contract_address> for wallet <wallet_address> using node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Retrieve token information from CW20 contract <cw20_contract_address> using node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Retrieve token details from bridge contract <bridge_contract_address> using node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Check bridge limits on contract <bridge_contract_address> via node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Check vesting balance for wallet <wallet_address> in contract <vesting_contract_address> via node <grpc_node>", "labels": ["query_contract"]}
+{"text": "Use mywallet to claim tokens from contract neutron17fcdl6crgsp49ja270fp0pdwm354ar5qqv3mda", "labels": ["execute"]}
+{"text": "Increment the counter on $COUNTER_CONTRACT with mywallet", "labels": ["execute"]}
+{"text": "Send 10000 NTRN from $TREASURY_CONTRACT to address neutron1mywalletaddressxxxxxxxxxn with mywallet", "labels": ["execute"]}
+{"text": "Swap 100 NTRN for ATOM via $DEX_CONTRACT using mywallet", "labels": ["execute"]}
+{"text": "Use mywallet to add liquidity of 500 NTRN and 0.25 ATOM into $DEX_CONTRACT", "labels": ["execute"]}
+{"text": "Please cancel order 12345 on $DEX_CONTRACT using mywallet", "labels": ["execute"]}
+{"text": "Set up a heartbeat schedule every 50 blocks on $CRON_CONTRACT using mywallet", "labels": ["execute"]}
+{"text": "Use mywallet to register a query on $ICQ_CONTRACT that keeps track of ATOM slash USDC price on Osmosis", "labels": ["execute"]}
+{"text": "Please remove interchain query 7 with mywallet on $ICQ_CONTRACT", "labels": ["execute"]}
+{"text": "Please change ICQ 7 to update every 60 blocks on $ICQ_CONTRACT with mywallet", "labels": ["execute"]}
+{"text": "Show me the balance of the reward wallet", "labels": ["query_balance"]}
+{"text": "Fetch the bank balance for WALLET_ADDR", "labels": ["query_balance"]}
+{"text": "Print the balance of every validator", "labels": ["query_balance"]}
+{"text": "Create a daily cron to store the balance of neutron1xyz into balance_history.log", "labels": ["query_balance"]}
+{"text": "Query the balance of neutron1xyz with the trace flag enabled", "labels": ["query_balance"]}
+{"text": "Transfer 50 NTRN from mywallet to ntrn1fastxxxxxxxxxxxxxxxxxxxxxxxxxxxxx with a gas price of 0.05untrn", "labels": ["send"]}
+{"text": "Use the Ledger wallet named ledger to send 0.5 NTRN to ntrn1depositxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "labels": ["send"]}
+{"text": "Send 0.1 NTRN from mywallet to ntrn1quickxxxxxxxxxxxxxxxxxxxxxxxxxxxxx and skip confirmation", "labels": ["send"]}
+{"text": "Send 3 NTRN from mywallet to ntrn1filewalletxxxxxxxxxxxxxxxxxxxxxxxx using the file keyring backend", "labels": ["send"]}
+{"text": "Create an unsigned transaction sending 2 NTRN from mywallet to ntrn1offlinexxxxxxxxxxxxxxxxxxxxxxxxxx and save it as unsigned_send.json", "labels": ["send"]}
+{"text": "Please delete every hook subscription on the Harpoon contract for my contract", "labels": ["execute"]}
+{"text": "Please pause my smart contract so no more executions happen", "labels": ["execute"]}
+{"text": "Please unpause my smart contract", "labels": ["execute"]}
+{"text": "Please assign neutron1newadminxxxxxxxxxxxxxxxxxx as the new admin for my contract", "labels": ["execute"]}
+{"text": "Please migrate my contract to code ID 45", "labels": ["execute"]}
+{"text": "Please send 12 NTRN from mywallet to ntrn1manualgasxxxxxxxxxxxxxxxxxxxxxxxx using gas 200000", "labels": ["send"]}
+{"text": "Please send 13 NTRN from mywallet to ntrn1simulatexxxxxxxxxxxxxxxxxxxxxxxx with gas simulate", "labels": ["send"]}
+{"text": "Send 0.3 NTRN from mywallet to cosmos1destinationxxxxxxxxxxxxxxxxxxxx with IBC denom ibc/XYZ", "labels": ["send"]}
+{"text": "Send 15 NTRN from mywallet to ntrn1passbackendxxxxxxxxxxxxxxxxxxxxxxx using keyring backend pass", "labels": ["send"]}
+{"text": "Send 2 NTRN from mywallet to ntrn1asyncackxxxxxxxxxxxxxxxxxxxxxxxx using async broadcast", "labels": ["send"]}
+{"text": "Fetch the balance of neutron1abcxyz via node tcp://grpc.neutron.org:9090 and store it in balance.json", "labels": ["query_balance"]}
+{"text": "Check the balance of neutron1abcxyz via node tcp://grpc.neutron.org:9090 with a 20s timeout", "labels": ["query_balance"]}
+{"text": "Using the new node tcp://new-grpc.neutron.org:9090 check the balance of neutron1xyzabc", "labels": ["query_balance"]}
+{"text": "On the private fork node tcp://192.168.10.5:9090 verify the balance of neutron1privatexyz", "labels": ["query_balance"]}
+{"text": "Check the balance of my ledger wallet using node tcp://grpc.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Save the balance of $WALLET_ADDR from tcp://grpc.neutron.org:9090 into a variable", "labels": ["query_balance"]}
+{"text": "Check balance of $WALLET_ADDR with node https://grpc.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Show $WALLET_ADDR balance from tcp://grpc.neutron.org:9090 in plain text", "labels": ["query_balance"]}
+{"text": "Get balance for smart contract neutron1contractaddressxyz via tcp://grpc.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Check balance of cold storage multisig neutron1multisigxyz using tcp://grpc.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Has wallet1xyz already claimed tokens according to tge_claim_contract via grpc.node", "labels": ["query_contract"]}
+{"text": "Show me the overall vesting status stored in tge_vesting_contract via grpc.node", "labels": ["query_contract"]}
+{"text": "Get the current quota for channel-0 on untrn from rate_limit_contract using grpc.node", "labels": ["query_contract"]}
+{"text": "Fetch the core DAO config from dao_core_contract via grpc.node", "labels": ["query_contract"]}
+{"text": "Show me the newest 30 proposals from dao_core_contract via grpc.node", "labels": ["query_contract"]}
+{"text": "Use my ICA controller contract to delegate 500 NTRN to the Cosmos Hub validator", "labels": ["execute"]}
+{"text": "Use the Fee Collector contract to send the protocol fees to the DAO treasury wallet", "labels": ["execute"]}
+{"text": "Use the FeeBurner contract to burn the collected fees", "labels": ["execute"]}
+{"text": "Use the Fee Refunder contract to refund unused ICA fees for channel-8 sequence 42", "labels": ["execute"]}
+{"text": "Use the Harpoon contract to subscribe my contract to the AfterValidatorCreated hook events", "labels": ["execute"]}
+{"text": "Please retrieve the balances for $ADDR via https://grpc-kaiyo-1.neutron.org:443 and show them in protobuf", "labels": ["query_balance"]}
+{"text": "Please fetch balances for the validator address using node http://localhost:9090", "labels": ["query_balance"]}
+{"text": "Please show me the balances for $MY_NEUTRON_ADDR using node $GRPC_NODE", "labels": ["query_balance"]}
+{"text": "Check the airdrop balance for neutron1aird70p7nz6n7dag9nxxxz5z4m5tgrq9yfy9fx using node https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Show balances for <address> using https://grpc-kaiyo-1.neutron.org:443", "labels": ["query_balance"]}
+{"text": "Display DAO proposal 42 details from contract dao_core_contract_address with query '{\"proposal\":{\"proposal_id\":42}}' on node grpc_node", "labels": ["query_contract"]}
+{"text": "Show me metadata for NFT 123 from contract cw721_contract_address using message '{\"nft_info\":{\"token_id\":\"123\"}}' on node grpc_node", "labels": ["query_contract"]}
+{"text": "Retrieve contract_info from cw721_contract_address with message '{\"contract_info\":{}}' using node grpc_node", "labels": ["query_contract"]}
+{"text": "Get current counter value from contract counter_contract_address using message '{\"get_count\":{}}' on node grpc_node", "labels": ["query_contract"]}
+{"text": "List all schedules from cron contract cron_contract_address using message '{\"list_schedules\":{}}' on node grpc_node", "labels": ["query_contract"]}
+{"text": "Query the balance of neutron1xyz from node tcp://grpc.neutron.org:9090 using the height obtained in snapshot_height.txt", "labels": ["query_balance"]}
+{"text": "Inside a subshell grab the balance for neutron1xyz from node tcp://grpc.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Check the balance of neutron1xyz through node tcp://grpc.neutron.org:9090 while using a corporate proxy", "labels": ["query_balance"]}
+{"text": "Compare the balance of neutron1xyz at heights 100000 and 200000 using node tcp://grpc.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Audit balances of the top 50 addresses listed in rich_list.txt using node tcp://grpc.neutron.org:9090", "labels": ["query_balance"]}
+{"text": "Please enable emergency shutdown for $PROTOCOL_CONTRACT from mywallet", "labels": ["execute"]}
+{"text": "Please mint 100 CW20 tokens for neutron1mywalletaddressxxxxxxxxxn via $CW20_CONTRACT from mywallet", "labels": ["execute"]}
+{"text": "Transfer 50 CW20 tokens to neutron1friendxxxxxxxxxxxxxxxxx through $CW20_CONTRACT from mywallet", "labels": ["execute"]}
+{"text": "Reset the counter on $COUNTER_CONTRACT using mywallet", "labels": ["execute"]}
+{"text": "Remove schedule with ID 3 on $CRON_CONTRACT using mywallet", "labels": ["execute"]}
+{"text": "Propose via <dao_contract_addr> to migrate the CW20 token at <cw20_contract_addr> to code id 777 using wallet <key> on chain <chain_id> through node <grpc_node>", "labels": ["execute"]}
+{"text": "Propose via <dao_contract_addr> to migrate the DAO core contract at <dao_core_addr> to code id 325 using wallet <key> on chain <chain_id> through node <grpc_node>", "labels": ["execute"]}
+{"text": "Propose via <dao_contract_addr> to migrate the single proposal module at <single_proposal_module_addr> to code id 339 using wallet <key> on chain neutron-1 through node <grpc_node>", "labels": ["execute"]}
+{"text": "Propose via <dao_contract_addr> to urgently migrate the bridge relayer contract at <bridge_relayer_addr> to code id 212 using wallet <key> on chain <chain_id> through node <grpc_node>", "labels": ["execute"]}
+{"text": "Propose via <dao_contract_addr> to migrate the airdrop contract at <airdrop_contract_addr> to code id 196 using wallet <key> on chain <chain_id> through node <grpc_node>", "labels": ["execute"]}
+{"text": "set alias \"\"unix\"\" for command 'echo $(date +%s)'", "labels": ["others"]}
+{"text": "find md5sum of a string stored in $pass", "labels": ["others"]}
+{"text": "Displays details about package 'zsh'.", "labels": ["others"]}
+{"text": "Count all the lines of code in the current directory recursively.", "labels": ["others"]}
+{"text": "Find files under current directory with name (or glob pattern) expanded by $1 and save the list to /tmp/safe_del.lst", "labels": ["others"]}
+{"text": "Save \"\"1 4 6 9 11 17 22\"\" as a bash array \"\"arr\"\"", "labels": ["others"]}
+{"text": "Reattach a session and if necessary detach or  even  create first", "labels": ["others"]}
+{"text": "display all the regular/normal files in the current folder which have been modified after a specific time stamp and do not search in the sub directories", "labels": ["others"]}
+{"text": "Write the output of \"\"someCommand\"\" to standard output and \"\"someFile\"\"", "labels": ["others"]}
+{"text": "Assign the alias rm100m to a find command that removes any .tar file larger than 100M.", "labels": ["others"]}
+{"text": "list all files under the current directory, writing the output to the file files_and_folders", "labels": ["others"]}
+{"text": "set alias \"\"my_command\"\" for command \"\"$oldalias --fail-if-command-contains=$bad_string\"\"", "labels": ["others"]}
+{"text": "Format \"\"input\"\" as alternating rows in a table", "labels": ["others"]}
+{"text": "Convert all m4a sound files in a directory and its subdirectories to mp3 files", "labels": ["others"]}
+{"text": "Run 'command', pausing and waiting for user interaction after each page of output.", "labels": ["others"]}
+{"text": "Counts all files in a current folder and in subfolders one-level lower, and sort folder list by number of files within.", "labels": ["others"]}
+{"text": "Read the first line of \"\"$sh_lock_file\"\" into variable \"\"sh_lock_lastPID\"\"", "labels": ["others"]}
+{"text": "Find and display contents of somefile.cf in a Weblogic domain directory", "labels": ["others"]}
+{"text": "Gets list of IP addresses of all network interfaces.", "labels": ["others"]}
+{"text": "invoke make for all the xml files in the current folder by changing their extension from xml to log.", "labels": ["others"]}
+{"text": "Find all files under ./lib/app and sort them, then print their contents to myFile", "labels": ["others"]}
+{"text": "find all normal/regular files in the folder \"\"//path/to/source/Directory\"\" and calculate the md5sum of them and save the output to  file Output.txt", "labels": ["others"]}
+{"text": "Selects a job from list and get it back to the foreground (iselect package is required).", "labels": ["others"]}
+{"text": "List all broken symlinks under the current directory with info on whether the links exist or not", "labels": ["others"]}
+{"text": "discard all the errors and search for the file \"\"program.c\"\" in the entire file system", "labels": ["others"]}
+{"text": "Delete all shared memory and semaphores for the current user on linux", "labels": ["others"]}
+{"text": "Sum the total content size of the extracted files in \"\"archive.tar.gz\"\"", "labels": ["others"]}
+{"text": "Returns the single most recent file in a directory", "labels": ["others"]}
+{"text": "Unsets array member with index 2.", "labels": ["others"]}
+{"text": "copy all java files from current folder to another folder", "labels": ["others"]}
+{"text": "find all the regular files in the current folder which have specific word in their name and force delete all these files and save the log to the file log_del.txt", "labels": ["others"]}
+{"text": "Find all files/directories under maximum 1 level down the current directory and print their inode numbers and names", "labels": ["others"]}
+{"text": "Prints process tree of a cron process with command arguments and process id number.", "labels": ["others"]}
+{"text": "find all the html files in current folder and replace old string with new string", "labels": ["others"]}
+{"text": "Save absolute path of java home to variable \"\"JAVA_HOME\"\"", "labels": ["others"]}
+{"text": "Extracts 258 lines beginning from line 16482 of in.sql and saves them to out.sql", "labels": ["others"]}
+{"text": "FInd all .txt files from current directory , Redirecting errors to /dev/null", "labels": ["others"]}
+{"text": "Apply script rename.sh to all files from the current directory tree whose names match regular expression \"\"xxx-xxx_[a-zA-Z]+_[0-9]+_[0-9]+\\.jpg$\"\"", "labels": ["others"]}
+{"text": "Read a single character from standard input and save to variable \"\"y\"\"", "labels": ["others"]}
+{"text": "Updates all software in system, prints update log on terminal and saves to 'mylogfile'.", "labels": ["others"]}
+{"text": "Upgrades 'php-mbstring' package, enabling 'remi' repository.", "labels": ["others"]}
+{"text": "Print fourth column of data from text file \"\"file\"\" where columns separated by one or more whitespace.", "labels": ["others"]}
+{"text": "Updates 'openssl' package, skipping packages with broken dependencies.", "labels": ["others"]}
+{"text": "Lists installed packages from  'fedora' repository only.", "labels": ["others"]}
+{"text": "Find all symlinks under /path/to/dir and replace them with the actual files they are pointing at", "labels": ["others"]}
+{"text": "Find all files in current directory and execute multiple commands for each file", "labels": ["others"]}
+{"text": "Prints days since epoch", "labels": ["others"]}
+{"text": "Change all occurrences of \"\"foo\"\" to \"\"bar\"\" in the file \"\"file.txt\"\"", "labels": ["others"]}
+{"text": "prints full path of given file", "labels": ["others"]}
+{"text": "Shows only IP4, not IP6 address of network interface eth0.", "labels": ["others"]}
+{"text": "create a compressed archive excluding files matching a pattern", "labels": ["others"]}
+{"text": "Find all *conf* files recursively under current directory, search for any lines matching the string 'matching_text' in those files and redirect the output to matching_text.conf.list", "labels": ["others"]}
+{"text": "display the count of regular/normal files in the folder \"\"/path/to/dir\"\"", "labels": ["others"]}
+{"text": "Print name of user with current EUID.", "labels": ["others"]}
+{"text": "Save the list of files modified within a fortnight ago to `deploy.txt'", "labels": ["others"]}
+{"text": "Print \"\"operator: \"\" followed by the full name of \"\"${USER}\"\"", "labels": ["others"]}
+{"text": "List files cart1, cart2, ..., cart6 in directory ~/junk", "labels": ["others"]}
+{"text": "Find all *.txt files/directories under current directory and execute process command for each of them", "labels": ["others"]}
+{"text": "Calculate the md5 sum of \"\"submission.cpp\"\" with less sensitivity to superficial changes like comments or whitespace", "labels": ["others"]}
+{"text": "set alias \"\"h\"\" for command \"\"history\"\"", "labels": ["others"]}
+{"text": "Find files that are writable by the user, the group, or both under the plsql directory", "labels": ["others"]}
+{"text": "Check if directory $some_dir is empty", "labels": ["others"]}
+{"text": "Gets IP address of a primary network interface.", "labels": ["others"]}
+{"text": "Execute \"\"wget -qO-  http://fake.link/file.txt | tail\"\" every 5 seconds", "labels": ["others"]}
+{"text": "search for a file in current folder and append the file name at the starting of all the lines in the file", "labels": ["others"]}
+{"text": "Split \"\"data.csv\"\" into files with at most 100 lines each and using a prefix \"\"data_\"\" and numeric suffixes starting with 1 and ending with \"\".csv\"\"", "labels": ["others"]}
+{"text": "Send the contents of \"\"file\"\" as input to \"\"clipboard\"\"", "labels": ["others"]}
+{"text": "find all instances of a file in current folder and display all errors apart from permission denied", "labels": ["others"]}
+{"text": "Returns the single most recent file in a directory and all subdirectories.", "labels": ["others"]}
+{"text": "find all regular/normal files in current folder and display the filename and size", "labels": ["others"]}
+{"text": "Print out the contents of all files in the current directory tree that contain \"\"spaces\"\" in their names", "labels": ["others"]}
+{"text": "Recursively finds latest modified file in a directory", "labels": ["others"]}
+{"text": "Removes all cached yum data from a system.", "labels": ["others"]}
+{"text": "Find all *.java files under current directory and change their encoding to utf-8 from cp1252", "labels": ["others"]}
+{"text": "create symbolic links in current directory to all files located in \"\"dir\"\" directory and have filename extension \"\"jpg\"\"", "labels": ["others"]}
+{"text": "run somecommand with one argument for each file recursively in /path that matches 'pattern'", "labels": ["others"]}
+{"text": "Concatenate all .txt files residing in the current directory tree", "labels": ["others"]}
+{"text": "Set the prompt to \"\"title: (hostname)\"\"", "labels": ["others"]}
+{"text": "Change all variables containing \"\"gcc.4.2\"\" to containing \"\"gcc64\"\" in the current shell's environment.", "labels": ["others"]}
+{"text": "List the abc.def files under the directories /ghi and /jkl which have commented entries and display those entries", "labels": ["others"]}
+{"text": "Find all files whose names contain 'patch-' in the /usr/ports directory tree and count the number of lines with ^M in them", "labels": ["others"]}
+{"text": "Search for files greater than 20MB in the entire file system, sort them according to size in ascending order and display the path and file size", "labels": ["others"]}
+{"text": "find all the links in the root folder which point to nothing ( links with their original file deleted ) and display them.", "labels": ["others"]}
+{"text": "Look up IP address of the current host", "labels": ["others"]}
+{"text": "Page through extended information about all PCI devices on system.", "labels": ["others"]}
+{"text": "Counts number of lines returned by curl request.", "labels": ["others"]}
+{"text": "search for the file \"\".user.log\"\" and display its parent directory", "labels": ["others"]}
+{"text": "download contents from website \"\"www.example.com\"\" using URL-encoding \"\"paramName=param\"\"", "labels": ["others"]}
+{"text": "show all files in the entire file system", "labels": ["others"]}
+{"text": "List all files and directories in \"\"/data/\"\" sorted by version number", "labels": ["others"]}
+{"text": "run command \"\"/path/to/my_daemon & echo \\$! > /tmp/su.joe.$$\"\" as user joe", "labels": ["others"]}
+{"text": "display the contents of all the regular/normal files in the entire file system with the name dummy and discard all the errors", "labels": ["others"]}
+{"text": "find all the files ending with \"\".mkv\"\" in a folder and send them as an argument to a shell script", "labels": ["others"]}
+{"text": "Unsets DUALCASE variable.", "labels": ["others"]}
+{"text": "Running javascript program \"\"app\"\" with node outputs the name of a directory, go into that directory.", "labels": ["others"]}
+{"text": "set alias \"\"pwd\"\" for command \"\"echo -n $(/bin/pwd) | pbcopy'\"\"", "labels": ["others"]}
+{"text": "search for all the log files in the folder \"\"/var/log\"\" and create a tar ball and compress it to bz2.", "labels": ["others"]}
+{"text": "Print difference between two strings \"\"$s\"\" and \"\"$r\"\"", "labels": ["others"]}
+{"text": "Copy all *.data files under jcho directory to files whose names are constructed by replacing the first '0' to '2' in their names", "labels": ["others"]}
+{"text": "Synchronize \"\"dir_a\"\" and \"\"dir_b\"\" to contain the latest files in both directories", "labels": ["others"]}
+{"text": "Search the system for 'dead' symbolic links", "labels": ["others"]}
+{"text": "Change the owner of the directory name of \"\"$JBOSS_PIDFILE\"\" to \"\"${JBOSS_USER}\"\" and always return successfully", "labels": ["others"]}
+{"text": "set alias \"\"mkcd\"\" for command \"\"_(){ mkdir -pv $1; cd $1; }; _\"\"", "labels": ["others"]}
+{"text": "Finds all files with names like \"\"*.rm\"\" in a '/home/me/download/' folder, launches ffmpeg conversion for each one, and deletes source file after.", "labels": ["others"]}
+{"text": "Uncompress all files listed in \"\"list.txt\"\" and send to \"\"./a.out\"\"", "labels": ["others"]}
+{"text": "Convert Unix `cal` output to latex table code.", "labels": ["others"]}
+{"text": "set alias \"\"clean\"\" for command 'rm -rf \"\"#\"\"* \"\".\"\"*~ *~ *.bak *.dvi *.aux *.log'", "labels": ["others"]}
+{"text": "Unzip \"\"file.gz\"\" and print each line with the 2nd | separated field greater than 5", "labels": ["others"]}
+{"text": "find all the directory's from root which have the sticky bit on and display their details. Do not display any errors on the standard output.", "labels": ["others"]}
+{"text": "find all the files in the current folder and save the output to the file dir-list", "labels": ["others"]}
+{"text": "Add \"\"A new line\"\" on top of each *.py files under current directory", "labels": ["others"]}
+{"text": "Execute script \"\"your_command_here\"\" passing all regular files from directory tree /target/path as arguments to it", "labels": ["others"]}
+{"text": "change the current working directory to /some/dir and display all normal/regular files", "labels": ["others"]}
+{"text": "run a command \"\"dbca -silent -createDatabase -templateName General_Purpose.dbc -gdbName qualidade -sysPassword password -systemPassword password -scriptDest /u01/app/oracle/oradata/qualidade -characterSet WE8ISO8859P1\"\" with bash shell as user oracle", "labels": ["others"]}
+{"text": "Find files named \"\"AssemblyInfo.cs\"\" in the current directory and below, and run \"\"git diff --name-status\"\" on them", "labels": ["others"]}
+{"text": "Find all files in current directory and execute 'echo first; false' for each file", "labels": ["others"]}
+{"text": "Print numbers from 1 to 30 with 0 padding to a width of 2", "labels": ["others"]}
+{"text": "Show all processes that have a tty in format \"\"%p %r %y %x %c \"\"", "labels": ["others"]}
+{"text": "Counts lines in file $FILE.", "labels": ["others"]}
+{"text": "create a backup of all normal/regular files in current folder which have been modified between two dates and create a tar.gz file of this backup", "labels": ["others"]}
+{"text": "Print list of missing files in a Subversion repository.", "labels": ["others"]}
+{"text": "Run \"\"ps -elfc\"\" followed by \"\"ls\"\" on host \"\"example.com\"\"", "labels": ["others"]}
+{"text": "Prints list of processes in system ascending by memory usage.", "labels": ["others"]}
+{"text": "display the contents of  all the regular files in a folder in the sorted order of their depth", "labels": ["others"]}
+{"text": "Find all files/directories that were modified more than 2 days ago and redirect the list to ~/output.file", "labels": ["others"]}
+{"text": "Unzip all *.zip files under current directory", "labels": ["others"]}
+{"text": "run command \"\"set -a; . /path/to/nullmailer-vars; set +a; /usr/sbin/logcheck\"\" with a bash as user root", "labels": ["others"]}
+{"text": "Print every 16 bytes of standard input in groups of two followed by a space", "labels": ["others"]}
+{"text": "Open executable file for command \"\"rails\"\" in text editor \"\"mate\"\"", "labels": ["others"]}
+{"text": "switch user to jenkins", "labels": ["others"]}
+{"text": "find all text files in current folder and trim the extra spaces in all lines in these files and save it to the original file", "labels": ["others"]}
+{"text": "resize all the jpg images in the current folder to the size 300x300", "labels": ["others"]}
+{"text": "Create a tar archive of all regular files modified in the last 24 hours", "labels": ["others"]}
+{"text": "Find the most recently modified files in /path/to/dir and print the modification time followed by a tab and the filename for each file", "labels": ["others"]}
+{"text": "Find recursively all files that match \"\"pattern\"\" starting from the directory \"\"dir\"\"", "labels": ["others"]}
+{"text": "Display mimetype of myfile.txt.", "labels": ["others"]}
+{"text": "recursively copy files by file extension, preserving directory structure", "labels": ["others"]}
+{"text": "Run 'git pull' in every subdirectory of the current directory", "labels": ["others"]}
+{"text": "search for all the directories in a folder and limit the search to current folder and give them as input to the python script", "labels": ["others"]}
+{"text": "set alias \"\"memu\"\" for command \"\"ps -u $(whoami) -o pid,rss,command | awk '{print \\$0}{sum+=\\$2} END {print \\\"\"Total\\\"\", sum/1024, \\\"\"MB\\\"\"}'\"\"", "labels": ["others"]}
+{"text": "Run the command 'true' with an empty environment variable doFirst", "labels": ["others"]}
+{"text": "Delete orphan vim undo files in the current directory tree", "labels": ["others"]}
+{"text": "search for a string in gzip'd files", "labels": ["others"]}
+{"text": "Convert directory of files from dos to unix", "labels": ["others"]}
+{"text": "Print \"\"Shared Memory\"\" if shared memory mounted at /tmp or print \"\"Not Shared Memory\"\" otherwise.", "labels": ["others"]}
+{"text": "Check the bit width of static library \"\"libsomefile.a\"\"", "labels": ["others"]}
+{"text": "print full path of relative filename", "labels": ["others"]}
+{"text": "Save to report.txt the first line of every text file in the home directory", "labels": ["others"]}
+{"text": "run command \"\"ssh user1@192.168.1.2 \\\"\"awk '\\\\\\$5==1{print \\\\\\$3}' filename.log\\\"\"\"\" as user1 and unify the result", "labels": ["others"]}
+{"text": "Find all files/directories with 'my key phrase' in their names under current directory, search for 'my key phrase' in all files under current directory and print a sorted and unique list of output", "labels": ["others"]}
+{"text": "set alias \"\"logspace\"\" for command \"\"find /apps/ /opt/ -type f -size +100M -exec ls -lh {} \\; | awk '{print $5, $9 }'\"\"", "labels": ["others"]}
+{"text": "Execute the `convert' command for every .jpg file in the current directory", "labels": ["others"]}
+{"text": "Find *.NEF files under current directory and take only the filename without extension and run other commands on this    file name.", "labels": ["others"]}
+{"text": "Find List empty directories", "labels": ["others"]}
+{"text": "Find all files modified on \"\"Mar 4\"\" and unzip and search their contents for \"\"12345\"\"", "labels": ["others"]}
+{"text": "Find files/directories under current directory that matches the regex '/path/to/something'  in their paths", "labels": ["others"]}
+{"text": "set alias \"\":\"\" for command 'xargs -I{}'", "labels": ["others"]}
+{"text": "Find all files whose names do not begin with \"\"zsh\"\" on ext3 file systems", "labels": ["others"]}
+{"text": "Find all files under 'dir' directory and print their md5 sums into file.txt", "labels": ["others"]}
+{"text": "Continuously write \"\"Hidden\"\" over the entire \"\"/dev/sdb\"\" disk", "labels": ["others"]}
+{"text": "Find all directories starting from root that contain the string \"\"99966\"\" in their names", "labels": ["others"]}
+{"text": "Find all file names in the current directory tree that begin with \"\"headdump\"\" and write them to file `delete.txt'", "labels": ["others"]}
+{"text": "Search the current directory recursively for regular files with extensions sdw, sdc, sdd and save the search result as \"\"list_1\"\"", "labels": ["others"]}
+{"text": "Save the name and first line of each .txt file found in the home directory tree to `report.txt'", "labels": ["others"]}
+{"text": "Run command \"\"program\"\" as the current user", "labels": ["others"]}
+{"text": "Send SIGTERM (signal 15) to all processes using TCP port 6000 on the system using root account.", "labels": ["others"]}
+{"text": "set alias \"\"prettyjson\"\" for command 'python -m json.tool'", "labels": ["others"]}
+{"text": "Unsets random one from first five array members.", "labels": ["others"]}
+{"text": "change the word \"\"GHBAG\"\" to \"\"stream-agg\"\" in all the file names in current folder which have the word \"\"-GHBAG-\"\" in their name", "labels": ["others"]}
+{"text": "run a shell as user jenkins", "labels": ["others"]}
+{"text": "search for all the directories in the current folder, do not search in sub folders and run the 'pwd' command in all these directories", "labels": ["others"]}
+{"text": "Calculate the number of bytes of all the files listed in \"\"files.txt\"\"", "labels": ["others"]}
+{"text": "display all files in current directory discard any errors and save the output to a file", "labels": ["others"]}
+{"text": "list all files under the current directory, writing the output to the file files_and_folders, do not try to descend into directories that cannot be read.", "labels": ["others"]}
+{"text": "copy all the files with the extension \"\".type\"\" from one folder to a target directory", "labels": ["others"]}
+{"text": "Execute \"\"chown -R ask:ask /www/askapache.com\"\" in the background on server \"\"askapache\"\" with a niceness of 19", "labels": ["others"]}
+{"text": "Find all files under current directory, calculate their md5sum", "labels": ["others"]}
+{"text": "Prints git log message with a custom time format string", "labels": ["others"]}
+{"text": "(GNU specific: top) Send e-mail to \"\"your_email@domain.com\"\" with subject \"\"any subject\"\" containing process statistics output by the GNU version of 'top'.", "labels": ["others"]}
+{"text": "Lists enabled repositories along with debugging information.", "labels": ["others"]}
+{"text": "Execute \"\"bash -c 'python -m unittest discover |& pyrg'\"\" in a shell with color support every second", "labels": ["others"]}
+{"text": "Print mv commands to rename all files under current directory by formatting the filenames with the sed scripts '\\''s/^([^-]*)-\\s*([^\\.]*)/\\L\\1\\E-\\2/'\\'', '\\''s/ /_/g'\\'' and '\\''s/_-/-/g'\\''", "labels": ["others"]}
+{"text": "Remove newlines from the output of \"\"./series.bc\"\" and pipe into \"\"sed 's.\\\\..g'\"\"", "labels": ["others"]}
+{"text": "Swap \"\"new\"\" and \"\"old\"\" files or directories", "labels": ["others"]}
+{"text": "Print the sizes and file names of all files in the current directory tree that are between 700k and 1000k", "labels": ["others"]}
+{"text": "Find all *.jpg (case-insensitive) files under maximum 2 levels down the temp/medium/* paths and run `mogrify -resize 428x270\"\">\"\" -quality 80 -compress JPEG -monitor -strip` with the file paths as arguments", "labels": ["others"]}
+{"text": "find regular files under the current directory, whose name ends in .mbox, piping the output to a while loop that renames each file, to the same name without .mbox at the end", "labels": ["others"]}
+{"text": "Unzip \"\"file.gz\"\" to standard output and execute in bash with arguments \"\"arguments\"\"", "labels": ["others"]}
+{"text": "Find all files on local host whose name contains \"\"labra\"\" and copy them to remote  host 11.11.11.11 connecting as ssh user \"\"masi\"\" and copying the files to the Desktop directory this user's home directory - this will not work with file/path names containing spaces.", "labels": ["others"]}
+{"text": "Create 256 directories named from '00' to 'ff', each containing 256 subdirectories named '00' to 'ff'.", "labels": ["others"]}
+{"text": "Run `command' on each file from the current directory tree", "labels": ["others"]}
+{"text": "Execute \"\"/some/directory/myprogram\"\" ignoring output in the background on target machine \"\"user@target\"\"", "labels": ["others"]}
+{"text": "Remove safely all *.bak and *.backup files that were accessed last time more than 30 days ago", "labels": ["others"]}
+{"text": "Remove files that are less than 1MB in size under <directory>", "labels": ["others"]}
+{"text": "Find all *weservice* (case insensitive) files under current directory and restart the services provided by them", "labels": ["others"]}
+{"text": "List of directory & count of file in every directory", "labels": ["others"]}
+{"text": "Compress and display the gzipped filenames of every file on the system that is greater than 100000 bytes and ends in \"\".log\"\"", "labels": ["others"]}
+{"text": "Move all files in the current directory tree that match \"\"some_pattern\"\" to \"\"target_location\"\"", "labels": ["others"]}
+{"text": "Print PID and user of processes running ssh or sshd and replace sequential spaces with a single space", "labels": ["others"]}
+{"text": "Finds total lines count of all *.php files in a current folder and subfolders.", "labels": ["others"]}

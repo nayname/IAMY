@@ -1,0 +1,878 @@
+[
+    {
+        "label": "Upload Contract",
+        "query": "Upload a contract and sign the transaction offline later",
+        "command": "neutrond tx wasm store ./artifacts/my_contract.wasm --from offline_key --chain-id neutron-1 --node https://rpc-kralum.neutron-1.neutron.org:443 --gas auto --generate-only | jq . > unsigned_tx.json",
+        "generated_examples": [
+            {
+                "rephrase": "Store the contract located at ./artifacts/my_contract.wasm using the offline_key wallet so I can sign later.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please upload ./artifacts/my_contract.wasm from the key offline_key and generate an unsigned transaction.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "I want to store the wasm file ./artifacts/my_contract.wasm using offline_key but sign offline.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Create a generate-only tx that stores ./artifacts/my_contract.wasm with the wallet offline_key.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Prepare an unsigned store transaction for ./artifacts/my_contract.wasm and sign it later with offline_key",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Upload the artifact at ./artifacts/my_contract.wasm through the offline_key account without broadcasting.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Use offline_key to stage a contract upload of ./artifacts/my_contract.wasm for later signing.",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Generate only the transaction to store ./artifacts/my_contract.wasm using wallet offline_key.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "I need to put ./artifacts/my_contract.wasm on chain later, please create an unsigned tx with offline_key.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Stage the wasm binary ./artifacts/my_contract.wasm under offline_key without immediate broadcast.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Upload Contract",
+        "query": "Upload a contract with an explicit gas-adjustment factor",
+        "command": "neutrond tx wasm store ./artifacts/my_contract.wasm --from mykey --chain-id neutron-1 --node https://rpc-kralum.neutron-1.neutron.org:443 --gas auto --gas-adjustment 1.5 -y",
+        "generated_examples": [
+            {
+                "rephrase": "Upload ./artifacts/my_contract.wasm with mykey and set gas to auto with a 1.5 adjustment.",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "I-GAS",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please store the contract ./artifacts/my_contract.wasm using wallet mykey, gas auto and gas-adjustment 1.5.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "I-GAS"
+                ]
+            },
+            {
+                "rephrase": "I want to upload ./artifacts/my_contract.wasm from mykey setting gas as auto and adjustment 1.5.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "I-GAS"
+                ]
+            },
+            {
+                "rephrase": "Store ./artifacts/my_contract.wasm using the wallet mykey with auto gas and 1.5 adjustment factor.",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "I-GAS",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Use mykey to push ./artifacts/my_contract.wasm and specify gas auto plus gas-adjustment 1.5.",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "I-GAS"
+                ]
+            },
+            {
+                "rephrase": "Please load the wasm file ./artifacts/my_contract.wasm with wallet mykey and gas set to auto with adjustment 1.5.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "I-GAS"
+                ]
+            },
+            {
+                "rephrase": "Upload ./artifacts/my_contract.wasm via mykey using auto gas and a 1.5 gas-adjustment.",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "I-GAS",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Set gas to auto and adjustment to 1.5 while storing ./artifacts/my_contract.wasm from mykey.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "I-GAS",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "I need ./artifacts/my_contract.wasm uploaded with auto gas and 1.5 adjustment using mykey.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "I-GAS",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Store contract ./artifacts/my_contract.wasm through the key mykey setting gas auto and adjustment factor 1.5.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "B-GAS",
+                    "O",
+                    "O",
+                    "O",
+                    "I-GAS"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Upload Contract",
+        "query": "Upload a contract and wait for block confirmation (block mode)",
+        "command": "neutrond tx wasm store ./artifacts/my_contract.wasm --from mykey --chain-id neutron-1 --node https://rpc-kralum.neutron-1.neutron.org:443 --gas auto -y --broadcast-mode block",
+        "generated_examples": [
+            {
+                "rephrase": "Please upload ./artifacts/my_contract.wasm using mykey and broadcast in block mode.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Store the contract ./artifacts/my_contract.wasm with wallet mykey, waiting for block confirmation.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "I need ./artifacts/my_contract.wasm pushed with mykey and confirmation in the same block.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Broadcast ./artifacts/my_contract.wasm from mykey in block mode so it waits for inclusion.",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Upload the code ./artifacts/my_contract.wasm using mykey and confirm once the block is sealed.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Send ./artifacts/my_contract.wasm with wallet mykey and wait for the transaction to finalize in that block.",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Using mykey, store ./artifacts/my_contract.wasm and broadcast in block mode for immediate confirmation.",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Make a block-mode upload of ./artifacts/my_contract.wasm via mykey.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "I would like to submit ./artifacts/my_contract.wasm with key mykey and wait until the block is committed.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Store ./artifacts/my_contract.wasm under mykey and broadcast synchronously at block level.",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Upload Contract",
+        "query": "Upload a gzipped contract after decompressing on-the-fly",
+        "command": "gunzip -c ./artifacts/compressed_contract.wasm.gz | neutrond tx wasm store - --from mykey --chain-id neutron-1 --node https://rpc-kralum.neutron-1.neutron.org:443 --gas auto -y",
+        "generated_examples": [
+            {
+                "rephrase": "Decompress ./artifacts/compressed_contract.wasm.gz and upload it with mykey.",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Using mykey, pipe the gzipped file ./artifacts/compressed_contract.wasm.gz into the store command.",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please upload the contract from ./artifacts/compressed_contract.wasm.gz after on the fly decompression with mykey.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Gunzip ./artifacts/compressed_contract.wasm.gz and then store it via wallet mykey.",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "I want to upload the decompressed version of ./artifacts/compressed_contract.wasm.gz using mykey.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "With mykey, send the contents of ./artifacts/compressed_contract.wasm.gz to chain after decompression.",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Upload compressed file ./artifacts/compressed_contract.wasm.gz by unzipping it on-the-fly through mykey.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Stream-decompress ./artifacts/compressed_contract.wasm.gz and store via mykey.",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Please pipe ./artifacts/compressed_contract.wasm.gz through gunzip and upload it with the wallet mykey.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Use mykey to gunzip and store ./artifacts/compressed_contract.wasm.gz in one step.",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Upload Contract",
+        "query": "Upload a contract directly from a GitHub release asset",
+        "command": "curl -L https://github.com/myorg/contract/releases/download/v1.0.0/contract.wasm -o /tmp/contract.wasm && neutrond tx wasm store /tmp/contract.wasm --from mykey --chain-id neutron-1 --node https://rpc-kralum.neutron-1.neutron.org:443 --gas auto -y",
+        "generated_examples": [
+            {
+                "rephrase": "Download the GitHub asset and store it as /tmp/contract.wasm using mykey.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Using mykey, fetch the contract binary from GitHub release and upload it from /tmp/contract.wasm.",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH"
+                ]
+            },
+            {
+                "rephrase": "Please upload /tmp/contract.wasm to the chain with wallet mykey after downloading it from GitHub.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Fetch from GitHub then store the file at /tmp/contract.wasm using mykey.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "I need to curl the wasm to /tmp/contract.wasm and upload it through mykey.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Use mykey to store the GitHub release artifact located at /tmp/contract.wasm.",
+                "bio_tags": [
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH"
+                ]
+            },
+            {
+                "rephrase": "Upload /tmp/contract.wasm with mykey after retrieving it from the GitHub release page.",
+                "bio_tags": [
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Store the contract file /tmp/contract.wasm through wallet mykey, downloaded from GitHub.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "After pulling the asset, send /tmp/contract.wasm to chain via mykey.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WALLET"
+                ]
+            },
+            {
+                "rephrase": "Please push /tmp/contract.wasm under mykey once the GitHub download is complete.",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-WALLET",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            }
+        ]
+    }
+]

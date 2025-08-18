@@ -1,0 +1,785 @@
+[
+    {
+        "label": "Query Contract State",
+        "query": "See if my TGE allocation is already claimed",
+        "command": "neutrond query wasm contract-state smart <tge_claim_contract_address> '{\"is_claimed\":{\"address\":\"<wallet_address>\"}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "Has wallet1xyz already claimed tokens according to tge_claim_contract via grpc.node",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Check claim status for wallet1xyz in contract tge_claim_contract on grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Tell me whether wallet1xyz has redeemed its TGE allocation using tge_claim_contract node grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I want to verify if my address wallet1xyz is claimed in tge_claim_contract through grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please query tge_claim_contract for wallet1xyz claim info using grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Find out if wallet1xyz has pulled funds from tge_claim_contract with grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Is the airdrop for wallet1xyz marked as claimed in tge_claim_contract reachable by grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Run a smart query on tge_claim_contract to see if wallet1xyz already claimed via grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Determine claim status of wallet1xyz under tge_claim_contract through the node grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Use grpc.node to ask tge_claim_contract whether wallet1xyz allocation is claimed",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Contract State",
+        "query": "Get global vesting status from TGE contract",
+        "command": "neutrond query wasm contract-state smart <tge_vesting_contract_address> '{\"vesting_status\":{}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "Show me the overall vesting status stored in tge_vesting_contract via grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query tge_vesting_contract for global vesting information using grpc.node",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I need the vesting_status from contract tge_vesting_contract on grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Fetch the TGE vesting status through grpc.node for tge_vesting_contract",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Can you get global vesting figures from tge_vesting_contract connecting to grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Retrieve vesting details in tge_vesting_contract with the node grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Ask grpc.node to return vesting status of tge_vesting_contract",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Get vesting_status data using tge_vesting_contract and grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Pull the current vesting report out of tge_vesting_contract via grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Provide vesting status from tge_vesting_contract accessed through grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Contract State",
+        "query": "Query rate limit quotas for channel-0 and untrn",
+        "command": "neutrond query wasm contract-state smart <rate_limit_contract_address> '{\"get_quotas\":{\"channel_id\":\"channel-0\",\"denom\":\"untrn\"}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "Get the current quota for channel-0 on untrn from rate_limit_contract using grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query rate_limit_contract via grpc.node for quotas of denom untrn on channel-0",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-WASM_MSG"
+                ]
+            },
+            {
+                "rephrase": "Please fetch quota details for untrn over channel-0 through rate_limit_contract with grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I need channel-0 limits for untrn token; ask rate_limit_contract at grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Check rate limits for untrn on channel-0 using contract rate_limit_contract and node grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Retrieve get_quotas data from rate_limit_contract for channel-0 and untrn utilizing grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "How much capacity is left for untrn over channel-0 according to rate_limit_contract via grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Use grpc.node to query rate_limit_contract about channel-0 quotas for untrn",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-DENOM"
+                ]
+            },
+            {
+                "rephrase": "Show me the channel-0 quota of untrn stored in rate_limit_contract through grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "From contract rate_limit_contract get quota of untrn on channel-0 with grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Contract State",
+        "query": "Get DAO core configuration",
+        "command": "neutrond query wasm contract-state smart <dao_core_contract_address> '{\"config\":{}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "Fetch the core DAO config from dao_core_contract via grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query dao_core_contract for its configuration using grpc.node",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I need the config data stored in dao_core_contract on grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Provide DAO core configuration through grpc.node for dao_core_contract",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Retrieve the config from contract dao_core_contract with node grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Can you get dao_core_contract configuration using grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Ask grpc.node to return config of dao_core_contract",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Show me configuration details of dao_core_contract accessed via grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Pull DAO configuration from dao_core_contract through grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Use grpc.node to fetch config inside dao_core_contract",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Contract State",
+        "query": "List the latest 30 DAO proposals",
+        "command": "neutrond query wasm contract-state smart <dao_core_contract_address> '{\"list_proposals\":{\"start\":0,\"limit\":30}}' --node <grpc_node>",
+        "generated_examples": [
+            {
+                "rephrase": "Show me the newest 30 proposals from dao_core_contract via grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "List the last 30 DAO proposals using contract dao_core_contract on grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Fetch 30 most recent proposals through grpc.node for dao_core_contract",
+                "bio_tags": [
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Please query dao_core_contract for latest 30 proposals with grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I need the top 30 proposals recorded in dao_core_contract via grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Retrieve latest proposals limit 30 from dao_core_contract using grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Ask grpc.node to list proposals count 30 for dao_core_contract",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "B-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Get the recent 30 proposal entries from dao_core_contract through grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Provide list_proposals result of 30 items for dao_core_contract on grpc.node",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "From dao_core_contract pull 30 newest proposals utilizing grpc.node",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "O",
+                    "B-WASM_MSG",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    }
+]

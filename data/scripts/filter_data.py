@@ -79,52 +79,69 @@ def filter_by_most_frequent_utilities(data_dir, num_utilities):
                         cm_outfile.write('{}\n'.format(cm))
 
 
-def spil_files(limit, chosen):
-    all = json.load(open("all.json"))
-    limits = {}
+def spil_files(limit, chosen_labels):
+    all = json.load(open("../all.json"))
+    limits = {"others":0}
     output = []
     keys = set()
 
-    for k, v in all['ast'].items():
-        print(limits)
-        if not v['too_many_labels'] and v['top_label']:
-            for ls in v['labels']:
-                for l in ls['labels']:
-                    if l in chosen:
-                        set_b = set(ls['labels'])
+    with os.scandir("../intents_oneliner") as entries:
+        for entry in entries:
+            if 'result' not in entry.name:
+                label = "others"
+                if entry.is_file():
+                    for key, vals in chosen_labels.items():
+                        for val in vals:
+                            if val == entry.name:
+                                label = key
 
-                        intersection_set = chosen & set_b
+                if not label in limits:
+                    limits[label] = 0
 
-                        if len(intersection_set) < 2:
-                            if not l in limits:
-                                limits[l] = 0
-                            if limits[l] <= limit:
-                                all['ast'][k]['dataset'] = True
+                intents = json.load(open(entry.path))
 
-                                if not k in keys:
-                                    output.append({"text": k, "labels": [l]})
-                                    keys.add(k)
+                for key in intents.keys():
+                    for intent in intents[key].keys():
+                        output.append({"text": intent, "labels": [label]})
+                        limits[label] += 1
+                        keys.add(intent)
 
-                                limits[l] += 1
-    others = []
-    while len(others) < (limit*2):
+    # TODO: RANDOM FOR EACH KEY
+    with os.scandir("../rephrases") as entries:
+        for entry in entries:
+            if 'result' not in entry.name:
+                intents = json.load(open(entry.path))
+                for intent in intents:
+                    label = "others"
+                    for key, vals in chosen_labels.items():
+                        for val in vals:
+                            if val == intent["label"]:
+                                label = key
+
+                    for g in intent['generated_examples']:
+                        if not g['rephrase'] in keys:
+                            output.append({"text": g['rephrase'], "labels": [label]})
+                            keys.add(g['rephrase'])
+                            limits[label] += 1
+                            if limits[label] >= limit:
+                                break
+
+    while limits["others"] < (limit*2):
         random_key = random.choice( list(all['others'].keys()) )
-        if not random_key in others:
-            others.append(random_key)
-            all['others'][random_key]['dataset'] = True
 
-            if not random_key in keys:
-                output.append({"text": "test", "labels": ["others"]})
-                keys.add(random_key)
+        if not random_key in keys:
+            output.append({"text": random_key, "labels": ["others"]})
+            keys.add(random_key)
+            limits["others"] += 1
 
-
+    print(limits)
     with open("chosen.json", 'w') as f:
         f.write(json.dumps(all))
 
-    with open("train.jsonl", 'w') as f:
+    with open("../train.jsonl", 'w') as f:
         f.write("")
     for o in output:
-        with open("train.jsonl", 'a') as f:
+        with open("../train.jsonl", 'a') as f:
             f.write(json.dumps(o) + "\n")
 #     else:
 #     with open("train_out.jsonl", 'a') as f:
@@ -201,8 +218,13 @@ def gen_non_specific_description_check_csv(data_dir):
     #     f.write(json.dumps(sorted_dict))
 
 if __name__ == '__main__':
-    dataset = sys.argv[1]
-    data_dir = os.path.join(os.path.dirname(os.path.dirname(
-        os.path.realpath(__file__))), dataset)
+    # dataset = sys.argv[1]
+    # data_dir = os.path.join(os.path.dirname(os.path.dirname(
+    #     os.path.realpath(__file__))), dataset)
     # gen_non_specific_description_check_csv(data_dir)
-    spil_files(100, {"awk", "xargs", "find", "sort"})
+    spil_files(100, {"query_balance":["Query Specific Balance", "Query All User Balances"],
+	"query_contract":["Query Contract State"],
+	"send":["Send Tokens"],
+	"upload":["Upload Contract"],
+	"instantiate":["Instantiate Contract"],
+	"execute":["Execute Contract", "Migrate Contract"]})

@@ -1,0 +1,780 @@
+[
+    {
+        "label": "Query Specific Balance",
+        "query": "Check my Neutron wallet balance",
+        "command": "neutrond query bank balance $WALLET_ADDR --node tcp://grpc.neutron.org:9090",
+        "generated_examples": [
+            {
+                "rephrase": "Show me the balance of address neutron1mywalletxyz on node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I want to view my wallet balance at neutron1mywalletxyz through tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please give me the coin balance for neutron1mywalletxyz via node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Fetch the funds stored in neutron1mywalletxyz using tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Balance of neutron1mywalletxyz on tcp://grpc.neutron.org:9090 please",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Using node tcp://grpc.neutron.org:9090 show balance for address neutron1mywalletxyz",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "How many tokens does neutron1mywalletxyz have according to tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Tell me my balance from node tcp://grpc.neutron.org:9090 for wallet neutron1mywalletxyz",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Get the Neutron mainnet balance for neutron1mywalletxyz using node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "What is the current balance at node tcp://grpc.neutron.org:9090 for address neutron1mywalletxyz",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Specific Balance",
+        "query": "Look up the balance of a friend\u2019s address",
+        "command": "neutrond query bank balance neutron1friendaddressxyz --node tcp://grpc.neutron.org:9090",
+        "generated_examples": [
+            {
+                "rephrase": "Look up balance for neutron1friendaddressxyz on node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please tell me how many tokens are in my friend's account neutron1friendaddressxyz via tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query the balance at neutron1friendaddressxyz using the mainnet endpoint tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Get my friend's Neutron balance for address neutron1friendaddressxyz through node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show funds inside neutron1friendaddressxyz via node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Using tcp://grpc.neutron.org:9090 check balance for neutron1friendaddressxyz",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "How much does address neutron1friendaddressxyz currently hold at grpc node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Give me the bank balance for neutron1friendaddressxyz using node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Balance request: address neutron1friendaddressxyz node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Find out tokens in neutron1friendaddressxyz through grpc endpoint tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Specific Balance",
+        "query": "Verify the balance of my validator operator account",
+        "command": "neutrond query bank balance $(neutrond keys show validator --address) --node tcp://grpc.neutron.org:9090",
+        "generated_examples": [
+            {
+                "rephrase": "Check the balance of my validator operator address neutronvaloper1xyzabc on node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please verify funds held by validator account neutronvaloper1xyzabc via tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "How many tokens does validator neutronvaloper1xyzabc currently have according to node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Display the bank balance for my validator neutronvaloper1xyzabc using endpoint tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Validator address neutronvaloper1xyzabc balance check on tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Using node tcp://grpc.neutron.org:9090 provide balance of validator account neutronvaloper1xyzabc",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Get my staking operator address neutronvaloper1xyzabc balance through node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show me the amount of tokens linked to validator neutronvaloper1xyzabc with node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I need the balance for validator address neutronvaloper1xyzabc utilizing tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Retrieve validator neutronvaloper1xyzabc bank balance from node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Specific Balance",
+        "query": "Get balance at a specific block height",
+        "command": "neutrond query bank balance neutron1abcxyz --node tcp://grpc.neutron.org:9090 --height 123456",
+        "generated_examples": [
+            {
+                "rephrase": "Check the balance of address neutron1abcxyz at block height 123456 using node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "What was neutron1abcxyz's balance on node tcp://grpc.neutron.org:9090 at height 123456",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please fetch balance for neutron1abcxyz at block 123456 via tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Retrieve the funds of neutron1abcxyz height 123456 using endpoint tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Balance inquiry for neutron1abcxyz on tcp://grpc.neutron.org:9090 at block 123456",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Using node tcp://grpc.neutron.org:9090 show me balance of neutron1abcxyz at height 123456",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Find out how many coins were in neutron1abcxyz at block height 123456 using node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Provide historical balance of neutron1abcxyz for height 123456 via node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "neutron1abcxyz balance at 123456 please, node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Tell me the wallet neutron1abcxyz balance snapshot at block 123456 on node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Specific Balance",
+        "query": "Check my balance on the Neutron testnet",
+        "command": "neutrond query bank balance $WALLET_ADDR --node tcp://grpc-higgs.testnet.neutron.org:9090",
+        "generated_examples": [
+            {
+                "rephrase": "Check balance of address neutrontest1myaddr on testnet node tcp://grpc-higgs.testnet.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please tell me how many tokens are in neutrontest1myaddr via tcp://grpc-higgs.testnet.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "On the Higgs testnet, fetch the balance for neutrontest1myaddr using node tcp://grpc-higgs.testnet.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Get the Neutron testnet balance for wallet neutrontest1myaddr through tcp://grpc-higgs.testnet.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show me funds inside neutrontest1myaddr using the endpoint tcp://grpc-higgs.testnet.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Using node tcp://grpc-higgs.testnet.neutron.org:9090 display balance of address neutrontest1myaddr",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "How much does neutrontest1myaddr currently hold on the testnet node tcp://grpc-higgs.testnet.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query balance for neutrontest1myaddr via grpc-higgs endpoint tcp://grpc-higgs.testnet.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I need the balance at node tcp://grpc-higgs.testnet.neutron.org:9090 for address neutrontest1myaddr",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Provide bank balance information for neutrontest1myaddr using tcp://grpc-higgs.testnet.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    }
+]

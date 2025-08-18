@@ -1,0 +1,862 @@
+[
+    {
+        "label": "Execute Contract",
+        "query": "Stake 500 NTRN on the Cosmos Hub via my ICA controller contract",
+        "command": "neutrond tx wasm execute $ICA_CONTRACT '{\"submit_tx\":{\"connection_id\":\"connection-0\",\"msgs\":[{\"staking\":{\"delegate\":{\"validator\":\"cosmosvaloper1validatorxxx\",\"amount\":{\"denom\":\"untrn\",\"amount\":\"500000000\"}}}}],\"timeout\":600}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.5 --fees 9000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Use my ICA controller contract to delegate 500 NTRN to the Cosmos Hub validator",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please stake 500 NTRN through my ICA controller contract on neutron-1",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "B-CHAIN_ID"
+                ]
+            },
+            {
+                "rephrase": "Delegate 500 NTRN via my ICA controller contract now",
+                "bio_tags": [
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "I want to use my ICA controller contract to stake 500 NTRN",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT"
+                ]
+            },
+            {
+                "rephrase": "Stake exactly 500 NTRN on Cosmos Hub using the ICA controller contract owned by me",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Through my ICA controller contract delegate a stake of 500 NTRN",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT"
+                ]
+            },
+            {
+                "rephrase": "Could you make my ICA controller contract stake 500 NTRN for me",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please have the ICA controller contract submit a delegation of 500 NTRN",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT"
+                ]
+            },
+            {
+                "rephrase": "Send a submit_tx call with 500 NTRN delegation via my ICA controller contract",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Execute staking of 500 NTRN on Cosmos Hub using my ICA controller contract",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-AMOUNT",
+                    "I-AMOUNT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Withdraw protocol fees from the contract to the DAO treasury",
+        "command": "neutrond tx wasm execute $FEE_COLLECTOR_CONTRACT '{\"withdraw_fees\":{\"recipient\":\"neutron1daowalletxxxxxxxxxxxxxxxxx\"}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 5000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Use the Fee Collector contract to send the protocol fees to the DAO treasury wallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "I-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Please withdraw fees through my Fee Collector contract and deposit them into the DAO treasury",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Initiate fee withdrawal from the Fee Collector contract to the DAO treasury address",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "I-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Withdraw protocol fees using the Fee Collector contract and send them to the DAO treasury",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "From my Fee Collector contract route all accrued fees to the DAO treasury wallet",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "I-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Execute withdraw_fees on the Fee Collector contract targeting the DAO treasury",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Send the collected fees from Fee Collector to DAO treasury",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Withdraw all protocol revenue via Fee Collector contract into DAO treasury",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Please get Fee Collector contract to forward fees to the DAO treasury fund",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "I-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Trigger a fee withdrawal from the Fee Collector contract depositing into the DAO treasury wallet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "I-ADDRESS"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Burn the collected fees using the FeeBurner contract",
+        "command": "neutrond tx wasm execute $FEEBURNER_CONTRACT '{\"burn\":{}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 4000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Use the FeeBurner contract to burn the collected fees",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please burn all fees via my FeeBurner contract",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Initiate fee burning with the FeeBurner contract now",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Execute burn on FeeBurner contract to destroy collected tokens",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Tell the FeeBurner contract to burn fee balance",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "FeeBurner contract should perform a burn of all accrued fees",
+                "bio_tags": [
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Burn fees using FeeBurner contract immediately",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please have FeeBurner contract execute the burn function",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Launch a burn transaction through the FeeBurner contract",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "I need my FeeBurner contract to burn the collected fees",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Refund unused ICA fees for channel-8 sequence 42",
+        "command": "neutrond tx wasm execute $FEE_REFUNDER_CONTRACT '{\"refund\":{\"channel_id\":\"channel-8\",\"sequence\":42}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.3 --fees 3500untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Use the Fee Refunder contract to refund unused ICA fees for channel-8 sequence 42",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please refund the leftover fees via my Fee Refunder contract for channel-8 seq 42",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Initiate a refund on Fee Refunder contract for channel-8 sequence 42",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Execute refund using the Fee Refunder contract channel-8 seq 42",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Fee Refunder contract should refund ICA fees on channel-8 with sequence 42",
+                "bio_tags": [
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Request a refund of unused fees from the Fee Refunder contract for channel-8 seq 42",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Refund ICA fees using Fee Refunder contract on channel-8 sequence 42",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Ask Fee Refunder contract to process refund for channel-8 seq 42",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Channel-8 sequence 42 fee refund should be executed by the Fee Refunder contract",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Perform refund of unused fees via the Fee Refunder contract on channel-8 seq 42",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Execute Contract",
+        "query": "Subscribe my contract to AfterValidatorCreated hook events",
+        "command": "neutrond tx wasm execute $HARPOON_CONTRACT '{\"manage_hook_subscription\":{\"address\":\"$MY_CONTRACT\",\"hooks\":[\"HOOK_TYPE_AFTER_VALIDATOR_CREATED\"]}}' --from mywallet --chain-id neutron-1 --gas auto --gas-adjustment 1.4 --fees 6000untrn --node https://rpc-kralum.neutron.org",
+        "generated_examples": [
+            {
+                "rephrase": "Use the Harpoon contract to subscribe my contract to the AfterValidatorCreated hook events",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please have Harpoon contract register my contract for the AfterValidatorCreated hook",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Subscribe my contract to AfterValidatorCreated using the Harpoon contract",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Register AfterValidatorCreated hook for my contract via Harpoon contract",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "With the Harpoon contract make sure my contract is subscribed to the AfterValidatorCreated hook",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Ensure subscription to AfterValidatorCreated for my contract through the Harpoon contract",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Ask Harpoon contract to add my contract to AfterValidatorCreated hook list",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Configure AfterValidatorCreated hook subscription using Harpoon contract for my contract",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "My contract needs to be subscribed to AfterValidatorCreated via the Harpoon contract",
+                "bio_tags": [
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Please subscribe the AfterValidatorCreated hook for my contract using the Harpoon contract",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT"
+                ]
+            }
+        ]
+    }
+]

@@ -1,0 +1,747 @@
+[
+    {
+        "label": "Query All User Balances",
+        "query": "Output my balances as raw JSON",
+        "command": "neutrond query bank balances $ADDR --node https://grpc-kaiyo-1.neutron.org:443 --output json",
+        "generated_examples": [
+            {
+                "rephrase": "Show me the balance of neutron1abcd1234efgh5678krjqscy0 in raw JSON format please",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please output my wallet neutron1abcd1234efgh5678krjqscy0 balances as JSON",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Get the balances for account neutron1abcd1234efgh5678krjqscy0 and print them as JSON",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "I would like to see my funds on neutron1abcd1234efgh5678krjqscy0 displayed in JSON",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Retrieve the current balance, JSON output, for address neutron1abcd1234efgh5678krjqscy0",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Provide raw JSON of all tokens held by neutron1abcd1234efgh5678krjqscy0",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Give me JSON formatted balances for neutron1abcd1234efgh5678krjqscy0",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Export the account balances for neutron1abcd1234efgh5678krjqscy0 as JSON data",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Could you dump the balance details of neutron1abcd1234efgh5678krjqscy0 in JSON",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Balance query in JSON for wallet neutron1abcd1234efgh5678krjqscy0 please",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Show the treasury wallet balance for our DAO",
+        "command": "neutrond query bank balances neutron1treasury0v0k985ku6zgga9r3e7tczspyj9aqeq9 --node https://grpc-kaiyo-1.neutron.org:443",
+        "generated_examples": [
+            {
+                "rephrase": "Display the DAO treasury wallet balance at neutron1treasury0v0k985ku6zgga9r3e7tczspyj9aqeq9",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "What is the current balance of treasury address neutron1treasury0v0k985ku6zgga9r3e7tczspyj9aqeq9",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Please show funds held in neutron1treasury0v0k985ku6zgga9r3e7tczspyj9aqeq9",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Query balance for the DAO treasury account neutron1treasury0v0k985ku6zgga9r3e7tczspyj9aqeq9 now",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Get me the token totals for neutron1treasury0v0k985ku6zgga9r3e7tczspyj9aqeq9",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "I need the balance details of our treasury wallet neutron1treasury0v0k985ku6zgga9r3e7tczspyj9aqeq9",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Show me how much is in DAO address neutron1treasury0v0k985ku6zgga9r3e7tczspyj9aqeq9",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Print the treasury account balance for neutron1treasury0v0k985ku6zgga9r3e7tczspyj9aqeq9",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Balance inquiry: neutron1treasury0v0k985ku6zgga9r3e7tczspyj9aqeq9",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Fetch current treasury balance from neutron1treasury0v0k985ku6zgga9r3e7tczspyj9aqeq9 asap",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Confirm a faucet deposit by querying my balance",
+        "command": "neutrond query bank balances $FAUCET_ADDR --node https://grpc-pion-1.neutron.org:443",
+        "generated_examples": [
+            {
+                "rephrase": "Check that the faucet sent funds to my wallet neutron1faucetdzn39u2tsyk3v0kup85gprr94s",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Has the deposit arrived at address neutron1faucetdzn39u2tsyk3v0kup85gprr94s ?",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Please query balance for neutron1faucetdzn39u2tsyk3v0kup85gprr94s to confirm faucet transfer",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "I want to make sure my faucet funds are available on neutron1faucetdzn39u2tsyk3v0kup85gprr94s",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Show the current balance of faucet recipient neutron1faucetdzn39u2tsyk3v0kup85gprr94s",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Get balance for address neutron1faucetdzn39u2tsyk3v0kup85gprr94s after faucet request",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Verify that neutron1faucetdzn39u2tsyk3v0kup85gprr94s received tokens from the faucet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Balance check: neutron1faucetdzn39u2tsyk3v0kup85gprr94s post faucet",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Could you output the balance for neutron1faucetdzn39u2tsyk3v0kup85gprr94s to verify deposit",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Confirm faucet top up by querying neutron1faucetdzn39u2tsyk3v0kup85gprr94s",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Schedule a daily balance check with cron",
+        "command": "echo '0 8 * * * neutrond query bank balances $ADDR --node https://grpc-kaiyo-1.neutron.org:443 >> $HOME/neutron_balances.log' | crontab -",
+        "generated_examples": [
+            {
+                "rephrase": "Set up a cron job to query balance for neutron1cronabc9e0s7um5p4kqf80ylue8 every day and append results to /home/user/neutron_balances.log",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH"
+                ]
+            },
+            {
+                "rephrase": "Please schedule daily at 8am a balance query of neutron1cronabc9e0s7um5p4kqf80ylue8 and log to /var/log/neutron_balances.log",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH"
+                ]
+            },
+            {
+                "rephrase": "Add cron entry: 0 8 * * * query balances for neutron1cronabc9e0s7um5p4kqf80ylue8 >> /home/user/neutron_balances.log",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-FILE_PATH"
+                ]
+            },
+            {
+                "rephrase": "Create a scheduled balance check for neutron1cronabc9e0s7um5p4kqf80ylue8 that writes into /home/user/neutron_balances.log",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH"
+                ]
+            },
+            {
+                "rephrase": "Every morning, run neutrond balance query on neutron1cronabc9e0s7um5p4kqf80ylue8 and save output to /backup/neutron_balances.log",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH"
+                ]
+            },
+            {
+                "rephrase": "Set cron so that at 08:00 we record the balance of neutron1cronabc9e0s7um5p4kqf80ylue8 in /home/user/neutron_balances.log",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-FILE_PATH"
+                ]
+            },
+            {
+                "rephrase": "I want a daily cron balance dump for neutron1cronabc9e0s7um5p4kqf80ylue8 into /var/log/neutron_balances.log",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-FILE_PATH"
+                ]
+            },
+            {
+                "rephrase": "Schedule balance reporting of account neutron1cronabc9e0s7um5p4kqf80ylue8 each day, writing to /home/user/neutron_balances.log",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH"
+                ]
+            },
+            {
+                "rephrase": "Please create cron task to check balances on neutron1cronabc9e0s7um5p4kqf80ylue8 and append them to /backup/neutron_balances.log",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH"
+                ]
+            },
+            {
+                "rephrase": "Setup a balance cron for neutron1cronabc9e0s7um5p4kqf80ylue8 that logs at /home/user/neutron_balances.log",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Double-check my balance before sending a transaction",
+        "command": "neutrond query bank balances $FROM_ADDR --node https://grpc-kaiyo-1.neutron.org:443",
+        "generated_examples": [
+            {
+                "rephrase": "Before I send anything, show the balance of neutron1sender9w0kq34gk5076lax0",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Please double check funds in wallet neutron1sender9w0kq34gk5076lax0",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Confirm that account neutron1sender9w0kq34gk5076lax0 has enough balance",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "I want to see my current balance on neutron1sender9w0kq34gk5076lax0 before proceeding",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Quick balance check for address neutron1sender9w0kq34gk5076lax0",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Show me the holdings of neutron1sender9w0kq34gk5076lax0 right now",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Get balance of neutron1sender9w0kq34gk5076lax0 before transaction",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Balance verification needed for wallet neutron1sender9w0kq34gk5076lax0",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Can you display the available funds in neutron1sender9w0kq34gk5076lax0",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Print my balance from account neutron1sender9w0kq34gk5076lax0 ahead of sending",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            }
+        ]
+    }
+]

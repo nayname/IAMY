@@ -1,0 +1,739 @@
+[
+    {
+        "label": "Query All User Balances",
+        "query": "Fetch balances in protobuf format",
+        "command": "neutrond query bank balances $ADDR --node https://grpc-kaiyo-1.neutron.org:443 --output protobuf",
+        "generated_examples": [
+            {
+                "rephrase": "Please retrieve the balances for $ADDR via https://grpc-kaiyo-1.neutron.org:443 and show them in protobuf",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Show me protobuf balances of address $ADDR using the node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Fetch the account balance for $ADDR from https://grpc-kaiyo-1.neutron.org:443 as protobuf",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "I want the protobuf formatted balances of $ADDR through the endpoint https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Using https://grpc-kaiyo-1.neutron.org:443 get me the balances of $ADDR in protobuf",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Could you query $ADDR balances over https://grpc-kaiyo-1.neutron.org:443 and output protobuf",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Provide me protobuf balances via https://grpc-kaiyo-1.neutron.org:443 for address $ADDR",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Balance lookup for $ADDR on grpc node https://grpc-kaiyo-1.neutron.org:443 with protobuf output",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Check $ADDR balance using https://grpc-kaiyo-1.neutron.org:443 and present it as protobuf",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Display protobuf format balances for account $ADDR through https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Get balances using the test validator mnemonic address",
+        "command": "neutrond query bank balances $(neutrond keys show validator -a --keyring-backend test) --node http://localhost:9090",
+        "generated_examples": [
+            {
+                "rephrase": "Please fetch balances for the validator address using node http://localhost:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show me my validator wallet balances via http://localhost:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Get the balance of our test validator account from http://localhost:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "I-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query balances at http://localhost:9090 for the validator's address",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Using the local host node http://localhost:9090 check the balance of the validator address",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Validate balances for validator address through node http://localhost:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Tell me the account balances for the validator using http://localhost:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Retrieve the validator's balance via the node at http://localhost:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I need the balance details of my validator account using node http://localhost:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "I-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Check validator balance from the endpoint http://localhost:9090",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Check balances for an address stored in a shell variable",
+        "command": "neutrond query bank balances $MY_NEUTRON_ADDR --node $GRPC_NODE",
+        "generated_examples": [
+            {
+                "rephrase": "Please show me the balances for $MY_NEUTRON_ADDR using node $GRPC_NODE",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Check balance of address $MY_NEUTRON_ADDR on $GRPC_NODE",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Get me account balances via $GRPC_NODE for $MY_NEUTRON_ADDR",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Using $GRPC_NODE retrieve balances belonging to $MY_NEUTRON_ADDR",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "I want the balance list for $MY_NEUTRON_ADDR from node $GRPC_NODE",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query $MY_NEUTRON_ADDR balances through $GRPC_NODE",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Grab balances of $MY_NEUTRON_ADDR using the GRPC node $GRPC_NODE",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Provide balances via node $GRPC_NODE for account $MY_NEUTRON_ADDR",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Show $MY_NEUTRON_ADDR balance details on node $GRPC_NODE",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Balances for variable address $MY_NEUTRON_ADDR should be queried against $GRPC_NODE",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Validate that my new account has the expected airdrop balance",
+        "command": "neutrond query bank balances neutron1aird70p7nz6n7dag9nxxxz5z4m5tgrq9yfy9fx --node https://grpc-kaiyo-1.neutron.org:443",
+        "generated_examples": [
+            {
+                "rephrase": "Check the airdrop balance for neutron1aird70p7nz6n7dag9nxxxz5z4m5tgrq9yfy9fx using node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please validate that address neutron1aird70p7nz6n7dag9nxxxz5z4m5tgrq9yfy9fx holds the correct airdrop via https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query balances at https://grpc-kaiyo-1.neutron.org:443 for neutron1aird70p7nz6n7dag9nxxxz5z4m5tgrq9yfy9fx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Using the Kaiyo node https://grpc-kaiyo-1.neutron.org:443 confirm the airdrop balance of neutron address neutron1aird70p7nz6n7dag9nxxxz5z4m5tgrq9yfy9fx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Show me the balance for neutron1aird70p7nz6n7dag9nxxxz5z4m5tgrq9yfy9fx with grpc node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Retrieve account balances via https://grpc-kaiyo-1.neutron.org:443 for address neutron1aird70p7nz6n7dag9nxxxz5z4m5tgrq9yfy9fx",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Could you confirm the airdrop amount on neutron1aird70p7nz6n7dag9nxxxz5z4m5tgrq9yfy9fx using https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Use https://grpc-kaiyo-1.neutron.org:443 to get balances of neutron1aird70p7nz6n7dag9nxxxz5z4m5tgrq9yfy9fx",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Balance check: address neutron1aird70p7nz6n7dag9nxxxz5z4m5tgrq9yfy9fx, node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Verify that neutron1aird70p7nz6n7dag9nxxxz5z4m5tgrq9yfy9fx owns the airdrop balance through node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query All User Balances",
+        "query": "Quickly view balances with a shortened address placeholder",
+        "command": "neutrond query bank balances <address> --node https://grpc-kaiyo-1.neutron.org:443",
+        "generated_examples": [
+            {
+                "rephrase": "Show balances for <address> using https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Quickly fetch the balance of <address> from node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Retrieve account balances at https://grpc-kaiyo-1.neutron.org:443 for <address>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Use the Kaiyo node https://grpc-kaiyo-1.neutron.org:443 to check balances of <address>",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Please provide balances for placeholder <address> via https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I need to see how much is in <address> using the grpc endpoint https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Check balance for the address placeholder <address> on https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Balance lookup: <address> via node https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Query <address> balances through https://grpc-kaiyo-1.neutron.org:443",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Using https://grpc-kaiyo-1.neutron.org:443 retrieve balances of <address> quickly",
+                "bio_tags": [
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O"
+                ]
+            }
+        ]
+    }
+]

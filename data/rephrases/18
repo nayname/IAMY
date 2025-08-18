@@ -1,0 +1,830 @@
+[
+    {
+        "label": "Migrate Contract",
+        "query": "Migrate the investors vesting contract to code ID 28 with updated schedule",
+        "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"Investors vesting upgrade\",\"description\":\"Move vesting contract to code id 28 and apply new release plan\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<vesting_contract_addr>\",\"new_code_id\":28,\"msg\":{\"new_release_timestamp\":1700000000}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y",
+        "generated_examples": [
+            {
+                "rephrase": "Please migrate the investors vesting contract to code id 28",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Initiate a migration for the investors vesting contract at code ID 28",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Upgrade investors vesting contract by moving it to code 28",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Shift the investors vesting contract onto new code identifier 28",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Move investors' vesting contract to code version 28 with the updated schedule",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Carry out migration of the investors vesting contract targeting code id 28",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Please upgrade the investors vesting contract to code id number 28",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Execute migration so that investors vesting contract runs on code 28",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Investors vesting contract should be migrated over to code id 28 today",
+                "bio_tags": [
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Let us move the investors' vesting contract onto code release 28",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Migrate Contract",
+        "query": "Patch the multisig treasury contract to code ID 410 using a custom migrate message",
+        "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"Treasury multisig patch\",\"description\":\"Migrate to code id 410 with new threshold\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<treasury_multisig_addr>\",\"new_code_id\":410,\"msg\":{\"new_threshold\":\"0.6\"}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y",
+        "generated_examples": [
+            {
+                "rephrase": "Please patch the multisig treasury contract to code ID 410",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Upgrade the multisig treasury contract by migrating it to code 410",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Apply custom migration sending multisig treasury contract over to code id 410",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Move the multisig treasury contract to new code identifier 410 now",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Migrate multisig treasury contract into code version 410 using custom message",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Initiate a patch that shifts multisig treasury contract onto code 410",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "We need the multisig treasury contract migrated to code id number 410",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Ensure that multisig treasury contract runs under code ID 410",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Upgrade multisig treasury contract to code 410 with the new threshold setting",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "B-CODE_ID",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Patch multisig treasury contract over to code identifier 410 immediately",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Migrate Contract",
+        "query": "Move the interchain query helper contract to beta code ID 500",
+        "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"ICQ helper beta migration\",\"description\":\"Upgrade helper contract to code id 500\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<icq_helper_addr>\",\"new_code_id\":500,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y",
+        "generated_examples": [
+            {
+                "rephrase": "Move the interchain query helper contract to code ID 500",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Please upgrade interchain query helper contract so it uses code 500",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Initiate beta migration moving interchain query helper contract onto code id 500",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Shift interchain query helper contract to new code identifier 500",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Upgrade the interchain query helper contract into code version 500 now",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Migrate interchain query helper contract over to code 500",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Apply beta code id 500 to the interchain query helper contract",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT"
+                ]
+            },
+            {
+                "rephrase": "Ensure interchain query helper contract is running under code ID 500",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "We must migrate the interchain query helper contract to code identifier 500",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Please shift interchain query helper contract onto code release 500 asap",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Migrate Contract",
+        "query": "Migrate the TokenFactory before-send hook contract to code ID 65",
+        "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"TokenFactory hook upgrade\",\"description\":\"Migrate before-send hook to code id 65\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<before_send_hook_addr>\",\"new_code_id\":65,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y",
+        "generated_examples": [
+            {
+                "rephrase": "Migrate the TokenFactory before-send hook contract to code ID 65",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Please upgrade TokenFactory before-send hook contract into code 65",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Shift the TokenFactory before-send hook contract over to code id 65",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Move TokenFactory before-send hook contract onto new code identifier 65",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Apply migration so TokenFactory before-send hook contract runs on code 65",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "We need the TokenFactory before-send hook contract migrated to code version 65",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Initiate upgrade of TokenFactory before-send hook contract to code ID 65",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "TokenFactory before-send hook contract should be switched to code 65",
+                "bio_tags": [
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Please move the TokenFactory before-send hook contract into code identifier 65 asap",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Upgrade TokenFactory before-send hook contract to code release 65 immediately",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID",
+                    "O"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Migrate Contract",
+        "query": "Upgrade the Cron scheduler registry contract to code ID 123",
+        "command": "neutrond tx wasm execute <dao_contract_addr> '{\"propose\":{\"title\":\"Cron registry upgrade\",\"description\":\"Scheduler contract migration to code id 123\",\"msgs\":[{\"wasm\":{\"migrate\":{\"contract_addr\":\"<cron_registry_addr>\",\"new_code_id\":123,\"msg\":{}}}}]}}' --node <grpc_node> --from <key> --chain-id <chain_id> --gas auto --gas-adjustment 1.3 -y",
+        "generated_examples": [
+            {
+                "rephrase": "Upgrade the Cron scheduler registry contract to code ID 123",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Please migrate Cron scheduler registry contract into code 123",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Shift Cron scheduler registry contract over to code id 123",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Move the Cron scheduler registry contract onto new code identifier 123",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Apply upgrade so Cron scheduler registry contract runs on code version 123",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "We need Cron scheduler registry contract migrated to code ID 123",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Initiate registry upgrade moving Cron scheduler registry contract to code 123",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Ensure that Cron scheduler registry contract is running under code ID 123",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID"
+                ]
+            },
+            {
+                "rephrase": "Patch Cron scheduler registry contract to code identifier 123 immediately",
+                "bio_tags": [
+                    "O",
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Cron scheduler registry contract should be upgraded to code release 123 asap",
+                "bio_tags": [
+                    "B-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "I-CONTRACT",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-CODE_ID",
+                    "O"
+                ]
+            }
+        ]
+    }
+]

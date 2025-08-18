@@ -1,0 +1,806 @@
+[
+    {
+        "label": "Query Specific Balance",
+        "query": "Output my balance as JSON",
+        "command": "neutrond query bank balance $WALLET_ADDR --node tcp://grpc.neutron.org:9090 -o json",
+        "generated_examples": [
+            {
+                "rephrase": "Please print the balance for neutron1abcd in JSON format via the node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I want to query my balance as JSON using neutron1abcd on tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show neutron1abcd wallet funds in JSON through the node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Get the current balance of address neutron1abcd from tcp://grpc.neutron.org:9090 and output JSON",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Balance check: address neutron1abcd , node tcp://grpc.neutron.org:9090 , output in JSON",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Could you show me the balance for neutron1abcd in JSON from node tcp://grpc.neutron.org:9090 ?",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Run a balance query on neutron1abcd via tcp://grpc.neutron.org:9090 and return it as JSON",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O"
+                ]
+            },
+            {
+                "rephrase": "Display JSON-formatted balance of neutron1abcd using the public node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I would like the wallet balance for neutron1abcd in JSON, queried through tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Provide a JSON output of the balance for neutron1abcd from node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Specific Balance",
+        "query": "Query only the uNTRN balance of an address",
+        "command": "neutrond query bank balance neutron1xyz uNTRN --node tcp://grpc.neutron.org:9090",
+        "generated_examples": [
+            {
+                "rephrase": "Please fetch the uNTRN balance for neutron1xyz using the node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I need to see only uNTRN held by neutron1xyz via tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show me neutron1xyz amount of uNTRN through the node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Get uNTRN balance of address neutron1xyz from tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Retrieve just the uNTRN funds for neutron1xyz using tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Can you query uNTRN for the account neutron1xyz on the node tcp://grpc.neutron.org:9090?",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "uNTRN balance check for neutron1xyz via tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show only the uNTRN token amount for neutron1xyz using the gRPC endpoint tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I only care about the uNTRN balance for neutron1xyz pulled from tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Provide neutron1xyz uNTRN holdings via the node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Specific Balance",
+        "query": "Fetch my balance from a local gRPC node",
+        "command": "neutrond query bank balance $WALLET_ADDR --node tcp://127.0.0.1:9090",
+        "generated_examples": [
+            {
+                "rephrase": "Please fetch the balance of neutron1local through the local node tcp://127.0.0.1:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I want to query my wallet address neutron1local using tcp://127.0.0.1:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show me the balance for neutron1local at node tcp://127.0.0.1:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Fetch balance using the localhost endpoint tcp://127.0.0.1:9090 for address neutron1local",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Get neutron1local balance from the local gRPC tcp://127.0.0.1:9090",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Can you display my balance by querying tcp://127.0.0.1:9090 for neutron1local",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Balance check: node tcp://127.0.0.1:9090 address neutron1local",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Query balance for neutron1local via the local node at tcp://127.0.0.1:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show my funds using localhost tcp://127.0.0.1:9090 for account neutron1local",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE",
+                    "O",
+                    "O",
+                    "B-ADDRESS"
+                ]
+            },
+            {
+                "rephrase": "Provide the balance of neutron1local from tcp://127.0.0.1:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Specific Balance",
+        "query": "Retrieve an IBC token balance from Neutron",
+        "command": "neutrond query bank balance neutron1xyz ibc/1234567890ABCDEF --node tcp://grpc.neutron.org:9090",
+        "generated_examples": [
+            {
+                "rephrase": "Fetch the ibc/1234567890ABCDEF balance for neutron1xyz via node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I want to see neutron1xyz holdings of ibc/1234567890ABCDEF using tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show me the balance of ibc/1234567890ABCDEF on neutron1xyz through tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Retrieve ibc/1234567890ABCDEF for address neutron1xyz from tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Get neutron1xyz ibc/1234567890ABCDEF balance using node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Can you query the ibc/1234567890ABCDEF token amount held by neutron1xyz via tcp://grpc.neutron.org:9090?",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "ibc/1234567890ABCDEF balance check for neutron1xyz node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Display neutron1xyz balance specifically for ibc/1234567890ABCDEF from tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "I need only the ibc/1234567890ABCDEF balance of neutron1xyz using the public node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Provide the ibc/1234567890ABCDEF holdings for address neutron1xyz via tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-DENOM",
+                    "O",
+                    "O",
+                    "O",
+                    "B-ADDRESS",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    },
+    {
+        "label": "Query Specific Balance",
+        "query": "Loop through a list of addresses and print their balances",
+        "command": "for addr in $(cat addresses.txt); do neutrond query bank balance $addr --node tcp://grpc.neutron.org:9090; done",
+        "generated_examples": [
+            {
+                "rephrase": "Iterate over addresses in addresses.txt and query their balances via node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Using the list in addresses.txt, loop through each address and show balances from tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Read every address from addresses.txt then fetch its balance via tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Can you run a balance query for each entry in addresses.txt using the node tcp://grpc.neutron.org:9090?",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Loop over addresses.txt addresses and print their balances through tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "For every addr listed in addresses.txt, query bank balance with node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Execute a loop that reads addresses.txt and retrieves balances via tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Please get the balance for each wallet recorded in addresses.txt using tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Show balances for the list inside addresses.txt from node tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            },
+            {
+                "rephrase": "Gather account balances by reading addresses.txt and hitting tcp://grpc.neutron.org:9090",
+                "bio_tags": [
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "O",
+                    "B-FILE_PATH",
+                    "O",
+                    "O",
+                    "B-NODE"
+                ]
+            }
+        ]
+    }
+]
