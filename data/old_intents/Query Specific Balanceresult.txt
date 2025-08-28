@@ -1,0 +1,381 @@
+{
+    "messages": [
+        {
+            "content": "Query Specific Balance",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "ea9742e2-b661-45e0-a358-d717717c346e",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_IMER2CaDvjxlTePgjRiYmiOO",
+                        "function": {
+                            "arguments": "{\"query\":\"Query Specific Balance Neutron interchain queries balance\", \"section\":\"all\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 170,
+                    "prompt_tokens": 262,
+                    "total_tokens": 432,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 128,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C4C8ns4R8K4hg53YqprVNC4KMS0LH",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--f1cec2be-4d5a-4470-8650-2ef5786264d2-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "Query Specific Balance Neutron interchain queries balance",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_IMER2CaDvjxlTePgjRiYmiOO",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 262,
+                "output_tokens": 170,
+                "total_tokens": 432,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 128
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"Query Specific Balance Neutron interchain queries balance\":\n\n## 1. Neutron Modules\n**File:** /root/neutron/docs/developers/modules/overview.mdx\n**Section:** developers\n**Relevance Score:** 26\n\n**Matching lines:**\n- Line 2: title: \"Neutron Modules\"\n- Line 5: Neutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n- Line 12: <Card title=\"Interchain Queries (ICQ)\" icon=\"link\" href=\"/developers/modules/interchain-queries/overview\">\n- Line 13: Query data from any IBC-connected blockchain\n- Line 16: <Card title=\"Interchain Transactions (ICTX)\" icon=\"arrow-right-arrow-left\" href=\"/developers/modules/interchaintxs/overview\">\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Modules\"\n---\n\n---\n\n\nNeutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n\n\n---\n\n<CardGroup cols={3}>\n  <Card title=\"Interchain Queries (ICQ)\" icon=\"link\" href=\"/developers/modules/interchain-queries/overview\">\n    Query data from any IBC-connected blockchain\n```\n\n---\n\n## 2. Interchain Queries Module\n**File:** /root/neutron/docs/developers/modules/interchain-queries/overview.mdx\n**Section:** developers\n**Relevance Score:** 24\n\n**Matching lines:**\n- Line 2: title: \"Interchain Queries Module\"\n- Line 3: description: \"Query cross-chain data and receive verification for on-chain use\"\n- Line 6: This document explains the `interchainqueries` module for the Neutron network.\n- Line 8: Interchain Queries allow developers to get verifiable data from other blockchains. This feature is essential for creating secure cross-chain applications. The module uses Merkle proofs and IBC clients to confirm the accuracy of the data retrieved directly from the storage of the target blockchain. It allows any smart contract to register Interchain Queries without needing any special module on the target blockchain.\n- Line 11: While the Interchain Queries module supports both CLI commands and smart contract integration, most practical applications are implemented through CosmWasm smart contracts. Smart contracts provide more sophisticated handling of query results, automatic processing of updates, and integration with complex application logic.\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Queries Module\"\ndescription: \"Query cross-chain data and receive verification for on-chain use\"\n\n---\n\ntitle: \"Interchain Queries Module\"\ndescription: \"Query cross-chain data and receive verification for on-chain use\"\n---\n\n---\n\n\nThis document explains the `interchainqueries` module for the Neutron network.\n\n```\n\n---\n\n## 3. Interchain Queries with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_icq.mdx\n**Section:** developers\n**Relevance Score:** 24\n\n**Matching lines:**\n- Line 2: title: \"Interchain Queries with CosmWasm\"\n- Line 3: description: \"Learn how to build smart contracts that query data from other blockchains using Neutron's ICQ module\"\n- Line 6: This tutorial walks through building a smart contract that uses Neutron's Interchain Query (ICQ) module to query data from other blockchains. You'll learn how to register queries, process the results, and build applications that can react to state changes on connected chains.\n- Line 10: Interchain Queries are a powerful feature of Neutron that allow smart contracts to query the state of other chains in the Cosmos ecosystem. This enables developers to build cross-chain applications that can react to state changes on connected chains.\n- Line 14: 1. Register an interchain query\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Queries with CosmWasm\"\ndescription: \"Learn how to build smart contracts that query data from other blockchains using Neutron's ICQ module\"\n\n---\n\ntitle: \"Interchain Queries with CosmWasm\"\ndescription: \"Learn how to build smart contracts that query data from other blockchains using Neutron's ICQ module\"\n---\n\n---\n\n\nThis tutorial walks through building a smart contract that uses Neutron's Interchain Query (ICQ) module to query data from other blockchains. You'll learn how to register queries, process the results, and build applications that can react to state changes on connected chains.\n\n```\n\n---\n\n## 4. DeFi on Neutron\n**File:** /root/neutron/docs/defi/overview.mdx\n**Section:** defi\n**Relevance Score:** 21\n\n**Matching lines:**\n- Line 2: title: \"DeFi on Neutron\"\n- Line 3: description: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\n- Line 7: Neutron is purpose-built for next-generation decentralized finance, offering integrated infrastructure that enables unprecedented capital efficiency, low latency, and seamless composability across a thriving ecosystem of applications.\n- Line 21: <Card title=\"Interchain Capabilities\" icon=\"link\" iconType=\"duotone\">\n- Line 22: Native interchain queries (ICQ) and transactions (ICTX) allow DeFi applications to interact with other blockchains trustlessly, expanding liquidity and use cases. Learn more about [ICQ](/developers/modules/interchain-queries/overview) and [ICTX](/developers/modules/interchaintxs/overview).\n\n**Content Preview:**\n```\n---\ntitle: \"DeFi on Neutron\"\ndescription: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\n\n---\n\ntitle: \"DeFi on Neutron\"\ndescription: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\nicon: \"chart-line\"\n\n---\n\n\nNeutron is purpose-built for next-generation decentralized finance, offering integrated infrastructure that enables unprecedented capital efficiency, low latency, and seamless composability across a thriving ecosystem of applications.\n\n```\n\n---\n\n## 5. Interchain Transactions Module\n**File:** /root/neutron/docs/developers/modules/interchaintxs/overview.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Interchain Transactions Module\"\n- Line 5: The Interchain Transactions module enables **CosmWasm smart contracts** to interact with other blockchains in the IBC ecosystem by managing interchain accounts and executing transactions on remote zones. This module provides a critical bridge between smart contracts on Neutron and functionality on connected IBC-enabled chains.\n- Line 8: This module is designed exclusively for CosmWasm smart contracts. Individual users cannot directly register interchain accounts or submit transactions through CLI commands.\n- Line 14: <Card title=\"Interchain Account Management\" icon=\"user-astronaut\">\n- Line 18: Submit transactions with multiple messages to be executed on remote chains via interchain accounts.\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Transactions Module\"\n---\n\n---\n\n\nThe Interchain Transactions module enables **CosmWasm smart contracts** to interact with other blockchains in the IBC ecosystem by managing interchain accounts and executing transactions on remote zones. This module provides a critical bridge between smart contracts on Neutron and functionality on connected IBC-enabled chains.\n\n\n---\n\n<Warning>\nThis module is designed exclusively for CosmWasm smart contracts. Individual users cannot directly register interchain accounts or submit transactions through CLI commands.\n</Warning>\n```\n\n---\n\n## 6. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"NeutronTemplate\"\n- Line 3: description: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n- Line 7: NeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n- Line 10: <strong>Live Demo:</strong> <a href=\"https://neutrontemplate.deploydon.com\" target=\"_blank\" className=\"text-primary hover:underline\">https://NeutronTemplate.Deploydon.com</a>\n- Line 34: <li>TanStack Query for data fetching</li>\n\n**Content Preview:**\n```\n---\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n\n---\n\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\nicon: \"code\"\n\n---\n\n\nNeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n\n```\n\n---\n\n## 7. Interchain Accounts with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_ica.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Interchain Accounts with CosmWasm\"\n- Line 3: description: \"Learn how to build smart contracts that utilize interchain accounts to execute transactions on other chains\"\n- Line 6: This tutorial walks through building a smart contract that uses Neutron's Interchain Accounts (ICA) module to execute transactions on remote chains from within your contract.\n- Line 10: Interchain Accounts are a powerful IBC feature that allows a smart contract on Neutron to control accounts on other IBC-connected chains. This enables a wide range of cross-chain applications, from managing assets across chains to controlling governance on remote chains.\n- Line 15: 2. Register an Interchain Account\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Accounts with CosmWasm\"\ndescription: \"Learn how to build smart contracts that utilize interchain accounts to execute transactions on other chains\"\n\n---\n\ntitle: \"Interchain Accounts with CosmWasm\"\ndescription: \"Learn how to build smart contracts that utilize interchain accounts to execute transactions on other chains\"\n---\n\n---\n\n\nThis tutorial walks through building a smart contract that uses Neutron's Interchain Accounts (ICA) module to execute transactions on remote chains from within your contract.\n\n```\n\n---\n\n## 8. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 8: ## Key Advantages of SubQuery\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 9. Neutron DAO Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-dao.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron DAO Contracts\"\n- Line 3: description: \"Addresses and information for Neutron DAO smart contracts\"\n- Line 7: This page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Neutron DAO Core | `neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff` | [cwd-core](https://github.com/neutron-org/neutron-dao) | 325 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\n\n---\n\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\nicon: \"building-columns\"\n\n---\n\n\nThis page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n\n```\n\n---\n\n## 10. Neutron TGE Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-tge.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron TGE Contracts\"\n- Line 3: description: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n- Line 7: This page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Airdrop | `neutron198sxsrjvt2v2lln2ajn82ks76k97mj72mtgl7309jehd0vy8rezs7e6c56` | [cw20-merkle-airdrop](https://github.com/neutron-org/neutron-tge-contracts) | 196 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n\n---\n\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\nicon: \"rocket-launch\"\n\n---\n\n\nThis page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "24479206-68d1-4e78-a13f-9e37768d0241",
+            "tool_call_id": "call_IMER2CaDvjxlTePgjRiYmiOO",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_xu47xMO8AkLWqODAetQ3E3nk",
+                        "function": {
+                            "arguments": "{\"query\":\"bank query balance neutron\", \"section\":\"all\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 614,
+                    "prompt_tokens": 4124,
+                    "total_tokens": 4738,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 576,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C4C8vbsxU8p7Aa4S0zhlqpH0wfL4u",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--a148cad1-c189-4393-8138-f6dabbbb4bd1-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "bank query balance neutron",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_xu47xMO8AkLWqODAetQ3E3nk",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 4124,
+                "output_tokens": 614,
+                "total_tokens": 4738,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 576
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"bank query balance neutron\":\n\n## 1. Neutron Modules\n**File:** /root/neutron/docs/developers/modules/overview.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Neutron Modules\"\n- Line 5: Neutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n- Line 13: Query data from any IBC-connected blockchain\n- Line 73: Most Neutron modules follow consistent patterns when used in CosmWasm smart contracts:\n- Line 77: use neutron_sdk::interchain_queries::...; // for ICQ\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Modules\"\n---\n\n---\n\n\nNeutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n\n\n---\n\n  <Card title=\"Interchain Queries (ICQ)\" icon=\"link\" href=\"/developers/modules/interchain-queries/overview\">\n    Query data from any IBC-connected blockchain\n  </Card>\n```\n\n---\n\n## 2. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"NeutronTemplate\"\n- Line 3: description: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n- Line 7: NeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n- Line 10: <strong>Live Demo:</strong> <a href=\"https://neutrontemplate.deploydon.com\" target=\"_blank\" className=\"text-primary hover:underline\">https://NeutronTemplate.Deploydon.com</a>\n- Line 34: <li>TanStack Query for data fetching</li>\n\n**Content Preview:**\n```\n---\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n\n---\n\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\nicon: \"code\"\n\n---\n\n\nNeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n\n```\n\n---\n\n## 3. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 8: ## Key Advantages of SubQuery\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 4. Neutron DAO Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-dao.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron DAO Contracts\"\n- Line 3: description: \"Addresses and information for Neutron DAO smart contracts\"\n- Line 7: This page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Neutron DAO Core | `neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff` | [cwd-core](https://github.com/neutron-org/neutron-dao) | 325 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\n\n---\n\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\nicon: \"building-columns\"\n\n---\n\n\nThis page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n\n```\n\n---\n\n## 5. Neutron TGE Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-tge.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron TGE Contracts\"\n- Line 3: description: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n- Line 7: This page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Airdrop | `neutron198sxsrjvt2v2lln2ajn82ks76k97mj72mtgl7309jehd0vy8rezs7e6c56` | [cw20-merkle-airdrop](https://github.com/neutron-org/neutron-tge-contracts) | 196 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n\n---\n\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\nicon: \"rocket-launch\"\n\n---\n\n\nThis page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n\n```\n\n---\n\n## 6. Neutron Vesting Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-vesting.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron Vesting Contracts\"\n- Line 3: description: \"Information about Neutron's token vesting smart contracts\"\n- Line 7: This page provides information about the smart contracts that manage token vesting schedules for various Neutron token recipient groups.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Neutron Vesting Investors [no voting power] | `neutron14q5elxj4ghktt7d7d0uw0cs0gqyeay25h5fkree897gjm38gevxqmvqsq5` | [vesting-investors](https://github.com/neutron-org/neutron-tge-contracts) | 28 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Vesting Contracts\"\ndescription: \"Information about Neutron's token vesting smart contracts\"\n\n---\n\ntitle: \"Neutron Vesting Contracts\"\ndescription: \"Information about Neutron's token vesting smart contracts\"\nicon: \"clock\"\n\n---\n\n\nThis page provides information about the smart contracts that manage token vesting schedules for various Neutron token recipient groups.\n\n```\n\n---\n\n## 7. DeFi on Neutron\n**File:** /root/neutron/docs/defi/overview.mdx\n**Section:** defi\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"DeFi on Neutron\"\n- Line 3: description: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\n- Line 7: Neutron is purpose-built for next-generation decentralized finance, offering integrated infrastructure that enables unprecedented capital efficiency, low latency, and seamless composability across a thriving ecosystem of applications.\n- Line 42: Neutron's architectural advantage comes from how its core modules work together to create a unified DeFi experience:\n- Line 45: <strong>The Neutron DeFi advantage:</strong>\n\n**Content Preview:**\n```\n---\ntitle: \"DeFi on Neutron\"\ndescription: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\n\n---\n\ntitle: \"DeFi on Neutron\"\ndescription: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\nicon: \"chart-line\"\n\n---\n\n\nNeutron is purpose-built for next-generation decentralized finance, offering integrated infrastructure that enables unprecedented capital efficiency, low latency, and seamless composability across a thriving ecosystem of applications.\n\n```\n\n---\n\n## 8. IBC Denominations\n**File:** /root/neutron/docs/resources/ibc-denoms.mdx\n**Section:** resources\n**Relevance Score:** 13\n\n**Matching lines:**\n- Line 3: description: \"IBC token denominations available on Neutron\"\n- Line 7: This page lists the IBC denominations available on Neutron networks. These tokens have been bridged from other chains in the Cosmos ecosystem through IBC (Inter-Blockchain Communication) channels.\n- Line 9: ## Mainnet (neutron-1)\n- Line 35: # Query ATOM balance\n- Line 36: neutrond query bank balances neutron123... --denom=ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9\n\n**Content Preview:**\n```\ntitle: \"IBC Denominations\"\ndescription: \"IBC token denominations available on Neutron\"\nicon: \"arrow-right-arrow-left\"\n\n---\n\n\nThis page lists the IBC denominations available on Neutron networks. These tokens have been bridged from other chains in the Cosmos ecosystem through IBC (Inter-Blockchain Communication) channels.\n\n\n---\n\n\n## Mainnet (neutron-1)\n\n```\n\n---\n\n## 9. Interchain Queries Module\n**File:** /root/neutron/docs/developers/modules/interchain-queries/overview.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 3: description: \"Query cross-chain data and receive verification for on-chain use\"\n- Line 6: This document explains the `interchainqueries` module for the Neutron network.\n- Line 11: While the Interchain Queries module supports both CLI commands and smart contract integration, most practical applications are implemented through CosmWasm smart contracts. Smart contracts provide more sophisticated handling of query results, automatic processing of updates, and integration with complex application logic.\n- Line 24: A smart contract can register an Interchain Query to regularly fetch data from a remote chain's state and process it in any way it needs. There are two types of Interchain Queries:\n- Line 26: - **Key-Value Query (KV Query)**: This type retrieves values from the Cosmos-SDK KV-storage on a remote chain, using a set of keys. It can be used to get account balances, governance proposals, staking information, smart contract states, or any other data stored in the remote chain's KV-storage. Learn more about how KV queries work [here](/developers/modules/interchain-queries/explanation#how-do-kv-interchain-queries-work).\n\n**Content Preview:**\n```\ntitle: \"Interchain Queries Module\"\ndescription: \"Query cross-chain data and receive verification for on-chain use\"\n---\n\n---\n\n\nThis document explains the `interchainqueries` module for the Neutron network.\n\n\n---\n\n<Info>\nWhile the Interchain Queries module supports both CLI commands and smart contract integration, most practical applications are implemented through CosmWasm smart contracts. Smart contracts provide more sophisticated handling of query results, automatic processing of updates, and integration with complex application logic.\n</Info>\n```\n\n---\n\n## 10. Admin Module\n**File:** /root/neutron/docs/developers/modules/admin/overview.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 6: The admin module serves as Neutron's central governance mechanism, empowering the **Main DAO contract** to propose and execute critical network operations. Built with Cosmos SDK compatibility and upgraded for SDK 0.50, this module enables secure, controlled administration of the entire Neutron network.\n- Line 9: **Main DAO Exclusive Access**: The admin module can **only** be accessed by the Main DAO contract through WebAssembly bindings. Individual users, external contracts, and CLI commands cannot directly interact with this module. All operations must go through Neutron's DAO governance process.\n- Line 25: - [Client](/developers/modules/admin/client) \u2014 query client details (no transaction commands available).\n- Line 29: The admin module operates on the principle of controlled delegation, where the **Neutron Main DAO contract** acts as the network's administrator with the authority to execute proposals that can significantly change the network state. This includes:\n- Line 50: The admin module is exclusively accessible through Neutron's Main DAO contract via WebAssembly bindings. This tight integration ensures that all network administration flows through the democratic governance process while maintaining the technical capability to execute complex administrative operations.\n\n**Content Preview:**\n```\n\nThe admin module serves as Neutron's central governance mechanism, empowering the **Main DAO contract** to propose and execute critical network operations. Built with Cosmos SDK compatibility and upgraded for SDK 0.50, this module enables secure, controlled administration of the entire Neutron network.\n\n\n---\n\n<Warning>\n**Main DAO Exclusive Access**: The admin module can **only** be accessed by the Main DAO contract through WebAssembly bindings. Individual users, external contracts, and CLI commands cannot directly interact with this module. All operations must go through Neutron's DAO governance process.\n</Warning>\n\n---\n\n  - [State](/developers/modules/admin/state) \u2014 state management details.\n  - [Client](/developers/modules/admin/client) \u2014 query client details (no transaction commands available).\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "cd72f073-02ab-449c-883b-354e2982c128",
+            "tool_call_id": "call_xu47xMO8AkLWqODAetQ3E3nk",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_bdavOVkmHiTZyV9wQP0FhcPX",
+                        "function": {
+                            "arguments": "{\"query\":\"query IBC balance CLI neutrond\", \"section\":\"all\", \"max_results\": 5}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 1640,
+                    "prompt_tokens": 8005,
+                    "total_tokens": 9645,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1600,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 4096
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C4C99QG1Z4O1Rv7O81bTdgxUn3t7l",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--18a64404-447c-44a4-8173-9a3fabb03a20-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "query IBC balance CLI neutrond",
+                        "section": "all",
+                        "max_results": 5
+                    },
+                    "id": "call_bdavOVkmHiTZyV9wQP0FhcPX",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 8005,
+                "output_tokens": 1640,
+                "total_tokens": 9645,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 4096
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1600
+                }
+            }
+        },
+        {
+            "content": "Found 5 result(s) for \"query IBC balance CLI neutrond\":\n\n## 1. IBC Relayer\n**File:** /root/neutron/docs/operators/ibc-relayer.mdx\n**Section:** operators\n**Relevance Score:** 21\n\n**Matching lines:**\n- Line 2: title: \"IBC Relayer\"\n- Line 3: description: \"Set up IBC relaying between Neutron and other Cosmos chains\"\n- Line 25: nano $HOME/.neutrond/config/app.toml\n- Line 41: nano $HOME/.neutrond/config/config.toml\n- Line 120: cargo install ibc-relayer-cli --bin hermes --locked --version 1.6.0\n\n**Content Preview:**\n```\n---\ntitle: \"IBC Relayer\"\ndescription: \"Set up IBC relaying between Neutron and other Cosmos chains\"\n\n---\n\ntitle: \"IBC Relayer\"\ndescription: \"Set up IBC relaying between Neutron and other Cosmos chains\"\nicon: \"arrow-right-arrow-left\"\n\n---\n\n```bash\nnano $HOME/.neutrond/config/app.toml\n```\n```\n\n---\n\n## 2. Client\n**File:** /root/neutron/docs/developers/modules/dex/client.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Client\"\n- Line 5: This document describes the CLI commands, gRPC queries, and REST endpoints for the Dex module.\n- Line 8: **Reference**: This documentation is based on the actual CLI implementation in `/module-reference/x/dex/client/cli/` and cross-referenced with legacy documentation for completeness.\n- Line 11: ## CLI Commands\n- Line 13: The `neutrond` command-line interface allows users to interact with the Dex module using **positional arguments**.\n\n**Content Preview:**\n```\n---\ntitle: \"Client\"\n---\n\n---\n\n\nThis document describes the CLI commands, gRPC queries, and REST endpoints for the Dex module.\n\n\n---\n\n<Note>\n**Reference**: This documentation is based on the actual CLI implementation in `/module-reference/x/dex/client/cli/` and cross-referenced with legacy documentation for completeness.\n</Note>\n```\n\n---\n\n## 3. IBC Rate Limit Module\n**File:** /root/neutron/docs/developers/modules/ibc-rate-limit/overview.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"IBC Rate Limit Module\"\n- Line 6: The IBC Rate Limit module provides governance-configurable rate limiting for IBC transfers. It acts as a critical safety control to protect assets on Neutron in the event of security incidents such as bugs or hacks on Neutron, counter-party chains, or in the IBC protocol itself.\n- Line 12: Set percentage-based quotas for IBC token transfers on a per-channel and per-denomination basis.\n- Line 33: The IBC Rate Limit module operates as an IBC middleware that:\n- Line 37: - Intercepts IBC packet sending and receiving operations\n\n**Content Preview:**\n```\n---\ntitle: \"IBC Rate Limit Module\"\nicon: \"gauge-high\"\n\n---\n\n\nThe IBC Rate Limit module provides governance-configurable rate limiting for IBC transfers. It acts as a critical safety control to protect assets on Neutron in the event of security incidents such as bugs or hacks on Neutron, counter-party chains, or in the IBC protocol itself.\n\n\n---\n\n  <Card title=\"Configurable Rate Limits\" icon=\"sliders\">\n    Set percentage-based quotas for IBC token transfers on a per-channel and per-denomination basis.\n  </Card>\n```\n\n---\n\n## 4. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 8: ## Key Advantages of SubQuery\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 5. IBC Denominations\n**File:** /root/neutron/docs/resources/ibc-denoms.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"IBC Denominations\"\n- Line 3: description: \"IBC token denominations available on Neutron\"\n- Line 7: This page lists the IBC denominations available on Neutron networks. These tokens have been bridged from other chains in the Cosmos ecosystem through IBC (Inter-Blockchain Communication) channels.\n- Line 11: | Symbol | IBC Denom |\n- Line 13: | ATOM | `ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9` |\n\n**Content Preview:**\n```\n---\ntitle: \"IBC Denominations\"\ndescription: \"IBC token denominations available on Neutron\"\n\n---\n\ntitle: \"IBC Denominations\"\ndescription: \"IBC token denominations available on Neutron\"\nicon: \"arrow-right-arrow-left\"\n\n---\n\n\nThis page lists the IBC denominations available on Neutron networks. These tokens have been bridged from other chains in the Cosmos ecosystem through IBC (Inter-Blockchain Communication) channels.\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "8c8be108-08f5-4d3b-a25a-c4c66d39ee45",
+            "tool_call_id": "call_bdavOVkmHiTZyV9wQP0FhcPX",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_fDwHfLPL8v5O1tRNE8XrXEEE",
+                        "function": {
+                            "arguments": "{\"query\":\"gRPC bank balance neutrond\", \"section\":\"all\", \"max_results\":10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 1702,
+                    "prompt_tokens": 9983,
+                    "total_tokens": 11685,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1664,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C4C9gAf6qzSnlLxwKAZkJR9OriMgx",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--a7eff22a-cfb3-4281-8239-11029ff8130a-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "gRPC bank balance neutrond",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_fDwHfLPL8v5O1tRNE8XrXEEE",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 9983,
+                "output_tokens": 1702,
+                "total_tokens": 11685,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1664
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"gRPC bank balance neutrond\":\n\n## 1. Reference\n**File:** /root/neutron/docs/developers/modules/cron/reference.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 113: neutrond query cron params\n- Line 116: **gRPC Endpoint:**\n- Line 127: neutrond query cron show-schedule [schedule-name]\n- Line 130: **gRPC Endpoint:**\n- Line 141: neutrond query cron list-schedule\n\n**Content Preview:**\n```\n```bash\nneutrond query cron params\n```\n\n---\n\n\n**gRPC Endpoint:**\n```\n\n---\n\n```bash\nneutrond query cron show-schedule [schedule-name]\n```\n```\n\n---\n\n## 2. Client\n**File:** /root/neutron/docs/developers/modules/dex/client.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 5: This document describes the CLI commands, gRPC queries, and REST endpoints for the Dex module.\n- Line 13: The `neutrond` command-line interface allows users to interact with the Dex module using **positional arguments**.\n- Line 22: neutrond tx dex deposit [receiver] [token-a] [token-b] [amounts-a] [amounts-b] [tick-indexes] [fees] [disable-autoswap] [fail-tx-on-bel] [flags]\n- Line 43: neutrond tx dex deposit \\\n- Line 59: neutrond tx dex deposit \\\n\n**Content Preview:**\n```\n\nThis document describes the CLI commands, gRPC queries, and REST endpoints for the Dex module.\n\n\n---\n\n\nThe `neutrond` command-line interface allows users to interact with the Dex module using **positional arguments**.\n\n\n---\n\n```bash\nneutrond tx dex deposit [receiver] [token-a] [token-b] [amounts-a] [amounts-b] [tick-indexes] [fees] [disable-autoswap] [fail-tx-on-bel] [flags]\n```\n```\n\n---\n\n## 3. How-to\n**File:** /root/neutron/docs/developers/modules/dex/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 46: - View current token balances on Neutron\n- Line 52: All DEX functionality is available through the `neutrond` command-line interface using positional arguments.\n- Line 59: neutrond tx dex deposit \\\n- Line 87: neutrond tx dex deposit \\\n- Line 106: neutrond tx dex withdrawal \\\n\n**Content Preview:**\n```\n- Transfer tokens from other chains to Neutron\n- View current token balances on Neutron\n- Withdraw tokens back to origin chains\n\n---\n\n\nAll DEX functionality is available through the `neutrond` command-line interface using positional arguments.\n\n\n---\n\n```bash\nneutrond tx dex deposit \\\n  alice \\\n```\n\n---\n\n## 4. How-to\n**File:** /root/neutron/docs/developers/modules/dynamicfees/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 60: neutrond tx gov submit-proposal proposal.json \\\n- Line 73: neutrond tx gov vote 123 yes \\\n- Line 133: neutrond query dynamicfees params\n- Line 146: ### Using gRPC\n- Line 149: grpcurl -plaintext localhost:9090 neutron.dynamicfees.Query/Params\n\n**Content Preview:**\n```\n```bash\nneutrond tx gov submit-proposal proposal.json \\\n  --from your-key \\\n\n---\n\n# Vote yes on proposal ID 123\nneutrond tx gov vote 123 yes \\\n  --from your-key \\\n\n---\n\n# Query current asset prices\nneutrond query dynamicfees params\n```\n```\n\n---\n\n## 5. How-to\n**File:** /root/neutron/docs/developers/modules/feeburner/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 12: neutrond query feeburner params\n- Line 36: neutrond query feeburner total-burned-neutrons-amount\n- Line 82: #### Using gRPC\n- Line 84: You can query the module's parameters using gRPC:\n- Line 87: grpcurl -plaintext \\\n\n**Content Preview:**\n```\n```bash\nneutrond query feeburner params\n```\n\n---\n\n```bash\nneutrond query feeburner total-burned-neutrons-amount\n```\n\n---\n\n\n#### Using gRPC\n\n```\n\n---\n\n## 6. How-To Guide\n**File:** /root/neutron/docs/developers/modules/globalfee/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 18: neutrond tx gov submit-proposal param-change proposal.json \\\n- Line 190: neutrond query txs --events 'message.action=/cosmos.gov.v1beta1.MsgVote' \\\n- Line 198: neutrond query block [height] | jq '.block.data.txs[] | select(.body.messages[].type_url | contains(\"MsgVote\"))'\n- Line 207: neutrond query txs --events 'message.action=/cosmos.gov.v1beta1.MsgSubmitProposal' \\\n- Line 217: 3. **User Experience**: Balance security with accessibility\n\n**Content Preview:**\n```\n```bash\nneutrond tx gov submit-proposal param-change proposal.json \\\n  --from validator \\\n\n---\n\n# Monitor bypass message types in transactions\nneutrond query txs --events 'message.action=/cosmos.gov.v1beta1.MsgVote' \\\n  --page 1 --limit 100\n\n---\n\n# Check total gas usage for bypass transactions\nneutrond query block [height] | jq '.block.data.txs[] | select(.body.messages[].type_url | contains(\"MsgVote\"))'\n```\n```\n\n---\n\n## 7. How To\n**File:** /root/neutron/docs/developers/modules/interchain-queries/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 16: Go to [Neutron's chain registry page](https://github.com/cosmos/chain-registry/blob/master/neutron/chain.json), choose an RPC node from the `apis` section, and use it in subsequent `neutrond` queries with the `--node` flag.\n- Line 26: neutrond q ibc connection end connection-0 --node https://rpc-voidara.neutron-1.neutron.org\n- Line 44: neutrond q ibc client state 07-tendermint-0 --node https://rpc-voidara.neutron-1.neutron.org\n- Line 147: Locate the helper function for registering an Interchain Query that suits your requirements in the [neutron-sdk](https://docs.rs/neutron-sdk/0.11.0/neutron_sdk/interchain_queries/v045/register_queries/index.html). For this example, we'll use the [new_register_balances_query_msg](https://docs.rs/neutron-sdk/0.11.0/neutron_sdk/interchain_queries/v045/register_queries/fn.new_register_balances_query_msg.html) function.\n- Line 159: use neutron_sdk::interchain_queries::v047::register_queries::new_register_balances_query_msg;\n\n**Content Preview:**\n```\n\nGo to [Neutron's chain registry page](https://github.com/cosmos/chain-registry/blob/master/neutron/chain.json), choose an RPC node from the `apis` section, and use it in subsequent `neutrond` queries with the `--node` flag.\n\n\n---\n\n```\nneutrond q ibc connection end connection-0 --node https://rpc-voidara.neutron-1.neutron.org\nconnection:\n\n---\n\n```\nneutrond q ibc client state 07-tendermint-0 --node https://rpc-voidara.neutron-1.neutron.org\nclient_state:\n```\n\n---\n\n## 8. Reference\n**File:** /root/neutron/docs/developers/modules/interchain-queries/reference.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 46: string path = 1;                       // Store path (e.g., \"bank\", \"staking\")\n- Line 99: string storage_prefix = 1;             // Store name (e.g., \"bank\")\n- Line 367: neutrond query interchainqueries params\n- Line 370: neutrond query interchainqueries registered-queries \\\n- Line 375: neutrond query interchainqueries registered-query [query-id]\n\n**Content Preview:**\n```\nmessage KVKey {\n  string path = 1;                       // Store path (e.g., \"bank\", \"staking\")\n  bytes key = 2;                         // Key bytes\n\n---\n\nmessage StorageValue {\n  string storage_prefix = 1;             // Store name (e.g., \"bank\")\n  bytes key = 2;                         // Key bytes\n\n---\n\n# Get module parameters\nneutrond query interchainqueries params\n\n```\n\n---\n\n## 9. Chain Integration Tests\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/chain.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 21: go get github.com/neutron-org/neutron/v4/cmd/neutrond\n- Line 149: QueryType:           \"balance\",\n- Line 150: Keys:                [][]byte{[]byte(\"balances/cosmos1...\")},\n- Line 257: QueryType:    \"balance\",\n- Line 258: Keys:         [][]byte{balanceKey(gaiaVal.Address.String())},\n\n**Content Preview:**\n```\ngo mod init neutron-integration-tests\ngo get github.com/neutron-org/neutron/v4/cmd/neutrond\ngo get github.com/cosmos/cosmos-sdk/testutil\n\n---\n\n        ConnectionId:        \"connection-0\",\n        QueryType:           \"balance\",\n        Keys:                [][]byte{[]byte(\"balances/cosmos1...\")},\n\n---\n\n        QueryType:           \"balance\",\n        Keys:                [][]byte{[]byte(\"balances/cosmos1...\")},\n        TransactionsFilter:  \"\",\n```\n\n---\n\n## 10. Smart Contract Integration Tests\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/smart-contracts.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 64: // Give accounts some initial balances\n- Line 67: .bank\n- Line 68: .init_balance(storage, &owner, vec![Coin::new(1000000, \"untrn\")])\n- Line 71: .bank\n- Line 72: .init_balance(storage, &user, vec![Coin::new(1000000, \"untrn\")])\n\n**Content Preview:**\n```\n        \n        // Give accounts some initial balances\n        app.init_modules(|router, _, storage| {\n\n---\n\n            router\n                .bank\n                .init_balance(storage, &owner, vec![Coin::new(1000000, \"untrn\")])\n\n---\n\n                .bank\n                .init_balance(storage, &owner, vec![Coin::new(1000000, \"untrn\")])\n                .unwrap();\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "c89dc136-f868-40c7-a583-a1f64a716009",
+            "tool_call_id": "call_fDwHfLPL8v5O1tRNE8XrXEEE",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "{\n  \"query_native_balance_cli\": 95,\n  \"get_account_bank_balances\": 92,\n  \"check_ibc_token_balance\": 88,\n  \"query_specific_denom_balance\": 85,\n  \"get_atom_balance_on_neutron\": 80,\n  \"fetch_cw20_token_balance\": 78,\n  \"query_balance_grpc\": 75,\n  \"view_smart_contract_balance_cw20\": 72,\n  \"query_balance_via_rest_api\": 69,\n  \"register_icq_balance_query\": 65,\n  \"retrieve_remote_chain_balance_icq\": 63,\n  \"query_dex_pool_token_balance\": 60,\n  \"check_dex_liquidity_positions\": 58,\n  \"get_total_supply_denom\": 55,\n  \"watch_balance_changes_subscription\": 52,\n  \"query_vesting_account_balance\": 50,\n  \"query_dao_module_balance\": 48,\n  \"get_ibc_rate_limit_remaining\": 45,\n  \"fetch_balance_history\": 43,\n  \"query_airdrop_unclaimed_balance\": 40,\n  \"check_tge_contract_balance\": 38,\n  \"query_locked_tokens_balance\": 35,\n  \"get_fee_burner_total_burned\": 33,\n  \"query_global_fee_rebate_balance\": 30,\n  \"get_interchain_account_balance\": 28,\n  \"check_admin_module_treasury\": 25,\n  \"query_cron_module_funds\": 23,\n  \"get_staking_rewards_balance\": 20,\n  \"query_dynamic_fees_module_params\": 18,\n  \"check_governance_deposit_balance\": 15\n}",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 942,
+                    "prompt_tokens": 13210,
+                    "total_tokens": 14152,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 576,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 9856
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C4CAROqycAnjnPOoKuI8HHZWL9rMr",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--f0e0d076-675c-47fc-9494-2a2e2a5c552d-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 13210,
+                "output_tokens": 942,
+                "total_tokens": 14152,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9856
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 576
+                }
+            }
+        }
+    ]
+}

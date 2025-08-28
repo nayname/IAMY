@@ -12,7 +12,7 @@ from lib.query_w_tools import create_graph
 
 def tools_list():
     #list of all generated scripts (for the frontend)
-    f = open('tools.json')
+    f = open('../tools.json')
     map = json.load(f)
     res = ""
 

@@ -1,0 +1,226 @@
+SDK & Developer Tools
+NeutronTemplate
+Complete NextJS + CosmWasm template for building Neutron dApps
+
+NeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.
+https://NeutronTemplate.Deploydon.com
+​
+Features
+Modern Frontend Stack
+NextJS 15 with App Router
+Tailwind CSS for styling
+Responsive, modern UI components
+Wallet Integration
+CosmosKit for wallet connections
+Keplr and Leap wallet support
+Mobile wallet placeholder setup
+Data Management
+TanStack Query for data fetching
+Automatic caching and synchronization
+Custom hooks for chain interactions
+Smart Contract
+Complete CosmWasm contract included
+User state management
+Global counter functionality
+​
+Getting Started
+​
+Prerequisites
+
+Copy
+# Install Node.js (v18 or higher)
+# Install Rust and wasm-pack for contract development
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+rustup target add wasm32-unknown-unknown
+​
+Quick Setup
+1
+Clone the Repository
+
+
+Copy
+git clone https://github.com/Deploydon/NeutronTemplate.git
+cd NeutronTemplate
+2
+Setup Frontend
+
+
+Copy
+cd frontend
+npm install
+npm run dev
+Your frontend will be available at http://localhost:3000
+3
+Build Contract (Optional)
+
+
+Copy
+cd ../contract
+./buildprod.sh
+​
+Smart Contract Features
+The included CosmWasm contract provides several example functions that demonstrate common patterns:
+​
+User State Management
+Increment Value: Users can increment a personal counter stored in their state
+Deposit/Withdraw NTRN: Users can deposit and withdraw NTRN tokens with state tracking
+Query User Data: Retrieve user-specific state and balances
+​
+Global State
+Global Counter: A shared counter that all users can increment
+Admin Functions: Only the contract admin can reset the global counter
+​
+Example Contract Functions
+
+Copy
+// Execute Messages
+pub enum ExecuteMsg {
+    IncrementUserValue {},
+    DepositNtrn {},
+    WithdrawNtrn { amount: Uint128 },
+    IncrementGlobalCounter {},
+    ResetGlobalCounter {}, // Admin only
+}
+
+// Query Messages  
+pub enum QueryMsg {
+    GetUserValue { address: String },
+    GetUserDeposit { address: String },
+    GetGlobalCounter {},
+    GetContractBalance {},
+}
+​
+Frontend Architecture
+​
+Components Structure
+The frontend is organized with reusable components and custom hooks:
+
+Copy
+frontend/
+├── app/                 # NextJS 13+ app directory
+├── components/          # Reusable UI components
+├── hooks/              # Custom React hooks for chain interaction
+├── config/             # Configuration files
+└── public/             # Static assets
+​
+Key Features
+Wallet Connection
+Seamless wallet integration with connection status, balance display, and transaction handling.
+Contract Interaction
+Pre-built UI for all contract functions with proper error handling and transaction feedback.
+Real-time Updates
+Automatic data refresh and caching using TanStack Query for optimal user experience.
+​
+Testing & Development
+​
+Local Testing Setup
+The template includes a complete testing environment in the contract/JS/ folder:
+
+Copy
+cd contract/JS
+npm install
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your test wallet seed phrase
+
+# Deploy and test
+node deploy.js    # Deploy contract
+node migrate.js   # Handle migrations  
+node exec.js      # Execute contract functions
+node query.js     # Query contract state
+​
+Testing Networks
+Neutron Testnet (Pion-1)
+CosmoPark (Local)
+The template is pre-configured for Neutron’s Pion-1 testnet.
+Test Contract Address:
+
+Copy
+neutron1n9xk0jk2pznv085yevpg778kxqeq3scm6yhy332jk9cmteqlv0as5gl6p8
+View on Celatone
+​
+Customization Guide
+​
+Adapting the Template
+1
+Update Branding
+
+Replace logos and icons in frontend/public/
+Update metadata in frontend/app/layout.js
+Customize color scheme in tailwind.config.js
+2
+Modify Contract Logic
+
+Edit contract functions in contract/src/
+Update message structures in contract/src/msg.rs
+Rebuild with ./buildprod.sh
+3
+Extend Frontend
+
+Add new components in frontend/components/
+Create custom hooks in frontend/hooks/
+Add new pages in frontend/app/
+4
+Configure Deployment
+
+Update network configurations
+Set up environment variables
+Configure wallet connection options
+​
+Adding Mobile Wallet Support
+The template includes placeholders for mobile wallet integration:
+Get a Reown/WalletConnect Project Key
+Update the wallet configuration in frontend/config/
+Enable mobile wallet options in CosmosKit setup
+​
+Production Deployment
+​
+Frontend Deployment
+
+Copy
+cd frontend
+npm run build
+npm start
+The frontend can be deployed to any platform supporting NextJS:
+Vercel (recommended)
+Netlify
+Digital Ocean App Platform
+Self-hosted with Docker
+​
+Contract Deployment
+
+Copy
+cd contract
+./buildprod.sh
+
+# Deploy to mainnet (update network configuration)
+node JS/deploy.js
+​
+Advanced Usage
+​
+Extending Contract Functionality
+The contract is designed to be easily extensible. Common additions include:
+NFT Integration: Add support for NFT minting and trading
+Multi-token Support: Extend beyond NTRN to other tokens
+Governance Features: Add voting and proposal mechanisms
+Cross-chain Integration: Utilize Neutron’s IBC capabilities
+​
+Frontend Enhancements
+Advanced UI: Add charts, dashboards, or data visualization
+Real-time Features: Implement WebSocket connections for live updates
+Mobile App: Convert to React Native or create PWA
+Analytics: Integrate usage tracking and user analytics
+​
+Troubleshooting
+Common Issues
+
+​
+Resources
+GitHub Repository
+Source code and latest updates
+Live Demo
+Interactive demonstration
+LocalTesting Tools
+Additional testing utilities
+This template provides a solid foundation for building production-ready Neutron applications. It incorporates best practices for both smart contract development and modern web frontend architecture, making it an ideal starting point for developers at any level.

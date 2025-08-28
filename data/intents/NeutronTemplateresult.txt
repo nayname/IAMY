@@ -1,0 +1,61 @@
+{
+    "messages": [
+        {
+            "content": "SDK & Developer Tools\nNeutronTemplate\nComplete NextJS + CosmWasm template for building Neutron dApps\n\nNeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\nhttps://NeutronTemplate.Deploydon.com\n\u200b\nFeatures\nModern Frontend Stack\nNextJS 15 with App Router\nTailwind CSS for styling\nResponsive, modern UI components\nWallet Integration\nCosmosKit for wallet connections\nKeplr and Leap wallet support\nMobile wallet placeholder setup\nData Management\nTanStack Query for data fetching\nAutomatic caching and synchronization\nCustom hooks for chain interactions\nSmart Contract\nComplete CosmWasm contract included\nUser state management\nGlobal counter functionality\n\u200b\nGetting Started\n\u200b\nPrerequisites\n\nCopy\n# Install Node.js (v18 or higher)\n# Install Rust and wasm-pack for contract development\ncurl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh\nrustup target add wasm32-unknown-unknown\n\u200b\nQuick Setup\n1\nClone the Repository\n\n\nCopy\ngit clone https://github.com/Deploydon/NeutronTemplate.git\ncd NeutronTemplate\n2\nSetup Frontend\n\n\nCopy\ncd frontend\nnpm install\nnpm run dev\nYour frontend will be available at http://localhost:3000\n3\nBuild Contract (Optional)\n\n\nCopy\ncd ../contract\n./buildprod.sh\n\u200b\nSmart Contract Features\nThe included CosmWasm contract provides several example functions that demonstrate common patterns:\n\u200b\nUser State Management\nIncrement Value: Users can increment a personal counter stored in their state\nDeposit/Withdraw NTRN: Users can deposit and withdraw NTRN tokens with state tracking\nQuery User Data: Retrieve user-specific state and balances\n\u200b\nGlobal State\nGlobal Counter: A shared counter that all users can increment\nAdmin Functions: Only the contract admin can reset the global counter\n\u200b\nExample Contract Functions\n\nCopy\n// Execute Messages\npub enum ExecuteMsg {\n    IncrementUserValue {},\n    DepositNtrn {},\n    WithdrawNtrn { amount: Uint128 },\n    IncrementGlobalCounter {},\n    ResetGlobalCounter {}, // Admin only\n}\n\n// Query Messages  \npub enum QueryMsg {\n    GetUserValue { address: String },\n    GetUserDeposit { address: String },\n    GetGlobalCounter {},\n    GetContractBalance {},\n}\n\u200b\nFrontend Architecture\n\u200b\nComponents Structure\nThe frontend is organized with reusable components and custom hooks:\n\nCopy\nfrontend/\n\u251c\u2500\u2500 app/                 # NextJS 13+ app directory\n\u251c\u2500\u2500 components/          # Reusable UI components\n\u251c\u2500\u2500 hooks/              # Custom React hooks for chain interaction\n\u251c\u2500\u2500 config/             # Configuration files\n\u2514\u2500\u2500 public/             # Static assets\n\u200b\nKey Features\nWallet Connection\nSeamless wallet integration with connection status, balance display, and transaction handling.\nContract Interaction\nPre-built UI for all contract functions with proper error handling and transaction feedback.\nReal-time Updates\nAutomatic data refresh and caching using TanStack Query for optimal user experience.\n\u200b\nTesting & Development\n\u200b\nLocal Testing Setup\nThe template includes a complete testing environment in the contract/JS/ folder:\n\nCopy\ncd contract/JS\nnpm install\n\n# Configure environment\ncp .env.example .env\n# Edit .env with your test wallet seed phrase\n\n# Deploy and test\nnode deploy.js    # Deploy contract\nnode migrate.js   # Handle migrations  \nnode exec.js      # Execute contract functions\nnode query.js     # Query contract state\n\u200b\nTesting Networks\nNeutron Testnet (Pion-1)\nCosmoPark (Local)\nThe template is pre-configured for Neutron\u2019s Pion-1 testnet.\nTest Contract Address:\n\nCopy\nneutron1n9xk0jk2pznv085yevpg778kxqeq3scm6yhy332jk9cmteqlv0as5gl6p8\nView on Celatone\n\u200b\nCustomization Guide\n\u200b\nAdapting the Template\n1\nUpdate Branding\n\nReplace logos and icons in frontend/public/\nUpdate metadata in frontend/app/layout.js\nCustomize color scheme in tailwind.config.js\n2\nModify Contract Logic\n\nEdit contract functions in contract/src/\nUpdate message structures in contract/src/msg.rs\nRebuild with ./buildprod.sh\n3\nExtend Frontend\n\nAdd new components in frontend/components/\nCreate custom hooks in frontend/hooks/\nAdd new pages in frontend/app/\n4\nConfigure Deployment\n\nUpdate network configurations\nSet up environment variables\nConfigure wallet connection options\n\u200b\nAdding Mobile Wallet Support\nThe template includes placeholders for mobile wallet integration:\nGet a Reown/WalletConnect Project Key\nUpdate the wallet configuration in frontend/config/\nEnable mobile wallet options in CosmosKit setup\n\u200b\nProduction Deployment\n\u200b\nFrontend Deployment\n\nCopy\ncd frontend\nnpm run build\nnpm start\nThe frontend can be deployed to any platform supporting NextJS:\nVercel (recommended)\nNetlify\nDigital Ocean App Platform\nSelf-hosted with Docker\n\u200b\nContract Deployment\n\nCopy\ncd contract\n./buildprod.sh\n\n# Deploy to mainnet (update network configuration)\nnode JS/deploy.js\n\u200b\nAdvanced Usage\n\u200b\nExtending Contract Functionality\nThe contract is designed to be easily extensible. Common additions include:\nNFT Integration: Add support for NFT minting and trading\nMulti-token Support: Extend beyond NTRN to other tokens\nGovernance Features: Add voting and proposal mechanisms\nCross-chain Integration: Utilize Neutron\u2019s IBC capabilities\n\u200b\nFrontend Enhancements\nAdvanced UI: Add charts, dashboards, or data visualization\nReal-time Features: Implement WebSocket connections for live updates\nMobile App: Convert to React Native or create PWA\nAnalytics: Integrate usage tracking and user analytics\n\u200b\nTroubleshooting\nCommon Issues\n\n\u200b\nResources\nGitHub Repository\nSource code and latest updates\nLive Demo\nInteractive demonstration\nLocalTesting Tools\nAdditional testing utilities\nThis template provides a solid foundation for building production-ready Neutron applications. It incorporates best practices for both smart contract development and modern web frontend architecture, making it an ideal starting point for developers at any level.",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "46a56546-a9ec-435f-a780-071c837419dd",
+            "example": false
+        },
+        {
+            "content": "{\n  \"Connect my wallet\": 98,\n  \"Query my NTRN balance\": 95,\n  \"Send 10 NTRN to an address\": 93,\n  \"Deposit 100 NTRN into the contract\": 90,\n  \"Withdraw 50 NTRN from the contract\": 88,\n  \"Increment my personal counter\": 85,\n  \"Increment the global counter\": 83,\n  \"Query my personal counter value\": 82,\n  \"Query my deposited NTRN amount\": 81,\n  \"Query the global counter value\": 80,\n  \"Query the contract\\u2019s NTRN balance\": 79,\n  \"Reset the global counter\": 70,\n  \"Upload the example contract WASM code\": 69,\n  \"Instantiate the example contract on Pion-1\": 68,\n  \"Deploy the example contract to Neutron mainnet\": 67,\n  \"Migrate the contract to a new code ID\": 65,\n  \"Set my address as contract admin\": 63,\n  \"Change contract admin to another address\": 62,\n  \"Start a local CosmoPark testnet\": 60,\n  \"Deploy the example contract to the local testnet\": 59,\n  \"Query contract metadata on Celatone\": 58,\n  \"Connect Keplr wallet\": 57,\n  \"Connect Leap wallet\": 56,\n  \"Enable mobile wallet support\": 55,\n  \"Query transaction history for my address\": 54,\n  \"Show current block height\": 53,\n  \"Query code hash of the contract\": 52,\n  \"List all contracts I have deployed\": 51\n}",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 1521,
+                    "prompt_tokens": 1953,
+                    "total_tokens": 3474,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1152,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9WJBkSytyzZ5sCQyaxbjgU5yvXwt",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--e203a8f1-b692-4e5a-a4d2-362cd32a394a-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 1953,
+                "output_tokens": 1521,
+                "total_tokens": 3474,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1152
+                }
+            }
+        }
+    ]
+}
