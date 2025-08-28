@@ -1,0 +1,53 @@
+<html>
+        <head>
+            <style>
+                #resp-table {
+                    width: 100%;
+                    display: table;
+                }
+                #resp-table-body{
+                    display: table-row-group;
+                }
+                .resp-table-row{
+                    display: table-row;
+                }
+                .table-body-cell{
+                    display: table-cell;
+                    border: 1px solid #dddddd;
+                    padding: 8px;
+                    line-height: 1.42857143;
+                    vertical-align: top;
+                }
+            </style>
+        </head>
+        <body>
+            <div id="resp-table">
+                <div id="resp-table-body">
+                    <div class="resp-table-row"> 
+                        <div class="table-body-cell">
+                            App
+                        </div>
+                        <div class="table-body-cell">
+                            User's query 
+                        </div>
+                        <div class="table-body-cell">
+                            Url 
+                        </div>
+                    </div>
+					{% for m in table %}
+						<div class="resp-table-row"> 
+							<div class="table-body-cell">
+								{{ m['label'] }}
+							</div>
+							<div class="table-body-cell">
+								{{ m['query'] }}
+							</div>
+							<div class="table-body-cell">
+								<a href='http://88.198.17.207:1962/static/{{ m['name'] }}'>{{ m['name'] }}</a>
+							</div>
+						</div>
+					{% endfor %}
+                </div>
+            </div>
+        </body>
+    </html>

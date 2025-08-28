@@ -12,7 +12,7 @@ from lib.query_w_tools import create_graph
 
 def tools_list():
     #list of all generated scripts (for the frontend)
-    f = open('../tools.json')
+    f = open('tools.json')
     map = json.load(f)
     res = ""
 
@@ -53,6 +53,40 @@ synthesize_query = (' Lets suppose we have an application that executes differen
 #                              '"{{intent1}}":{"{{popularity}}":{{num}},"{{command}}":{{str}}"}, "{{intent2}}":{"{{popularity}}":{{num}},'
 #                              '"{{command}}":{{str}}"}". Intents should follow the format, displayed in the document, namely being '
 #                              'implemented through one-liner CLI, using console commands. Document with example NL->one-liner examples:'
+
+synthesize_query_intents = """
+You are an AI assistant designed to help developers by anticipating what they might want to do after reading a specific piece of Neutron documentation.
+
+Your task is to read the documentation text provided by the user and generate a list of plausible, relevant natural language (NL) commands a developer might formulate based on that content.
+
+Context:
+The generated intents will be used in an application that **executes user intents as Neutron blockchain actions**. Therefore, the intents you generate should be phrased as direct, actionable commands.
+
+**Input:**
+The user will provide the text content from a specific page of the Neutron Documentation.
+
+**Requirements:**
+
+1.  **Generate Intents:** Based on the provided text, create a list of realistic natural language commands.
+2.  **Relevance:** The intents must be directly related to the concepts, functions, and examples found in the provided text.
+3.  **Quantity:** Generate an appropriate number of intents, up to a maximum of 60.
+4.  **Popularity:** Assign a "popularity" score from 1 to 100 to each intent, where 100 is a very common or foundational command.
+5.  **Sorting:** The final JSON output must be sorted by the popularity score in descending order.
+
+**Output Format:**
+The entire output must be a single, valid JSON object. Do not add any text or explanations outside of the JSON.
+
+  * The **keys** of the JSON object are the natural language intent strings.
+  * The **values** are the integer popularity scores.
+
+**Example of the required JSON structure:**
+{{  
+  "Send tokens to an address": 95,
+  "Query balance of an address": 85,
+  "Show my current NTRN balance": 80,
+  "Create a new subDAO": 70
+}}
+"""
 
 synthesize_query_oneliner = """
 You are an expert AI assistant specializing in 'neutrond' command-line operations.
@@ -104,6 +138,9 @@ intents = [("Query Specific Balance","neutrond query bank balance <address> --no
            ("Query Contract State", "neutrond query wasm contract-state smart <contract-address> <query-msg> --node <grpc_node>")]
 
 
+pages = [("NeutronTemplate", "data/pages/NeutronTemplate")]
+
+
 
 server_params = StdioServerParameters(
     command="node",
@@ -111,37 +148,65 @@ server_params = StdioServerParameters(
     env=None,
 )
 
+async def create_intents(session, config):
+    for page in pages:
+        # if not os.path.exists('data/intents/' + page[0]):
+            file_object = open(page[1], "r")
+            content = file_object.read()
 
-async def main():
+            agent = await create_graph(session, synthesize_query_intents)
+            response = await agent.ainvoke({"messages": content}, config=config)
+            print(response["messages"][-1].content)
+
+            serializable_state = {}
+            for key, value in response.items():
+                if key == 'messages':
+                    serializable_state[key] = [msg.model_dump() for msg in value]
+                else:
+                    serializable_state[key] = value
+
+            with open('data/intents/' + page[0] + 'result.txt', 'w') as f:
+                json.dump(serializable_state, f, indent=4)
+            with open('data/intents/' + page[0], 'w') as f:
+                json.dump({page[0]: json.loads(response["messages"][-1].content)}, f, indent=4)
+
+async def create_oneliner(session, config):
+    for intent in intents:
+        if not os.path.exists('data/intents_oneliner/' + intent[0]):
+            agent = await create_graph(session, synthesize_query_oneliner.replace("**command**", intent[1]))
+            response = await agent.ainvoke({"messages": intent[0]}, config=config)
+            print(response["messages"][-1].content)
+
+            serializable_state = {}
+            for key, value in response.items():
+                if key == 'messages':
+                    serializable_state[key] = [msg.model_dump() for msg in value]
+                else:
+                    serializable_state[key] = value
+
+            with open('intents_oneliner/' + intent[0] + 'result.txt', 'w') as f:
+                json.dump(serializable_state, f, indent=4)
+            with open('intents_oneliner/' + intent[0], 'w') as f:
+                json.dump({intent[0]: json.loads(response["messages"][-1].content)}, f, indent=4)
+            # print("Response: " + json.dumps(json.loads(response["messages"][-1].content), indent=4))
+
+
+async def main(flag):
     config = {"configurable": {"thread_id": 1234}}
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
 
-            parser = argparse.ArgumentParser(description="Client")
-            parser.add_argument("intent", type=str, help="User intent")
+            # parser = argparse.ArgumentParser(description="Client")
+            # parser.add_argument("intent", type=str, help="User intent")
+            if flag == "oneliner":
+                await create_oneliner(session, config)
+            else:
+                await create_intents(session, config)
 
-            for intent in intents:
-                if not os.path.exists('intents_oneliner/'+intent[0]):
-                    agent = await create_graph(session, synthesize_query_oneliner.replace("**command**", intent[1]))
-                    response = await agent.ainvoke({"messages": intent[0]}, config=config)
-                    print(response["messages"][-1].content)
-
-                    serializable_state = {}
-                    for key, value in response.items():
-                        if key == 'messages':
-                            serializable_state[key] = [msg.model_dump() for msg in value]
-                        else:
-                            serializable_state[key] = value
-
-                    with open('intents_oneliner/'+intent[0]+'result.txt', 'w') as f:
-                        json.dump(serializable_state, f, indent=4)
-                    with open('intents_oneliner/'+intent[0], 'w') as f:
-                        json.dump({intent[0]: json.loads(response["messages"][-1].content)}, f, indent=4)
-                    # print("Response: " + json.dumps(json.loads(response["messages"][-1].content), indent=4))
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(main("intents"))
 
 # Agent(queries['crowdfund'][0], 'crowdfund')
 # Agent(queries['cw20_exchange'][0], 'cw20_exchange')
