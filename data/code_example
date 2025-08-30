@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "This JavaScript utility prompts the user to connect a supported browser wallet (Keplr or Leap) and returns an OfflineSigner that can later be used for transactions or queries.",
+            "code": "export const connectWallet = async (preferredWallet = 'keplr') => {\n  /*\n   * Attempt to detect and connect to the requested wallet extension.\n   * Currently supports Keplr and Leap; extend this switch-case to add more wallets.\n   */\n  let wallet;\n  switch (preferredWallet.toLowerCase()) {\n    case 'keplr':\n      wallet = window.keplr;\n      break;\n    case 'leap':\n      wallet = window.leap;\n      break;\n    default:\n      throw new Error(`${preferredWallet} wallet is not supported by this dApp.`);\n  }\n\n  if (!wallet) {\n    throw new Error(`${preferredWallet} extension not found. Please install it and refresh the page.`);\n  }\n\n  try {\n    // Ask the user to approve connection permissions (UI popup in the wallet).\n    await wallet.enable('neutron-1');\n    // Return an OfflineSigner required by CosmJS.\n    return wallet.getOfflineSigner('neutron-1');\n  } catch (err) {\n    console.error('Wallet connection failed:', err);\n    throw new Error('User rejected the wallet connection request or another error occurred.');\n  }\n};",
+            "usage": "const signer = await connectWallet('keplr');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "This helper ensures the user\u2019s wallet is configured to work with Neutron mainnet (chain-id: neutron-1). If the chain is missing, it attempts to suggest and add it automatically.",
+            "code": "export const ensureNeutronNetwork = async () => {\n  const chainId = 'neutron-1';\n  const keplr = window.keplr || window.leap;\n  if (!keplr) throw new Error('No compatible wallet detected.');\n\n  try {\n    // First try to enable Neutron if it already exists in the wallet.\n    await keplr.enable(chainId);\n    return true;\n  } catch (enableErr) {\n    console.warn('Neutron chain not yet added in the wallet, attempting experimentalSuggestChain');\n\n    // Fallback: suggest chain (only works if wallet supports the experimental API).\n    if (!keplr.experimentalSuggestChain) {\n      throw new Error('Wallet does not support chain suggestions. Please add Neutron manually.');\n    }\n\n    // Minimal and up-to-date Neutron chain configuration.\n    const neutronChainInfo = {\n      chainId,\n      chainName: 'Neutron',\n      rpc: 'https://rpc-kralum.neutron.org',\n      rest: 'https://api-kralum.neutron.org',\n      bip44: { coinType: 118 },\n      bech32Config: {\n        bech32PrefixAccAddr: 'neutron',\n        bech32PrefixAccPub: 'neutronpub',\n        bech32PrefixValAddr: 'neutronvaloper',\n        bech32PrefixValPub: 'neutronvaloperpub',\n        bech32PrefixConsAddr: 'neutronvalcons',\n        bech32PrefixConsPub: 'neutronvalconspub'\n      },\n      currencies: [{ coinDenom: 'NTRN', coinMinimalDenom: 'untrn', coinDecimals: 6 }],\n      feeCurrencies: [{ coinDenom: 'NTRN', coinMinimalDenom: 'untrn', coinDecimals: 6 }],\n      stakeCurrency: { coinDenom: 'NTRN', coinMinimalDenom: 'untrn', coinDecimals: 6 },\n      gasPriceStep: { low: 0.01, average: 0.025, high: 0.04 }\n    };\n\n    try {\n      await keplr.experimentalSuggestChain(neutronChainInfo);\n      // Chain suggested successfully; enable it now.\n      await keplr.enable(chainId);\n      return true;\n    } catch (suggestErr) {\n      console.error('Failed to suggest Neutron chain:', suggestErr);\n      throw new Error('Unable to add Neutron network automatically. Please add it to your wallet manually.');\n    }\n  }\n};",
+            "usage": "await ensureNeutronNetwork();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Fetches the connected account\u2019s address and public key from the signer, then persists them in sessionStorage for reuse across page reloads.",
+            "code": "export const storeSessionAccount = async (signer) => {\n  if (!signer) throw new Error('Signer instance is required.');\n\n  // CosmJS signers expose getAccounts() which returns an array of accounts.\n  const accounts = await signer.getAccounts();\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No accounts found in the signer.');\n  }\n\n  const { address, pubkey } = accounts[0];\n  // Encode the pubkey as base64 to make it storage-friendly.\n  const accountInfo = {\n    address,\n    pubkey: Buffer.from(pubkey).toString('base64')\n  };\n\n  try {\n    // Persist to the browser session (cleared on tab close).\n    sessionStorage.setItem('neutron_account', JSON.stringify(accountInfo));\n    return accountInfo;\n  } catch (err) {\n    console.error('Failed to write account info to sessionStorage:', err);\n    throw new Error('Unable to store account data locally.');\n  }\n};",
+            "usage": "const account = await storeSessionAccount(signer);\nconsole.log('Connected Neutron address:', account.address);"
+        }
+    ]
+}
