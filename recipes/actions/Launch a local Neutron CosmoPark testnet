@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        { 
+            "step": 1,
+            "label": "backend",
+            "introduction": "Detects whether the CosmoPark CLI and required Docker images are present; if not, it attempts to install them automatically.",
+            "code": "import shutil\nimport subprocess\nimport sys\n\n\ndef ensure_cosmopark_installed() -> None:\n    \"\"\"Ensure that CosmoPark CLI and its Docker images are available.\"\"\"\n    # 1. Check CosmoPark binary\n    if shutil.which(\"cosmopark\") is None:\n        print(\"CosmoPark CLI not found. Attempting installation via pip\u2026\")\n        try:\n            subprocess.check_call([sys.executable, \"-m\", \"pip\", \"install\", \"cosmopark-cli\"])\n        except subprocess.CalledProcessError as err:\n            raise RuntimeError(\"Automatic installation of CosmoPark CLI failed.\") from err\n    else:\n        print(\"CosmoPark CLI detected \u2705\")\n\n    # 2. Verify Docker is installed \u2013 required by CosmoPark\n    if shutil.which(\"docker\") is None:\n        raise RuntimeError(\"Docker is required but not installed or not in PATH.\")\n\n    # 3. Pull (or update) all CosmoPark Docker images\n    try:\n        subprocess.check_call([\"cosmopark\", \"pull\", \"--all\"])\n        print(\"CosmoPark Docker images pulled \u2705\")\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(\"Failed to pull CosmoPark Docker images.\") from err\n\n\nif __name__ == \"__main__\":\n    try:\n        ensure_cosmopark_installed()\n        print(\"CosmoPark environment is ready \ud83d\udfe2\")\n    except Exception as e:\n        print(f\"\u274c {e}\")\n        sys.exit(1)",
+            "usage": "python scripts/ensure_cosmopark_installed.py"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Initializes a fresh CosmoPark workspace (downloads genesis files and builds Docker containers).",
+            "code": "import subprocess\nfrom pathlib import Path\nimport sys\n\n\ndef run_cosmopark_init(workspace_path: str = \"./localnet\") -> None:\n    \"\"\"Run `cosmopark init` inside the chosen workspace directory.\"\"\"\n    workspace = Path(workspace_path).expanduser().resolve()\n    workspace.mkdir(parents=True, exist_ok=True)\n\n    cmd = [\"cosmopark\", \"init\"]\n    try:\n        subprocess.check_call(cmd, cwd=str(workspace))\n        print(f\"Workspace initialised at {workspace} \u2705\")\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(\"`cosmopark init` failed.\") from err\n\n\nif __name__ == \"__main__\":\n    path = sys.argv[1] if len(sys.argv) > 1 else \"./localnet\"\n    try:\n        run_cosmopark_init(path)\n    except Exception as e:\n        print(f\"\u274c {e}\")\n        sys.exit(1)",
+            "usage": "python scripts/run_cosmopark_init.py [optional-workspace-path]"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Starts the multi-node local testnet using the initialized CosmoPark workspace.",
+            "code": "import subprocess\nimport sys\n\n\ndef run_cosmopark_start(workspace_path: str = \"./localnet\") -> None:\n    \"\"\"Run `cosmopark start` inside the workspace to spin up the chain.\"\"\"\n    cmd = [\"cosmopark\", \"start\"]\n    try:\n        subprocess.check_call(cmd, cwd=workspace_path)\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(\"`cosmopark start` failed.\") from err\n\n\nif __name__ == \"__main__\":\n    path = sys.argv[1] if len(sys.argv) > 1 else \"./localnet\"\n    try:\n        run_cosmopark_start(path)\n    except Exception as e:\n        print(f\"\u274c {e}\")\n        sys.exit(1)",
+            "usage": "python scripts/run_cosmopark_start.py [optional-workspace-path]   # This will block and stream logs"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Polls the local RPC endpoint until it reports a latest block height, confirming the chain is live.",
+            "code": "import time\nimport requests\nimport sys\n\n\ndef verify_local_chain_running(rpc_url: str = \"http://localhost:26657/status\", timeout: int = 60) -> int:\n    \"\"\"Wait until the RPC endpoint returns a status with a block height or raise on timeout.\"\"\"\n    start = time.time()\n    while True:\n        try:\n            resp = requests.get(rpc_url, timeout=3)\n            if resp.status_code == 200:\n                data = resp.json()\n                height = int(data[\"result\"][\"sync_info\"][\"latest_block_height\"])\n                print(f\"Local chain is up \u2705  (latest height={height})\")\n                return height\n        except Exception:\n            # Ignore and retry until timeout\n            pass\n\n        if time.time() - start > timeout:\n            raise RuntimeError(f\"Local chain did not start within {timeout} seconds.\")\n\n        print(\"\u23f3 Waiting for local chain\u2026\")\n        time.sleep(3)\n\n\nif __name__ == \"__main__\":\n    url = sys.argv[1] if len(sys.argv) > 1 else \"http://localhost:26657/status\"\n    try:\n        verify_local_chain_running(url)\n    except Exception as e:\n        print(f\"\u274c {e}\")\n        sys.exit(1)",
+            "usage": "python scripts/verify_local_chain_running.py [optional-rpc-url]"
+        }
+    ]
+}

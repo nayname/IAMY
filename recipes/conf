@@ -1,0 +1,98 @@
+[
+	{
+		"intent": "Connect a user’s wallet to the dApp",
+		"workflow": [
+			{
+				"step": 1,
+				"tool": "wallet_connect",
+				"description": "Prompt the user to choose a supported wallet (e.g., Keplr, Leap, WalletConnect) and request connection permissions.",
+				"code": {
+					"label": "frontend",
+					"introduction": "Step 1 provides a JavaScript helper that detects a supported wallet (Keplr, Leap, or WalletConnect via window.walletConnect) and requests connection permission.",
+					"function": "connectWallet()",
+					"usage": "const { wallet, signer } = await connectWallet();"
+				}
+			},
+			{
+				"step": 2,
+				"tool": "ensure_network_neutron",
+				"description": "Verify the wallet is set to the Neutron mainnet (chain-id: neutron-1). If not, prompt the user to add / switch networks.",
+				"code": {
+					"label": "frontend",
+					"introduction": "Step 2 verifies that the connected wallet has Neutron mainnet (chain-id: neutron-1) configured; if it is missing, it proactively suggests the chain and then re-enables it.",
+					"function": "ensureNetworkNeutron(wallet)",
+					"usage": "await ensureNetworkNeutron(wallet);"
+				}
+			},
+			{
+				"step": 3,
+				"tool": "store_session_account",
+				"description": "Retrieve the connected account’s address and public key; save them to the dApp session context for future transactions.",
+				"code": {
+					"label": "frontend",
+					"introduction": "Step 3 fetches the user’s Neutron address & public key from the OfflineSigner and stores them in sessionStorage for easy access throughout the dApp session.",
+					"function": "storeSessionAccount(signer)",
+					"usage": "const { address } = await storeSessionAccount(signer);\nconsole.log('Connected Neutron address:', address);"
+				}
+			}
+		],
+		"outcome_checks": [
+			"Wallet reports a successful connection event.",
+			"Account address is present in application state.",
+			"Network/chain-id returned by the wallet equals \"neutron-1\"."
+		]
+	},
+	{
+		"intent": "Query the connected wallet’s NTRN balance",
+		"workflow": [
+			{
+				"step": 1,
+				"tool": "ensure_wallet_connected",
+				"description": "Confirm that a wallet session exists; if not, invoke the wallet connection flow.",
+				"code": {
+					"label": "frontend",
+					"introduction": "Step 1 ensures the user has a browser wallet (Keplr/Leap) connected to the Neutron chain and returns an OfflineSigner that can later be used for queries or transactions.",
+					"function": "ensureWalletConnected",
+					"usage": "const signer = await ensureWalletConnected();"
+				}
+			},
+			{
+				"step": 2,
+				"tool": "get_wallet_address",
+				"description": "Fetch the user’s Neutron address from the active wallet session.",
+				"code": {
+					"label": "frontend",
+					"introduction": "Step 2 fetches the first account from the provided signer and returns the corresponding Neutron address.",
+					"code": "getWalletAddress",
+					"usage": "const address = await getWalletAddress(signer);"
+				}
+			},
+			{
+				"step": 3,
+				"tool": "query_bank_balance",
+				"description": "Call the Bank module’s gRPC/REST endpoint or CosmJS `queryClient.bank.balance` for denom \"untrn\" to obtain the balance.",
+				"code": {
+					"label": "backend",
+					"introduction": "Step 3 defines a Python utility (cosmpy) that queries the Bank module for the raw balance (in micro-denom, e.g. `untrn`) of a given address.",
+					"code": "query_bank_balance",
+					"usage": "raw_balance_dict = query_bank_balance(address)  # ➜ { 'raw_balance': 12345678 }"
+				}
+			},
+			{
+				"step": 4,
+				"tool": "format_amount",
+				"description": "Convert the raw micro-denom amount (untrn) to a human-readable NTRN value with 6-decimal precision.",
+				"code": {
+					"label": "backend",
+					"introduction": "Step 4 converts the raw micro-denominated amount obtained in Step 3 to a human-readable NTRN value with six-decimal precision.",
+					"code": "format_amount",
+					"usage": "readable_balance = format_amount(raw_balance_dict['raw_balance'])  # ➜ '12.345678 NTRN'"
+				}
+			}
+		],
+		"outcome_checks": [
+			"A numeric balance is returned (>= 0).",
+			"Displayed value matches on-chain data for the address when cross-checked with a block explorer."
+		]
+	}
+]

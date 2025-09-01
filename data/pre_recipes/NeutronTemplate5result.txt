@@ -1,0 +1,301 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"NeutronTemplate\", \"query\": \"Query contract metadata on Celatone\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Connect Keplr wallet\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Connect Leap wallet\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Enable mobile wallet support\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Query transaction history for my address\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "197c6b42-96a2-4945-b44f-7082b1fd5fb7",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_ebIv7rnMCVaPtbCP5zGhGrDG",
+                        "function": {
+                            "arguments": "{\"query\":\"Celatone contract metadata query\", \"section\":\"all\", \"max_results\":10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 422,
+                    "prompt_tokens": 709,
+                    "total_tokens": 1131,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 384,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eXgb4s4hNwLoFpuJf8LgYUhs7Zh",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--351b2834-9763-444e-b8ab-fbbc5e3068b2-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "Celatone contract metadata query",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_ebIv7rnMCVaPtbCP5zGhGrDG",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 709,
+                "output_tokens": 422,
+                "total_tokens": 1131,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 384
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"Celatone contract metadata query\":\n\n## 1. Part 1: Minimal Smart Contract\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-1-minimal-application.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Part 1: Minimal Smart Contract\"\n- Line 3: description: \"Create and deploy a simple yet functional CosmWasm smart contract on Neutron\"\n- Line 6: This tutorial will guide you through creating your first smart contract on Neutron. You'll learn the basics of CosmWasm development and deploy a working application.\n- Line 10: A simple counter contract that:\n- Line 13: - Provides a query interface to read the current value\n\n**Content Preview:**\n```\n---\ntitle: \"Part 1: Minimal Smart Contract\"\ndescription: \"Create and deploy a simple yet functional CosmWasm smart contract on Neutron\"\n\n---\n\ntitle: \"Part 1: Minimal Smart Contract\"\ndescription: \"Create and deploy a simple yet functional CosmWasm smart contract on Neutron\"\n---\n\n---\n\n\nThis tutorial will guide you through creating your first smart contract on Neutron. You'll learn the basics of CosmWasm development and deploy a working application.\n\n```\n\n---\n\n## 2. Neutron DAO Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-dao.mdx\n**Section:** resources\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: title: \"Neutron DAO Contracts\"\n- Line 3: description: \"Addresses and information for Neutron DAO smart contracts\"\n- Line 7: This page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n- Line 76: To interact with the DAO, you can use the [Neutron DAO UI](https://dao.neutron.org/) or interact directly with the contracts using the `neutrond` CLI.\n- Line 78: ### Example: Query DAO Information\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\n\n---\n\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\nicon: \"building-columns\"\n\n---\n\n\nThis page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n\n```\n\n---\n\n## 3. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 8: ## Key Advantages of SubQuery\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 4. Smart Contract Integration Tests\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/smart-contracts.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Smart Contract Integration Tests\"\n- Line 3: description: \"Test your CosmWasm smart contracts in a realistic chain environment\"\n- Line 6: This tutorial covers testing smart contracts in realistic blockchain environments using `cw-multi-test` and full chain integration tests.\n- Line 11: - Understanding of CosmWasm contract development\n- Line 17: Test individual contract functions in isolation\n\n**Content Preview:**\n```\n---\ntitle: \"Smart Contract Integration Tests\"\ndescription: \"Test your CosmWasm smart contracts in a realistic chain environment\"\n\n---\n\ntitle: \"Smart Contract Integration Tests\"\ndescription: \"Test your CosmWasm smart contracts in a realistic chain environment\"\n---\n\n---\n\n\nThis tutorial covers testing smart contracts in realistic blockchain environments using `cw-multi-test` and full chain integration tests.\n\n```\n\n---\n\n## 5. Part 2: Modules & Contracts\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-2-modules-contracts.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Part 2: Modules & Contracts\"\n- Line 3: description: \"Learn how to interact with Neutron modules and other smart contracts\"\n- Line 6: In this tutorial, you'll extend your knowledge by learning how to interact with Neutron's unique modules and call other smart contracts. This is where Neutron's power really shines.\n- Line 11: - Inter-contract communication patterns\n- Line 17: - Completed [Part 1: Minimal Smart Contract](/developers/tutorials/onboarding/part-1-minimal-application)\n\n**Content Preview:**\n```\n---\ntitle: \"Part 2: Modules & Contracts\"\ndescription: \"Learn how to interact with Neutron modules and other smart contracts\"\n\n---\n\ntitle: \"Part 2: Modules & Contracts\"\ndescription: \"Learn how to interact with Neutron modules and other smart contracts\"\n---\n\n---\n\n\nIn this tutorial, you'll extend your knowledge by learning how to interact with Neutron's unique modules and call other smart contracts. This is where Neutron's power really shines.\n\n```\n\n---\n\n## 6. Bridge Contracts\n**File:** /root/neutron/docs/resources/contracts/bridge.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Bridge Contracts\"\n- Line 3: description: \"Information about Neutron's cross-chain bridge contracts\"\n- Line 7: This page provides information about the smart contracts that enable cross-chain bridging between Neutron and other networks.\n- Line 11: | Contract | Address | Code ID |\n- Line 18: | Contract | Address |\n\n**Content Preview:**\n```\n---\ntitle: \"Bridge Contracts\"\ndescription: \"Information about Neutron's cross-chain bridge contracts\"\n\n---\n\ntitle: \"Bridge Contracts\"\ndescription: \"Information about Neutron's cross-chain bridge contracts\"\nicon: \"bridge\"\n\n---\n\n\nThis page provides information about the smart contracts that enable cross-chain bridging between Neutron and other networks.\n\n```\n\n---\n\n## 7. Neutron TGE Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-tge.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron TGE Contracts\"\n- Line 3: description: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n- Line 7: This page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n- Line 13: | Airdrop | `neutron198sxsrjvt2v2lln2ajn82ks76k97mj72mtgl7309jehd0vy8rezs7e6c56` | [cw20-merkle-airdrop](https://github.com/neutron-org/neutron-tge-contracts) | 196 |\n- Line 14: | Distribution | `neutron1dk9c86h7gmvuaq89cv72cjhq4c97r2wgl5gyfruv6shquwspalgq5u7sy5` | [distribution](https://github.com/neutron-org/neutron-tge-contracts) | 9 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n\n---\n\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\nicon: \"rocket-launch\"\n\n---\n\n\nThis page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n\n```\n\n---\n\n## 8. Neutron Vesting Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-vesting.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron Vesting Contracts\"\n- Line 3: description: \"Information about Neutron's token vesting smart contracts\"\n- Line 7: This page provides information about the smart contracts that manage token vesting schedules for various Neutron token recipient groups.\n- Line 13: | Neutron Vesting Investors [no voting power] | `neutron14q5elxj4ghktt7d7d0uw0cs0gqyeay25h5fkree897gjm38gevxqmvqsq5` | [vesting-investors](https://github.com/neutron-org/neutron-tge-contracts) | 28 |\n- Line 14: | Neutron Vesting Investors | `neutron17fcdl6crgsp49ja270fp0pdwm354ar5qqv3mda07py58lgqmm2sqasvgz9` | [vesting-investors](https://github.com/neutron-org/neutron-tge-contracts) | 28 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Vesting Contracts\"\ndescription: \"Information about Neutron's token vesting smart contracts\"\n\n---\n\ntitle: \"Neutron Vesting Contracts\"\ndescription: \"Information about Neutron's token vesting smart contracts\"\nicon: \"clock\"\n\n---\n\n\nThis page provides information about the smart contracts that manage token vesting schedules for various Neutron token recipient groups.\n\n```\n\n---\n\n## 9. Frequently Asked Questions\n**File:** /root/neutron/docs/developers/faq.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 39: - **Celatone Smart Contract Explorer**: Provides a great UI to upload, query and execute contracts.\n- Line 62: ### I'm getting \"out of gas\" errors when querying smart contracts. How do I fix this?\n- Line 70: This indicates that smart contract queries are hitting the gas limit. There are **two different** gas limit configurations that are often confused:\n- Line 72: 1. **General Cosmos SDK Query Gas Limit** (`query-gas-limit` in root of app.toml):\n- Line 74: # The maximum gas a query coming over rest/grpc may consume.\n\n**Content Preview:**\n```\n  - <a href=\"https://mintscan.io/neutron-testnet\" target=\"_blank\" className=\"text-primary hover:underline\">Testnet (pion-1)</a>\n- **Celatone Smart Contract Explorer**: Provides a great UI to upload, query and execute contracts.\n\n\n---\n\n\n### I'm getting \"out of gas\" errors when querying smart contracts. How do I fix this?\n\n\n---\n\n\nThis indicates that smart contract queries are hitting the gas limit. There are **two different** gas limit configurations that are often confused:\n\n```\n\n---\n\n## 10. Admin Module\n**File:** /root/neutron/docs/developers/modules/admin/overview.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 6: The admin module serves as Neutron's central governance mechanism, empowering the **Main DAO contract** to propose and execute critical network operations. Built with Cosmos SDK compatibility and upgraded for SDK 0.50, this module enables secure, controlled administration of the entire Neutron network.\n- Line 9: **Main DAO Exclusive Access**: The admin module can **only** be accessed by the Main DAO contract through WebAssembly bindings. Individual users, external contracts, and CLI commands cannot directly interact with this module. All operations must go through Neutron's DAO governance process.\n- Line 25: - [Client](/developers/modules/admin/client) \u2014 query client details (no transaction commands available).\n- Line 29: The admin module operates on the principle of controlled delegation, where the **Neutron Main DAO contract** acts as the network's administrator with the authority to execute proposals that can significantly change the network state. This includes:\n- Line 32: - **Smart Contract Management**: Executing WebAssembly (WASM) proposals for contract instantiation, migration, and administration\n\n**Content Preview:**\n```\n\nThe admin module serves as Neutron's central governance mechanism, empowering the **Main DAO contract** to propose and execute critical network operations. Built with Cosmos SDK compatibility and upgraded for SDK 0.50, this module enables secure, controlled administration of the entire Neutron network.\n\n\n---\n\n<Warning>\n**Main DAO Exclusive Access**: The admin module can **only** be accessed by the Main DAO contract through WebAssembly bindings. Individual users, external contracts, and CLI commands cannot directly interact with this module. All operations must go through Neutron's DAO governance process.\n</Warning>\n\n---\n\n  - [State](/developers/modules/admin/state) \u2014 state management details.\n  - [Client](/developers/modules/admin/client) \u2014 query client details (no transaction commands available).\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "73d973dd-34ae-46b0-911d-09f8f37abacb",
+            "tool_call_id": "call_ebIv7rnMCVaPtbCP5zGhGrDG",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_M2blFt740uQAkeZjsQHopPCn",
+                        "function": {
+                            "arguments": "{\"query\":\"Keplr neutron chainId\", \"section\":\"all\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 871,
+                    "prompt_tokens": 4452,
+                    "total_tokens": 5323,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 832,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eXkJiwjf1DhXVfdiFkZUjnHITiy",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--90e996f5-1173-4f2c-8437-8a06ccc9d532-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "Keplr neutron chainId",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_M2blFt740uQAkeZjsQHopPCn",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 4452,
+                "output_tokens": 871,
+                "total_tokens": 5323,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 832
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"Keplr neutron chainId\":\n\n## 1. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"NeutronTemplate\"\n- Line 3: description: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n- Line 7: NeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n- Line 10: <strong>Live Demo:</strong> <a href=\"https://neutrontemplate.deploydon.com\" target=\"_blank\" className=\"text-primary hover:underline\">https://NeutronTemplate.Deploydon.com</a>\n- Line 27: <li>Keplr and Leap wallet support</li>\n\n**Content Preview:**\n```\n---\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n\n---\n\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\nicon: \"code\"\n\n---\n\n\nNeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n\n```\n\n---\n\n## 2. Neutron Modules\n**File:** /root/neutron/docs/developers/modules/overview.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Neutron Modules\"\n- Line 5: Neutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n- Line 73: Most Neutron modules follow consistent patterns when used in CosmWasm smart contracts:\n- Line 77: use neutron_sdk::interchain_queries::...; // for ICQ\n- Line 78: use neutron_sdk::bindings::...; // for other modules\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Modules\"\n---\n\n---\n\n\nNeutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n\n\n---\n\n\nMost Neutron modules follow consistent patterns when used in CosmWasm smart contracts:\n\n```\n\n---\n\n## 3. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n- Line 23: ## Getting Started with SubQuery for Neutron\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 4. Neutron DAO Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-dao.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron DAO Contracts\"\n- Line 3: description: \"Addresses and information for Neutron DAO smart contracts\"\n- Line 7: This page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Neutron DAO Core | `neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff` | [cwd-core](https://github.com/neutron-org/neutron-dao) | 325 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\n\n---\n\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\nicon: \"building-columns\"\n\n---\n\n\nThis page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n\n```\n\n---\n\n## 5. Neutron TGE Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-tge.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron TGE Contracts\"\n- Line 3: description: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n- Line 7: This page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Airdrop | `neutron198sxsrjvt2v2lln2ajn82ks76k97mj72mtgl7309jehd0vy8rezs7e6c56` | [cw20-merkle-airdrop](https://github.com/neutron-org/neutron-tge-contracts) | 196 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n\n---\n\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\nicon: \"rocket-launch\"\n\n---\n\n\nThis page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n\n```\n\n---\n\n## 6. Neutron Vesting Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-vesting.mdx\n**Section:** resources\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"Neutron Vesting Contracts\"\n- Line 3: description: \"Information about Neutron's token vesting smart contracts\"\n- Line 7: This page provides information about the smart contracts that manage token vesting schedules for various Neutron token recipient groups.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Neutron Vesting Investors [no voting power] | `neutron14q5elxj4ghktt7d7d0uw0cs0gqyeay25h5fkree897gjm38gevxqmvqsq5` | [vesting-investors](https://github.com/neutron-org/neutron-tge-contracts) | 28 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Vesting Contracts\"\ndescription: \"Information about Neutron's token vesting smart contracts\"\n\n---\n\ntitle: \"Neutron Vesting Contracts\"\ndescription: \"Information about Neutron's token vesting smart contracts\"\nicon: \"clock\"\n\n---\n\n\nThis page provides information about the smart contracts that manage token vesting schedules for various Neutron token recipient groups.\n\n```\n\n---\n\n## 7. DeFi on Neutron\n**File:** /root/neutron/docs/defi/overview.mdx\n**Section:** defi\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: title: \"DeFi on Neutron\"\n- Line 3: description: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\n- Line 7: Neutron is purpose-built for next-generation decentralized finance, offering integrated infrastructure that enables unprecedented capital efficiency, low latency, and seamless composability across a thriving ecosystem of applications.\n- Line 42: Neutron's architectural advantage comes from how its core modules work together to create a unified DeFi experience:\n- Line 45: <strong>The Neutron DeFi advantage:</strong>\n\n**Content Preview:**\n```\n---\ntitle: \"DeFi on Neutron\"\ndescription: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\n\n---\n\ntitle: \"DeFi on Neutron\"\ndescription: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\nicon: \"chart-line\"\n\n---\n\n\nNeutron is purpose-built for next-generation decentralized finance, offering integrated infrastructure that enables unprecedented capital efficiency, low latency, and seamless composability across a thriving ecosystem of applications.\n\n```\n\n---\n\n## 8. Bull vs. Bear Integration\n**File:** /root/neutron/docs/developers/sdk/bullbear-integration.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 7: Bull vs. Bear is Neutron's innovative narrative trading platform that enables long-short strategies through Clusters. This guide provides developers with the tools and knowledge needed to integrate with the platform or build similar functionality.\n- Line 142: rpcEndpoint: 'https://rpc-neutron.keplr.app',\n- Line 143: restEndpoint: 'https://rest-neutron.keplr.app'\n- Line 237: const marsClient = new MarsClient(neutronRpc);\n- Line 333: <Card title=\"Bull vs. Bear Platform\" icon=\"external-link\" href=\"https://app.neutron.org\" target=\"_blank\">\n\n**Content Preview:**\n```\n\nBull vs. Bear is Neutron's innovative narrative trading platform that enables long-short strategies through Clusters. This guide provides developers with the tools and knowledge needed to integrate with the platform or build similar functionality.\n\n\n---\n\nconst client = new BullBearClient({\n  rpcEndpoint: 'https://rpc-neutron.keplr.app',\n  restEndpoint: 'https://rest-neutron.keplr.app'\n\n---\n\n  rpcEndpoint: 'https://rpc-neutron.keplr.app',\n  restEndpoint: 'https://rest-neutron.keplr.app'\n});\n```\n\n---\n\n## 9. Part 3: Building a Web App\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-3-web-app.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 3: description: \"Create a modern web application that interacts with your Neutron smart contracts\"\n- Line 6: In this final part of the onboarding series, you'll build a React web application that provides a user-friendly interface for interacting with your smart contract. You'll learn modern Web3 frontend patterns and Neutron-specific integrations.\n- Line 11: - Wallet connection (Keplr integration)\n- Line 30: npx create-react-app neutron-counter-app --template typescript\n- Line 31: cd neutron-counter-app\n\n**Content Preview:**\n```\ntitle: \"Part 3: Building a Web App\"\ndescription: \"Create a modern web application that interacts with your Neutron smart contracts\"\n---\n\n---\n\n\nIn this final part of the onboarding series, you'll build a React web application that provides a user-friendly interface for interacting with your smart contract. You'll learn modern Web3 frontend patterns and Neutron-specific integrations.\n\n\n---\n\nA modern React app with:\n- Wallet connection (Keplr integration)\n- Real-time contract state display\n```\n\n---\n\n## 10. Frequently Asked Questions\n**File:** /root/neutron/docs/developers/faq.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 3: description: \"Answers to common technical questions about Neutron development\"\n- Line 12: <li><a href=\"https://t.me/+Q6C_kb0xLaoxYzE1\" target=\"_blank\" className=\"text-primary hover:underline\">Neutron Builders Announcements</a></li>\n- Line 13: <li><a href=\"https://t.me/+b9f8m8iybLdhYjE9\" target=\"_blank\" className=\"text-primary hover:underline\">Neutron Builders Chat</a></li>\n- Line 21: <Card title=\"Bug Bounty\" icon=\"bug\" iconType=\"duotone\" href=\"https://immunefi.com/bug-bounty/neutron\" target=\"_blank\">\n- Line 30: Check out our bug bounty program on <a href=\"https://immunefi.com/bug-bounty/neutron\" target=\"_blank\" className=\"text-primary hover:underline\">Immunefi</a>.\n\n**Content Preview:**\n```\ntitle: \"Frequently Asked Questions\"\ndescription: \"Answers to common technical questions about Neutron development\"\nicon: \"circle-question\"\n\n---\n\n    <ul className=\"mt-2 space-y-1\">\n      <li><a href=\"https://t.me/+Q6C_kb0xLaoxYzE1\" target=\"_blank\" className=\"text-primary hover:underline\">Neutron Builders Announcements</a></li>\n      <li><a href=\"https://t.me/+b9f8m8iybLdhYjE9\" target=\"_blank\" className=\"text-primary hover:underline\">Neutron Builders Chat</a></li>\n\n---\n\n      <li><a href=\"https://t.me/+Q6C_kb0xLaoxYzE1\" target=\"_blank\" className=\"text-primary hover:underline\">Neutron Builders Announcements</a></li>\n      <li><a href=\"https://t.me/+b9f8m8iybLdhYjE9\" target=\"_blank\" className=\"text-primary hover:underline\">Neutron Builders Chat</a></li>\n    </ul>\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "e4ddd109-d8c9-4b0f-8bfc-dafd6e69219e",
+            "tool_call_id": "call_M2blFt740uQAkeZjsQHopPCn",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_or9sU48OgZ5USqEJLOvHgZXO",
+                        "function": {
+                            "arguments": "{\"query\":\"Celatone\", \"section\":\"all\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 484,
+                    "prompt_tokens": 8302,
+                    "total_tokens": 8786,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 448,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eXzRpT7TPGVb5nP1s0MMXmCyf1T",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--1f17dcca-5165-4380-8000-b9909c0d48d1-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "Celatone",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_or9sU48OgZ5USqEJLOvHgZXO",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 8302,
+                "output_tokens": 484,
+                "total_tokens": 8786,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 448
+                }
+            }
+        },
+        {
+            "content": "Found 2 result(s) for \"Celatone\":\n\n## 1. Frequently Asked Questions\n**File:** /root/neutron/docs/developers/faq.mdx\n**Section:** developers\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 39: - **Celatone Smart Contract Explorer**: Provides a great UI to upload, query and execute contracts.\n\n**Content Preview:**\n```\n  - <a href=\"https://mintscan.io/neutron-testnet\" target=\"_blank\" className=\"text-primary hover:underline\">Testnet (pion-1)</a>\n- **Celatone Smart Contract Explorer**: Provides a great UI to upload, query and execute contracts.\n\n```\n\n---\n\n## 2. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 184: [View on Celatone](https://neutron.celat.one/pion-1/contracts/neutron1n9xk0jk2pznv085yevpg778kxqeq3scm6yhy332jk9cmteqlv0as5gl6p8)\n\n**Content Preview:**\n```\n    \n    [View on Celatone](https://neutron.celat.one/pion-1/contracts/neutron1n9xk0jk2pznv085yevpg778kxqeq3scm6yhy332jk9cmteqlv0as5gl6p8)\n  </Tab>\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "3ee0bb2e-e603-4871-8a0f-9a433ce03e32",
+            "tool_call_id": "call_or9sU48OgZ5USqEJLOvHgZXO",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Query contract metadata on Celatone\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"open_celatone_explorer\",\n        \"description\": \"Launch the Celatone explorer in a web browser and select the correct Neutron network (mainnet: neutron-1 or testnet: pion-1).\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"search_contract_address\",\n        \"description\": \"Paste the target contract address into the Celatone search bar and press Enter.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"navigate_to_metadata_tab\",\n        \"description\": \"Click the \u201cMetadata\u201d (or equivalent) tab in Celatone\u2019s contract view to load stored contract information.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"download_metadata_json\",\n        \"description\": \"Use Celatone\u2019s \u201cDownload\u201d (</>) button to fetch the raw metadata JSON for local inspection or downstream processing.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The contract\u2019s code hash, instantiate msg, and schema files are visible in Celatone.\",\n      \"The metadata JSON file contains the expected fields such as name, description, and entry points.\"\n    ]\n  },\n  {\n    \"intent\": \"Connect Keplr wallet\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"install_keplr_extension\",\n        \"description\": \"Ensure the Keplr browser extension is installed and unlocked.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"suggest_chain_to_keplr\",\n        \"description\": \"From the dApp (NeutronTemplate) call window.keplr.experimentalSuggestChain with Neutron chain parameters (chainId, rpc/rest endpoints, stake currency).\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"keplr_enable_chain\",\n        \"description\": \"Invoke window.keplr.enable('neutron-1') (or 'pion-1') to trigger the approval popup and grant site access.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"get_keplr_offline_signer\",\n        \"description\": \"Fetch the OfflineSigner via window.getOfflineSigner('neutron-1') and store the user\u2019s first address in app state.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The app state reflects the connected Neutron address.\",\n      \"Keplr shows the dApp under \\\"Connected Sites\\\" with Neutron permissions.\"\n    ]\n  },\n  {\n    \"intent\": \"Connect Leap wallet\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"detect_leap_provider\",\n        \"description\": \"Check for window.leap or use @cosmos-kit/leap adapter to detect the Leap extension.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"leap_suggest_chain\",\n        \"description\": \"Send the chain configuration object to window.leap.experimentalSuggestChain so Leap knows about Neutron.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"leap_enable_chain\",\n        \"description\": \"Call window.leap.enable('neutron-1') to request user approval.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"retrieve_leap_accounts\",\n        \"description\": \"Use window.leap.getOfflineSigner('neutron-1') and store the primary address for subsequent tx signing.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Leap returns at least one account address.\",\n      \"The UI reflects the connected wallet with the correct Neutron balance.\"\n    ]\n  },\n  {\n    \"intent\": \"Enable mobile wallet support\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"add_walletconnect_client\",\n        \"description\": \"Install @cosmos-kit/core and @cosmos-kit/walletconnect packages and initialize WalletConnect v2 in the NeutronTemplate project.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"register_mobile_wallets\",\n        \"description\": \"Register supported mobile wallets (Keplr Mobile, Leap Mobile, Cosmostation) by supplying their WalletConnect namespaces in the CosmosKit config.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"generate_qr_or_deep_link\",\n        \"description\": \"Render a WalletConnect QR modal on desktop or trigger an app-scheme deep link on mobile for seamless pairing.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"store_wc_session\",\n        \"description\": \"Persist the WalletConnect session in local storage to auto-reconnect on page refresh.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Scanning the QR code from a mobile wallet successfully connects and returns an address.\",\n      \"Transactions signed on the phone are broadcast and confirmed on Neutron.\"\n    ]\n  },\n  {\n    \"intent\": \"Query transaction history for my address\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"select_data_provider\",\n        \"description\": \"Choose a data source (Celatone API, SubQuery, or LCD /txs endpoint) based on latency and pagination needs.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"build_history_query\",\n        \"description\": \"Construct a REST or GraphQL query filtering by `message.sender={address}` and order by timestamp descending.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"execute_query_request\",\n        \"description\": \"Send the HTTP request (fetch/axios) and handle pagination via `offset` or `pageInfo.endCursor`.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"normalize_tx_results\",\n        \"description\": \"Map raw results into a uniform schema (hash, blockHeight, action, fee, success) for the frontend table.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"At least one transaction object is returned or an explicit 'no transactions found' message is displayed.\",\n      \"Block heights and timestamps align with Mintscan or another public explorer for spot-checking accuracy.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 1854,
+                    "prompt_tokens": 9126,
+                    "total_tokens": 10980,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 512,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eYFDncstDCbaWibYYiASOsqCmtH",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--178cad3e-78a7-4ec8-ae16-99ff4df0ea7b-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 9126,
+                "output_tokens": 1854,
+                "total_tokens": 10980,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 512
+                }
+            }
+        }
+    ]
+}

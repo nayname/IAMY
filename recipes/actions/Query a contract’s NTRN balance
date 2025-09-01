@@ -1,0 +1,33 @@
+{
+    "label": "query_balance",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Retrieves the target contract\u2019s bech32 address from a DOM input element.",
+            "code": "export const getContractAddress = () => {\n  // Attempt to read the contract address from an input with id 'contract-address-input'\n  const inputEl = document.getElementById('contract-address-input');\n  if (!inputEl) {\n    throw new Error('Element with id \"contract-address-input\" not found in the DOM.');\n  }\n  const address = inputEl.value.trim();\n  if (!address) {\n    throw new Error('Contract address cannot be empty.');\n  }\n  return address;\n};",
+            "usage": "const contractAddr = getContractAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Validates that the supplied address is a properly-formatted Neutron bech32 address.",
+            "code": "import { bech32 } from 'bech32';\n\nexport const validateAddressFormat = (address) => {\n  try {\n    const decoded = bech32.decode(address);\n    if (decoded.prefix !== 'neutron') {\n      throw new Error('Invalid bech32 prefix: expected neutron, got ' + decoded.prefix);\n    }\n    // Re-encode to verify checksum integrity\n    const recoded = bech32.encode(decoded.prefix, decoded.words);\n    if (recoded !== address.toLowerCase()) {\n      throw new Error('Checksum mismatch.');\n    }\n    return true;\n  } catch (err) {\n    throw new Error('Address validation failed: ' + err.message);\n  }\n};",
+            "usage": "validateAddressFormat(contractAddr);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Invokes the Neutrond CLI to fetch the `untrn` balance for the contract and returns the raw JSON response.",
+            "code": "import subprocess\n\n\ndef query_bank_balance(contract_addr: str, denom: str = 'untrn') -> str:\n    \"\"\"Query the bank balance for a given contract address via Neutrond CLI.\"\"\"\n    try:\n        cmd = [\n            'neutrond', 'q', 'bank', 'balances', contract_addr,\n            '--denom', denom,\n            '--output', 'json',\n        ]\n        completed = subprocess.run(\n            cmd,\n            check=True,\n            capture_output=True,\n            text=True,\n        )\n        return completed.stdout\n    except FileNotFoundError:\n        raise RuntimeError('The neutrond binary is not in PATH. Please install the Neutrond CLI.')\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f'Failed to query balance: {err.stderr or err}')\n",
+            "usage": "raw_json = query_bank_balance(contractAddr)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Parses the raw JSON returned from Step 3 and extracts a human-readable NTRN amount.",
+            "code": "import json\nfrom decimal import Decimal\nfrom typing import Dict\n\n\ndef parse_balance_response(raw_json: str, denom: str = 'untrn') -> Dict[str, str]:\n    \"\"\"Extracts the balance for the specified denom and formats it for display.\"\"\"\n    try:\n        data = json.loads(raw_json)\n        balances = data.get('balances', [])\n        micro_amount = 0\n        for coin in balances:\n            if coin.get('denom') == denom:\n                micro_amount = int(coin.get('amount', '0'))\n                break\n        human_amount = Decimal(micro_amount) / Decimal(1_000_000)  # 1e6 micro = 1 NTRN\n        return {\n            'denom': denom,\n            'micro_amount': str(micro_amount),\n            'amount': f'{human_amount.normalize()} NTRN'\n        }\n    except (json.JSONDecodeError, ValueError) as err:\n        raise ValueError('Invalid JSON supplied to parser: ' + str(err))\n",
+            "usage": "balance_info = parse_balance_response(raw_json)"
+        }
+    ]
+}

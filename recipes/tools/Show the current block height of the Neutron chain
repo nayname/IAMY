@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Checks that a given Neutron RPC endpoint is reachable and returns the endpoint string on success.",
+            "function": "connect_rpc_endpoint(rpc_endpoint='https://rpc-kralum.neutron.org')",
+            "usage": "rpc = connect_rpc_endpoint('https://rpc-kralum.neutron.org')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Runs `neutrond status` against the selected RPC node and returns the parsed JSON status object.",
+            "function": "neutrond_status(rpc_endpoint)",
+            "usage": "status_json = neutrond_status(rpc)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Reads the latest block height from the JSON produced by `neutrond status`.",
+            "function": "extract_block_height(status_json)",
+            "usage": "latest_height = extract_block_height(status_json)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "rpc = connect_rpc_endpoint('https://rpc-kralum.neutron.org')#step: 1 Tool: connect_rpc_endpoint Desciption: Connect to a reachable Neutron RPC endpoint (e.g., https://rpc-kralum.neutron.org) to ensure the CLI can query chain data.",
+        "status_json = neutrond_status(rpc)#step: 2 Tool: neutrond_status Desciption: Run `neutrond status --node <rpc-endpoint>` to fetch the node\u2019s sync information.",
+        "latest_height = extract_block_height(status_json)#step: 3 Tool: extract_block_height Desciption: Parse the JSON response and read `result.sync_info.latest_block_height`."
+    ],
+    "intent": "Show the current block height of the Neutron chain",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "connect_rpc_endpoint",
+            "description": "Connect to a reachable Neutron RPC endpoint (e.g., https://rpc-kralum.neutron.org) to ensure the CLI can query chain data."
+        },
+        {
+            "step": 2,
+            "tool": "neutrond_status",
+            "description": "Run `neutrond status --node <rpc-endpoint>` to fetch the node\u2019s sync information."
+        },
+        {
+            "step": 3,
+            "tool": "extract_block_height",
+            "description": "Parse the JSON response and read `result.sync_info.latest_block_height`."
+        }
+    ],
+    "outcome_checks": [
+        "Confirm the extracted height is a positive integer.",
+        "Re-run the query after a few seconds to verify the height increases, proving it is the latest value."
+    ]
+}

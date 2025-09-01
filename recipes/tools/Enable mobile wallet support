@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Ensures a compatible browser wallet is installed and enabled, effectively kicking-off the wallet-connection flow.",
+            "function": "ensureWalletConnected()",
+            "usage": "const signer = await ensureWalletConnected();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Connects to the user\u2019s preferred wallet (Keplr, Leap, etc.) and returns an OfflineSigner for subsequent operations.",
+            "function": "connectWallet(preferredWallet)",
+            "usage": "const signer = await connectWallet('keplr');"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "No fully-implemented function exists in the current codebase to render a WalletConnect QR modal or deep-link.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Persists the connected wallet\u2019s address and public key in sessionStorage so the session can be restored after a page refresh.",
+            "function": "storeSessionAccount(signer)",
+            "usage": "await storeSessionAccount(signer);"
+        }
+    ],
+    "frontend": [
+        "const signer = await ensureWalletConnected();//step: 1 Tool: add_walletconnect_client Desciption: Install @cosmos-kit/core and @cosmos-kit/walletconnect packages and initialize WalletConnect v2 in the NeutronTemplate project.",
+        "const signer = await connectWallet('keplr');//step: 2 Tool: register_mobile_wallets Desciption: Register supported mobile wallets (Keplr Mobile, Leap Mobile, Cosmostation) by supplying their WalletConnect namespaces in the CosmosKit config.",
+        "undef//step: 3 Tool: generate_qr_or_deep_link Desciption: Render a WalletConnect QR modal on desktop or trigger an app-scheme deep link on mobile for seamless pairing.",
+        "await storeSessionAccount(signer);//step: 4 Tool: store_wc_session Desciption: Persist the WalletConnect session in local storage to auto-reconnect on page refresh."
+    ],
+    "backend": [],
+    "intent": "Enable mobile wallet support",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "add_walletconnect_client",
+            "description": "Install @cosmos-kit/core and @cosmos-kit/walletconnect packages and initialize WalletConnect v2 in the NeutronTemplate project."
+        },
+        {
+            "step": 2,
+            "tool": "register_mobile_wallets",
+            "description": "Register supported mobile wallets (Keplr Mobile, Leap Mobile, Cosmostation) by supplying their WalletConnect namespaces in the CosmosKit config."
+        },
+        {
+            "step": 3,
+            "tool": "generate_qr_or_deep_link",
+            "description": "Render a WalletConnect QR modal on desktop or trigger an app-scheme deep link on mobile for seamless pairing."
+        },
+        {
+            "step": 4,
+            "tool": "store_wc_session",
+            "description": "Persist the WalletConnect session in local storage to auto-reconnect on page refresh."
+        }
+    ],
+    "outcome_checks": [
+        "Scanning the QR code from a mobile wallet successfully connects and returns an address.",
+        "Transactions signed on the phone are broadcast and confirmed on Neutron."
+    ]
+}

@@ -1,0 +1,141 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"NeutronTemplate\", \"query\": \"Migrate the contract to a new code ID\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Set my address as contract admin\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Change contract admin to another address\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Start a local CosmoPark testnet\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Deploy the example contract to the local testnet\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "41d76e79-7f86-46a9-b0cd-1f386ead0b23",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_XYkkZbtGUxV0SD1e9JTcCo5d",
+                        "function": {
+                            "arguments": "{\"query\": \"wasm migrate code_id neutron\", \"section\": \"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 425,
+                    "prompt_tokens": 722,
+                    "total_tokens": 1147,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 384,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eWpl0VeCZKr5INsawE86n9z9ccc",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--22c00b31-5307-4dab-b08d-b1ef87401e0f-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "wasm migrate code_id neutron",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_XYkkZbtGUxV0SD1e9JTcCo5d",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 722,
+                "output_tokens": 425,
+                "total_tokens": 1147,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 384
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"wasm migrate code_id neutron\":\n\n## 1. Neutron Modules\n**File:** /root/neutron/docs/developers/modules/overview.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Neutron Modules\"\n- Line 5: Neutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n- Line 73: Most Neutron modules follow consistent patterns when used in CosmWasm smart contracts:\n- Line 77: use neutron_sdk::interchain_queries::...; // for ICQ\n- Line 78: use neutron_sdk::bindings::...; // for other modules\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Modules\"\n---\n\n---\n\n\nNeutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n\n\n---\n\n\nMost Neutron modules follow consistent patterns when used in CosmWasm smart contracts:\n\n```\n\n---\n\n## 2. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"NeutronTemplate\"\n- Line 3: description: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n- Line 7: NeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n- Line 10: <strong>Live Demo:</strong> <a href=\"https://neutrontemplate.deploydon.com\" target=\"_blank\" className=\"text-primary hover:underline\">https://NeutronTemplate.Deploydon.com</a>\n- Line 42: <li>Complete CosmWasm contract included</li>\n\n**Content Preview:**\n```\n---\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n\n---\n\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\nicon: \"code\"\n\n---\n\n\nNeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n\n```\n\n---\n\n## 3. Interchain Accounts with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_ica.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Interchain Accounts with CosmWasm\"\n- Line 6: This tutorial walks through building a smart contract that uses Neutron's Interchain Accounts (ICA) module to execute transactions on remote chains from within your contract.\n- Line 10: Interchain Accounts are a powerful IBC feature that allows a smart contract on Neutron to control accounts on other IBC-connected chains. This enables a wide range of cross-chain applications, from managing assets across chains to controlling governance on remote chains.\n- Line 23: - Have a basic understanding of CosmWasm smart contract development\n- Line 24: - Be familiar with [Neutron's architecture](/developers/overview)\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Accounts with CosmWasm\"\ndescription: \"Learn how to build smart contracts that utilize interchain accounts to execute transactions on other chains\"\n\n---\n\n\nThis tutorial walks through building a smart contract that uses Neutron's Interchain Accounts (ICA) module to execute transactions on remote chains from within your contract.\n\n\n---\n\n\nInterchain Accounts are a powerful IBC feature that allows a smart contract on Neutron to control accounts on other IBC-connected chains. This enables a wide range of cross-chain applications, from managing assets across chains to controlling governance on remote chains.\n\n```\n\n---\n\n## 4. Interchain Queries with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_icq.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Interchain Queries with CosmWasm\"\n- Line 3: description: \"Learn how to build smart contracts that query data from other blockchains using Neutron's ICQ module\"\n- Line 6: This tutorial walks through building a smart contract that uses Neutron's Interchain Query (ICQ) module to query data from other blockchains. You'll learn how to register queries, process the results, and build applications that can react to state changes on connected chains.\n- Line 10: Interchain Queries are a powerful feature of Neutron that allow smart contracts to query the state of other chains in the Cosmos ecosystem. This enables developers to build cross-chain applications that can react to state changes on connected chains.\n- Line 22: - Have a basic understanding of CosmWasm smart contract development\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Queries with CosmWasm\"\ndescription: \"Learn how to build smart contracts that query data from other blockchains using Neutron's ICQ module\"\n\n---\n\ntitle: \"Interchain Queries with CosmWasm\"\ndescription: \"Learn how to build smart contracts that query data from other blockchains using Neutron's ICQ module\"\n---\n\n---\n\n\nThis tutorial walks through building a smart contract that uses Neutron's Interchain Query (ICQ) module to query data from other blockchains. You'll learn how to register queries, process the results, and build applications that can react to state changes on connected chains.\n\n```\n\n---\n\n## 5. Introduction to CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/introduction_to_cosmwasm.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Introduction to CosmWasm\"\n- Line 3: description: \"A gentle introduction to smart contract development on Neutron\"\n- Line 6: This tutorial provides a gentle introduction to smart contract development on Neutron using CosmWasm. You'll learn the fundamentals of smart contracts and how to build them step by step.\n- Line 12: The counter contract template can be found in [this GitHub repository](https://github.com/CosmWasm/cw-template).\n- Line 67: use cosmwasm_std::Addr;\n\n**Content Preview:**\n```\n---\ntitle: \"Introduction to CosmWasm\"\ndescription: \"A gentle introduction to smart contract development on Neutron\"\n\n---\n\ntitle: \"Introduction to CosmWasm\"\ndescription: \"A gentle introduction to smart contract development on Neutron\"\n---\n\n---\n\n\nThis tutorial provides a gentle introduction to smart contract development on Neutron using CosmWasm. You'll learn the fundamentals of smart contracts and how to build them step by step.\n\n```\n\n---\n\n## 6. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n- Line 23: ## Getting Started with SubQuery for Neutron\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 7. Admin Module\n**File:** /root/neutron/docs/developers/modules/admin/overview.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 6: The admin module serves as Neutron's central governance mechanism, empowering the **Main DAO contract** to propose and execute critical network operations. Built with Cosmos SDK compatibility and upgraded for SDK 0.50, this module enables secure, controlled administration of the entire Neutron network.\n- Line 9: **Main DAO Exclusive Access**: The admin module can **only** be accessed by the Main DAO contract through WebAssembly bindings. Individual users, external contracts, and CLI commands cannot directly interact with this module. All operations must go through Neutron's DAO governance process.\n- Line 29: The admin module operates on the principle of controlled delegation, where the **Neutron Main DAO contract** acts as the network's administrator with the authority to execute proposals that can significantly change the network state. This includes:\n- Line 32: - **Smart Contract Management**: Executing WebAssembly (WASM) proposals for contract instantiation, migration, and administration\n- Line 40: 1. **Legacy Proposals**: Traditional governance proposals rooted in the Cosmos SDK's `x/gov` module, supporting predefined proposals like `MigrateContract`, `InstantiateContract`, and parameter changes. These proposals are processed through dedicated handlers and remain supported for backward compatibility with modules like IBC that haven't fully transitioned to SDK 0.47 patterns.\n\n**Content Preview:**\n```\n\nThe admin module serves as Neutron's central governance mechanism, empowering the **Main DAO contract** to propose and execute critical network operations. Built with Cosmos SDK compatibility and upgraded for SDK 0.50, this module enables secure, controlled administration of the entire Neutron network.\n\n\n---\n\n<Warning>\n**Main DAO Exclusive Access**: The admin module can **only** be accessed by the Main DAO contract through WebAssembly bindings. Individual users, external contracts, and CLI commands cannot directly interact with this module. All operations must go through Neutron's DAO governance process.\n</Warning>\n\n---\n\n\nThe admin module operates on the principle of controlled delegation, where the **Neutron Main DAO contract** acts as the network's administrator with the authority to execute proposals that can significantly change the network state. This includes:\n\n```\n\n---\n\n## 8. Overview\n**File:** /root/neutron/docs/developers/modules/tokenfactory/overview.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 5: The Token Factory module enables users to create and manage custom tokens (denominations) on the Neutron network. It provides comprehensive token lifecycle management including creation, minting, burning, and administrative controls.\n- Line 21: - **Before-Send Hooks**: Implement custom logic for token transfers via CosmWasm contracts\n- Line 45: Example: `factory/neutron1abc123.../mytoken`\n- Line 133: uint64 code_id = 1;\n- Line 197: This module is essential for Neutron's token ecosystem, enabling diverse token creation while maintaining security and governance oversight.\n\n**Content Preview:**\n```\n\nThe Token Factory module enables users to create and manage custom tokens (denominations) on the Neutron network. It provides comprehensive token lifecycle management including creation, minting, burning, and administrative controls.\n\n\n---\n\n\n- **Before-Send Hooks**: Implement custom logic for token transfers via CosmWasm contracts\n\n\n---\n\n\nExample: `factory/neutron1abc123.../mytoken`\n\n```\n\n---\n\n## 9. Technical Explanation\n**File:** /root/neutron/docs/developers/modules/admin/explanation.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 9: **Main DAO Exclusive Access**: The admin module can only be accessed by the Main DAO contract through WebAssembly bindings. Individual users, external contracts, and CLI commands cannot directly interact with this module. All operations must go through Neutron's DAO governance process.\n- Line 14: The admin module serves as the central governance hub for the Neutron network, designed to handle administrative operations through a secure, controlled framework. The module architecture consists of several key components working together to ensure safe and effective network governance.\n- Line 41: - Custom WASM proposals for smart contract operations\n- Line 104: ## Integration with Neutron DAO\n- Line 108: The admin module integrates with Neutron's DAO through specialized WASM bindings:\n\n**Content Preview:**\n```\n<Warning>\n**Main DAO Exclusive Access**: The admin module can only be accessed by the Main DAO contract through WebAssembly bindings. Individual users, external contracts, and CLI commands cannot directly interact with this module. All operations must go through Neutron's DAO governance process.\n</Warning>\n\n---\n\n\nThe admin module serves as the central governance hub for the Neutron network, designed to handle administrative operations through a secure, controlled framework. The module architecture consists of several key components working together to ensure safe and effective network governance.\n\n\n---\n\n   - `TextProposal`: Governance signaling proposals\n   - Custom WASM proposals for smart contract operations\n\n```\n\n---\n\n## 10. How-to\n**File:** /root/neutron/docs/developers/modules/admin/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 6: This guide explains how the admin module works within Neutron's governance system. Unlike other modules that users can interact with directly, the admin module is exclusively accessible by the **Main DAO contract**.\n- Line 9: The admin module cannot be used directly by individual users or external contracts. All interactions must go through Neutron's DAO governance process.\n- Line 25: When the Neutron community wants to execute administrative operations:\n- Line 43: Neutron does **not** use the standard Cosmos SDK `gov` module for proposals. All governance goes through the Main DAO contract via WASM execution.\n- Line 50: - **[governance.neutron.org](https://governance.neutron.org)** - Official governance interface\n\n**Content Preview:**\n```\n\nThis guide explains how the admin module works within Neutron's governance system. Unlike other modules that users can interact with directly, the admin module is exclusively accessible by the **Main DAO contract**.\n\n\n---\n\n<Warning>\nThe admin module cannot be used directly by individual users or external contracts. All interactions must go through Neutron's DAO governance process.\n</Warning>\n\n---\n\n\nWhen the Neutron community wants to execute administrative operations:\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "7deacfb5-29ed-4186-b498-33ccf0391e20",
+            "tool_call_id": "call_XYkkZbtGUxV0SD1e9JTcCo5d",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Migrate an existing smart contract to a new code ID\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_contract_address\",\n        \"description\": \"Prompt the user for the on-chain address of the contract that needs migration.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"validate_new_code_id\",\n        \"description\": \"Check that the supplied code ID exists on-chain and is compatible with the contract.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"collect_migrate_msg\",\n        \"description\": \"Ask the user for the JSON migrate message required by the new contract code (often `{}` if no parameters).\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"construct_tx_wasm_migrate\",\n        \"description\": \"Build a `wasm migrate` transaction with the contract address, new code ID, migrate msg, and appropriate gas/fees.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the transaction with the contract admin key and broadcast it to the Neutron network.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Query `wasm contract-info` and confirm the contract's `code_id` now matches the new code ID.\",\n      \"Optionally call a read-only method to make sure the contract behaves as expected after migration.\"\n    ]\n  },\n  {\n    \"intent\": \"Set the user's own address as the admin of a smart contract\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_address\",\n        \"description\": \"Determine the wallet address that should become the admin.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"get_contract_address\",\n        \"description\": \"Prompt for the target contract address.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_wasm_update_admin\",\n        \"description\": \"Create a `wasm set-contract-admin` transaction setting admin to the user's address.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign with the current admin key (or governance key) and broadcast the transaction.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Query `wasm contract-info` and verify the `admin` field equals the user's address.\"\n    ]\n  },\n  {\n    \"intent\": \"Transfer contract admin rights to another address\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_current_admin_address\",\n        \"description\": \"Fetch and display the contract's current admin address for confirmation.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"validate_new_admin_address\",\n        \"description\": \"Ensure the provided new admin address is a valid Bech32 address.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"get_contract_address\",\n        \"description\": \"Ask for the contract address whose admin will be changed.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"construct_tx_wasm_update_admin\",\n        \"description\": \"Build a `wasm set-contract-admin` (or `update-admin`) transaction that assigns the new admin address.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign with the current admin key and broadcast to the network.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Re-query contract info and confirm the `admin` field matches the new address.\",\n      \"Optionally verify that the original admin can no longer execute admin-only messages.\"\n    ]\n  },\n  {\n    \"intent\": \"Launch a local Neutron CosmoPark testnet\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"ensure_cosmopark_installed\",\n        \"description\": \"Detect or install the CosmoPark CLI and required Docker images.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"run_cosmopark_init\",\n        \"description\": \"Initialize a fresh CosmoPark workspace (download genesis, build containers, etc.).\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"run_cosmopark_start\",\n        \"description\": \"Start the local multi-node testnet with `cosmopark start`.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"verify_local_chain_running\",\n        \"description\": \"Poll the local RPC endpoint (e.g., http://localhost:26657/status) until it responds with a latest block height.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"RPC endpoint returns status with a non-zero `latest_block_height`.\",\n      \"CLI commands like `neutrond q bank total` succeed against the local node.\"\n    ]\n  },\n  {\n    \"intent\": \"Compile and deploy the Neutron example contract to the local CosmoPark testnet\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"compile_wasm_contract\",\n        \"description\": \"Run `cargo wasm && wasm-opt` (or `cargo run-script optimize`) in the contract directory to produce an optimized `.wasm` binary.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"get_local_chain_account\",\n        \"description\": \"Load or create a local key (e.g., `cosmopark` default) and make sure it has test NTRN from the built-in faucet.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_wasm_store\",\n        \"description\": \"Create a `wasm store` transaction uploading the optimized contract binary.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the store transaction with the local key and broadcast it.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"parse_code_id_from_receipt\",\n        \"description\": \"Extract the new `code_id` from the transaction logs.\"\n      },\n      {\n        \"step\": 6,\n        \"tool\": \"construct_tx_wasm_instantiate\",\n        \"description\": \"Build a `wasm instantiate` transaction using the retrieved code ID, an init msg, label, and (optionally) an admin address.\"\n      },\n      {\n        \"step\": 7,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast the instantiate transaction.\"\n      },\n      {\n        \"step\": 8,\n        \"tool\": \"parse_contract_address_from_receipt\",\n        \"description\": \"Capture the newly created contract address from the instantiate logs.\"\n      },\n      {\n        \"step\": 9,\n        \"tool\": \"query_contract_state\",\n        \"description\": \"Perform a simple `wasm query` against the contract to confirm it responds correctly.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"A valid `code_id` was generated and stored on-chain.\",\n      \"The instantiate transaction succeeded and yielded a contract address.\",\n      \"A test query returns expected default state, proving the contract is live on the local net.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2923,
+                    "prompt_tokens": 4688,
+                    "total_tokens": 7611,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1344,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eWzzFoD9Dk5IwHgTPAAc00C8p5L",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--b0824f6d-8843-43f2-91c2-9553825601c3-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 4688,
+                "output_tokens": 2923,
+                "total_tokens": 7611,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1344
+                }
+            }
+        }
+    ]
+}

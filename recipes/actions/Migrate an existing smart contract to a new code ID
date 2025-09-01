@@ -1,0 +1,40 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 requests the CosmWasm contract address from the user and validates that it is a proper Neutron bech32 address.",
+            "code": "import { bech32 } from \"@cosmjs/encoding\";\n\n/**\n * Prompt the user for a contract address and validate it.\n * @returns {string} A valid Neutron contract address.\n * @throws Will throw if the address is missing or malformed.\n */\nexport const getContractAddress = () => {\n  const address = window.prompt(\"Enter the CosmWasm contract address to migrate:\");\n  if (!address) {\n    throw new Error(\"No address supplied.\");\n  }\n\n  try {\n    const { prefix } = bech32.decode(address);\n    if (prefix !== \"neutron\") {\n      throw new Error(\"Address prefix must be 'neutron'.\");\n    }\n  } catch (err) {\n    throw new Error(`Invalid bech32 address: ${err.message}`);\n  }\n\n  return address;\n};",
+            "usage": "const contractAddress = getContractAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 checks that the new code ID exists on-chain and that the contract can be migrated to it.",
+            "code": "from cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.exceptions import QueryError\n\nasync def validate_new_code_id(contract_address: str, new_code_id: int, rpc_url: str = \"https://rpc-kralum.neutron-1.neutron.org\") -> bool:\n    \"\"\"Validate that `new_code_id` exists and differs from the contract's current code ID.\n\n    Args:\n        contract_address (str): Address of the contract to migrate.\n        new_code_id (int): The code ID to migrate to.\n        rpc_url (str): RPC endpoint for Neutron.\n    Returns:\n        bool: True if the validation succeeds, otherwise an exception is raised.\n    \"\"\"\n    try:\n        cfg = NetworkConfig(\n            chain_id=\"neutron-1\",\n            url=rpc_url,\n            fee_minimum_gas_price=\"0.025untrn\",\n            fee_denomination=\"untrn\",\n        )\n        client = LedgerClient(cfg)\n\n        # Ensure the new code ID exists\n        code_info = client.query.wasm.get_code_info(new_code_id)\n        if code_info is None:\n            raise ValueError(f\"Code ID {new_code_id} does not exist on-chain.\")\n\n        # Fetch current contract info\n        contract_info = client.query.wasm.get_contract_info(contract_address)\n        if int(contract_info[\"code_id\"]) == new_code_id:\n            raise ValueError(\"Contract already instantiated with this code ID.\")\n\n        return True\n    except (QueryError, Exception) as err:\n        raise RuntimeError(f\"Validation failed: {err}\") from err",
+            "usage": "is_valid = await validate_new_code_id(contract_address, 1234)\nif not is_valid:\n    raise Exception(\"New code ID is not valid.\")"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 captures and parses the migrate message JSON from the user.",
+            "code": "/**\n * Ask the user for a JSON-formatted migrate message and return it as an object.\n * Defaults to an empty object if the user provides no input.\n */\nexport const collectMigrateMessage = () => {\n  let msgInput = window.prompt(\"Enter the migrate message in JSON (default {}):\", \"{}\");\n  if (!msgInput || msgInput.trim() === \"\") {\n    msgInput = \"{}\";\n  }\n  try {\n    const msg = JSON.parse(msgInput);\n    return msg;\n  } catch (err) {\n    throw new Error(\"Invalid JSON supplied for migrate message.\");\n  }\n};",
+            "usage": "const migrateMsg = collectMigrateMessage();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 constructs the MsgMigrateContract transaction object with the provided inputs and estimated fee.",
+            "code": "import { SigningCosmWasmClient, GasPrice, calculateFee } from \"@cosmjs/cosmwasm-stargate\";\nimport { toUtf8 } from \"@cosmjs/encoding\";\nimport Long from \"long\";\n\n/**\n * Build a MsgMigrateContract and estimate fee.\n *\n * @param {Object} params - Parameters for building the transaction.\n * @param {string} params.rpcEndpoint - RPC endpoint.\n * @param {OfflineSigner} params.signer - OfflineSigner returned from wallet.\n * @param {string} params.senderAddress - Admin address executing the migration.\n * @param {string} params.contractAddress - Address of the contract to migrate.\n * @param {number} params.newCodeId - Target code ID.\n * @param {Object} params.migrateMsg - JSON migrate message.\n * @param {string} [params.gasPrice=\"0.025untrn\"] - Gas price to use.\n * @param {number} [params.gasLimit=300000] - Gas limit.\n * @returns {Promise<{client: SigningCosmWasmClient, msg: any, fee: StdFee}>}\n */\nexport const constructMigrateTx = async ({\n  rpcEndpoint,\n  signer,\n  senderAddress,\n  contractAddress,\n  newCodeId,\n  migrateMsg,\n  gasPrice = \"0.025untrn\",\n  gasLimit = 300000,\n}) => {\n  try {\n    const client = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, signer, {\n      gasPrice: GasPrice.fromString(gasPrice),\n    });\n\n    const msg = {\n      typeUrl: \"/cosmwasm.wasm.v1.MsgMigrateContract\",\n      value: {\n        sender: senderAddress,\n        contract: contractAddress,\n        codeId: Long.fromNumber(newCodeId),\n        msg: toUtf8(JSON.stringify(migrateMsg)),\n      },\n    };\n\n    const fee = calculateFee(gasLimit, gasPrice);\n\n    return { client, msg, fee };\n  } catch (error) {\n    console.error(error);\n    throw new Error(\"Failed to construct migrate transaction.\");\n  }\n};",
+            "usage": "const { client, msg, fee } = await constructMigrateTx({\n  rpcEndpoint: \"https://rpc-kralum.neutron-1.neutron.org\",\n  signer,\n  senderAddress,\n  contractAddress,\n  newCodeId,\n  migrateMsg,\n});"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Step 5 signs the transaction with the admin key and broadcasts it to the Neutron network.",
+            "code": "/**\n * Sign and broadcast a previously-built MsgMigrateContract.\n *\n * @param {SigningCosmWasmClient} client - Connected signing client.\n * @param {string} senderAddress - Admin address (must match signer).\n * @param {any} msg - MsgMigrateContract created in Step 4.\n * @param {StdFee} fee - Fee object calculated in Step 4.\n * @returns {Promise<TxRaw>} The broadcast result.\n */\nexport const signAndBroadcast = async (client, senderAddress, msg, fee) => {\n  try {\n    const result = await client.signAndBroadcast(senderAddress, [msg], fee);\n    if (result.code !== 0) {\n      throw new Error(`Broadcast failed with code ${result.code}: ${result.rawLog}`);\n    }\n    console.info(`Migration successful. Tx hash: ${result.transactionHash}`);\n    return result;\n  } catch (error) {\n    console.error(error);\n    throw new Error(\"Failed to sign and broadcast the migrate transaction.\");\n  }\n};",
+            "usage": "const result = await signAndBroadcast(client, senderAddress, msg, fee);\nconsole.log(\"Tx hash:\", result.transactionHash);"
+        }
+    ]
+}

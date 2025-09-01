@@ -1,0 +1,33 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 connects to the user\u2019s Keplr wallet (or another Wallet API) and returns the caller\u2019s Neutron address that will be supplied to the contract query.",
+            "code": "export const getSenderAddress = async () => {\n  const chainId = \"neutron-1\"; // change to testnet chain-id if needed\n\n  // Make sure the browser wallet is available\n  const keplr = window.keplr;\n  if (!keplr) {\n    throw new Error(\"Keplr wallet is not installed. Please install it and retry.\");\n  }\n\n  // Ask the wallet to enable the Neutron chain and return an OfflineSigner\n  await keplr.enable(chainId);\n  const offlineSigner = keplr.getOfflineSigner(chainId);\n\n  // Extract the first account (there is at least one by spec if enable() succeeded)\n  const accounts = await offlineSigner.getAccounts();\n  if (!accounts || accounts.length === 0) {\n    throw new Error(\"No accounts found in the connected wallet.\");\n  }\n\n  // Return both the bech32 address and the signer in case later logic needs signing capability\n  return {\n    address: accounts[0].address,\n    signer: offlineSigner\n  };\n};",
+            "usage": "const { address } = await getSenderAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 loads the deployed NeutronTemplate contract address from a static map or environment variable so the dApp knows where to send the query.",
+            "code": "export const loadContractAddress = (network = \"mainnet\") => {\n  // NOTE: In production you might fetch this value from your backend or .env file.\n  const CONTRACTS = {\n    mainnet: {\n      neutronTemplate: \"neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\" // \u2190 replace with real mainnet addr\n    },\n    testnet: {\n      neutronTemplate: \"neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\" // \u2190 replace with real testnet addr\n    }\n  };\n\n  const address = CONTRACTS[network]?.neutronTemplate;\n  if (!address) {\n    throw new Error(`NeutronTemplate contract address for network '${network}' not found.`);\n  }\n\n  return address;\n};",
+            "usage": "const contractAddress = loadContractAddress(\"mainnet\");"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 builds the exact smart-query payload `{ \"get_personal_counter\": { \"address\": \"<sender>\" } }` using the caller\u2019s address obtained in Step 1.",
+            "code": "export const constructWasmQueryMsg = (senderAddress) => {\n  if (!senderAddress) {\n    throw new Error(\"Sender address is required to construct the query message.\");\n  }\n\n  // Build the query message expected by the NeutronTemplate contract\n  return {\n    get_personal_counter: {\n      address: senderAddress\n    }\n  };\n};",
+            "usage": "const queryMsg = constructWasmQueryMsg(address);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 connects to an RPC endpoint with CosmJS\u2019 `CosmWasmClient`, executes the smart-contract query, and returns the user\u2019s counter value.",
+            "code": "import { CosmWasmClient } from \"@cosmjs/cosmwasm-stargate\";\n\n/**\n * Queries the NeutronTemplate contract for the caller's personal counter.\n * @param {string} rpcEndpoint - Public RPC endpoint, e.g. \"https://rpc.ntrn.io\".\n * @param {string} contractAddress - Deployed NeutronTemplate contract address.\n * @param {object} queryMsg - The query payload produced in Step 3.\n * @returns {Promise<object>} - The raw JSON response from the contract (e.g. { counter: \"7\" }).\n */\nexport const queryPersonalCounter = async (rpcEndpoint, contractAddress, queryMsg) => {\n  try {\n    // Initialise a readonly CosmWasm client (no signer required for queries)\n    const client = await CosmWasmClient.connect(rpcEndpoint);\n\n    // Execute the smart query\n    const response = await client.queryContractSmart(contractAddress, queryMsg);\n\n    return response; // e.g. { counter: 7 }\n  } catch (error) {\n    // Forward the error after logging for debugging purposes\n    console.error(\"Contract smart-query failed:\", error);\n    throw error;\n  }\n};",
+            "usage": "const rpc = \"https://rpc.neutron.org\"; // or your own endpoint\nconst counterRes = await queryPersonalCounter(rpc, contractAddress, queryMsg);\nconsole.log(`Your personal counter: ${counterRes.counter}`);"
+        }
+    ]
+}

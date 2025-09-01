@@ -1,0 +1,61 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"NeutronTemplate\", \"query\": \"Query the contract\\u2019s NTRN balance\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Reset the global counter\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Upload the example contract WASM code\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Instantiate the example contract on Pion-1\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Deploy the example contract to Neutron mainnet\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "79266efb-bb34-4a5c-a625-21e253bfa018",
+            "example": false
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Query a contract\u2019s NTRN balance\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_contract_address\",\n        \"description\": \"Obtain the bech32 address of the target smart contract.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"validate_address_format\",\n        \"description\": \"Ensure the contract address is a valid Neutron (bech32) address.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"query_bank_balance\",\n        \"description\": \"Run `neutrond q bank balances <contract_addr> --denom untrn` to fetch the NTRN balance for the contract.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"parse_balance_response\",\n        \"description\": \"Parse the CLI/JSON response and extract the amount associated with denom `untrn`.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The CLI call returns HTTP/Tx code 0 (success).\",\n      \"A numeric amount for denom `untrn` is present in the response.\"\n    ]\n  },\n  {\n    \"intent\": \"Reset the global counter in an example contract\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_admin_address\",\n        \"description\": \"Identify the wallet address that has admin privileges over the contract.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"get_contract_address\",\n        \"description\": \"Specify the address of the deployed counter contract.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_execute_contract\",\n        \"description\": \"Create a `MsgExecuteContract` with `{ \\\"reset\\\": {} }` as the execute message and 0 funds.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the transaction with the admin\u2019s key and broadcast it to the network.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"query_wasm_contract_state\",\n        \"description\": \"After inclusion, query `count` via `neutrond q wasm contract-state smart <contract_addr> '{\\\"get_count\\\":{}}'`.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Transaction included in a block with code 0.\",\n      \"Returned `count` value equals `0`, confirming the reset.\"\n    ]\n  },\n  {\n    \"intent\": \"Upload the example contract WASM code\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_wasm_file_path\",\n        \"description\": \"Locate the compiled `.wasm` file for the example contract (e.g., `artifacts/counter.wasm`).\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"validate_wasm_checksum\",\n        \"description\": \"Calculate and record the SHA-256 checksum of the WASM binary.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_store_code\",\n        \"description\": \"Build a `MsgStoreCode` including the WASM binary, sender address, and instantiate permission (e.g., `--instantiate-everybody`).\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast the store-code transaction.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"extract_code_id_from_tx\",\n        \"description\": \"Parse the transaction logs to retrieve the newly assigned `code_id`.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Tx response shows code 0.\",\n      \"`code_id` is present and greater than 0 in the logs.\"\n    ]\n  },\n  {\n    \"intent\": \"Instantiate the example contract on Pion-1\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"set_chain_context\",\n        \"description\": \"Configure CLI for the Pion-1 testnet (`--chain-id pion-1`, correct RPC endpoint, and fees).\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"get_code_id\",\n        \"description\": \"Specify the `code_id` obtained from the prior store-code step (or an existing one on Pion-1).\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_instantiate_contract\",\n        \"description\": \"Build a `MsgInstantiateContract` with initial state (e.g., `{ \\\"count\\\": 0 }`) and optionally set an admin address.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast the instantiate transaction on Pion-1.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"extract_contract_address_from_tx\",\n        \"description\": \"Parse transaction events to capture the newly created contract address.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Tx included with code 0.\",\n      \"A valid contract address (`neutron1...`) appears in instantiate logs.\",\n      \"Querying `get_count` returns the initial value (e.g., 0).\"\n    ]\n  },\n  {\n    \"intent\": \"Deploy the example contract to Neutron mainnet\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"set_chain_context\",\n        \"description\": \"Switch CLI to Neutron mainnet (`--chain-id neutron-1`) and point to a mainnet RPC/LCD endpoint.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"get_wasm_file_path\",\n        \"description\": \"Reuse or confirm the compiled example contract `.wasm` file.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_store_code\",\n        \"description\": \"Build a `MsgStoreCode` for mainnet upload, mindful of higher fees and memos if required.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast the store-code transaction to mainnet; record the resulting `code_id`.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"construct_tx_instantiate_contract\",\n        \"description\": \"Using the new `code_id`, craft an instantiate message with desired initial state and admin.\"\n      },\n      {\n        \"step\": 6,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast the instantiate transaction to mainnet.\"\n      },\n      {\n        \"step\": 7,\n        \"tool\": \"extract_contract_address_from_tx\",\n        \"description\": \"Capture the new contract\u2019s address from transaction logs.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Both store-code and instantiate transactions succeed with code 0.\",\n      \"Returned `code_id` and contract address are non-empty and valid.\",\n      \"A follow-up smart query (e.g., `get_count`) returns the expected initial state.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2312,
+                    "prompt_tokens": 722,
+                    "total_tokens": 3034,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 768,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eW38xW1lQpmqwHwmfSkTXgfLhYU",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--29045289-f13a-4244-a0d9-e5dd58d146d5-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 722,
+                "output_tokens": 2312,
+                "total_tokens": 3034,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 768
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Checks that the Keplr extension is present and unlocked, then enables the Neutron chain.",
+            "function": "ensureWalletConnected()",
+            "usage": "const signer = await ensureWalletConnected();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Suggests the Neutron network to Keplr via experimentalSuggestChain so the wallet recognises the chain.",
+            "function": "suggestNeutronChain(wallet)",
+            "usage": "await suggestNeutronChain(window.keplr);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Invokes keplr.enable to request user approval and grant the dApp access to the Neutron chain.",
+            "function": "ensureNeutronNetwork()",
+            "usage": "const accessGranted = await ensureNeutronNetwork();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Obtains the OfflineSigner and the user\u2019s first bech32 address for later blockchain operations.",
+            "function": "getOfflineSignerAndAddress(chainId)",
+            "usage": "const { signer, address } = await getOfflineSignerAndAddress('neutron-1');"
+        }
+    ],
+    "frontend": [
+        "const signer = await ensureWalletConnected();//step: 1 Tool: install_keplr_extension Desciption: Ensure the Keplr browser extension is installed and unlocked.",
+        "await suggestNeutronChain(window.keplr);//step: 2 Tool: suggest_chain_to_keplr Desciption: From the dApp (NeutronTemplate) call window.keplr.experimentalSuggestChain with Neutron chain parameters (chainId, rpc/rest endpoints, stake currency).",
+        "const accessGranted = await ensureNeutronNetwork();//step: 3 Tool: keplr_enable_chain Desciption: Invoke window.keplr.enable('neutron-1') (or 'pion-1') to trigger the approval popup and grant site access.",
+        "const { signer, address } = await getOfflineSignerAndAddress('neutron-1');//step: 4 Tool: get_keplr_offline_signer Desciption: Fetch the OfflineSigner via window.getOfflineSigner('neutron-1') and store the user\u2019s first address in app state."
+    ],
+    "backend": [],
+    "intent": "Connect Keplr wallet",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "install_keplr_extension",
+            "description": "Ensure the Keplr browser extension is installed and unlocked."
+        },
+        {
+            "step": 2,
+            "tool": "suggest_chain_to_keplr",
+            "description": "From the dApp (NeutronTemplate) call window.keplr.experimentalSuggestChain with Neutron chain parameters (chainId, rpc/rest endpoints, stake currency)."
+        },
+        {
+            "step": 3,
+            "tool": "keplr_enable_chain",
+            "description": "Invoke window.keplr.enable('neutron-1') (or 'pion-1') to trigger the approval popup and grant site access."
+        },
+        {
+            "step": 4,
+            "tool": "get_keplr_offline_signer",
+            "description": "Fetch the OfflineSigner via window.getOfflineSigner('neutron-1') and store the user\u2019s first address in app state."
+        }
+    ],
+    "outcome_checks": [
+        "The app state reflects the connected Neutron address.",
+        "Keplr shows the dApp under \"Connected Sites\" with Neutron permissions."
+    ]
+}

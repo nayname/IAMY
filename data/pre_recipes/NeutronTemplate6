@@ -1,0 +1,89 @@
+[
+    {
+        "intent": "Show the current block height of the Neutron chain",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "connect_rpc_endpoint",
+                "description": "Connect to a reachable Neutron RPC endpoint (e.g., https://rpc-kralum.neutron.org) to ensure the CLI can query chain data."
+            },
+            {
+                "step": 2,
+                "tool": "neutrond_status",
+                "description": "Run `neutrond status --node <rpc-endpoint>` to fetch the node\u2019s sync information."
+            },
+            {
+                "step": 3,
+                "tool": "extract_block_height",
+                "description": "Parse the JSON response and read `result.sync_info.latest_block_height`."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm the extracted height is a positive integer.",
+            "Re-run the query after a few seconds to verify the height increases, proving it is the latest value."
+        ]
+    },
+    {
+        "intent": "Query the code hash of a specific smart contract",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_contract_address",
+                "description": "Ensure the provided contract address is a valid Bech32 Neutron address."
+            },
+            {
+                "step": 2,
+                "tool": "query_contract_info",
+                "description": "Execute `neutrond query wasm contract <contract-address>` to obtain the contract\u2019s metadata, including its `code_id`."
+            },
+            {
+                "step": 3,
+                "tool": "extract_code_id",
+                "description": "Read the `code_id` field from the contract info response."
+            },
+            {
+                "step": 4,
+                "tool": "query_code_info",
+                "description": "Run `neutrond query wasm code-info <code_id>` to fetch the code information that contains the `code_hash`."
+            },
+            {
+                "step": 5,
+                "tool": "extract_code_hash",
+                "description": "Parse the `code_hash` value from the code-info JSON response."
+            }
+        ],
+        "outcome_checks": [
+            "Ensure a 64-character hexadecimal `code_hash` is returned.",
+            "Verify that the `code_hash` field is not empty or null."
+        ]
+    },
+    {
+        "intent": "List all smart contracts deployed by my account",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_creator_address",
+                "description": "Determine the user\u2019s wallet (creator) address from the connected keyring or wallet context."
+            },
+            {
+                "step": 2,
+                "tool": "validate_creator_address",
+                "description": "Confirm the creator address follows correct Bech32 formatting."
+            },
+            {
+                "step": 3,
+                "tool": "query_contracts_by_creator",
+                "description": "Execute `neutrond query wasm list-contract-by-creator <creator-address> --limit 1000` to retrieve contracts deployed by the user."
+            },
+            {
+                "step": 4,
+                "tool": "handle_pagination",
+                "description": "If the response includes a `pagination.next_key`, repeat the query with `--page-key` until all contracts are collected."
+            }
+        ],
+        "outcome_checks": [
+            "Return an array of contract addresses (or an empty list if none exist).",
+            "Validate each returned address is a properly formatted Bech32 Neutron contract address."
+        ]
+    }
+]

@@ -1,0 +1,301 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"NeutronTemplate\", \"query\": \"Increment my personal counter\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Increment the global counter\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Query my personal counter value\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Query my deposited NTRN amount\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Query the global counter value\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "e0ff5ce0-6d88-4db0-bc88-c64972c33ba5",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_IBeEZJHdWQnbUvnNtyZj2SAZ",
+                        "function": {
+                            "arguments": "{\"query\": \"personal counter contract neutron increment\", \"section\": \"all\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 488,
+                    "prompt_tokens": 709,
+                    "total_tokens": 1197,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 448,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eURjeYf5j9ujHD2aTNQj97pHW9f",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--fd82b400-ab63-43f1-874d-7958344e20ff-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "personal counter contract neutron increment",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_IBeEZJHdWQnbUvnNtyZj2SAZ",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 709,
+                "output_tokens": 488,
+                "total_tokens": 1197,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 448
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"personal counter contract neutron increment\":\n\n## 1. Neutron Modules\n**File:** /root/neutron/docs/developers/modules/overview.mdx\n**Section:** developers\n**Relevance Score:** 22\n\n**Matching lines:**\n- Line 2: title: \"Neutron Modules\"\n- Line 5: Neutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n- Line 9: These modules are designed for direct integration with your smart contracts and DeFi applications:\n- Line 21: Schedule automated contract executions\n- Line 28: <Card title=\"Contract Manager\" icon=\"shield\" href=\"/developers/modules/contractmanager/overview\">\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Modules\"\n---\n\n---\n\n\nNeutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n\n\n---\n\n\nThese modules are designed for direct integration with your smart contracts and DeFi applications:\n\n```\n\n---\n\n## 2. Part 1: Minimal Smart Contract\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-1-minimal-application.mdx\n**Section:** developers\n**Relevance Score:** 22\n\n**Matching lines:**\n- Line 2: title: \"Part 1: Minimal Smart Contract\"\n- Line 3: description: \"Create and deploy a simple yet functional CosmWasm smart contract on Neutron\"\n- Line 6: This tutorial will guide you through creating your first smart contract on Neutron. You'll learn the basics of CosmWasm development and deploy a working application.\n- Line 10: A simple counter contract that:\n- Line 19: - [Docker](https://docs.docker.com/get-docker/) for contract optimization\n\n**Content Preview:**\n```\n---\ntitle: \"Part 1: Minimal Smart Contract\"\ndescription: \"Create and deploy a simple yet functional CosmWasm smart contract on Neutron\"\n\n---\n\ntitle: \"Part 1: Minimal Smart Contract\"\ndescription: \"Create and deploy a simple yet functional CosmWasm smart contract on Neutron\"\n---\n\n---\n\n\nThis tutorial will guide you through creating your first smart contract on Neutron. You'll learn the basics of CosmWasm development and deploy a working application.\n\n```\n\n---\n\n## 3. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"NeutronTemplate\"\n- Line 3: description: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n- Line 7: NeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n- Line 10: <strong>Live Demo:</strong> <a href=\"https://neutrontemplate.deploydon.com\" target=\"_blank\" className=\"text-primary hover:underline\">https://NeutronTemplate.Deploydon.com</a>\n- Line 40: <Card title=\"Smart Contract\" icon=\"file-contract\" iconType=\"duotone\">\n\n**Content Preview:**\n```\n---\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n\n---\n\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\nicon: \"code\"\n\n---\n\n\nNeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n\n```\n\n---\n\n## 4. Part 2: Modules & Contracts\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-2-modules-contracts.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Part 2: Modules & Contracts\"\n- Line 3: description: \"Learn how to interact with Neutron modules and other smart contracts\"\n- Line 6: In this tutorial, you'll extend your knowledge by learning how to interact with Neutron's unique modules and call other smart contracts. This is where Neutron's power really shines.\n- Line 10: - How to use Neutron's custom modules (Oracle, Cron, ICQ)\n- Line 11: - Inter-contract communication patterns\n\n**Content Preview:**\n```\n---\ntitle: \"Part 2: Modules & Contracts\"\ndescription: \"Learn how to interact with Neutron modules and other smart contracts\"\n\n---\n\ntitle: \"Part 2: Modules & Contracts\"\ndescription: \"Learn how to interact with Neutron modules and other smart contracts\"\n---\n\n---\n\n\nIn this tutorial, you'll extend your knowledge by learning how to interact with Neutron's unique modules and call other smart contracts. This is where Neutron's power really shines.\n\n```\n\n---\n\n## 5. Bridge Contracts\n**File:** /root/neutron/docs/resources/contracts/bridge.mdx\n**Section:** resources\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: title: \"Bridge Contracts\"\n- Line 3: description: \"Information about Neutron's cross-chain bridge contracts\"\n- Line 7: This page provides information about the smart contracts that enable cross-chain bridging between Neutron and other networks.\n- Line 9: ## Mainnet (neutron-1)\n- Line 11: | Contract | Address | Code ID |\n\n**Content Preview:**\n```\n---\ntitle: \"Bridge Contracts\"\ndescription: \"Information about Neutron's cross-chain bridge contracts\"\n\n---\n\ntitle: \"Bridge Contracts\"\ndescription: \"Information about Neutron's cross-chain bridge contracts\"\nicon: \"bridge\"\n\n---\n\n\nThis page provides information about the smart contracts that enable cross-chain bridging between Neutron and other networks.\n\n```\n\n---\n\n## 6. Neutron DAO Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-dao.mdx\n**Section:** resources\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: title: \"Neutron DAO Contracts\"\n- Line 3: description: \"Addresses and information for Neutron DAO smart contracts\"\n- Line 7: This page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Neutron DAO Core | `neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff` | [cwd-core](https://github.com/neutron-org/neutron-dao) | 325 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\n\n---\n\ntitle: \"Neutron DAO Contracts\"\ndescription: \"Addresses and information for Neutron DAO smart contracts\"\nicon: \"building-columns\"\n\n---\n\n\nThis page lists the smart contracts that make up the Neutron DAO system on both mainnet and testnet networks.\n\n```\n\n---\n\n## 7. Neutron TGE Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-tge.mdx\n**Section:** resources\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: title: \"Neutron TGE Contracts\"\n- Line 3: description: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n- Line 7: This page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Airdrop | `neutron198sxsrjvt2v2lln2ajn82ks76k97mj72mtgl7309jehd0vy8rezs7e6c56` | [cw20-merkle-airdrop](https://github.com/neutron-org/neutron-tge-contracts) | 196 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\n\n---\n\ntitle: \"Neutron TGE Contracts\"\ndescription: \"Addresses and information for Neutron Token Generation Event smart contracts\"\nicon: \"rocket-launch\"\n\n---\n\n\nThis page lists the smart contracts related to Neutron's Token Generation Event (TGE) on both mainnet and testnet networks.\n\n```\n\n---\n\n## 8. Neutron Vesting Contracts\n**File:** /root/neutron/docs/resources/contracts/neutron-vesting.mdx\n**Section:** resources\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: title: \"Neutron Vesting Contracts\"\n- Line 3: description: \"Information about Neutron's token vesting smart contracts\"\n- Line 7: This page provides information about the smart contracts that manage token vesting schedules for various Neutron token recipient groups.\n- Line 9: ## Mainnet (neutron-1)\n- Line 13: | Neutron Vesting Investors [no voting power] | `neutron14q5elxj4ghktt7d7d0uw0cs0gqyeay25h5fkree897gjm38gevxqmvqsq5` | [vesting-investors](https://github.com/neutron-org/neutron-tge-contracts) | 28 |\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Vesting Contracts\"\ndescription: \"Information about Neutron's token vesting smart contracts\"\n\n---\n\ntitle: \"Neutron Vesting Contracts\"\ndescription: \"Information about Neutron's token vesting smart contracts\"\nicon: \"clock\"\n\n---\n\n\nThis page provides information about the smart contracts that manage token vesting schedules for various Neutron token recipient groups.\n\n```\n\n---\n\n## 9. DeFi on Neutron\n**File:** /root/neutron/docs/defi/overview.mdx\n**Section:** defi\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: title: \"DeFi on Neutron\"\n- Line 3: description: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\n- Line 7: Neutron is purpose-built for next-generation decentralized finance, offering integrated infrastructure that enables unprecedented capital efficiency, low latency, and seamless composability across a thriving ecosystem of applications.\n- Line 19: The Cron module enables scheduled, conditional, and gasless contract execution without relying on external keepers or bots, ensuring reliable automation.\n- Line 42: Neutron's architectural advantage comes from how its core modules work together to create a unified DeFi experience:\n\n**Content Preview:**\n```\n---\ntitle: \"DeFi on Neutron\"\ndescription: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\n\n---\n\ntitle: \"DeFi on Neutron\"\ndescription: \"Neutron's integrated financial infrastructure powers capital-efficient DeFi products\"\nicon: \"chart-line\"\n\n---\n\n\nNeutron is purpose-built for next-generation decentralized finance, offering integrated infrastructure that enables unprecedented capital efficiency, low latency, and seamless composability across a thriving ecosystem of applications.\n\n```\n\n---\n\n## 10. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n- Line 23: ## Getting Started with SubQuery for Neutron\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "7066d5c6-7d4b-4482-8671-716d705c98a1",
+            "tool_call_id": "call_IBeEZJHdWQnbUvnNtyZj2SAZ",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_wQCQB20jLEUPOOM4PfiQSNRL",
+                        "function": {
+                            "arguments": "{\"query\": \"personal counter deposit NTRN\", \"section\": \"all\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 553,
+                    "prompt_tokens": 4240,
+                    "total_tokens": 4793,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 512,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eUZJ5L5XzSal9G1lRTlcakpq652",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--bd64a427-572d-4367-bc2b-391c3ec692fd-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "personal counter deposit NTRN",
+                        "section": "all",
+                        "max_results": 10
+                    },
+                    "id": "call_wQCQB20jLEUPOOM4PfiQSNRL",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 4240,
+                "output_tokens": 553,
+                "total_tokens": 4793,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 512
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"personal counter deposit NTRN\":\n\n## 1. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 14\n\n**Matching lines:**\n- Line 44: <li>Global counter functionality</li>\n- Line 92: - **Increment Value**: Users can increment a personal counter stored in their state\n- Line 93: - **Deposit/Withdraw NTRN**: Users can deposit and withdraw NTRN tokens with state tracking\n- Line 97: - **Global Counter**: A shared counter that all users can increment\n- Line 98: - **Admin Functions**: Only the contract admin can reset the global counter\n\n**Content Preview:**\n```\n      <li>User state management</li>\n      <li>Global counter functionality</li>\n    </ul>\n\n---\n\n### User State Management\n- **Increment Value**: Users can increment a personal counter stored in their state\n- **Deposit/Withdraw NTRN**: Users can deposit and withdraw NTRN tokens with state tracking\n\n---\n\n- **Increment Value**: Users can increment a personal counter stored in their state\n- **Deposit/Withdraw NTRN**: Users can deposit and withdraw NTRN tokens with state tracking\n- **Query User Data**: Retrieve user-specific state and balances\n```\n\n---\n\n## 2. DEX API\n**File:** /root/neutron/docs/developers/modules/dex/api.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 27: - `pair_id`: Token pair identifier (e.g., \"untrn&lt;&gt;uatom\")\n- Line 99: ### Query User Deposits\n- Line 102: GET /neutron/dex/user/deposits/{address}\n- Line 105: Returns all deposits for a specific user.\n- Line 148: ### Simulate Deposit\n\n**Content Preview:**\n```\n**Parameters:**\n- `pair_id`: Token pair identifier (e.g., \"untrn&lt;&gt;uatom\")\n- `tick_index`: Tick index of the pool\n\n---\n\n\n### Query User Deposits\n\n\n---\n\n```\nGET /neutron/dex/user/deposits/{address}\n```\n```\n\n---\n\n## 3. How-to\n**File:** /root/neutron/docs/developers/modules/dex/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 56: #### Basic Single-Tick Deposit\n- Line 59: neutrond tx dex deposit \\\n- Line 61: untrn \\\n- Line 87: neutrond tx dex deposit \\\n- Line 89: untrn \\\n\n**Content Preview:**\n```\n\n#### Basic Single-Tick Deposit\n\n\n---\n\n```bash\nneutrond tx dex deposit \\\n  alice \\\n\n---\n\n  alice \\\n  untrn \\\n  ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2 \\\n```\n\n---\n\n## 4. How-To Guide\n**File:** /root/neutron/docs/developers/modules/globalfee/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 23: --fees 1000untrn\n- Line 39: \"denom\": \"untrn\",\n- Line 57: \"deposit\": \"10000000untrn\"\n- Line 100: \"denom\": \"untrn\",\n- Line 240: Error: insufficient fee: got 1000untrn, required 2500untrn\n\n**Content Preview:**\n```\n  --gas-adjustment 1.5 \\\n  --fees 1000untrn\n```\n\n---\n\n          {\n            \"denom\": \"untrn\",\n            \"amount\": \"0.025\"\n\n---\n\n  ],\n  \"deposit\": \"10000000untrn\"\n}\n```\n\n---\n\n## 5. How-to\n**File:** /root/neutron/docs/developers/modules/ibc-rate-limit/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 50: \"deposit\": \"10000000untrn\"\n- Line 67: neutron query wasm contract-state smart <contract-address> '{\"get_quotas\":{\"channel_id\":\"channel-0\",\"denom\":\"untrn\"}}'\n- Line 150: \"denom\": \"untrn\",\n- Line 189: \"denom\": \"untrn\",\n- Line 221: {\"channel\": \"channel-0\", \"denom\": \"untrn\"},\n\n**Content Preview:**\n```\n  ],\n  \"deposit\": \"10000000untrn\"\n}\n\n---\n\n```bash\nneutron query wasm contract-state smart <contract-address> '{\"get_quotas\":{\"channel_id\":\"channel-0\",\"denom\":\"untrn\"}}'\n```\n\n---\n\n    \"channel_id\": \"channel-0\",\n    \"denom\": \"untrn\",\n    \"quota\": \"daily-outflow\"\n```\n\n---\n\n## 6. ICQ Explanation\n**File:** /root/neutron/docs/developers/modules/interchain-queries/explanation.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 158: IBC [clients](https://ibc.cosmos.network/v8/ibc/overview/#clients) and [connections](https://ibc.cosmos.network/v8/ibc/overview/#connections) play a crucial role in ensuring the authenticity of Interchain Queries. When an IBC connection is initialized, it creates IBC clients and verifies that their states are accurate for their respective counterparties. These client states are then used to verify the results of Interchain Queries. The chosen connection ID for an Interchain Query directly impacts the trustworthiness of the entire Interchain Queries-based application.\n- Line 166: ## Why is there a query creation deposit?\n- Line 168: To ensure the ledger is kept clean of unused or outdated queries, a deposit mechanism is implemented. When a contract sends a [RegisterInterchainQuery](/developers/modules/interchain-queries/reference#registerinterchainquery) message, the required deposit is deducted from the contract's balance as an escrow payment for the query creation. This deposit is refunded when the query is removed by issuing a [RemoveInterchainQuery](/developers/modules/interchain-queries/reference#removeinterchainquery) message.\n- Line 170: The amount required for the deposit is defined by the `query_deposit` [module parameter](/developers/modules/interchain-queries/reference#params).\n- Line 172: In essence, query owners are expected to remove their queries once they are no longer needed. If a query is not used within the `query_submit_timeout` period and the owner does not remove it, any network user is allowed to clean up the chain by removing the unused query. As a reward, the deposited assets are transferred to the user who performs the cleanup.\n\n**Content Preview:**\n```\n\nIBC [clients](https://ibc.cosmos.network/v8/ibc/overview/#clients) and [connections](https://ibc.cosmos.network/v8/ibc/overview/#connections) play a crucial role in ensuring the authenticity of Interchain Queries. When an IBC connection is initialized, it creates IBC clients and verifies that their states are accurate for their respective counterparties. These client states are then used to verify the results of Interchain Queries. The chosen connection ID for an Interchain Query directly impacts the trustworthiness of the entire Interchain Queries-based application.\n\n\n---\n\n\n## Why is there a query creation deposit?\n\n\n---\n\n\nTo ensure the ledger is kept clean of unused or outdated queries, a deposit mechanism is implemented. When a contract sends a [RegisterInterchainQuery](/developers/modules/interchain-queries/reference#registerinterchainquery) message, the required deposit is deducted from the contract's balance as an escrow payment for the query creation. This deposit is refunded when the query is removed by issuing a [RemoveInterchainQuery](/developers/modules/interchain-queries/reference#removeinterchainquery) message.\n\n```\n\n---\n\n## 7. Interchain Queries Module\n**File:** /root/neutron/docs/developers/modules/interchain-queries/overview.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 66: ## Query Creation Deposit\n- Line 68: To prevent spam and incentivize proper management of queries, the module implements a deposit system:\n- Line 70: 1. When a query is registered, the creator must provide a deposit in NTRN tokens.\n- Line 71: 2. This deposit is locked as long as the query is active.\n- Line 72: 3. The deposit can be reclaimed by the owner when they remove the query.\n\n**Content Preview:**\n```\n\n## Query Creation Deposit\n\n\n---\n\n\nTo prevent spam and incentivize proper management of queries, the module implements a deposit system:\n\n\n---\n\n\n1. When a query is registered, the creator must provide a deposit in NTRN tokens.\n2. This deposit is locked as long as the query is active.\n```\n\n---\n\n## 8. Reference\n**File:** /root/neutron/docs/developers/modules/interchain-queries/reference.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 32: Registers a new Interchain Query in the `interchainqueries` module. This message should only be issued by a smart contract. The calling contract is automatically charged a query registration deposit. The deposit is refunded when the query is removed.\n- Line 108: Removes an Interchain Query and refunds the deposit. Can only be executed by the query owner during the submit timeout, or by anyone after the timeout expires.\n- Line 179: \"query_deposit\": [\n- Line 181: \"denom\": \"untrn\",\n- Line 274: | `query_deposit` | sdk.Coins | 1000000untrn | Deposit required for query registration |\n\n**Content Preview:**\n```\n\nRegisters a new Interchain Query in the `interchainqueries` module. This message should only be issued by a smart contract. The calling contract is automatically charged a query registration deposit. The deposit is refunded when the query is removed.\n\n\n---\n\n\nRemoves an Interchain Query and refunds the deposit. Can only be executed by the query owner during the submit timeout, or by anyone after the timeout expires.\n\n\n---\n\n    \"query_submit_timeout\": \"1036800\",\n    \"query_deposit\": [\n      {\n```\n\n---\n\n## 9. How To\n**File:** /root/neutron/docs/developers/modules/interchaintxs/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 58: denom: \"untrn\".to_string(),\n- Line 87: counterparty_channel_id: String,\n- Line 88: counterparty_version: String,\n- Line 98: counterparty_channel_id,\n- Line 99: counterparty_version,\n\n**Content Preview:**\n```\n        register_fee: vec![Coin {\n            denom: \"untrn\".to_string(),\n            amount: Uint128::from(1000u128),\n\n---\n\n        channel_id: String,\n        counterparty_channel_id: String,\n        counterparty_version: String,\n\n---\n\n        counterparty_channel_id: String,\n        counterparty_version: String,\n    },\n```\n\n---\n\n## 10. Interchain Accounts with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_ica.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 352: ack_fee: vec![Coin::new(100000, \"untrn\")],\n- Line 353: timeout_fee: vec![Coin::new(100000, \"untrn\")],\n- Line 460: counterparty_channel_id,\n- Line 461: counterparty_version,\n- Line 467: counterparty_channel_id,\n\n**Content Preview:**\n```\n        recv_fee: vec![], // Must be empty\n        ack_fee: vec![Coin::new(100000, \"untrn\")],\n        timeout_fee: vec![Coin::new(100000, \"untrn\")],\n\n---\n\n        ack_fee: vec![Coin::new(100000, \"untrn\")],\n        timeout_fee: vec![Coin::new(100000, \"untrn\")],\n    };\n\n---\n\n            channel_id,\n            counterparty_channel_id,\n            counterparty_version,\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "dd6dab1e-e0a5-40f6-820a-55e53d255f9a",
+            "tool_call_id": "call_wQCQB20jLEUPOOM4PfiQSNRL",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_QlsULBRCJltkoMVWftDfODDf",
+                        "function": {
+                            "arguments": "{\"query\": \"neutrontemplate personal counter wasm message increment\", \"section\": \"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 876,
+                    "prompt_tokens": 7733,
+                    "total_tokens": 8609,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 832,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eUon9YPCi2T2SKAykwxDGKS7mSw",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--f0f958e7-00b3-4292-a319-07d2b0405be6-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "neutrontemplate personal counter wasm message increment",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_QlsULBRCJltkoMVWftDfODDf",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 7733,
+                "output_tokens": 876,
+                "total_tokens": 8609,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 832
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"neutrontemplate personal counter wasm message increment\":\n\n## 1. Introduction to CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/introduction_to_cosmwasm.mdx\n**Section:** developers\n**Relevance Score:** 24\n\n**Matching lines:**\n- Line 2: title: \"Introduction to CosmWasm\"\n- Line 6: This tutorial provides a gentle introduction to smart contract development on Neutron using CosmWasm. You'll learn the fundamentals of smart contracts and how to build them step by step.\n- Line 10: Let's examine what a smart contract is and how it works under the hood. The following is a minimal contract that stores a counter value which can be incremented and queried by anyone.\n- Line 12: The counter contract template can be found in [this GitHub repository](https://github.com/CosmWasm/cw-template).\n- Line 16: A smart contract can be considered an instance of a singleton object whose internal state is persisted on the blockchain. Users can trigger state changes by sending the smart contract JSON messages, and users can also query its state by sending a request formatted as a JSON message.\n\n**Content Preview:**\n```\n---\ntitle: \"Introduction to CosmWasm\"\ndescription: \"A gentle introduction to smart contract development on Neutron\"\n\n---\n\n\nThis tutorial provides a gentle introduction to smart contract development on Neutron using CosmWasm. You'll learn the fundamentals of smart contracts and how to build them step by step.\n\n\n---\n\n\nLet's examine what a smart contract is and how it works under the hood. The following is a minimal contract that stores a counter value which can be incremented and queried by anyone.\n\n```\n\n---\n\n## 2. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"NeutronTemplate\"\n- Line 3: description: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n- Line 7: NeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n- Line 10: <strong>Live Demo:</strong> <a href=\"https://neutrontemplate.deploydon.com\" target=\"_blank\" className=\"text-primary hover:underline\">https://NeutronTemplate.Deploydon.com</a>\n- Line 42: <li>Complete CosmWasm contract included</li>\n\n**Content Preview:**\n```\n---\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n\n---\n\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\nicon: \"code\"\n\n---\n\n\nNeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n\n```\n\n---\n\n## 3. Messages\n**File:** /root/neutron/docs/developers/modules/dex/messages.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Messages\"\n- Line 5: The Dex module exposes several message types for interacting with the decentralized exchange. Here's a detailed documentation of each message and its expected behavior.\n- Line 12: message MsgDeposit {\n- Line 33: message DepositOptions {\n- Line 45: | `creator` | string | Address of the message sender |\n\n**Content Preview:**\n```\n---\ntitle: \"Messages\"\n---\n\n---\n\n\nThe Dex module exposes several message types for interacting with the decentralized exchange. Here's a detailed documentation of each message and its expected behavior.\n\n\n---\n\n```protobuf\nmessage MsgDeposit {\n  option (amino.name) = \"dex/MsgDeposit\";\n```\n\n---\n\n## 4. Interchain Accounts with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_ica.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Interchain Accounts with CosmWasm\"\n- Line 23: - Have a basic understanding of CosmWasm smart contract development\n- Line 25: - Have completed the [Introduction to CosmWasm](/developers/tutorials/introduction_to_cosmwasm) tutorial\n- Line 29: Start by creating a new CosmWasm project using cargo-generate:\n- Line 32: cargo generate --git https://github.com/CosmWasm/cw-template.git --name neutron-ica-example\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Accounts with CosmWasm\"\ndescription: \"Learn how to build smart contracts that utilize interchain accounts to execute transactions on other chains\"\n\n---\n\n\n- Have a basic understanding of CosmWasm smart contract development\n- Be familiar with [Neutron's architecture](/developers/overview)\n\n---\n\n- Be familiar with [Neutron's architecture](/developers/overview)\n- Have completed the [Introduction to CosmWasm](/developers/tutorials/introduction_to_cosmwasm) tutorial\n\n```\n\n---\n\n## 5. Interchain Queries with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_icq.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Interchain Queries with CosmWasm\"\n- Line 22: - Have a basic understanding of CosmWasm smart contract development\n- Line 24: - Have completed the [Introduction to CosmWasm](/developers/tutorials/introduction_to_cosmwasm) tutorial\n- Line 28: Start by creating a new CosmWasm project using cargo-generate:\n- Line 31: cargo generate --git https://github.com/CosmWasm/cw-template.git --name neutron-icq-example\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Queries with CosmWasm\"\ndescription: \"Learn how to build smart contracts that query data from other blockchains using Neutron's ICQ module\"\n\n---\n\n\n- Have a basic understanding of CosmWasm smart contract development\n- Be familiar with [Neutron's architecture](/developers/overview)\n\n---\n\n- Be familiar with [Neutron's architecture](/developers/overview)\n- Have completed the [Introduction to CosmWasm](/developers/tutorials/introduction_to_cosmwasm) tutorial\n\n```\n\n---\n\n## 6. Part 2: Modules & Contracts\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-2-modules-contracts.mdx\n**Section:** developers\n**Relevance Score:** 14\n\n**Matching lines:**\n- Line 12: - Advanced message handling and responses\n- Line 13: - Working with Neutron-specific message types\n- Line 19: - Familiarity with CosmWasm message patterns\n- Line 39: Let's extend our counter contract to use Neutron's Oracle module. We'll create a contract that tracks the price of ATOM and only allows increments when the price is above a certain threshold.\n- Line 47: cosmwasm-std = \"1.0\"\n\n**Content Preview:**\n```\n- Inter-contract communication patterns\n- Advanced message handling and responses\n- Working with Neutron-specific message types\n\n---\n\n- Advanced message handling and responses\n- Working with Neutron-specific message types\n\n\n---\n\n- Basic understanding of the Cosmos SDK\n- Familiarity with CosmWasm message patterns\n\n```\n\n---\n\n## 7. Mechanism\n**File:** /root/neutron/docs/developers/modules/contractmanager/explanation.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 11: When smart contracts interact with IBC, they must handle acknowledgments from counterparty chains. These acknowledgments are delivered to contracts via sudo calls, which are privileged operations that bypass normal permission checks. This creates several potential issues:\n- Line 32: A[IBC Module] -->|ACK Message| B[SudoLimitWrapper]\n- Line 43: The SudoLimitWrapper is a middleware that intercepts calls to the Wasm module's Sudo method. It:\n- Line 49: The wrapper implements the `WasmKeeper` interface:\n- Line 52: type WasmKeeper interface {\n\n**Content Preview:**\n```\n\nWhen smart contracts interact with IBC, they must handle acknowledgments from counterparty chains. These acknowledgments are delivered to contracts via sudo calls, which are privileged operations that bypass normal permission checks. This creates several potential issues:\n\n\n---\n\ngraph TD\n    A[IBC Module] -->|ACK Message| B[SudoLimitWrapper]\n    B -->|Limited Gas Context| C[Contract Sudo Handler]\n\n---\n\n\nThe SudoLimitWrapper is a middleware that intercepts calls to the Wasm module's Sudo method. It:\n\n```\n\n---\n\n## 8. Reference\n**File:** /root/neutron/docs/developers/modules/ibc-rate-limit/reference.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 6: The IBC Rate Limit module provides rate limiting capabilities for IBC transfers by delegating logic to a CosmWasm contract.\n- Line 12: | `contract_address` | string | Address of the CosmWasm contract implementing rate limiting logic |\n- Line 32: ## Messages\n- Line 52: - `failure_type`: Type of failure encountered (`acknowledgment` or `timeout`)\n- Line 58: - **Contract-Based**: Rate limiting logic is implemented in a CosmWasm contract\n\n**Content Preview:**\n```\n\nThe IBC Rate Limit module provides rate limiting capabilities for IBC transfers by delegating logic to a CosmWasm contract.\n\n\n---\n\n| --- | --- | --- |\n| `contract_address` | string | Address of the CosmWasm contract implementing rate limiting logic |\n\n\n---\n\n\n## Messages\n\n```\n\n---\n\n## 9. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 111: messages: ['Block'],\n- Line 118: messages: ['Tx'],\n- Line 166: // Update transaction counter\n- Line 291: type: 'wasm',\n- Line 292: messageFilter: {\n\n**Content Preview:**\n```\n          file: './proto/cosmos/base/tendermint/v1beta1/types.proto',\n          messages: ['Block'],\n        },\n\n---\n\n          file: './proto/cosmos/tx/v1beta1/tx.proto',\n          messages: ['Tx'],\n        },\n\n---\n\nexport async function handleTransaction(tx: CosmosTransaction): Promise<void> {\n  // Update transaction counter\n  txCount++;\n```\n\n---\n\n## 10. Part 1: Minimal Smart Contract\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-1-minimal-application.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 3: description: \"Create and deploy a simple yet functional CosmWasm smart contract on Neutron\"\n- Line 6: This tutorial will guide you through creating your first smart contract on Neutron. You'll learn the basics of CosmWasm development and deploy a working application.\n- Line 10: A simple counter contract that:\n- Line 17: - [Rust](https://rustup.rs/) installed with `wasm32-unknown-unknown` target\n- Line 24: Neutron is a Cosmos SDK chain that uses CosmWasm for smart contracts. Contracts are WebAssembly modules that can store state and process messages.\n\n**Content Preview:**\n```\ntitle: \"Part 1: Minimal Smart Contract\"\ndescription: \"Create and deploy a simple yet functional CosmWasm smart contract on Neutron\"\n---\n\n---\n\n\nThis tutorial will guide you through creating your first smart contract on Neutron. You'll learn the basics of CosmWasm development and deploy a working application.\n\n\n---\n\n\nA simple counter contract that:\n- Stores a `Uint128` value in persistent storage\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "bde720aa-372e-4419-b3d3-ff32ed6612c1",
+            "tool_call_id": "call_QlsULBRCJltkoMVWftDfODDf",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Increment my personal counter\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_sender_address\",\n        \"description\": \"Identify the caller\u2019s wallet address (this will also become the key for their personal counter).\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"load_contract_address\",\n        \"description\": \"Retrieve or confirm the deployed NeutronTemplate contract address that exposes the counter API.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_wasm_execute_msg\",\n        \"description\": \"Build the execute message: {\\\"increment_personal\\\":{}} targeted at the contract address.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the transaction with the caller\u2019s key and broadcast it to the Neutron network.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Ensure the transaction hash is included in a finalized block.\",\n      \"Query the contract for the caller\u2019s personal counter and confirm the returned value has increased by exactly 1 compared to the previous value.\"\n    ]\n  },\n  {\n    \"intent\": \"Increment the global counter\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_sender_address\",\n        \"description\": \"Identify the caller\u2019s wallet (needed for fee payment and signing).\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"load_contract_address\",\n        \"description\": \"Retrieve or confirm the deployed NeutronTemplate contract address.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_wasm_execute_msg\",\n        \"description\": \"Build the execute message: {\\\"increment_global\\\":{}}.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast the increment-global transaction.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Verify the transaction was successfully committed to a block.\",\n      \"Query the contract\u2019s global counter and confirm the value increased by 1.\"\n    ]\n  },\n  {\n    \"intent\": \"Query my personal counter value\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_sender_address\",\n        \"description\": \"Determine the caller\u2019s address which will be supplied in the query.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"load_contract_address\",\n        \"description\": \"Fetch the deployed NeutronTemplate contract address.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_wasm_query_msg\",\n        \"description\": \"Create the smart-query payload: {\\\"get_personal_counter\\\":{\\\"address\\\":\\\"<sender>\\\"}}.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"query_contract_smart\",\n        \"description\": \"Execute the query against the contract and return the counter value.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The query returns a valid Uint128 value representing the caller\u2019s personal counter.\"\n    ]\n  },\n  {\n    \"intent\": \"Query my deposited NTRN amount\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_sender_address\",\n        \"description\": \"Identify the wallet address whose deposit balance is being requested.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"load_contract_address\",\n        \"description\": \"Retrieve the NeutronTemplate contract address.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_wasm_query_msg\",\n        \"description\": \"Build the query payload: {\\\"get_deposit\\\":{\\\"address\\\":\\\"<sender>\\\"}}.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"query_contract_smart\",\n        \"description\": \"Execute the smart query to obtain the deposited NTRN amount.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The query returns the caller\u2019s deposit as a Coin or Uint128 amount denominated in untrn.\"\n    ]\n  },\n  {\n    \"intent\": \"Query the global counter value\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"load_contract_address\",\n        \"description\": \"Fetch the deployed NeutronTemplate contract address.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"construct_wasm_query_msg\",\n        \"description\": \"Create the query payload: {\\\"get_global_counter\\\":{}}.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"query_contract_smart\",\n        \"description\": \"Perform the smart-query and retrieve the global counter value.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The query returns a valid Uint128 value representing the global counter.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 1948,
+                    "prompt_tokens": 11147,
+                    "total_tokens": 13095,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 896,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eV3WFeW0oGXYiL9q0F8gT1b9ErW",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--62a0724d-8402-4e29-91b2-6895fc7cc011-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 11147,
+                "output_tokens": 1948,
+                "total_tokens": 13095,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 896
+                }
+            }
+        }
+    ]
+}

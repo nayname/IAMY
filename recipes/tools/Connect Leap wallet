@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "connectWallet locates the requested browser wallet (Leap) by checking window.leap and confirms the extension is installed.",
+            "function": "connectWallet(preferredWallet)",
+            "usage": "const signer = await connectWallet('leap');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "suggestNeutronChain sends the Neutron chain configuration to wallet.experimentalSuggestChain so Leap recognises the network.",
+            "function": "suggestNeutronChain(wallet)",
+            "usage": "await suggestNeutronChain(window.leap);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "ensureNeutronNetwork requests user approval by calling wallet.enable('neutron-1') and, if necessary, falls back to suggesting the chain first.",
+            "function": "ensureNeutronNetwork()",
+            "usage": "await ensureNeutronNetwork();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "getOfflineSignerAndAddress retrieves the OfflineSigner for 'neutron-1' and returns the wallet's primary address.",
+            "function": "getOfflineSignerAndAddress(chainId)",
+            "usage": "const { address, signer } = await getOfflineSignerAndAddress('neutron-1');"
+        }
+    ],
+    "frontend": [
+        "const signer = await connectWallet('leap');//step: 1 Tool: detect_leap_provider Desciption: Check for window.leap or use @cosmos-kit/leap adapter to detect the Leap extension.",
+        "await suggestNeutronChain(window.leap);//step: 2 Tool: leap_suggest_chain Desciption: Send the chain configuration object to window.leap.experimentalSuggestChain so Leap knows about Neutron.",
+        "await ensureNeutronNetwork();//step: 3 Tool: leap_enable_chain Desciption: Call window.leap.enable('neutron-1') to request user approval.",
+        "const { address, signer } = await getOfflineSignerAndAddress('neutron-1');//step: 4 Tool: retrieve_leap_accounts Desciption: Use window.leap.getOfflineSigner('neutron-1') and store the primary address for subsequent tx signing."
+    ],
+    "backend": [],
+    "intent": "Connect Leap wallet",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "detect_leap_provider",
+            "description": "Check for window.leap or use @cosmos-kit/leap adapter to detect the Leap extension."
+        },
+        {
+            "step": 2,
+            "tool": "leap_suggest_chain",
+            "description": "Send the chain configuration object to window.leap.experimentalSuggestChain so Leap knows about Neutron."
+        },
+        {
+            "step": 3,
+            "tool": "leap_enable_chain",
+            "description": "Call window.leap.enable('neutron-1') to request user approval."
+        },
+        {
+            "step": 4,
+            "tool": "retrieve_leap_accounts",
+            "description": "Use window.leap.getOfflineSigner('neutron-1') and store the primary address for subsequent tx signing."
+        }
+    ],
+    "outcome_checks": [
+        "Leap returns at least one account address.",
+        "The UI reflects the connected wallet with the correct Neutron balance."
+    ]
+}

@@ -1,0 +1,40 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Validate that the supplied contract address is a proper Bech32 Neutron address before making any on-chain queries.",
+            "code": "/*\n * validateContractAddress.js\n * Checks if a contract address is a valid Neutron Bech32 address.\n */\nimport { fromBech32 } from \"@cosmjs/encoding\";\n\n/**\n * Validate a Bech32 contract address.\n * @param {string} address - The contract address to validate.\n * @param {string} [expectedPrefix=\"neutron\"] - Expected Bech32 prefix.\n * @throws {Error} If the address is malformed or has the wrong prefix.\n * @returns {boolean} true if validation succeeds.\n */\nexport const validateContractAddress = (address, expectedPrefix = \"neutron\") => {\n  try {\n    const { prefix } = fromBech32(address);\n    if (prefix !== expectedPrefix) {\n      throw new Error(`Invalid prefix: expected '${expectedPrefix}', got '${prefix}'`);\n    }\n    return true;\n  } catch (err) {\n    // Wrap and re-throw to keep a clean error surface for callers\n    throw new Error(`Invalid contract address: ${err.message}`);\n  }\n};",
+            "usage": "try {\n  validateContractAddress(contractAddress);\n  // Continue with backend calls \u2026\n} catch (e) {\n  console.error(e.message);\n}"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Query the chain\u2019s REST API (or your preferred RPC wrapper) for the contract\u2019s on-chain metadata, including its `code_id`.",
+            "code": "# query_contract_info.py\n# Fetch contract info from Neutron LCD and return JSON.\n\nimport requests\nfrom typing import Dict\n\nREST_ENDPOINT = \"https://rest-kralum.neutron.org\"  # Change to your preferred LCD\n\nclass ContractQueryError(Exception):\n    \"\"\"Custom error to clearly signal query failures.\"\"\"\n\n\ndef query_contract_info(contract_address: str, lcd: str = REST_ENDPOINT) -> Dict:\n    \"\"\"Request contract metadata from the LCD endpoint.\n\n    Args:\n        contract_address (str): Bech32 contract address.\n        lcd (str): Base URL for the LCD server.\n\n    Returns:\n        Dict: Parsed JSON with contract metadata.\n    \"\"\"\n    url = f\"{lcd}/cosmwasm/wasm/v1/contract/{contract_address}\"\n    try:\n        response = requests.get(url, timeout=10)\n        response.raise_for_status()\n        data = response.json()\n        return data.get(\"contract_info\", {})\n    except requests.RequestException as exc:\n        raise ContractQueryError(f\"LCD request failed: {exc}\") from exc\n    except ValueError:\n        raise ContractQueryError(\"LCD returned malformed JSON\")",
+            "usage": "contract_info = query_contract_info(contract_address)\nprint(contract_info)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Extract the `code_id` field from the contract-info JSON returned in Step 2.",
+            "code": "# extract_code_id.py\n\nfrom typing import Dict, Union\n\nclass CodeIdExtractionError(Exception):\n    pass\n\ndef extract_code_id(contract_info: Dict) -> Union[int, str]:\n    \"\"\"Pull `code_id` out of the contract-info payload.\n\n    Args:\n        contract_info (Dict): Output from `query_contract_info`.\n\n    Returns:\n        int | str: The numeric (or string) code ID.\n    \"\"\"\n    try:\n        code_id = contract_info[\"code_id\"]\n        if code_id in (None, \"\"):\n            raise KeyError\n        return code_id\n    except KeyError:\n        raise CodeIdExtractionError(\"`code_id` not found in contract info payload\")",
+            "usage": "code_id = extract_code_id(contract_info)\nprint(f\"Code ID: {code_id}\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Query chain state for the code-info record associated with the extracted `code_id`.",
+            "code": "# query_code_info.py\n\nimport requests\nfrom typing import Dict\n\nREST_ENDPOINT = \"https://rest-kralum.neutron.org\"  # Same endpoint as Step 2\n\nclass CodeInfoQueryError(Exception):\n    pass\n\ndef query_code_info(code_id: str, lcd: str = REST_ENDPOINT) -> Dict:\n    \"\"\"Retrieve code-info (including `code_hash`) from the LCD.\n\n    Args:\n        code_id (str): The code ID extracted in Step 3.\n        lcd (str): Base URL for the LCD server.\n\n    Returns:\n        Dict: JSON payload containing code-info.\n    \"\"\"\n    url = f\"{lcd}/cosmwasm/wasm/v1/code/{code_id}\"\n    try:\n        response = requests.get(url, timeout=10)\n        response.raise_for_status()\n        return response.json().get(\"code_info\", {})\n    except requests.RequestException as exc:\n        raise CodeInfoQueryError(f\"LCD request failed: {exc}\") from exc\n    except ValueError:\n        raise CodeInfoQueryError(\"Malformed JSON in LCD response\")",
+            "usage": "code_info = query_code_info(code_id)\nprint(code_info)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Parse and return the `code_hash` field contained in the code-info payload obtained in Step 4.",
+            "code": "# extract_code_hash.py\n\nfrom typing import Dict\n\nclass CodeHashExtractionError(Exception):\n    pass\n\ndef extract_code_hash(code_info: Dict) -> str:\n    \"\"\"Safely extract the `code_hash` value.\n\n    Args:\n        code_info (Dict): Output from `query_code_info`.\n\n    Returns:\n        str: The hexadecimal code hash.\n    \"\"\"\n    try:\n        code_hash = code_info[\"data_hash\"] or code_info[\"code_hash\"]  # field name may differ\n        if not code_hash:\n            raise KeyError\n        return code_hash\n    except KeyError:\n        raise CodeHashExtractionError(\"`code_hash` not present in code-info payload\")",
+            "usage": "code_hash = extract_code_hash(code_info)\nprint(f\"Code Hash: {code_hash}\")"
+        }
+    ]
+}

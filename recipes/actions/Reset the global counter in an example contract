@@ -1,0 +1,40 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 loads the admin wallet (mnemonic-based) and returns a LocalWallet instance together with its Bech32 address.",
+            "code": "import os\nfrom cosmpy.aerial.wallet import LocalWallet\n\n\ndef get_admin_wallet() -> LocalWallet:\n    \"\"\"Return the admin LocalWallet defined by the ADMIN_MNEMONIC env-var.\"\"\"\n    mnemonic = os.getenv(\"ADMIN_MNEMONIC\")\n    if not mnemonic:\n        raise EnvironmentError(\"ADMIN_MNEMONIC environment variable is not set.\")\n\n    try:\n        wallet = LocalWallet.from_mnemonic(mnemonic)\n    except Exception as err:\n        raise ValueError(f\"Failed to create wallet from mnemonic: {err}\") from err\n\n    return wallet\n\n\ndef get_admin_address() -> str:\n    \"\"\"A small helper that wraps get_admin_wallet() and only returns the Bech32 address.\"\"\"\n    return str(get_admin_wallet().address())",
+            "usage": "wallet = get_admin_wallet()\nadmin_addr = get_admin_address()\nprint(f\"Admin address: {admin_addr}\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 fetches the deployed counter-contract address from an env-var (or hardcoded fallback) and validates its format.",
+            "code": "import os\nimport re\n\n_BECH32_RE = re.compile(r\"^neutron1[02-9ac-hj-np-z]{38}$\")  # very shallow check\n\n\ndef get_contract_address() -> str:\n    \"\"\"Return the contract address defined by CONTRACT_ADDRESS env-var.\"\"\"\n    contract_addr = os.getenv(\"CONTRACT_ADDRESS\") or \"\"\n    if not _BECH32_RE.match(contract_addr):\n        raise ValueError(\"CONTRACT_ADDRESS env-var is missing or not a valid Neutron bech32 address.\")\n    return contract_addr",
+            "usage": "contract_addr = get_contract_address()\nprint(f\"Counter contract address: {contract_addr}\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 builds a MsgExecuteContract that calls the `reset` entry point with 0 funds and packs it into a Transaction object ready for signing.",
+            "code": "import json\nimport os\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.aerial.client import NetworkConfig\nfrom cosmpy.aerial.protoutil import create_msg_execute_contract\n\n# A single NetworkConfig / LedgerClient can be re-used across calls\nNETWORK_CFG = NetworkConfig(\n    chain_id=os.getenv(\"CHAIN_ID\", \"neutron-1\"),\n    url=os.getenv(\"RPC_ENDPOINT\", \"https://rpc-kralum.neutron.org\"),\n    fee_min_denom=\"untrn\",\n)\n\n\ndef construct_tx_execute_contract(contract_addr: str, wallet, gas: int = 200000) -> Transaction:\n    \"\"\"Create an unsigned Transaction carrying the reset execute message.\"\"\"\n    execute_msg = {\"reset\": {}}\n\n    # Build protobuf MsgExecuteContract using the helper (encodes & sets funds = [])\n    msg = create_msg_execute_contract(\n        sender=str(wallet.address()),\n        contract=contract_addr,\n        msg=json.dumps(execute_msg).encode(),\n        funds=[],\n    )\n\n    tx = Transaction()\n    tx.add_message(msg)\n    tx.with_chain_id(NETWORK_CFG.chain_id)\n    tx.with_sender(wallet.address())\n    tx.with_gas(gas)\n    # Fee is automatically derived from gas*gas_price if not specified explicitly\n    return tx",
+            "usage": "tx = construct_tx_execute_contract(contract_addr, wallet)\nprint(\"Tx with reset message prepared \u2192\", tx)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 signs the transaction with the admin\u2019s key and broadcasts it to the Neutron RPC endpoint, returning the final ABCI response.",
+            "code": "from cosmpy.aerial.client import LedgerClient\n\n# LedgerClient must share the same NetworkConfig used when building the tx\nLEDGER = LedgerClient(NETWORK_CFG)\n\n\ndef sign_and_broadcast_tx(tx: Transaction, wallet) -> dict:\n    \"\"\"Sign a Transaction with admin wallet and broadcast it. Raises on failure.\"\"\"\n    try:\n        wallet.sign_transaction(tx)\n        result = LEDGER.broadcast_tx(tx)\n    except Exception as err:\n        raise RuntimeError(f\"Broadcast failed: {err}\") from err\n\n    # `result` is a tx_response dict coming from Tendermint\n    if int(result.get(\"code\", 0)) != 0:\n        raise RuntimeError(f\"Tx error (code {result['code']}): {result['raw_log']}\")\n\n    print(f\"TxHash {result['txhash']} included in block {result['height']}\")\n    return result",
+            "usage": "tx_response = sign_and_broadcast_tx(tx, wallet)\nprint(tx_response)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 queries the smart-contract state after the tx is confirmed to verify that the counter was reset (expects `{ \"count\": 0 }`).",
+            "code": "def query_wasm_contract_state(contract_addr: str) -> int:\n    \"\"\"Query `{ \"get_count\": {} }` from the counter contract and return the integer count.\"\"\"\n    query_msg = {\"get_count\": {}}\n    try:\n        response = LEDGER.query_contract_smart(contract_addr, query_msg)\n    except Exception as err:\n        raise RuntimeError(f\"Smart-contract query failed: {err}\") from err\n\n    if \"count\" not in response:\n        raise ValueError(f\"Unexpected response shape: {response}\")\n    return int(response[\"count\"])",
+            "usage": "current_count = query_wasm_contract_state(contract_addr)\nprint(f\"Contract count is now: {current_count}\")"
+        }
+    ]
+}

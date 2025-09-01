@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Starts a head-less Chrome session and opens the Celatone explorer for the chosen Neutron network.",
+            "function": "open_celatone_explorer(chain_id, download_dir='/tmp')",
+            "usage": "driver = open_celatone_explorer('neutron-1', '/tmp')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Enters the target contract address into Celatone\u2019s search box and waits for the contract page to load.",
+            "function": "search_contract_address(driver, contract_address)",
+            "usage": "search_contract_address(driver, 'neutron1abcdef...')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Selects the Metadata tab on the Celatone contract page so the stored contract data is displayed.",
+            "function": "navigate_to_metadata_tab(driver)",
+            "usage": "navigate_to_metadata_tab(driver)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Clicks Celatone\u2019s download button and waits until the raw metadata JSON file is fully written to disk.",
+            "function": "download_metadata_json(driver, download_dir)",
+            "usage": "metadata_path = download_metadata_json(driver, '/tmp')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "driver = open_celatone_explorer('neutron-1', '/tmp')#step: 1 Tool: open_celatone_explorer Desciption: Launch the Celatone explorer in a web browser and select the correct Neutron network (mainnet: neutron-1 or testnet: pion-1).",
+        "search_contract_address(driver, 'neutron1abcdef...')#step: 2 Tool: search_contract_address Desciption: Paste the target contract address into the Celatone search bar and press Enter.",
+        "navigate_to_metadata_tab(driver)#step: 3 Tool: navigate_to_metadata_tab Desciption: Click the \u201cMetadata\u201d (or equivalent) tab in Celatone\u2019s contract view to load stored contract information.",
+        "metadata_path = download_metadata_json(driver, '/tmp')#step: 4 Tool: download_metadata_json Desciption: Use Celatone\u2019s \u201cDownload\u201d (</>) button to fetch the raw metadata JSON for local inspection or downstream processing."
+    ],
+    "intent": "Query contract metadata on Celatone",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "open_celatone_explorer",
+            "description": "Launch the Celatone explorer in a web browser and select the correct Neutron network (mainnet: neutron-1 or testnet: pion-1)."
+        },
+        {
+            "step": 2,
+            "tool": "search_contract_address",
+            "description": "Paste the target contract address into the Celatone search bar and press Enter."
+        },
+        {
+            "step": 3,
+            "tool": "navigate_to_metadata_tab",
+            "description": "Click the \u201cMetadata\u201d (or equivalent) tab in Celatone\u2019s contract view to load stored contract information."
+        },
+        {
+            "step": 4,
+            "tool": "download_metadata_json",
+            "description": "Use Celatone\u2019s \u201cDownload\u201d (</>) button to fetch the raw metadata JSON for local inspection or downstream processing."
+        }
+    ],
+    "outcome_checks": [
+        "The contract\u2019s code hash, instantiate msg, and schema files are visible in Celatone.",
+        "The metadata JSON file contains the expected fields such as name, description, and entry points."
+    ]
+}

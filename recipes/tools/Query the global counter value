@@ -1,0 +1,52 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Reads the deployed contract\u2019s address from your environment variables and ensures it matches Neutron\u2019s bech32 format.",
+            "function": "loadContractAddress()",
+            "usage": "const contractAddr = loadContractAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Builds the CosmWasm smart-query payload that asks for the contract\u2019s global counter.",
+            "function": "constructWasmQueryMsg(senderAddress)",
+            "usage": "const queryMsg = constructWasmQueryMsg();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Sends the smart-query to the backend API and returns the counter value from the contract.",
+            "function": "queryContractSmart(contractAddress, queryMsg)",
+            "usage": "const counter = await queryContractSmart(contractAddr, queryMsg);"
+        }
+    ],
+    "frontend": [
+        "const contractAddr = loadContractAddress();//step: 1 Tool: load_contract_address Desciption: Fetch the deployed NeutronTemplate contract address.",
+        "const queryMsg = constructWasmQueryMsg();//step: 2 Tool: construct_wasm_query_msg Desciption: Create the query payload: {\"get_global_counter\":{}}.",
+        "const counter = await queryContractSmart(contractAddr, queryMsg);//step: 3 Tool: query_contract_smart Desciption: Perform the smart-query and retrieve the global counter value."
+    ],
+    "backend": [],
+    "intent": "Query the global counter value",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "load_contract_address",
+            "description": "Fetch the deployed NeutronTemplate contract address."
+        },
+        {
+            "step": 2,
+            "tool": "construct_wasm_query_msg",
+            "description": "Create the query payload: {\"get_global_counter\":{}}."
+        },
+        {
+            "step": 3,
+            "tool": "query_contract_smart",
+            "description": "Perform the smart-query and retrieve the global counter value."
+        }
+    ],
+    "outcome_checks": [
+        "The query returns a valid Uint128 value representing the global counter."
+    ]
+}

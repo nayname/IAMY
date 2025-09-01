@@ -1,0 +1,33 @@
+{
+    "label": "query_balance",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 ensures the user has a browser wallet (Keplr/Leap) connected to the Neutron chain and returns an OfflineSigner that can later be used for queries or transactions.",
+            "code": "export const ensureWalletConnected = async () => {\n  // Neutron main-net chain-ID\n  const chainId = \"neutron-1\";\n\n  // Detect a supported browser wallet\n  const wallet = window.keplr || window.leap;\n  if (!wallet) {\n    throw new Error(\"Keplr or Leap wallet extension is not installed.\");\n  }\n\n  try {\n    // Ask the wallet to connect / enable the requested chain\n    await wallet.enable(chainId);\n  } catch (err) {\n    throw new Error(`Wallet connection request was rejected: ${err?.message ?? err}`);\n  }\n\n  // Return an OfflineSigner that grants access to the user accounts\n  return wallet.getOfflineSigner ? wallet.getOfflineSigner(chainId) : window.getOfflineSigner(chainId);\n};",
+            "usage": "const signer = await ensureWalletConnected();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 fetches the first account from the provided signer and returns the corresponding Neutron address.",
+            "code": "export const getWalletAddress = async (signer) => {\n  const accounts = await signer.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error(\"Unable to retrieve an account from the signer.\");\n  }\n\n  // Typically the first account is the active one\n  return accounts[0].address;\n};",
+            "usage": "const address = await getWalletAddress(signer);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 defines a Python utility (cosmpy) that queries the Bank module for the raw balance (in micro-denom, e.g. `untrn`) of a given address.",
+            "code": "from typing import Dict\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import Address\n\n# Configure connection details for Neutron main-net RPC\nNETWORK = NetworkConfig(\n    chain_id=\"neutron-1\",\n    url=\"https://rpc-kral.neutron.org:443\",  # Public RPC endpoint\n    fee_minimum_gas_price=0.025,\n    fee_denom=\"untrn\",\n)\n\ndef query_bank_balance(address: str, denom: str = \"untrn\") -> Dict[str, int]:\n    \"\"\"\n    Query the on-chain bank balance for a specific address and denomination.\n\n    Parameters\n    ----------\n    address : str\n        Bech32 Neutron address to query.\n    denom : str\n        Token denomination (default: \"untrn\").\n\n    Returns\n    -------\n    Dict[str, int]\n        { \"raw_balance\": <amount_in_micro_denom> }\n    \"\"\"\n    try:\n        with LedgerClient(NETWORK) as client:\n            balance_coin = client.query_bank_balance(Address(address), denom=denom)\n            return {\"raw_balance\": int(balance_coin.amount)}\n    except Exception as err:\n        # Re-throw with context so callers know exactly what went wrong\n        raise RuntimeError(f\"Failed to query bank balance: {err}\") from err",
+            "usage": "raw_balance_dict = query_bank_balance(address)  # \u279c { 'raw_balance': 12345678 }"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 converts the raw micro-denominated amount obtained in Step 3 to a human-readable NTRN value with six-decimal precision.",
+            "code": "def format_amount(raw_balance: int) -> str:\n    \"\"\"Convert micro-denom (`untrn`) to a formatted NTRN string.\"\"\"\n    try:\n        micro = int(raw_balance)\n    except (TypeError, ValueError):\n        raise ValueError(\"raw_balance must be an integer-compatible value\")\n\n    ntrn_value = micro / 1_000_000  # 1 NTRN = 1,000,000 untrn\n    return f\"{ntrn_value:,.6f} NTRN\"",
+            "usage": "readable_balance = format_amount(raw_balance_dict['raw_balance'])  # \u279c '12.345678 NTRN'"
+        }
+    ]
+}

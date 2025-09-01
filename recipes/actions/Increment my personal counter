@@ -1,0 +1,33 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 obtains the user\u2019s Neutron address and an OfflineSigner by connecting to the Keplr wallet.",
+            "code": "export const getSenderAddress = async (chainId = 'neutron-1') => {\n  // Ensure Keplr wallet is installed in the browser\n  if (typeof window === 'undefined' || !window.keplr) {\n    throw new Error('Keplr wallet extension is not available.');\n  }\n\n  // Request the user to unlock/select the Neutron chain\n  await window.keplr.enable(chainId);\n\n  // Obtain the signer (OfflineSigner) from Keplr\n  const signer = window.getOfflineSigner(chainId);\n  const accounts = await signer.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No account found in Keplr.');\n  }\n\n  // Return both the address and the signer for later use\n  return {\n    address: accounts[0].address,\n    signer,\n  };\n};",
+            "usage": "const { address, signer } = await getSenderAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 fetches the deployed NeutronTemplate contract address from an environment variable.",
+            "code": "export const loadContractAddress = () => {\n  /*\n    The contract address can live in an environment variable so that it can be\n    configured per network (testnet, mainnet, localnet). This keeps the source\n    code network agnostic.\n  */\n  const address = process.env.NEXT_PUBLIC_NEUTRON_TEMPLATE_ADDRESS;\n\n  if (!address || address.length === 0) {\n    throw new Error('NeutronTemplate contract address is not set.');\n  }\n\n  return address;\n};",
+            "usage": "const contractAddress = loadContractAddress();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 builds the CosmWasm execute message that tells the contract to increment the caller\u2019s personal counter.",
+            "code": "export const constructIncrementMsg = () => {\n  // The NeutronTemplate contract expects an execute payload of the form:\n  // {\n  //   increment_personal: {}\n  // }\n  return {\n    increment_personal: {},\n  };\n};",
+            "usage": "const msg = constructIncrementMsg();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 signs the execute transaction and broadcasts it to the Neutron network.",
+            "code": "import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';\n\n/**\n * signAndBroadcastTx signs and submits an execute transaction to the Neutron network.\n *\n * @param {string} rpcEndpoint - Public RPC endpoint for the network (e.g. 'https://rpc.neutron.org').\n * @param {OfflineSigner} signer - The signer object obtained from Keplr.\n * @param {string} senderAddress - Bech32 address of the user executing the contract.\n * @param {string} contractAddress - Address of the NeutronTemplate contract.\n * @param {object} msg - Execute message, e.g. { increment_personal: {} }.\n * @param {object} [fee] - Optional custom fee. Defaults to 200k gas & 0.2 NTRN.\n * @returns {Promise<object>} - The deliverTxResponse from CosmJS.\n */\nexport const signAndBroadcastTx = async ({\n  rpcEndpoint = 'https://rpc-kralum.neutron-1.neutron.org',\n  signer,\n  senderAddress,\n  contractAddress,\n  msg,\n  fee = {\n    amount: [{ denom: 'untrn', amount: '200000' }], // 0.2 NTRN\n    gas: '200000',\n  },\n}) => {\n  try {\n    if (!signer) {\n      throw new Error('Signer is required to broadcast transactions.');\n    }\n\n    // Initialize CosmWasm client with the signer\n    const client = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, signer);\n\n    // Execute the contract method\n    const result = await client.execute(senderAddress, contractAddress, msg, fee);\n\n    console.log('Tx hash:', result.transactionHash);\n    return result;\n  } catch (error) {\n    console.error('Failed to execute contract:', error);\n    throw error;\n  }\n};",
+            "usage": "const result = await signAndBroadcastTx({ signer, senderAddress: address, contractAddress, msg });"
+        }
+    ]
+}

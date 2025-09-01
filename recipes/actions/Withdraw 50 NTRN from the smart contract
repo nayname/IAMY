@@ -1,0 +1,47 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Ensures the user\u2019s Keplr (or compatible) wallet is connected to Neutron and returns an `OfflineSigner` for subsequent signing operations.",
+            "code": "/* Step 1 \u2013 Ensure wallet connection */\nexport const ensureWalletConnected = async () => {\n  const chainId = 'neutron-1';               // Neutron main-net chain-id\n  const keplr = window.keplr;\n\n  if (!keplr) {\n    // Keplr wallet extension not found\n    throw new Error('Keplr wallet is not installed.');\n  }\n\n  try {\n    // Ask Keplr to enable the chain (will prompt user if not yet added)\n    await keplr.enable(chainId);\n  } catch (err) {\n    throw new Error(`User rejected wallet connection: ${err.message}`);\n  }\n\n  // Return OfflineSigner for use with CosmJS\n  return window.getOfflineSigner(chainId);\n};",
+            "usage": "const signer = await ensureWalletConnected();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Validates that the provided contract address is a correctly-formatted Bech32 address with Neutron\u2019s prefix.",
+            "code": "/* Step 2 \u2013 Validate contract address */\nimport { bech32 } from 'bech32';\n\nexport const validateContractAddress = (contractAddress) => {\n  const expectedPrefix = 'neutron';\n\n  try {\n    const { prefix } = bech32.decode(contractAddress);\n    if (prefix !== expectedPrefix) {\n      throw new Error(\n        `Invalid prefix: expected \"${expectedPrefix}\", got \"${prefix}\"`\n      );\n    }\n  } catch (err) {\n    throw new Error(`Malformed Bech32 address: ${err.message}`);\n  }\n\n  return true; // address is valid\n};",
+            "usage": "validateContractAddress(userProvidedContractAddress);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Converts a whole-denom NTRN amount to its micro-denom representation (untrn).",
+            "code": "/* Step 3 \u2013 Convert 50 NTRN to micro-denom (untrn) */\nexport const convertToBaseUnits = (amountNtrn) => {\n  if (typeof amountNtrn !== 'number' || amountNtrn <= 0) {\n    throw new Error('Amount must be a positive number.');\n  }\n\n  const MICRO_FACTOR = 1_000_000; // 10^6\n  return (amountNtrn * MICRO_FACTOR).toString(); // \"50000000\"\n};",
+            "usage": "const baseAmount = convertToBaseUnits(50); // => \"50000000\""
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Constructs a `MsgExecuteContract` protobuf message for withdrawing 50 NTRN (`50000000` untrn) from the smart-contract, without attaching additional funds.",
+            "code": "/* Step 4 \u2013 Build MsgExecuteContract for the withdraw */\nimport { toUtf8 } from '@cosmjs/encoding';\n\nexport const constructTxWasmExecute = (\n  senderAddress,\n  contractAddress,\n  amountBaseUnits\n) => {\n  // Build the JSON message expected by the contract\n  const executeMsg = {\n    withdraw: {\n      amount: amountBaseUnits, // already a string (e.g. \"50000000\")\n    },\n  };\n\n  // Return message object compatible with SigningCosmWasmClient.signAndBroadcast()\n  return {\n    typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',\n    value: {\n      sender: senderAddress,\n      contract: contractAddress,\n      msg: toUtf8(JSON.stringify(executeMsg)),\n      funds: [], // no attached funds\n    },\n  };\n};",
+            "usage": "const msg = constructTxWasmExecute(senderAddr, contractAddr, baseAmount);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Uses CosmJS\u2019s `SigningCosmWasmClient` to sign and broadcast the previously-constructed withdrawal transaction via the connected wallet.",
+            "code": "/* Step 5 \u2013 Sign & broadcast the transaction */\nimport { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';\n\nexport const signAndBroadcastTx = async (signer, msg) => {\n  const rpcEndpoint = 'https://rpc-kralum.neutron.org'; // public Neutron RPC\n  const fee = 'auto'; // let CosmJS estimate gas & fee\n\n  // Derive sender address from signer\n  const [{ address: senderAddress }] = await signer.getAccounts();\n\n  // Instantiate client\n  const client = await SigningCosmWasmClient.connectWithSigner(\n    rpcEndpoint,\n    signer\n  );\n\n  // Sign & broadcast\n  const result = await client.signAndBroadcast(senderAddress, [msg], fee);\n\n  if (result.code !== 0) {\n    throw new Error(`Tx failed (code: ${result.code}): ${result.rawLog}`);\n  }\n\n  return result; // contains transactionHash, height, etc.\n};",
+            "usage": "const txResult = await signAndBroadcastTx(signer, msg);"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Queries the user\u2019s bank balance after the transaction confirms, using `cosmpy` on the server side for reliability and to avoid exposing a public RPC to the client.",
+            "code": "# Step 6 \u2013 Python backend balance query\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import LocalWallet\n\nNETWORK = NetworkConfig(\n    chain_id=\"neutron-1\",\n    url=\"https://rpc-kralum.neutron.org\",  # same RPC used by frontend\n    fee_denomination=\"untrn\",\n    staking_denomination=\"untrn\",\n)\n\nclient = LedgerClient(NETWORK)\n\ndef query_bank_balance(address: str, denom: str = \"untrn\") -> int:\n    \"\"\"Return current balance for `address` in the given `denom`.\"\"\"\n    try:\n        balance = client.query_bank_balance(address, denom=denom)\n        return int(balance.amount)\n    except Exception as exc:\n        raise RuntimeError(f\"Failed to query balance: {exc}\") from exc",
+            "usage": "new_balance = query_bank_balance(sender_addr)  # returns 50000000 higher if successful"
+        }
+    ]
+}

@@ -1,0 +1,47 @@
+{
+    "label": "send",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 exposes a helper that ensures the user\u2019s Keplr wallet is connected to the Neutron chain and returns an OfflineSigner instance.",
+            "code": "export const ensureWalletConnected = async (chainId = 'neutron-1') => {\n  try {\n    const { keplr } = window;\n    if (!keplr) {\n      throw new Error('Keplr wallet is not installed.');\n    }\n    // Ask Keplr to enable (or add) Neutron\n    await keplr.enable(chainId);\n\n    // getOfflineSignerAuto works for both Amino & Direct protobuf signing\n    const offlineSigner = await keplr.getOfflineSignerAuto(chainId);\n    return offlineSigner;\n  } catch (error) {\n    console.error('Failed to connect wallet:', error);\n    throw error;\n  }\n};",
+            "usage": "const signer = await ensureWalletConnected();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 fetches the sender\u2019s Neutron address from the signer object returned in Step 1.",
+            "code": "export const getSenderAddress = async (signer) => {\n  const accounts = await signer.getAccounts();\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No account found for the connected wallet.');\n  }\n  return accounts[0].address;\n};",
+            "usage": "const senderAddress = await getSenderAddress(signer);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 validates that the provided recipient address is a proper Neutron Bech32 address.",
+            "code": "import { Bech32 } from '@cosmjs/encoding';\n\nexport const validateRecipientAddress = (address, expectedPrefix = 'neutron') => {\n  try {\n    const decoded = Bech32.decode(address);\n    if (decoded.prefix !== expectedPrefix) {\n      throw new Error(`Invalid Bech32 prefix: expected ${expectedPrefix}, got ${decoded.prefix}`);\n    }\n    return true;\n  } catch (error) {\n    console.error('Address validation failed:', error);\n    throw new Error('Provided recipient address is invalid.');\n  }\n};",
+            "usage": "validateRecipientAddress(recipientAddress);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 converts an amount expressed in NTRN to its micro-denomination (untrn) representation.",
+            "code": "export const convertToBaseUnits = (amount, decimals = 6) => {\n  const numericAmount = Number(amount);\n  if (!Number.isFinite(numericAmount) || numericAmount <= 0) {\n    throw new Error('Amount must be a positive number.');\n  }\n  const factor = Math.pow(10, decimals);\n  return String(Math.round(numericAmount * factor));\n};",
+            "usage": "const microAmount = convertToBaseUnits(10); // \"10000000\""
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Step 5 builds the Cosmos SDK MsgSend object that will move 10 000 000 untrn from sender to recipient.",
+            "code": "import { coin } from '@cosmjs/stargate';\n\nexport const constructTxBankSend = (sender, recipient, amountMicro, denom = 'untrn') => {\n  return {\n    typeUrl: '/cosmos.bank.v1beta1.MsgSend',\n    value: {\n      fromAddress: sender,\n      toAddress: recipient,\n      amount: [coin(amountMicro, denom)],\n    },\n  };\n};",
+            "usage": "const msgSend = constructTxBankSend(senderAddress, recipientAddress, microAmount);"
+        },
+        {
+            "step": 6,
+            "label": "frontend",
+            "introduction": "Step 6 signs and broadcasts the transaction to the Neutron network, returning the transaction hash on success.",
+            "code": "import { SigningStargateClient, GasPrice } from '@cosmjs/stargate';\n\nexport const signAndBroadcastTx = async (\n  signer,\n  messages,\n  {\n    rpcEndpoint = 'https://rpc-kralum.neutron.org',\n    gasPrice   = GasPrice.fromString('0.025untrn'),\n    memo       = '',\n  } = {},\n) => {\n  try {\n    const client = await SigningStargateClient.connectWithSigner(rpcEndpoint, signer, { gasPrice });\n    const [account] = await signer.getAccounts();\n    const result = await client.signAndBroadcast(account.address, messages, 'auto', memo);\n\n    if (result.code !== 0) {\n      throw new Error(`Transaction failed with code ${result.code}: ${result.rawLog}`);\n    }\n    return result.transactionHash;\n  } catch (error) {\n    console.error('Broadcast error:', error);\n    throw error;\n  }\n};",
+            "usage": "const txHash = await signAndBroadcastTx(signer, [msgSend]);"
+        }
+    ]
+}

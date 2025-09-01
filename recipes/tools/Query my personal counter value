@@ -1,0 +1,65 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Retrieves the connected wallet\u2019s offline signer and extracts the user\u2019s bech32 address.",
+            "function": "getOfflineSignerAndAddress(chainId = 'neutron-1')",
+            "usage": "const { address, signer } = await getOfflineSignerAndAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Loads the deployed NeutronTemplate contract address from environment variables.",
+            "function": "loadContractAddress()",
+            "usage": "const contract = loadContractAddress();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Builds the smart-query message that targets the caller\u2019s personal counter.",
+            "function": "constructWasmQueryMsg(senderAddress)",
+            "usage": "const queryMsg = constructWasmQueryMsg(address);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Sends the smart contract query to the backend endpoint and returns the counter value.",
+            "function": "queryContractSmart(contractAddress, queryMsg)",
+            "usage": "const counter = await queryContractSmart(contract, queryMsg);"
+        }
+    ],
+    "frontend": [
+        "const { address, signer } = await getOfflineSignerAndAddress();//step: 1 Tool: get_sender_address Desciption: Determine the caller\u2019s address which will be supplied in the query.",
+        "const contract = loadContractAddress();//step: 2 Tool: load_contract_address Desciption: Fetch the deployed NeutronTemplate contract address.",
+        "const queryMsg = constructWasmQueryMsg(address);//step: 3 Tool: construct_wasm_query_msg Desciption: Create the smart-query payload: {\"get_personal_counter\":{\"address\":\"<sender>\"}}.",
+        "const counter = await queryContractSmart(contract, queryMsg);//step: 4 Tool: query_contract_smart Desciption: Execute the query against the contract and return the counter value."
+    ],
+    "backend": [],
+    "intent": "Query my personal counter value",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_address",
+            "description": "Determine the caller\u2019s address which will be supplied in the query."
+        },
+        {
+            "step": 2,
+            "tool": "load_contract_address",
+            "description": "Fetch the deployed NeutronTemplate contract address."
+        },
+        {
+            "step": 3,
+            "tool": "construct_wasm_query_msg",
+            "description": "Create the smart-query payload: {\"get_personal_counter\":{\"address\":\"<sender>\"}}."
+        },
+        {
+            "step": 4,
+            "tool": "query_contract_smart",
+            "description": "Execute the query against the contract and return the counter value."
+        }
+    ],
+    "outcome_checks": [
+        "The query returns a valid Uint128 value representing the caller\u2019s personal counter."
+    ]
+}

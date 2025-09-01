@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 detects the Leap Wallet provider either as window.leap or through the @cosmos-kit/leap adapter, throwing an error if not found.",
+            "code": "export const detectLeapProvider = async () => {\n  // Ensure we're in a browser environment\n  if (typeof window === 'undefined') {\n    throw new Error('This function must be run in a browser context.');\n  }\n\n  // 1) Check if the Leap extension has already injected itself\n  if (window.leap) {\n    return window.leap;\n  }\n\n  // 2) Fallback: attempt to dynamically import the Cosmos Kit Leap adapter\n  try {\n    const { LeapWallet } = await import('@cosmos-kit/leap');\n    const leapAdapter = new LeapWallet();\n\n    // The adapter offers helper methods to check installation status\n    if (await leapAdapter.isInstalled?.()) {\n      return leapAdapter;\n    }\n  } catch (err) {\n    console.error('Failed to load @cosmos-kit/leap adapter:', err);\n  }\n\n  // If we reach here, Leap is not available\n  throw new Error('Leap Wallet provider not found. Please install the Leap browser extension.');\n};",
+            "usage": "const leap = await detectLeapProvider();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 constructs Neutron's chain configuration object and sends it to Leap via experimentalSuggestChain so the wallet recognizes the network.",
+            "code": "export const suggestNeutronChain = async (leap) => {\n  const chainConfig = {\n    // Basic chain info\n    chainId: 'neutron-1',\n    chainName: 'Neutron',\n\n    // Public RPC & REST endpoints (replace with your own if self-hosting)\n    rpc: 'https://rpc-kralum.neutron.org',\n    rest: 'https://lcd-kralum.neutron.org',\n\n    // BIP-44 & Bech32 configuration\n    bip44: { coinType: 118 },\n    bech32Config: {\n      bech32PrefixAccAddr: 'neutron',\n      bech32PrefixAccPub: 'neutronpub',\n      bech32PrefixValAddr: 'neutronvaloper',\n      bech32PrefixValPub: 'neutronvaloperpub',\n      bech32PrefixConsAddr: 'neutronvalcons',\n      bech32PrefixConsPub: 'neutronvalconspub',\n    },\n\n    // Denomination definitions\n    stakeCurrency: {\n      coinDenom: 'NTRN',\n      coinMinimalDenom: 'untrn',\n      coinDecimals: 6,\n    },\n    currencies: [\n      {\n        coinDenom: 'NTRN',\n        coinMinimalDenom: 'untrn',\n        coinDecimals: 6,\n      },\n    ],\n    feeCurrencies: [\n      {\n        coinDenom: 'NTRN',\n        coinMinimalDenom: 'untrn',\n        coinDecimals: 6,\n        gasPriceStep: {\n          low: 0.01,\n          average: 0.025,\n          high: 0.04,\n        },\n      },\n    ],\n\n    // Feature flags recognised by Leap\n    features: ['stargate', 'ibc-transfer', 'cosmwasm'],\n  };\n\n  try {\n    await leap.experimentalSuggestChain(chainConfig);\n  } catch (error) {\n    console.error('Failed to suggest Neutron chain to Leap:', error);\n    throw new Error('Chain suggestion rejected or failed.');\n  }\n};",
+            "usage": "await suggestNeutronChain(leap);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 requests user approval for Neutron access by invoking leap.enable('neutron-1').",
+            "code": "export const enableNeutronChain = async (leap) => {\n  const chainId = 'neutron-1';\n  try {\n    await leap.enable(chainId);\n  } catch (error) {\n    console.error('User rejected or failed to enable Neutron chain:', error);\n    throw new Error('Failed to enable Neutron chain in Leap.');\n  }\n};",
+            "usage": "await enableNeutronChain(leap);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 obtains an OfflineSigner for Neutron and retrieves the primary account address for later transaction signing.",
+            "code": "export const retrieveLeapAccounts = async (leap) => {\n  const chainId = 'neutron-1';\n\n  try {\n    // Prefer the more generic getOfflineSigner if available\n    const offlineSigner = leap.getOfflineSigner?.(chainId) || leap.getOfflineSignerOnlyAmino?.(chainId);\n\n    if (!offlineSigner) {\n      throw new Error('Could not obtain an OfflineSigner from Leap.');\n    }\n\n    const accounts = await offlineSigner.getAccounts();\n    if (!accounts || accounts.length === 0) {\n      throw new Error('No accounts returned by Leap.');\n    }\n\n    return {\n      offlineSigner,\n      address: accounts[0].address,\n    };\n  } catch (error) {\n    console.error('Error while retrieving Leap accounts:', error);\n    throw error;\n  }\n};",
+            "usage": "const { offlineSigner, address } = await retrieveLeapAccounts(leap);"
+        }
+    ]
+}

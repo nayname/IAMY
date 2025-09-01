@@ -1,0 +1,179 @@
+[
+    {
+        "intent": "Query a contract\u2019s NTRN balance",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_contract_address",
+                "description": "Obtain the bech32 address of the target smart contract."
+            },
+            {
+                "step": 2,
+                "tool": "validate_address_format",
+                "description": "Ensure the contract address is a valid Neutron (bech32) address."
+            },
+            {
+                "step": 3,
+                "tool": "query_bank_balance",
+                "description": "Run `neutrond q bank balances <contract_addr> --denom untrn` to fetch the NTRN balance for the contract."
+            },
+            {
+                "step": 4,
+                "tool": "parse_balance_response",
+                "description": "Parse the CLI/JSON response and extract the amount associated with denom `untrn`."
+            }
+        ],
+        "outcome_checks": [
+            "The CLI call returns HTTP/Tx code 0 (success).",
+            "A numeric amount for denom `untrn` is present in the response."
+        ]
+    },
+    {
+        "intent": "Reset the global counter in an example contract",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_admin_address",
+                "description": "Identify the wallet address that has admin privileges over the contract."
+            },
+            {
+                "step": 2,
+                "tool": "get_contract_address",
+                "description": "Specify the address of the deployed counter contract."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_execute_contract",
+                "description": "Create a `MsgExecuteContract` with `{ \"reset\": {} }` as the execute message and 0 funds."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the transaction with the admin\u2019s key and broadcast it to the network."
+            },
+            {
+                "step": 5,
+                "tool": "query_wasm_contract_state",
+                "description": "After inclusion, query `count` via `neutrond q wasm contract-state smart <contract_addr> '{\"get_count\":{}}'`."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction included in a block with code 0.",
+            "Returned `count` value equals `0`, confirming the reset."
+        ]
+    },
+    {
+        "intent": "Upload the example contract WASM code",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_wasm_file_path",
+                "description": "Locate the compiled `.wasm` file for the example contract (e.g., `artifacts/counter.wasm`)."
+            },
+            {
+                "step": 2,
+                "tool": "validate_wasm_checksum",
+                "description": "Calculate and record the SHA-256 checksum of the WASM binary."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_store_code",
+                "description": "Build a `MsgStoreCode` including the WASM binary, sender address, and instantiate permission (e.g., `--instantiate-everybody`)."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the store-code transaction."
+            },
+            {
+                "step": 5,
+                "tool": "extract_code_id_from_tx",
+                "description": "Parse the transaction logs to retrieve the newly assigned `code_id`."
+            }
+        ],
+        "outcome_checks": [
+            "Tx response shows code 0.",
+            "`code_id` is present and greater than 0 in the logs."
+        ]
+    },
+    {
+        "intent": "Instantiate the example contract on Pion-1",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "set_chain_context",
+                "description": "Configure CLI for the Pion-1 testnet (`--chain-id pion-1`, correct RPC endpoint, and fees)."
+            },
+            {
+                "step": 2,
+                "tool": "get_code_id",
+                "description": "Specify the `code_id` obtained from the prior store-code step (or an existing one on Pion-1)."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_instantiate_contract",
+                "description": "Build a `MsgInstantiateContract` with initial state (e.g., `{ \"count\": 0 }`) and optionally set an admin address."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the instantiate transaction on Pion-1."
+            },
+            {
+                "step": 5,
+                "tool": "extract_contract_address_from_tx",
+                "description": "Parse transaction events to capture the newly created contract address."
+            }
+        ],
+        "outcome_checks": [
+            "Tx included with code 0.",
+            "A valid contract address (`neutron1...`) appears in instantiate logs.",
+            "Querying `get_count` returns the initial value (e.g., 0)."
+        ]
+    },
+    {
+        "intent": "Deploy the example contract to Neutron mainnet",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "set_chain_context",
+                "description": "Switch CLI to Neutron mainnet (`--chain-id neutron-1`) and point to a mainnet RPC/LCD endpoint."
+            },
+            {
+                "step": 2,
+                "tool": "get_wasm_file_path",
+                "description": "Reuse or confirm the compiled example contract `.wasm` file."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_store_code",
+                "description": "Build a `MsgStoreCode` for mainnet upload, mindful of higher fees and memos if required."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the store-code transaction to mainnet; record the resulting `code_id`."
+            },
+            {
+                "step": 5,
+                "tool": "construct_tx_instantiate_contract",
+                "description": "Using the new `code_id`, craft an instantiate message with desired initial state and admin."
+            },
+            {
+                "step": 6,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the instantiate transaction to mainnet."
+            },
+            {
+                "step": 7,
+                "tool": "extract_contract_address_from_tx",
+                "description": "Capture the new contract\u2019s address from transaction logs."
+            }
+        ],
+        "outcome_checks": [
+            "Both store-code and instantiate transactions succeed with code 0.",
+            "Returned `code_id` and contract address are non-empty and valid.",
+            "A follow-up smart query (e.g., `get_count`) returns the expected initial state."
+        ]
+    }
+]

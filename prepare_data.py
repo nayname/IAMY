@@ -39,6 +39,8 @@ synthesize_ners = open("prompts/synthesize_ners").read()
 synthesize_query_intents = open("prompts/synthesize_query_intents").read()
 synthesize_query_oneliner = open("prompts/synthesize_query_oneliner").read()
 synthesize_recipes = open("prompts/synthesize_recipes").read()
+synthesize_cosmwasm = open("prompts/synthesize_cosmwasm").read()
+synthesize_picking_functions = open("prompts/synthesize_picking_functions").read()
 
 
 server_params = StdioServerParameters(
@@ -146,11 +148,11 @@ async def create_oneliner(session, config):
             # print("Response: " + json.dumps(json.loads(response["messages"][-1].content), indent=4))
 
 
-async def create_recipe(session, config):
+async def create_pre_recipe(session, config):
     count = 1
 
     for batch in create_batch(pages, 5):
-        if not os.path.exists('data/recipes/' + batch[0]['label'] + str(count)):
+        if not os.path.exists('data/pre_recipes/' + batch[0]['label'] + str(count)):
             agent = await create_graph(session, synthesize_recipes)
             set_verbose(True)
             response = await agent.ainvoke({"messages": json.dumps(batch)}, config=config)
@@ -163,9 +165,9 @@ async def create_recipe(session, config):
                 else:
                     serializable_state[key] = value
 
-            with open('data/recipes/' + batch[0]['label'] + str(count) + 'result.txt', 'w') as f:
+            with open('data/pre_recipes/' + batch[0]['label'] + str(count) + 'result.txt', 'w') as f:
                 json.dump(serializable_state, f, indent=4)
-            with open('data/recipes/' + batch[0]['label'] + str(count), 'w') as f:
+            with open('data/pre_recipes/' + batch[0]['label'] + str(count), 'w') as f:
                 json.dump(json.loads(response["messages"][-1].content), f, indent=4)
 
         count += 1
@@ -197,6 +199,72 @@ async def create_ner(session, config):
         count += 1
 
 
+async def create_actions(session, config):
+    workflow = None
+
+    with os.scandir("data/pre_recipes") as entries:
+        for entry in entries:
+            if entry.is_file():  # Check if it's a file
+                if not entry.path.endswith("result.txt"):
+                    with open(entry.path, 'r') as f:
+                        items = json.load(f)
+
+                    for key in items:
+                        # if action == key['intent']:
+                            workflow = key['workflow']
+
+                            if workflow and not os.path.exists('recipes/actions/' + key['intent']):
+                                agent = await create_graph(session, synthesize_cosmwasm)
+                                response = await agent.ainvoke({"messages": json.dumps(workflow)}, config=config)
+                                print(response["messages"][-1].content)
+
+                                with open('recipes/actions/' + key['intent'], 'w') as f:
+                                    json.dump(json.loads(response["messages"][-1].content), f, indent=4)
+
+
+async def pick_tools(session, config):
+    count = 0
+
+    with os.scandir("data/pre_recipes") as entries:
+        for entry in entries:
+            if entry.is_file():  # Check if it's a file
+                count += 1
+                if not entry.path.endswith("result.txt"):
+                    with open(entry.path, 'r') as f: 
+                        items = json.load(f)
+
+                    for key in items:
+                        if not os.path.exists('recipes/tools/' + key['intent']) and count < 7: #action == key['intent'] and
+                            with open("/root/neutron/IAMY/recipes/frontend.jsx", "r") as f:
+                                frontend = f.read()
+
+                            with open("/root/neutron/IAMY/recipes/backend.py", "r") as f:
+                                backend = f.read()
+
+                            agent = await create_graph(session, synthesize_picking_functions
+                               .replace("*#*INPUT_JSON*#*", json.dumps(key['workflow'])).replace("{", "{{").replace("}", "}}")
+                               .replace("*#*INTENT*#*", key['intent']))
+                            response = await agent.ainvoke({"messages": "FILE: frontend.jsx Content: "+frontend+"\n\n\n FILE: backend.py Content: "+backend},
+                                                           config=config)
+                            frontend = []
+                            backend = []
+                            for l in json.loads(response["messages"][-1].content)['workflow']:
+                                for t in key['workflow']:
+                                    if t['step'] == l['step']:
+                                        d = t.copy()
+                                if l['label'] == 'frontend':
+                                    frontend.append(l['usage']+"//step: "+str(d['step'])+" Tool: "+d['tool']+" Desciption: "+d['description'])
+                                elif l['label'] == 'backend':
+                                    backend.append(l['usage']+"#step: "+str(l['step'])+" Tool: "+d['tool']+" Desciption: "+d['description'])
+
+                            res = {"tools": json.loads(response["messages"][-1].content)['workflow'], "frontend": frontend, "backend": backend,
+                                   "intent": key['intent'], "workflow": key['workflow'], "outcome_checks": key['outcome_checks']}
+
+
+                            with open('recipes/tools/' + key['intent'], 'w') as f:
+                                json.dump(res, f, indent=4)
+
+
 async def main(flag):
     config = {"configurable": {"thread_id": 1234}}
     async with stdio_client(server_params) as (read, write):
@@ -207,12 +275,16 @@ async def main(flag):
             # parser.add_argument("intent", type=str, help="User intent")
             if flag == "oneliner":
                 await create_oneliner(session, config)
-            elif flag == "recipe":
-                await create_recipe(session, config)
+            elif flag == "pre_recipe":
+                await create_pre_recipe(session, config)
             elif flag == "ner":
                 await create_ner(session, config)
-            else:
+            elif flag == "intent":
                 await create_intents(session, config)
+            elif flag == "recipe":
+                await create_actions(session, config)
+            elif flag == "pick_tools":
+                await pick_tools(session, config)
 
 
 if __name__ == "__main__":

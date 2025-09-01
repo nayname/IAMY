@@ -1,0 +1,68 @@
+{
+    "label": "instantiate",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Compile and optimise the CosmWasm smart-contract, returning the path to the produced .wasm binary.",
+            "code": "import subprocess, os\n\ndef compile_wasm_contract(contract_dir: str) -> str:\n    \"\"\"Compile a CosmWasm contract and return the path to the optimised .wasm file.\"\"\"\n    try:\n        # 1. Compile to Wasm (un-optimised)\n        subprocess.run(['cargo', 'wasm'], cwd=contract_dir, check=True)\n        # 2. Run the optimiser (expects `cargo run-script optimize` set up by rust-optimizer)\n        subprocess.run(['cargo', 'run-script', 'optimize'], cwd=contract_dir, check=True)\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f'Contract compilation failed: {err}') from err\n\n    # Locate the optimised file (typically placed in <contract>/artifacts)\n    artifacts_dir = os.path.join(contract_dir, 'artifacts')\n    wasm_files = [f for f in os.listdir(artifacts_dir) if f.endswith('.wasm')]\n    if not wasm_files:\n        raise FileNotFoundError('Optimised wasm not found in artifacts directory.')\n    return os.path.join(artifacts_dir, wasm_files[0])",
+            "usage": "wasm_path = compile_wasm_contract('./contracts/counter')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Ensure a local key (default: \u201ccosmopark\u201d) exists and is funded from the faucet; return its address.",
+            "code": "import subprocess, json, requests\n\ndef get_local_chain_account(key_name: str = 'cosmopark', faucet_url: str | None = 'http://localhost:4500/credit') -> dict:\n    \"\"\"Load or create a key and optionally request faucet funds.\"\"\"\n    try:\n        key_info_raw = subprocess.check_output([\n            'neutrond', 'keys', 'show', key_name,\n            '--output', 'json', '--keyring-backend', 'test'\n        ])\n    except subprocess.CalledProcessError:\n        # Key does not exist \u2013 create it\n        subprocess.run([\n            'neutrond', 'keys', 'add', key_name,\n            '--output', 'json', '--keyring-backend', 'test'\n        ], check=True)\n        key_info_raw = subprocess.check_output([\n            'neutrond', 'keys', 'show', key_name,\n            '--output', 'json', '--keyring-backend', 'test'\n        ])\n\n    key_info = json.loads(key_info_raw)\n    address = key_info['address']\n\n    # Ask faucet to top-up (optional / local-net only)\n    if faucet_url:\n        try:\n            requests.post(faucet_url, json={'address': address, 'denom': 'untrn'})\n        except Exception as faucet_err:\n            print(f'Faucet funding skipped/failed: {faucet_err}')\n\n    return {'name': key_name, 'address': address}",
+            "usage": "account = get_local_chain_account()  # \u2192 {'name': 'cosmopark', 'address': 'neutron1\u2026'}"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Build an unsigned MsgStoreCode transaction that will upload the contract to chain.",
+            "code": "from cosmpy.aerial.tx import Transaction\nfrom cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgStoreCode\n\n\ndef construct_tx_wasm_store(wasm_path: str, wallet, chain_id: str, gas: int = 2_000_000, fee: int = 300_000):\n    \"\"\"Return an unsigned `Transaction` containing `MsgStoreCode`.\"\"\"\n    with open(wasm_path, 'rb') as wasm_file:\n        wasm_bytes = wasm_file.read()\n\n    msg = MsgStoreCode(\n        sender=wallet.address(),\n        wasm_byte_code=wasm_bytes\n    )\n\n    tx = (\n        Transaction()\n        .with_messages(msg)\n        .with_chain_id(chain_id)\n        .with_gas(gas)\n        .with_fee(fee)\n    )\n    return tx",
+            "usage": "store_tx = construct_tx_wasm_store(wasm_path, wallet, 'neutron-1')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Sign the store-code transaction with the local wallet and broadcast it to the network.",
+            "code": "from cosmpy.aerial.client import LedgerClient\n\n\ndef sign_and_broadcast_tx(tx, wallet, client: LedgerClient):\n    \"\"\"Generic helper to sign & broadcast any prepared transaction.\"\"\"\n    # Populate account meta-data\n    account = client.query_account(wallet.address())\n    tx = tx.with_sequence(account.sequence).with_account_number(account.account_number)\n\n    # Sign\n    wallet.sign(tx)\n\n    # Broadcast and wait for finality\n    try:\n        response = client.broadcast_tx_block(tx)\n    except Exception as err:\n        raise RuntimeError(f'Broadcast failed: {err}') from err\n\n    if response.code != 0:\n        raise RuntimeError(f'Transaction failed (code {response.code}): {response.raw_log}')\n    return response",
+            "usage": "store_receipt = sign_and_broadcast_tx(store_tx, wallet, client)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Extract the newly assigned `code_id` from the store-code transaction receipt.",
+            "code": "def parse_code_id_from_receipt(tx_response) -> int:\n    \"\"\"Search TxResponse logs for the `store_code` event and return its `code_id`.\"\"\"\n    logs = tx_response.logs if hasattr(tx_response, 'logs') else tx_response['logs']\n    for event in logs[0]['events']:\n        if event['type'] == 'store_code':\n            for attr in event['attributes']:\n                if attr['key'] in ('code_id', 'codeID'):\n                    return int(attr['value'])\n    raise ValueError('code_id not found in transaction logs.')",
+            "usage": "code_id = parse_code_id_from_receipt(store_receipt)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Construct an unsigned MsgInstantiateContract transaction using the `code_id`, init-msg, and label.",
+            "code": "import json\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgInstantiateContract\n\n\ndef construct_tx_wasm_instantiate(code_id: int, init_msg: dict, label: str, wallet, chain_id: str, admin: str | None = None, gas: int = 500_000, fee: int = 150_000):\n    \"\"\"Return an unsigned instantiate transaction.\"\"\"\n    msg = MsgInstantiateContract(\n        sender=wallet.address(),\n        admin=admin or '',\n        code_id=code_id,\n        label=label,\n        msg=json.dumps(init_msg).encode('utf-8'),\n        funds=[]  # Provide coins if the contract expects them\n    )\n\n    tx = (\n        Transaction()\n        .with_messages(msg)\n        .with_chain_id(chain_id)\n        .with_gas(gas)\n        .with_fee(fee)\n    )\n    return tx",
+            "usage": "instantiate_tx = construct_tx_wasm_instantiate(code_id, {\"count\": 0}, \"counter-instance\", wallet, \"neutron-1\")"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Sign and broadcast the instantiate transaction to create a contract instance on-chain.",
+            "code": "def broadcast_instantiate_tx(instantiate_tx, wallet, client):\n    \"\"\"Helper that re-uses `sign_and_broadcast_tx` for the instantiate step.\"\"\"\n    return sign_and_broadcast_tx(instantiate_tx, wallet, client)",
+            "usage": "instantiate_receipt = broadcast_instantiate_tx(instantiate_tx, wallet, client)"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Parse the instantiate transaction logs to obtain the contract\u2019s on-chain address.",
+            "code": "def parse_contract_address_from_receipt(tx_response) -> str:\n    \"\"\"Fetch `_contract_address` from the instantiate event.\"\"\"\n    logs = tx_response.logs if hasattr(tx_response, 'logs') else tx_response['logs']\n    for event in logs[0]['events']:\n        if event['type'] == 'instantiate':\n            for attr in event['attributes']:\n                if attr['key'] == '_contract_address':\n                    return attr['value']\n    raise ValueError('Contract address not found in instantiate logs.')",
+            "usage": "contract_address = parse_contract_address_from_receipt(instantiate_receipt)"
+        },
+        {
+            "step": 9,
+            "label": "backend",
+            "introduction": "Perform a simple wasm query against the newly created contract to confirm it responds correctly.",
+            "code": "from cosmpy.aerial.client import LedgerClient\n\n\ndef query_contract_state(client: LedgerClient, contract_address: str, query_msg: dict):\n    \"\"\"Query the contract\u2019s state using a custom query message.\"\"\"\n    try:\n        return client.wasm_query(contract_address, query_msg)\n    except Exception as err:\n        raise RuntimeError(f'Contract query failed: {err}') from err",
+            "usage": "state = query_contract_state(client, contract_address, {\"get_count\": {}})"
+        }
+    ]
+}

@@ -1,0 +1,33 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 exposes a JavaScript helper that connects to Keplr (or any wallet that follows the same API) and returns the user\u2019s Neutron bech32 address. This will be used as the creator address for the subsequent queries.",
+            "code": "/* getCreatorAddress.js */\n// Returns a promise that resolves with the connected wallet address (bech32 string).\nexport const getCreatorAddress = async (chainId = 'neutron-1') => {\n  // Make sure the browser has access to the Keplr extension\n  const { keplr } = window;\n  if (!keplr) {\n    throw new Error('Keplr extension was not detected. Please install/enable Keplr.');\n  }\n\n  // Ask Keplr to enable the Neutron chain if it is not already enabled\n  await keplr.enable(chainId);\n\n  // Obtain the OfflineSigner, then the account list\n  const offlineSigner = keplr.getOfflineSigner(chainId);\n  const accounts = await offlineSigner.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No accounts found in the connected wallet.');\n  }\n\n  // The first account will be used as the creator address\n  return accounts[0].address;\n};",
+            "usage": "import { getCreatorAddress } from './getCreatorAddress.js';\n\nconst creator = await getCreatorAddress();\nconsole.log('Creator address:', creator);"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 validates that the creator address obtained in Step 1 is a properly-formatted Neutron bech32 address.",
+            "code": "/* validateAddress.js */\nimport { Bech32 } from '@cosmjs/encoding';\n\n// Throws an error if the provided address is not a valid Neutron bech32 string.\nexport const validateCreatorAddress = (address, expectedPrefix = 'neutron') => {\n  try {\n    // Decode the bech32 string; will throw if invalid\n    const { prefix } = Bech32.decode(address);\n\n    // Ensure the address uses the expected bech32 prefix (\"neutron\")\n    if (prefix !== expectedPrefix) {\n      throw new Error(`Invalid bech32 prefix: expected \\\"${expectedPrefix}\\\", got \\\"${prefix}\\\".`);\n    }\n\n    return true; // valid\n  } catch (err) {\n    throw new Error(`Invalid bech32 address: ${err.message}`);\n  }\n};",
+            "usage": "import { validateCreatorAddress } from './validateAddress.js';\n\nvalidateCreatorAddress(creator); // Throws if invalid\nconsole.log('Address is valid!');"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 implements a Python coroutine that queries Neutron\u2019s LCD endpoint for contracts deployed by the specified creator. It retrieves a single page (limit = 1000). Pagination handling is deferred to Step 4.",
+            "code": "\"\"\"query_contracts.py\nPython utility for querying contracts by creator via Neutron's LCD (REST) endpoint.\nRequires the `httpx` dependency:  pip install httpx[http2]\n\"\"\"\nfrom typing import Optional, Dict, Any\nimport httpx\n\nLCD_URL = \"https://lcd.neutron.org\"  # Change to your preferred public or self-hosted LCD\n\nasync def query_contracts_by_creator(\n    creator_address: str,\n    limit: int = 1000,\n    pagination_key: Optional[str] = None,\n) -> Dict[str, Any]:\n    \"\"\"Query one page of contracts created by `creator_address`.\n\n    Args:\n        creator_address (str): Bech32 Neutron address.\n        limit (int, optional): Maximum results per page. Defaults to 1000.\n        pagination_key (str, optional): The opaque `next_key` from the previous\n            response. If provided, the query continues from that key.\n\n    Returns:\n        Dict[str, Any]: JSON response from the LCD containing contracts and pagination data.\n    \"\"\"\n    params = {\n        \"creator\": creator_address,\n        \"pagination.limit\": str(limit),\n    }\n    if pagination_key:\n        params[\"pagination.key\"] = pagination_key\n\n    url = f\"{LCD_URL}/cosmwasm/wasm/v1/contracts\"\n\n    async with httpx.AsyncClient(timeout=10) as client:\n        response = await client.get(url, params=params)\n        response.raise_for_status()  # Raises if HTTP != 200\n        return response.json()\n",
+            "usage": "import asyncio\nfrom query_contracts import query_contracts_by_creator\n\nasync def main():\n    first_page = await query_contracts_by_creator(creator_address='neutron1...')\n    print(first_page)\n\nasyncio.run(main())"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 offers a convenience wrapper that repeatedly calls the Step 3 function until all pages have been fetched, transparently handling LCD pagination.",
+            "code": "\"\"\"pagination_helper.py\nCombines all pages from the `query_contracts_by_creator` helper.\n\"\"\"\nfrom typing import List, Dict, Any, Optional\nimport asyncio\nfrom query_contracts import query_contracts_by_creator\n\nasync def fetch_all_contracts_by_creator(creator_address: str, page_limit: int = 1000) -> List[str]:\n    \"\"\"Return a complete list of contract addresses deployed by `creator_address`.\"\"\"\n    contracts: List[str] = []\n    next_key: Optional[str] = None\n\n    while True:\n        page = await query_contracts_by_creator(\n            creator_address=creator_address,\n            limit=page_limit,\n            pagination_key=next_key,\n        )\n\n        # Extract contracts list from page data and extend our accumulator\n        contracts.extend(page.get(\"contracts\", []))\n\n        # Determine if more pages exist\n        next_key = page.get(\"pagination\", {}).get(\"next_key\")\n        if not next_key:\n            break  # No more pages\n\n    return contracts\n\n# Example standalone execution for quick testing\nif __name__ == \"__main__\":\n    address = \"neutron1...\"  # Replace with a real creator address\n    all_contracts = asyncio.run(fetch_all_contracts_by_creator(address))\n    print(f\"Total contracts found: {len(all_contracts)}\")\n    for idx, c in enumerate(all_contracts, start=1):\n        print(f\"{idx}. {c}\")\n",
+            "usage": "import asyncio\nfrom pagination_helper import fetch_all_contracts_by_creator\n\ncreator = 'neutron1...'  # set your address\nall_contracts = asyncio.run(fetch_all_contracts_by_creator(creator))\nprint('Contracts deployed by creator:', all_contracts)"
+        }
+    ]
+}

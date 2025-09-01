@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Chooses the fastest reachable transaction-data API (Celatone GraphQL or LCD REST).",
+            "function": "select_data_provider(prefer_graphql=True)",
+            "usage": "provider = select_data_provider()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Builds a REST endpoint or GraphQL query that filters transactions by sender and orders them by time.",
+            "function": "build_history_query(provider, address, limit=50, cursor=None, offset=0)",
+            "usage": "query, vars = build_history_query(provider, user_address)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Executes the previously built request and returns raw results along with the next pagination token.",
+            "function": "execute_query_request(provider, query_or_url, variables_or_params=None, timeout=10)",
+            "usage": "raw_results, next_token = execute_query_request(provider, query, vars)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Normalizes raw transaction data into a uniform schema ready for frontend display.",
+            "function": "normalize_tx_results(provider, raw_results)",
+            "usage": "table_rows = normalize_tx_results(provider, raw_results)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "provider = select_data_provider()#step: 1 Tool: select_data_provider Desciption: Choose a data source (Celatone API, SubQuery, or LCD /txs endpoint) based on latency and pagination needs.",
+        "query, vars = build_history_query(provider, user_address)#step: 2 Tool: build_history_query Desciption: Construct a REST or GraphQL query filtering by `message.sender={address}` and order by timestamp descending.",
+        "raw_results, next_token = execute_query_request(provider, query, vars)#step: 3 Tool: execute_query_request Desciption: Send the HTTP request (fetch/axios) and handle pagination via `offset` or `pageInfo.endCursor`.",
+        "table_rows = normalize_tx_results(provider, raw_results)#step: 4 Tool: normalize_tx_results Desciption: Map raw results into a uniform schema (hash, blockHeight, action, fee, success) for the frontend table."
+    ],
+    "intent": "Query transaction history for my address",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "select_data_provider",
+            "description": "Choose a data source (Celatone API, SubQuery, or LCD /txs endpoint) based on latency and pagination needs."
+        },
+        {
+            "step": 2,
+            "tool": "build_history_query",
+            "description": "Construct a REST or GraphQL query filtering by `message.sender={address}` and order by timestamp descending."
+        },
+        {
+            "step": 3,
+            "tool": "execute_query_request",
+            "description": "Send the HTTP request (fetch/axios) and handle pagination via `offset` or `pageInfo.endCursor`."
+        },
+        {
+            "step": 4,
+            "tool": "normalize_tx_results",
+            "description": "Map raw results into a uniform schema (hash, blockHeight, action, fee, success) for the frontend table."
+        }
+    ],
+    "outcome_checks": [
+        "At least one transaction object is returned or an explicit 'no transactions found' message is displayed.",
+        "Block heights and timestamps align with Mintscan or another public explorer for spot-checking accuracy."
+    ]
+}

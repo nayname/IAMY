@@ -1,0 +1,40 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 fetches the current admin address of a given CosmWasm contract on Neutron so the user can confirm who controls the contract before proceeding.",
+            "code": "// Step 1 \u2013 Fetch current admin address\n// Requires: @cosmjs/cosmwasm-stargate\nimport { CosmWasmClient } from \"@cosmjs/cosmwasm-stargate\";\n\n/**\n * fetchCurrentAdmin queries a contract\u2019s metadata and returns its admin address.\n * @param {string} contractAddress \u2013 Bech32 address of the contract\n * @param {string} [rpcEndpoint]   \u2013 RPC endpoint, defaults to Neutron main-net\n * @returns {Promise<string>}      \u2013 Current admin address (or empty string if none)\n */\nexport const fetchCurrentAdmin = async (\n  contractAddress,\n  rpcEndpoint = \"https://rpc-kralum.neutron-1.neutron.org:443\"\n) => {\n  try {\n    const client = await CosmWasmClient.connect(rpcEndpoint);\n    const info = await client.getContract(contractAddress);\n    return info.admin || \"\"; // empty string means no admin set\n  } catch (error) {\n    console.error(\"[fetchCurrentAdmin]\", error);\n    throw new Error(\"Unable to fetch contract admin: \" + error.message);\n  }\n};",
+            "usage": "const currentAdmin = await fetchCurrentAdmin(contractAddress);\nconsole.log(`Current admin: ${currentAdmin || 'no admin set'}`);"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 validates that the new admin address is a properly-formatted Neutron Bech32 address before we attempt to use it in a transaction.",
+            "code": "// Step 2 \u2013 Validate new admin address\n// Requires: bech32 (npm i bech32)\nimport { bech32 } from \"bech32\";\n\n/**\n * validateNewAdminAddress ensures the provided address is valid Bech32 with the\n * correct prefix (default \"neutron\").\n * @param {string} address     \u2013 Proposed new admin address\n * @param {string} prefix      \u2013 Expected prefix, defaults to \"neutron\"\n * @throws {Error}             \u2013 If the address is invalid\n */\nexport const validateNewAdminAddress = (address, prefix = \"neutron\") => {\n  try {\n    const { prefix: addrPrefix } = bech32.decode(address);\n    if (addrPrefix !== prefix) {\n      throw new Error(`Invalid prefix: expected '${prefix}', got '${addrPrefix}'`);\n    }\n    return true;\n  } catch (err) {\n    console.error(\"[validateNewAdminAddress]\", err);\n    throw new Error(\"Provided new admin address is not a valid Bech32 string.\");\n  }\n};",
+            "usage": "validateNewAdminAddress(newAdminAddress); // throws if invalid"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 supplies a helper that retrieves (or prompts for) the contract address whose admin will be updated.",
+            "code": "// Step 3 \u2013 Obtain contract address from the user or UI element\n\n/**\n * getContractAddress reads the contract address from an HTML input element or\n * any other source you prefer.\n * @param {string} [inputId] \u2013 DOM element id, defaults to 'contractAddressInput'\n * @returns {string}         \u2013 The contract address string\n */\nexport const getContractAddress = (inputId = \"contractAddressInput\") => {\n  const el = document.getElementById(inputId);\n  if (!el || !el.value) {\n    throw new Error(\"Contract address not found in the input element.\");\n  }\n  return el.value.trim();\n};",
+            "usage": "const contractAddress = getContractAddress();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 builds the MsgUpdateAdmin transaction object that will later be signed and broadcast. This doesn\u2019t sign or transmit anything yet.",
+            "code": "// Step 4 \u2013 Construct MsgUpdateAdmin\nimport { coins } from \"@cosmjs/amino\"; // only for fee helper (optional)\n\n/**\n * buildUpdateAdminMsg creates the message object required by CosmJS for\n * /cosmwasm.wasm.v1.MsgUpdateAdmin.\n * @param {string} sender         \u2013 Current admin (wallet) address\n * @param {string} contract       \u2013 Contract whose admin you\u2019re updating\n * @param {string} newAdmin       \u2013 New admin address\n * @returns {object}              \u2013 CosmJS-ready message object\n */\nexport const buildUpdateAdminMsg = (sender, contract, newAdmin) => {\n  return {\n    typeUrl: \"/cosmwasm.wasm.v1.MsgUpdateAdmin\",\n    value: {\n      sender: sender,\n      newAdmin: newAdmin,\n      contract: contract\n    }\n  };\n};",
+            "usage": "const msg = buildUpdateAdminMsg(senderAddress, contractAddress, newAdminAddress);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Step 5 signs the previously-constructed MsgUpdateAdmin with the current admin\u2019s wallet and broadcasts it to the Neutron network.",
+            "code": "// Step 5 \u2013 Sign and broadcast update-admin transaction\n// Requires: @cosmjs/cosmwasm-stargate\nimport { SigningCosmWasmClient, GasPrice } from \"@cosmjs/cosmwasm-stargate\";\n\n/**\n * signAndBroadcastUpdateAdminMsg signs and broadcasts the update-admin message.\n * @param {OfflineSigner} signer  \u2013 Obtained from Keplr or Leap wallet\n * @param {string} sender         \u2013 Current admin wallet address (signer\u2019s addr)\n * @param {object} msg            \u2013 Message object from buildUpdateAdminMsg\n * @param {string} [rpcEndpoint]  \u2013 RPC endpoint, defaults to Neutron mainnet\n * @param {string} [memo]         \u2013 Optional memo for the tx\n * @returns {Promise<object>}     \u2013 Result from the broadcast\n */\nexport const signAndBroadcastUpdateAdminMsg = async (\n  signer,\n  sender,\n  msg,\n  rpcEndpoint = \"https://rpc-kralum.neutron-1.neutron.org:443\",\n  memo = \"\"\n) => {\n  try {\n    const gasPrice = GasPrice.fromString(\"0.05untrn\");\n    const client = await SigningCosmWasmClient.connectWithSigner(\n      rpcEndpoint,\n      signer,\n      { gasPrice }\n    );\n\n    // Estimate gas or set a flat fee\n    const fee = {\n      amount: coins(0, \"untrn\"), // 0-fee, gasPrice will calculate final fee\n      gas: \"250000\"               // adjust based on contract complexity\n    };\n\n    const result = await client.signAndBroadcast(sender, [msg], fee, memo);\n    if (result.code !== 0) {\n      throw new Error(`Broadcast failed with code ${result.code}: ${result.rawLog}`);\n    }\n    return result;\n  } catch (error) {\n    console.error(\"[signAndBroadcastUpdateAdminMsg]\", error);\n    throw new Error(\"Transaction failed: \" + error.message);\n  }\n};",
+            "usage": "const result = await signAndBroadcastUpdateAdminMsg(signer, senderAddress, msg);\nconsole.log(\"Tx hash:\", result.transactionHash);"
+        }
+    ]
+}

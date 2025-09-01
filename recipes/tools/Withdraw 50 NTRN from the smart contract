@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects to the user\u2019s browser wallet (Keplr/Leap) and returns an OfflineSigner if the connection is successful.",
+            "function": "ensureWalletConnected()",
+            "usage": "const signer = await ensureWalletConnected();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Sends the contract address to a backend validator and throws if the bech32 format is invalid.",
+            "function": "validateAddressFormat(address)",
+            "usage": "await validateAddressFormat(contractAddress);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Converts the human-readable 50 NTRN amount into its micro-denomination (50 000 000 untrn).",
+            "function": "convertToBaseUnits(amount, decimals = 6)",
+            "usage": "const microAmount = convertToBaseUnits('50'); // \u279c \"50000000\""
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Creates a MsgExecuteContract object that encodes the `{ withdraw: { amount: \"50000000\" } }` payload with no attached funds.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds = [])",
+            "usage": "const execMsg = constructTxWasmExecute(sender, contractAddr, { withdraw: { amount: microAmount } }, []);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Uses the connected wallet to sign the built message and asks the backend relayer to broadcast the transaction.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo = '')",
+            "usage": "const txHash = await signAndBroadcast(signer, sender, [execMsg], 'auto');"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Queries the Neutron chain for the latest `untrn` balance of the user\u2019s address after the withdrawal completes.",
+            "function": "query_bank_balance(address, denom=\"untrn\")",
+            "usage": "new_balance = query_bank_balance(user_address)"
+        }
+    ],
+    "frontend": [
+        "const signer = await ensureWalletConnected();//step: 1 Tool: ensure_wallet_connected Desciption: Verify the wallet connection is active.",
+        "await validateAddressFormat(contractAddress);//step: 2 Tool: validate_contract_address Desciption: Check that the contract address is valid.",
+        "const microAmount = convertToBaseUnits('50'); // \u279c \"50000000\"//step: 3 Tool: convert_to_base_units Desciption: Convert 50 NTRN to 50 000 000 untrn.",
+        "const execMsg = constructTxWasmExecute(sender, contractAddr, { withdraw: { amount: microAmount } }, []);//step: 4 Tool: construct_tx_wasm_execute Desciption: Build a `MsgExecuteContract` with `{ \"withdraw\": { \"amount\": \"50000000\" } }` and no attached funds.",
+        "const txHash = await signAndBroadcast(signer, sender, [execMsg], 'auto');//step: 5 Tool: sign_and_broadcast_tx Desciption: Prompt the wallet to sign and broadcast the withdrawal transaction."
+    ],
+    "backend": [
+        "new_balance = query_bank_balance(user_address)#step: 6 Tool: query_bank_balance Desciption: After confirmation, re-query the user\u2019s bank balance to reflect the incoming 50 NTRN."
+    ],
+    "intent": "Withdraw 50 NTRN from the smart contract",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "ensure_wallet_connected",
+            "description": "Verify the wallet connection is active."
+        },
+        {
+            "step": 2,
+            "tool": "validate_contract_address",
+            "description": "Check that the contract address is valid."
+        },
+        {
+            "step": 3,
+            "tool": "convert_to_base_units",
+            "description": "Convert 50 NTRN to 50 000 000 untrn."
+        },
+        {
+            "step": 4,
+            "tool": "construct_tx_wasm_execute",
+            "description": "Build a `MsgExecuteContract` with `{ \"withdraw\": { \"amount\": \"50000000\" } }` and no attached funds."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Prompt the wallet to sign and broadcast the withdrawal transaction."
+        },
+        {
+            "step": 6,
+            "tool": "query_bank_balance",
+            "description": "After confirmation, re-query the user\u2019s bank balance to reflect the incoming 50 NTRN."
+        }
+    ],
+    "outcome_checks": [
+        "Transaction is included in a block with code 0 (success).",
+        "Contract emits a withdrawal event with amount 50 NTRN.",
+        "User\u2019s on-chain bank balance increases by ~50 NTRN (minus gas fees)."
+    ]
+}

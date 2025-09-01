@@ -1,0 +1,33 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Obtain the user\u2019s Neutron address from a connected Keplr wallet; this address will become the new contract admin.",
+            "code": "export const getUserAddress = async () => {\n  const chainId = 'neutron-1';\n  const keplr = window.keplr;\n\n  // Ensure Keplr is installed\n  if (!keplr) {\n    throw new Error('Keplr wallet is not installed.');\n  }\n\n  // Request wallet connection (prompts user approval)\n  await keplr.enable(chainId);\n\n  // Retrieve the signer and the account list\n  const signer = window.getOfflineSigner(chainId);\n  const accounts = await signer.getAccounts();\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No account found in the signer.');\n  }\n\n  // Return the first account\u2019s bech32 address\n  return accounts[0].address;\n};",
+            "usage": "const newAdminAddress = await getUserAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Collect the CosmWasm contract address whose admin you intend to update.",
+            "code": "export const promptContractAddress = () => {\n  // Browser prompt for simplicity; replace with a nicer UI as needed\n  const contractAddr = prompt('Enter the CosmWasm contract address to update admin for:');\n\n  if (!contractAddr) {\n    throw new Error('Contract address is required.');\n  }\n\n  const trimmed = contractAddr.trim();\n\n  // Basic bech32 length sanity-check (optional: use full bech32 validation)\n  if (trimmed.length < 40 || trimmed.length > 90) {\n    throw new Error('Invalid contract address length.');\n  }\n\n  return trimmed;\n};",
+            "usage": "const contractAddress = promptContractAddress();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Build an unsigned MsgUpdateAdmin transaction that sets the contract\u2019s admin to the user\u2019s address.",
+            "code": "from typing import Tuple\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgUpdateAdmin\nfrom google.protobuf.any_pb2 import Any\n\n# ---- CONFIGURE YOUR NETWORK ENDPOINT ----\nRPC_ENDPOINT = 'https://rpc-kralum.neutron.org:443'  # Public RPC or your own node\nCHAIN_ID = 'neutron-1'\nFEE_DENOM = 'untrn'\nDEFAULT_GAS_LIMIT = 200_000  # adjust as needed\n\n\ndef construct_update_admin_tx(\n    sender_address: str,\n    contract_address: str,\n    new_admin_address: str,\n) -> Tuple[Transaction, LedgerClient]:\n    \"\"\"Create an unsigned Transaction containing a MsgUpdateAdmin message.\n\n    Args:\n        sender_address: Current admin / governance address signing the tx.\n        contract_address: Address of the CosmWasm contract.\n        new_admin_address: Address that will become the new admin.\n\n    Returns:\n        A tuple of (tx, ledger_client) ready for signing & broadcasting.\n    \"\"\"\n    # Initialize client\n    network_cfg = NetworkConfig(\n        chain_id=CHAIN_ID,\n        url=RPC_ENDPOINT,\n    )\n    client = LedgerClient(network_cfg)\n\n    # Build the MsgUpdateAdmin protobuf message\n    msg = MsgUpdateAdmin(\n        sender=sender_address,\n        contract=contract_address,\n        new_admin=new_admin_address,\n    )\n\n    # Pack into Any type\n    any_msg = Any()\n    any_msg.Pack(msg, type_url_prefix='')  # cosmpy handles type_url internally\n\n    # Create transaction and add message\n    tx = Transaction()\n    tx.add_message(any_msg)\n\n    # Set a placeholder fee & gas (will be adjusted when we sign)\n    tx.set_fee(FEE_DENOM, amount=5000, gas_limit=DEFAULT_GAS_LIMIT)\n\n    return tx, client",
+            "usage": "tx, ledger_client = construct_update_admin_tx(sender_addr, contract_addr, newAdminAddress)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Sign the prepared transaction with the current admin key and broadcast it to the Neutron network.",
+            "code": "import os\nfrom cosmpy.crypto.keypair import PrivateKey\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.aerial.client import LedgerClient\n\n\nADMIN_PRIVKEY_ENV = 'CURRENT_ADMIN_PRIVKEY'  # hex-encoded secp256k1 private key\n\n\ndef sign_and_broadcast_tx(tx: Transaction, client: LedgerClient) -> str:\n    \"\"\"Sign the given transaction with the admin key and broadcast it.\n\n    Returns the resulting transaction hash on success. Raises RuntimeError on failure.\n    \"\"\"\n    # Retrieve private key from environment (or secret-manager of your choice)\n    priv_hex = os.getenv(ADMIN_PRIVKEY_ENV)\n    if not priv_hex:\n        raise RuntimeError(f\"Environment variable {ADMIN_PRIVKEY_ENV} not set.\")\n\n    try:\n        # Create PrivateKey object\n        priv = PrivateKey(bytes.fromhex(priv_hex))\n\n        # Sign the transaction\n        tx.sign(priv)\n\n        # Broadcast and wait for inclusion\n        tx_response = client.broadcast_tx(tx)\n\n        if tx_response.is_tx_error():\n            raise RuntimeError(f\"Tx broadcast failed: {tx_response.raw_log}\")\n\n        return tx_response.tx_hash\n\n    except Exception as err:\n        raise RuntimeError(f\"Failed to sign and/or broadcast: {err}\")",
+            "usage": "tx_hash = sign_and_broadcast_tx(tx, ledger_client)\nprint(f\"Tx broadcast successful. Hash: {tx_hash}\")"
+        }
+    ]
+}

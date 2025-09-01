@@ -1,0 +1,47 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 ensures that the user\u2019s Keplr wallet is connected to the Neutron chain and returns an OfflineSigner for further use.",
+            "code": "export const ensureWalletConnected = async (chainId = 'neutron-1') => {\n  // Verify Keplr is installed\n  if (!window || !window.keplr) {\n    throw new Error('Keplr wallet is not installed.');\n  }\n  try {\n    // Request access to the Neutron chain\n    await window.keplr.enable(chainId);\n    // Obtain an OfflineSigner (Amino/Direct signer auto-selected)\n    const offlineSigner = await window.keplr.getOfflineSignerAuto(chainId);\n    return offlineSigner;\n  } catch (error) {\n    console.error('Failed to connect to Keplr:', error);\n    throw error;\n  }\n};",
+            "usage": "const signer = await ensureWalletConnected();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 fetches the first account from the signer and returns the user\u2019s Neutron address.",
+            "code": "export const getSenderAddress = async (signer) => {\n  const accounts = await signer.getAccounts();\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No account found in signer.');\n  }\n  return accounts[0].address;\n};",
+            "usage": "const sender = await getSenderAddress(signer);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 validates that the provided contract address is a well-formed Bech32 address with the Neutron prefix.",
+            "code": "import { fromBech32 } from '@cosmjs/encoding';\n\nexport const validateContractAddress = (address, expectedPrefix = 'neutron') => {\n  try {\n    const { prefix } = fromBech32(address);\n    if (prefix !== expectedPrefix) {\n      throw new Error(`Prefix mismatch: expected ${expectedPrefix}, got ${prefix}`);\n    }\n    return true;\n  } catch (error) {\n    console.error('Invalid contract address:', error);\n    throw new Error('Provided contract address is invalid.');\n  }\n};",
+            "usage": "validateContractAddress(contractAddress);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 converts a human-readable NTRN value (e.g., 100) into its base-unit representation (untrn).",
+            "code": "export const convertToBaseUnits = (amountNTRN) => {\n  if (isNaN(amountNTRN)) {\n    throw new Error('Amount must be numeric.');\n  }\n  const MICRO_FACTOR = 1_000_000; // 1 NTRN = 1,000,000 untrn\n  const microAmount = BigInt(Math.floor(Number(amountNTRN) * MICRO_FACTOR));\n  return microAmount.toString();\n};",
+            "usage": "const depositMicro = convertToBaseUnits(100);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Step 5 builds a MsgExecuteContract object that calls the contract\u2019s `deposit` entry-point and attaches funds.",
+            "code": "import { coin } from '@cosmjs/stargate';\n\nexport const constructTxWasmExecute = (sender, contract, depositMicro) => {\n  const executeMsg = { deposit: {} }; // Payload expected by the contract\n  const funds = [coin(depositMicro, 'untrn')];\n  return {\n    sender,\n    contract,\n    msg: executeMsg,\n    funds,\n  };\n};",
+            "usage": "const executeMsg = constructTxWasmExecute(sender, contractAddress, depositMicro);"
+        },
+        {
+            "step": 6,
+            "label": "frontend",
+            "introduction": "Step 6 signs the execute message with the user\u2019s wallet and broadcasts the transaction to the Neutron network.",
+            "code": "import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';\n\nexport const signAndBroadcastTx = async (signer, executeMsg, rpcEndpoint = 'https://rpc-kralum.neutron.org') => {\n  try {\n    const client = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, signer);\n    // Use 'auto' for fee estimation or replace with a custom fee object.\n    const fee = 'auto';\n    const result = await client.execute(\n      executeMsg.sender,\n      executeMsg.contract,\n      executeMsg.msg,\n      fee,\n      undefined,\n      executeMsg.funds,\n    );\n    console.log('Transaction broadcasted. Hash:', result.transactionHash);\n    return result;\n  } catch (error) {\n    console.error('Failed to sign/broadcast transaction:', error);\n    throw error;\n  }\n};",
+            "usage": "const txResult = await signAndBroadcastTx(signer, executeMsg);"
+        }
+    ]
+}

@@ -1,0 +1,175 @@
+[
+    {
+        "intent": "Connect a user\u2019s wallet to the dApp",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "wallet_connect",
+                "description": "Prompt the user to choose a supported wallet (e.g., Keplr, Leap, WalletConnect) and request connection permissions."
+            },
+            {
+                "step": 2,
+                "tool": "ensure_network_neutron",
+                "description": "Verify the wallet is set to the Neutron mainnet (chain-id: neutron-1). If not, prompt the user to add / switch networks."
+            },
+            {
+                "step": 3,
+                "tool": "store_session_account",
+                "description": "Retrieve the connected account\u2019s address and public key; save them to the dApp session context for future transactions."
+            }
+        ],
+        "outcome_checks": [
+            "Wallet reports a successful connection event.",
+            "Account address is present in application state.",
+            "Network/chain-id returned by the wallet equals \"neutron-1\"."
+        ]
+    },
+    {
+        "intent": "Query the connected wallet\u2019s NTRN balance",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "ensure_wallet_connected",
+                "description": "Confirm that a wallet session exists; if not, invoke the wallet connection flow."
+            },
+            {
+                "step": 2,
+                "tool": "get_wallet_address",
+                "description": "Fetch the user\u2019s Neutron address from the active wallet session."
+            },
+            {
+                "step": 3,
+                "tool": "query_bank_balance",
+                "description": "Call the Bank module\u2019s gRPC/REST endpoint or CosmJS `queryClient.bank.balance` for denom \"untrn\" to obtain the balance."
+            },
+            {
+                "step": 4,
+                "tool": "format_amount",
+                "description": "Convert the raw micro-denom amount (untrn) to a human-readable NTRN value with 6-decimal precision."
+            }
+        ],
+        "outcome_checks": [
+            "A numeric balance is returned (>= 0).",
+            "Displayed value matches on-chain data for the address when cross-checked with a block explorer."
+        ]
+    },
+    {
+        "intent": "Send 10 NTRN to a specified recipient address",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "ensure_wallet_connected",
+                "description": "Verify the user\u2019s wallet is connected."
+            },
+            {
+                "step": 2,
+                "tool": "get_sender_address",
+                "description": "Retrieve the sender\u2019s Neutron address from the wallet."
+            },
+            {
+                "step": 3,
+                "tool": "validate_recipient_address",
+                "description": "Check that the provided recipient address is a valid Bech32 Neutron address."
+            },
+            {
+                "step": 4,
+                "tool": "convert_to_base_units",
+                "description": "Convert 10 NTRN to its micro-denom value (10 \u00d7 10^6 = 10 000 000 untrn)."
+            },
+            {
+                "step": 5,
+                "tool": "construct_tx_bank_send",
+                "description": "Build a MsgSend with sender, recipient, and amount (10 000 000 untrn)."
+            },
+            {
+                "step": 6,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Ask the wallet to sign the transaction and broadcast it to Neutron."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction hash is returned by the wallet.",
+            "Tx is included in a block and marked `success`.",
+            "Recipient\u2019s balance increases by 10 NTRN (minus fees) when queried."
+        ]
+    },
+    {
+        "intent": "Deposit 100 NTRN into a smart contract",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "ensure_wallet_connected",
+                "description": "Confirm the user\u2019s wallet session is active."
+            },
+            {
+                "step": 2,
+                "tool": "get_sender_address",
+                "description": "Retrieve the depositor\u2019s Neutron address."
+            },
+            {
+                "step": 3,
+                "tool": "validate_contract_address",
+                "description": "Ensure the provided contract address is a valid Neutron CosmWasm address."
+            },
+            {
+                "step": 4,
+                "tool": "convert_to_base_units",
+                "description": "Convert 100 NTRN to 100 000 000 untrn."
+            },
+            {
+                "step": 5,
+                "tool": "construct_tx_wasm_execute",
+                "description": "Create a `MsgExecuteContract` with `{ \"deposit\": {} }` as the message payload and attach 100 000 000 untrn as funds."
+            },
+            {
+                "step": 6,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Prompt the wallet to sign and broadcast the execution transaction."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction confirms successfully on-chain.",
+            "A follow-up query to the contract\u2019s state or an emitted event shows the user\u2019s deposit balance increased by 100 NTRN."
+        ]
+    },
+    {
+        "intent": "Withdraw 50 NTRN from the smart contract",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "ensure_wallet_connected",
+                "description": "Verify the wallet connection is active."
+            },
+            {
+                "step": 2,
+                "tool": "validate_contract_address",
+                "description": "Check that the contract address is valid."
+            },
+            {
+                "step": 3,
+                "tool": "convert_to_base_units",
+                "description": "Convert 50 NTRN to 50 000 000 untrn."
+            },
+            {
+                "step": 4,
+                "tool": "construct_tx_wasm_execute",
+                "description": "Build a `MsgExecuteContract` with `{ \"withdraw\": { \"amount\": \"50000000\" } }` and no attached funds."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Prompt the wallet to sign and broadcast the withdrawal transaction."
+            },
+            {
+                "step": 6,
+                "tool": "query_bank_balance",
+                "description": "After confirmation, re-query the user\u2019s bank balance to reflect the incoming 50 NTRN."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction is included in a block with code 0 (success).",
+            "Contract emits a withdrawal event with amount 50 NTRN.",
+            "User\u2019s on-chain bank balance increases by ~50 NTRN (minus gas fees)."
+        ]
+    }
+]

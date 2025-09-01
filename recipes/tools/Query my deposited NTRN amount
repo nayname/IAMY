@@ -1,0 +1,65 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Fetches the user\u2019s bech32 wallet address from the already-connected signer.",
+            "function": "getWalletAddress(signer)",
+            "usage": "const sender = await getWalletAddress(signer);"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Reads the NeutronTemplate contract address from environment variables and validates its format.",
+            "function": "loadContractAddress()",
+            "usage": "const contractAddr = loadContractAddress();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Builds a JSON message object that embeds the sender address for the forthcoming smart-contract query.",
+            "function": "constructWasmQueryMsg(senderAddress)",
+            "usage": "const queryMsg = constructWasmQueryMsg(sender);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Executes the smart-contract query against the backend endpoint and returns the deposit information.",
+            "function": "queryContractSmart(contractAddress, queryMsg)",
+            "usage": "const depositInfo = await queryContractSmart(contractAddr, queryMsg);"
+        }
+    ],
+    "frontend": [
+        "const sender = await getWalletAddress(signer);//step: 1 Tool: get_sender_address Desciption: Identify the wallet address whose deposit balance is being requested.",
+        "const contractAddr = loadContractAddress();//step: 2 Tool: load_contract_address Desciption: Retrieve the NeutronTemplate contract address.",
+        "const queryMsg = constructWasmQueryMsg(sender);//step: 3 Tool: construct_wasm_query_msg Desciption: Build the query payload: {\"get_deposit\":{\"address\":\"<sender>\"}}.",
+        "const depositInfo = await queryContractSmart(contractAddr, queryMsg);//step: 4 Tool: query_contract_smart Desciption: Execute the smart query to obtain the deposited NTRN amount."
+    ],
+    "backend": [],
+    "intent": "Query my deposited NTRN amount",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_address",
+            "description": "Identify the wallet address whose deposit balance is being requested."
+        },
+        {
+            "step": 2,
+            "tool": "load_contract_address",
+            "description": "Retrieve the NeutronTemplate contract address."
+        },
+        {
+            "step": 3,
+            "tool": "construct_wasm_query_msg",
+            "description": "Build the query payload: {\"get_deposit\":{\"address\":\"<sender>\"}}."
+        },
+        {
+            "step": 4,
+            "tool": "query_contract_smart",
+            "description": "Execute the smart query to obtain the deposited NTRN amount."
+        }
+    ],
+    "outcome_checks": [
+        "The query returns the caller\u2019s deposit as a Coin or Uint128 amount denominated in untrn."
+    ]
+}

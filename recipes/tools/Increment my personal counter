@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "getWalletAddress fetches the caller\u2019s bech32 wallet address from the provided OfflineSigner so it can be used as the personal-counter key.",
+            "function": "getWalletAddress(signer)",
+            "usage": "const myAddress = await getWalletAddress(signer);"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "loadContractAddress retrieves and validates the NeutronTemplate contract address from environment variables.",
+            "function": "loadContractAddress()",
+            "usage": "const contractAddress = loadContractAddress();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "constructTxWasmExecute builds a MsgExecuteContract object carrying the { increment_personal: {} } payload for the specified contract.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds=[])",
+            "usage": "const execMsg = constructTxWasmExecute(myAddress, contractAddress, { increment_personal: {} });"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "sign_and_broadcast_tx signs the prepared transaction with the user\u2019s wallet and broadcasts it to the Neutron network, returning the Tx response.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "response = sign_and_broadcast_tx(tx, wallet, client)"
+        }
+    ],
+    "frontend": [
+        "const myAddress = await getWalletAddress(signer);//step: 1 Tool: get_sender_address Desciption: Identify the caller\u2019s wallet address (this will also become the key for their personal counter).",
+        "const contractAddress = loadContractAddress();//step: 2 Tool: load_contract_address Desciption: Retrieve or confirm the deployed NeutronTemplate contract address that exposes the counter API.",
+        "const execMsg = constructTxWasmExecute(myAddress, contractAddress, { increment_personal: {} });//step: 3 Tool: construct_wasm_execute_msg Desciption: Build the execute message: {\"increment_personal\":{}} targeted at the contract address."
+    ],
+    "backend": [
+        "response = sign_and_broadcast_tx(tx, wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the transaction with the caller\u2019s key and broadcast it to the Neutron network."
+    ],
+    "intent": "Increment my personal counter",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_address",
+            "description": "Identify the caller\u2019s wallet address (this will also become the key for their personal counter)."
+        },
+        {
+            "step": 2,
+            "tool": "load_contract_address",
+            "description": "Retrieve or confirm the deployed NeutronTemplate contract address that exposes the counter API."
+        },
+        {
+            "step": 3,
+            "tool": "construct_wasm_execute_msg",
+            "description": "Build the execute message: {\"increment_personal\":{}} targeted at the contract address."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the transaction with the caller\u2019s key and broadcast it to the Neutron network."
+        }
+    ],
+    "outcome_checks": [
+        "Ensure the transaction hash is included in a finalized block.",
+        "Query the contract for the caller\u2019s personal counter and confirm the returned value has increased by exactly 1 compared to the previous value."
+    ]
+}

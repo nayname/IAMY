@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Retrieves the caller\u2019s bech32 address and an OfflineSigner from the connected browser wallet.",
+            "function": "getOfflineSignerAndAddress(chainId)",
+            "usage": "const { address, signer } = await getOfflineSignerAndAddress('neutron-1');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Loads and validates the deployed NeutronTemplate contract address from environment variables.",
+            "function": "loadContractAddress()",
+            "usage": "const contractAddress = loadContractAddress();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Builds a MsgExecuteContract object that carries the { increment_global: {} } execute payload.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds)",
+            "usage": "const execMsg = constructTxWasmExecute(address, contractAddress, { increment_global: {} });"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the assembled transaction with the wallet and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "const txHash = sign_and_broadcast_tx(tx, wallet, client);"
+        }
+    ],
+    "frontend": [
+        "const { address, signer } = await getOfflineSignerAndAddress('neutron-1');//step: 1 Tool: get_sender_address Desciption: Identify the caller\u2019s wallet (needed for fee payment and signing).",
+        "const contractAddress = loadContractAddress();//step: 2 Tool: load_contract_address Desciption: Retrieve or confirm the deployed NeutronTemplate contract address.",
+        "const execMsg = constructTxWasmExecute(address, contractAddress, { increment_global: {} });//step: 3 Tool: construct_wasm_execute_msg Desciption: Build the execute message: {\"increment_global\":{}}."
+    ],
+    "backend": [
+        "const txHash = sign_and_broadcast_tx(tx, wallet, client);#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the increment-global transaction."
+    ],
+    "intent": "Increment the global counter",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_address",
+            "description": "Identify the caller\u2019s wallet (needed for fee payment and signing)."
+        },
+        {
+            "step": 2,
+            "tool": "load_contract_address",
+            "description": "Retrieve or confirm the deployed NeutronTemplate contract address."
+        },
+        {
+            "step": 3,
+            "tool": "construct_wasm_execute_msg",
+            "description": "Build the execute message: {\"increment_global\":{}}."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the increment-global transaction."
+        }
+    ],
+    "outcome_checks": [
+        "Verify the transaction was successfully committed to a block.",
+        "Query the contract\u2019s global counter and confirm the value increased by 1."
+    ]
+}

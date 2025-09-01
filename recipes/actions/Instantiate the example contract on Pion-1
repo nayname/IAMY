@@ -1,0 +1,40 @@
+{
+    "label": "instantiate",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Create a helper that returns a fully-configured cosmpy LedgerClient for the Pion-1 testnet (chain-id, RPC, and fees).",
+            "code": "from cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.crypto.keypairs import PrivateKey\nimport os\n\n# ---------------------------\n# Step 1  \u2022  Chain Context\n# ---------------------------\n\ndef get_neutron_client() -> LedgerClient:\n    \"\"\"Initialises a LedgerClient pointed at Pion-1.\n\n    Raises:\n        EnvironmentError: If an RPC endpoint is missing.\n    \"\"\"\n    rpc_url = os.getenv(\"PION_RPC\", \"https://rpc.pion-1.ntrn.tech:443\")\n\n    if not rpc_url:\n        raise EnvironmentError(\"RPC endpoint for Pion-1 is not set.\")\n\n    cfg = NetworkConfig(\n        chain_id=\"pion-1\",\n        url=rpc_url,\n        fee_minimum_gas_price=0.025,  # 0.025 NTRN / gas\n        fee_denomination=\"untrn\",\n        staking_denomination=\"untrn\",\n        bech32_hrp=\"neutron\"\n    )\n\n    return LedgerClient(cfg)\n\n# Optional: load a signing key once so future steps can re-use it\n# NOTE: store your mnemonic securely \u2013 this is *just* for local testing!\n_SIGNING_KEY: PrivateKey | None = None\n\ndef load_signing_key() -> PrivateKey:\n    \"\"\"Loads (or creates) a PrivateKey from a MNEMONIC env-var.\"\"\"\n    global _SIGNING_KEY\n    if _SIGNING_KEY is None:\n        mnemonic = os.getenv(\"NEUTRON_MNEMONIC\")\n        if not mnemonic:\n            raise EnvironmentError(\"Please export NEUTRON_MNEMONIC before running.\")\n        _SIGNING_KEY = PrivateKey.from_mnemonic(mnemonic)\n    return _SIGNING_KEY",
+            "usage": "client = get_neutron_client()\nkey    = load_signing_key()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Resolve the `code_id` that will be instantiated \u2013 either from an env-var or by querying the chain for the last upload by our wallet.",
+            "code": "import json\nfrom typing import Optional\n\n# ---------------------------\n# Step 2  \u2022  Resolve code_id\n# ---------------------------\n\ndef get_code_id(client: LedgerClient, uploader: str, explicit_code_id: Optional[int] = None) -> int:\n    \"\"\"Determine the code_id to instantiate.\n\n    Args:\n        client:   The LedgerClient from Step 1.\n        uploader: Address that stored the code (usually our wallet).\n        explicit_code_id: Optional override (e.g. via CLI flag).\n\n    Returns:\n        int: The wasm `code_id`.\n\n    Raises:\n        ValueError: If we cannot discover a code_id.\n    \"\"\"\n    # Highest priority: explicit argument / env-var\n    if explicit_code_id is None:\n        env_code_id = os.getenv(\"CODE_ID\")\n        explicit_code_id = int(env_code_id) if env_code_id else None\n\n    if explicit_code_id is not None:\n        return explicit_code_id\n\n    # Fallback: query the chain for all codes uploaded by `uploader`\n    response = client.query(\"/cosmwasm/wasm/v1/code\")  # REST path for all codes\n    codes = json.loads(response)[\"code_infos\"]\n\n    # Filter codes by creator and pick the latest\n    user_codes = [int(c[\"code_id\"]) for c in codes if c.get(\"creator\") == uploader]\n    if not user_codes:\n        raise ValueError(\"No code_id found for uploader \u2013 pass CODE_ID env-var or argument.\")\n    return max(user_codes)",
+            "usage": "code_id = get_code_id(client, uploader=key.address())"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Construct the `MsgInstantiateContract` transaction with initial state (`{\"count\": 0}`) and optional admin.",
+            "code": "from cosmpy.aerial.contract import MsgInstantiateContract\nfrom cosmpy.aerial.tx import Transaction\n\n# ---------------------------\n# Step 3  \u2022  Build Tx\n# ---------------------------\n\ndef build_instantiate_tx(client: LedgerClient,\n                         signer: PrivateKey,\n                         code_id: int,\n                         init_msg: dict | None = None,\n                         admin: str | None = None,\n                         label: str = \"counter\") -> Transaction:\n    \"\"\"Create an unsigned instantiate transaction.\"\"\"\n\n    if init_msg is None:\n        init_msg = {\"count\": 0}\n\n    msg = MsgInstantiateContract(\n        sender=signer.address(),\n        admin=admin or \"\",\n        code_id=code_id,\n        label=label,\n        init_msg=init_msg,\n        funds=[]  # no initial funds\n    )\n\n    tx = (Transaction()\n           .with_messages(msg)\n           .with_sender(signer.address())\n           .with_chain_id(client.network_config.chain_id)\n           .with_gas(300_000)  # enough for small contracts\n           .with_fee(client.network_config.fee_denomination, 300_000 * client.network_config.fee_minimum_gas_price))\n\n    return tx",
+            "usage": "tx = build_instantiate_tx(client, key, code_id, admin=key.address())"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Sign the instantiate transaction with the wallet\u2019s `PrivateKey` and broadcast it to Pion-1.",
+            "code": "from cosmpy.aerial.tx import SigningCfg, BroadcastMode\n\n# ---------------------------\n# Step 4  \u2022  Sign & Broadcast\n# ---------------------------\n\ndef sign_and_broadcast_tx(client: LedgerClient, signer: PrivateKey, tx: Transaction):\n    \"\"\"Signs and broadcasts the transaction, returning the tx response.\"\"\"\n    try:\n        tx_signed = tx.sign(SigningCfg.direct(signer))\n        response  = client.broadcast_tx(tx_signed, mode=BroadcastMode.BLOCK)\n        if response.is_tx_error():\n            raise RuntimeError(f\"Transaction failed: {response.raw_log}\")\n        return response\n    except Exception as e:\n        # Re-raise with additional context\n        raise RuntimeError(f\"Failed to broadcast instantiate tx: {e}\") from e",
+            "usage": "tx_response = sign_and_broadcast_tx(client, key, tx)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Parse the transaction events to extract the freshly-created contract address.",
+            "code": "import json\n\n# ---------------------------\n# Step 5  \u2022  Extract Address\n# ---------------------------\n\ndef extract_contract_address_from_tx(tx_response):\n    \"\"\"Returns the contract address emitted by the instantiate event.\"\"\"\n    try:\n        logs = json.loads(tx_response.raw_log)\n        for event in logs[0].get(\"events\", []):\n            if event.get(\"type\") in (\"instantiate\", \"wasm\"):\n                for attr in event.get(\"attributes\", []):\n                    if attr.get(\"key\") == \"_contract_address\" or attr.get(\"key\") == \"contract_address\":\n                        return attr.get(\"value\")\n        raise RuntimeError(\"Contract address not found in tx events.\")\n    except (KeyError, ValueError, IndexError) as e:\n        raise RuntimeError(f\"Error parsing tx log: {e}\") from e",
+            "usage": "contract_addr = extract_contract_address_from_tx(tx_response)\nprint(f\"\u2705 Contract instantiated at: {contract_addr}\")"
+        }
+    ]
+}

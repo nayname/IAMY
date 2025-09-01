@@ -1,0 +1,54 @@
+{
+    "label": "instantiate",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 sets up a cosmpy LedgerClient configured for Neutron mainnet so subsequent transactions can be signed and broadcast on the correct chain.",
+            "code": "# Step 1 \u2013 Initialise a Neutron mainnet client using cosmpy\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import LocalWallet\n\n\ndef get_neutron_mainnet_client(mnemonic: str, rpc_url: str = \"https://rpc-kralum.neutron-1.neutron.org:443\") -> LedgerClient:\n    # Returns a cosmpy LedgerClient configured for Neutron mainnet\n    if not mnemonic:\n        raise ValueError(\"Mnemonic must not be empty\")\n\n    cfg = NetworkConfig(\n        chain_id=\"neutron-1\",\n        url=rpc_url,\n        fee_min_denom=\"untrn\",\n        gas_price=0.025,  # 0.025 NTRN/gas is a reasonable default for mainnet\n    )\n\n    wallet = LocalWallet.create_from_mnemonic(mnemonic)\n    return LedgerClient(cfg, wallet)\n",
+            "usage": "from os import getenv\nclient = get_neutron_mainnet_client(getenv(\"MNEMONIC\"))"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 confirms that the compiled CosmWasm binary exists at the provided path and is small enough to be accepted by the chain.",
+            "code": "# Step 2 \u2013 Ensure that the .wasm file is present and valid\nimport os\n\n\ndef ensure_wasm_file(path: str) -> str:\n    # Validates the existence and size (< 4 MiB) of the compiled .wasm file\n    if not os.path.isfile(path):\n        raise FileNotFoundError(f\"WASM file not found at {path}\")\n\n    size = os.path.getsize(path)\n    if size > 4 * 1024 * 1024:\n        raise ValueError(f\"WASM binary is {size} bytes which exceeds the 4 MiB limit.\")\n\n    return os.path.abspath(path)\n",
+            "usage": "wasm_path = ensure_wasm_file(\"./artifacts/my_contract.wasm\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 constructs an unsigned MsgStoreCode transaction that will upload the contract byte-code to Neutron.",
+            "code": "# Step 3 \u2013 Build a MsgStoreCode tx\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.protos.cosmwasm.wasm.v1 import tx_pb2 as wasm_tx\nfrom cosmpy.protos.cosmwasm.wasm.v1 import types_pb2 as wasm_types\n\n\ndef build_store_code_tx(client: LedgerClient, wasm_path: str, memo: str = \"Upload contract\") -> Transaction:\n    with open(wasm_path, \"rb\") as f:\n        wasm_bytes = f.read()\n\n    msg = wasm_tx.MsgStoreCode(\n        sender=client.wallet.address(),\n        wasm_byte_code=wasm_bytes,\n        instantiate_permission=wasm_types.AccessConfig(\n            permission=wasm_types.AccessType.ACCESS_TYPE_EVERYBODY\n        ),\n    )\n\n    tx = client.tx.create([msg], memo=memo, gas_limit=2_500_000)\n    return tx\n",
+            "usage": "store_tx = build_store_code_tx(client, wasm_path)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 signs and broadcasts the store-code transaction and returns the generated code_id.",
+            "code": "# Step 4 \u2013 Sign, broadcast and obtain code_id\nimport json\n\n\ndef sign_and_broadcast_tx(client: LedgerClient, tx: Transaction):\n    signed_tx = client.sign(tx)\n    response = client.broadcast_tx_block(signed_tx)\n    if response.code != 0:\n        raise RuntimeError(f\"Tx failed (code={response.code}): {response.raw_log}\")\n    return response\n\n\ndef extract_code_id(response) -> int:\n    # Parses the code_id emitted by MsgStoreCode from the tx response\n    try:\n        logs = json.loads(response.raw_log)\n        for event in logs[0][\"events\"]:\n            if event[\"type\"] == \"store_code\":\n                for attr in event[\"attributes\"]:\n                    if attr[\"key\"] in (\"code_id\", \"codeID\"):\n                        return int(attr[\"value\"])\n    except (KeyError, ValueError, json.JSONDecodeError) as err:\n        raise RuntimeError(f\"Unable to extract code_id: {err}\")\n    raise RuntimeError(\"code_id not found in logs\")\n\n\ndef upload_wasm_and_get_code_id(client: LedgerClient, tx: Transaction) -> int:\n    resp = sign_and_broadcast_tx(client, tx)\n    code_id = extract_code_id(resp)\n    print(f\"\u2713 Contract uploaded with code_id {code_id}\")\n    return code_id\n",
+            "usage": "code_id = upload_wasm_and_get_code_id(client, store_tx)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 builds an unsigned MsgInstantiateContract transaction using the new code_id and the desired initial state.",
+            "code": "# Step 5 \u2013 Construct instantiate tx\nfrom cosmpy.protos.cosmwasm.wasm.v1 import tx_pb2 as wasm_tx\nimport json as jsonlib\n\n\ndef build_instantiate_tx(client: LedgerClient, code_id: int, init_msg: dict, label: str, admin: str | None = None) -> Transaction:\n    msg = wasm_tx.MsgInstantiateContract(\n        sender=client.wallet.address(),\n        admin=admin or client.wallet.address(),\n        code_id=code_id,\n        label=label,\n        msg=jsonlib.dumps(init_msg).encode(),\n        funds=[]  # add coins here if your contract expects an initial deposit\n    )\n    tx = client.tx.create([msg], memo=f\"Instantiate {label}\", gas_limit=1_000_000)\n    return tx\n",
+            "usage": "instantiate_tx = build_instantiate_tx(client, code_id, {\"count\": 0}, \"counter-contract\")"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Step 6 signs and broadcasts the instantiation transaction, bringing the contract to life on-chain.",
+            "code": "# Step 6 \u2013 Sign and broadcast instantiation tx\ndef instantiate_contract(client: LedgerClient, tx: Transaction):\n    resp = sign_and_broadcast_tx(client, tx)\n    print(\"\u2713 Contract instantiated\")\n    return resp\n",
+            "usage": "inst_resp = instantiate_contract(client, instantiate_tx)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Step 7 extracts the newly created contract address from the instantiation receipt for future interactions.",
+            "code": "# Step 7 \u2013 Retrieve contract address\nimport json\n\n\ndef extract_contract_address(response) -> str:\n    try:\n        logs = json.loads(response.raw_log)\n        for event in logs[0][\"events\"]:\n            if event[\"type\"] == \"instantiate\":\n                for attr in event[\"attributes\"]:\n                    if attr[\"key\"] in (\"_contract_address\", \"contract_address\"):\n                        return attr[\"value\"]\n    except (KeyError, ValueError, json.JSONDecodeError) as err:\n        raise RuntimeError(f\"Unable to find contract address: {err}\")\n    raise RuntimeError(\"Contract address not present in tx logs\")\n",
+            "usage": "contract_addr = extract_contract_address(inst_resp)\nprint(f\"Contract deployed at {contract_addr}\")"
+        }
+    ]
+}

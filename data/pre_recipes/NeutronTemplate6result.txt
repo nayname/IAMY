@@ -1,0 +1,381 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"NeutronTemplate\", \"query\": \"Show current block height\"}, {\"label\": \"NeutronTemplate\", \"query\": \"Query code hash of the contract\"}, {\"label\": \"NeutronTemplate\", \"query\": \"List all contracts I have deployed\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "0e65e74d-81af-4124-8656-d0d76d62e3ca",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_ADqtAgz0vSLIwQOvitmjQYGC",
+                        "function": {
+                            "arguments": "{\"query\": \"Neutrond block height query\", \"section\": \"developers\", \"max_results\": 5}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 297,
+                    "prompt_tokens": 674,
+                    "total_tokens": 971,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 256,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eZ7Mz0H86m9YwcNpbjbQJ5zND22",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--9e70f462-df11-4b54-876d-244989c3d743-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "Neutrond block height query",
+                        "section": "developers",
+                        "max_results": 5
+                    },
+                    "id": "call_ADqtAgz0vSLIwQOvitmjQYGC",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 674,
+                "output_tokens": 297,
+                "total_tokens": 971,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 256
+                }
+            }
+        },
+        {
+            "content": "Found 5 result(s) for \"Neutrond block height query\":\n\n## 1. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 8: ## Key Advantages of SubQuery\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 2. How-To Guide\n**File:** /root/neutron/docs/developers/modules/globalfee/how-to.mdx\n**Section:** developers\n**Relevance Score:** 14\n\n**Matching lines:**\n- Line 18: neutrond tx gov submit-proposal param-change proposal.json \\\n- Line 153: **Query Current Parameters:**\n- Line 158: const params = await client.queryContractSmart(\n- Line 190: neutrond query txs --events 'message.action=/cosmos.gov.v1beta1.MsgVote' \\\n- Line 198: neutrond query block [height] | jq '.block.data.txs[] | select(.body.messages[].type_url | contains(\"MsgVote\"))'\n\n**Content Preview:**\n```\n```bash\nneutrond tx gov submit-proposal param-change proposal.json \\\n  --from validator \\\n\n---\n\n\n**Query Current Parameters:**\n\n\n---\n\n\nconst params = await client.queryContractSmart(\n  \"neutron1...\", // Global fee module address\n```\n\n---\n\n## 3. How-to\n**File:** /root/neutron/docs/developers/modules/feerefunder/how-to.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 47: timeout_height: None,\n- Line 99: // Query the module parameters to get minimum required fees\n- Line 100: let params: QueryParamsResponse = deps.querier.query(\n- Line 101: &QueryRequest::Custom(NeutronQuery::FeerefunderParams {})\n- Line 133: neutrond query feerefunder params\n\n**Content Preview:**\n```\n    receiver: \"cosmos1...\".to_string(),\n    timeout_height: None,\n    timeout_timestamp: Some(timeout_timestamp),\n\n---\n\n```rust\n// Query the module parameters to get minimum required fees\nlet params: QueryParamsResponse = deps.querier.query(\n\n---\n\n// Query the module parameters to get minimum required fees\nlet params: QueryParamsResponse = deps.querier.query(\n    &QueryRequest::Custom(NeutronQuery::FeerefunderParams {})\n```\n\n---\n\n## 4. Chain Integration Tests\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/chain.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 21: go get github.com/neutron-org/neutron/v4/cmd/neutrond\n- Line 64: s.Require().NoError(s.network.WaitForNextBlock())\n- Line 95: // Wait for next block\n- Line 96: s.Require().NoError(s.network.WaitForNextBlock())\n- Line 98: // Query the price\n\n**Content Preview:**\n```\ngo mod init neutron-integration-tests\ngo get github.com/neutron-org/neutron/v4/cmd/neutrond\ngo get github.com/cosmos/cosmos-sdk/testutil\n\n---\n\n    \n    s.Require().NoError(s.network.WaitForNextBlock())\n}\n\n---\n\n    \n    // Wait for next block\n    s.Require().NoError(s.network.WaitForNextBlock())\n```\n\n---\n\n## 5. ICTX Explanation\n**File:** /root/neutron/docs/developers/modules/interchaintxs/explanation.mdx\n**Section:** developers\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 5: The Interchain Transactions module leverages IBC (Inter-Blockchain Communication) to enable CosmWasm smart contracts on Neutron to control accounts and execute transactions on remote chains. This document explains the key concepts and mechanics behind this functionality.\n- Line 142: For detailed error information, you can query the packet events on the remote chain using:\n- Line 155: If you don't have the remote channel ID, you can query it using:\n- Line 158: neutrond q ibc channel end <src-port> <src-channel-id>\n\n**Content Preview:**\n```\n\nThe Interchain Transactions module leverages IBC (Inter-Blockchain Communication) to enable CosmWasm smart contracts on Neutron to control accounts and execute transactions on remote chains. This document explains the key concepts and mechanics behind this functionality.\n\n\n---\n\n\nFor detailed error information, you can query the packet events on the remote chain using:\n\n\n---\n\n\nIf you don't have the remote channel ID, you can query it using:\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "1c0128cd-9364-4053-b3ad-7a55f3c12e3d",
+            "tool_call_id": "call_ADqtAgz0vSLIwQOvitmjQYGC",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_NKQDNVMpWxRJetCH6ZWLTIXB",
+                        "function": {
+                            "arguments": "{\"query\": \"neutrond query wasm list-contract-by-creator\", \"section\": \"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 878,
+                    "prompt_tokens": 2499,
+                    "total_tokens": 3377,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 832,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eZCBIhWfC3Xxj4u7tB0EoR8HSRO",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--26b16089-0c30-4fd5-b462-187b72bed4b5-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "neutrond query wasm list-contract-by-creator",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_NKQDNVMpWxRJetCH6ZWLTIXB",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 2499,
+                "output_tokens": 878,
+                "total_tokens": 3377,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 832
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"neutrond query wasm list-contract-by-creator\":\n\n## 1. Interchain Queries with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_icq.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Interchain Queries with CosmWasm\"\n- Line 3: description: \"Learn how to build smart contracts that query data from other blockchains using Neutron's ICQ module\"\n- Line 6: This tutorial walks through building a smart contract that uses Neutron's Interchain Query (ICQ) module to query data from other blockchains. You'll learn how to register queries, process the results, and build applications that can react to state changes on connected chains.\n- Line 10: Interchain Queries are a powerful feature of Neutron that allow smart contracts to query the state of other chains in the Cosmos ecosystem. This enables developers to build cross-chain applications that can react to state changes on connected chains.\n- Line 14: 1. Register an interchain query\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Queries with CosmWasm\"\ndescription: \"Learn how to build smart contracts that query data from other blockchains using Neutron's ICQ module\"\n\n---\n\ntitle: \"Interchain Queries with CosmWasm\"\ndescription: \"Learn how to build smart contracts that query data from other blockchains using Neutron's ICQ module\"\n---\n\n---\n\n\nThis tutorial walks through building a smart contract that uses Neutron's Interchain Query (ICQ) module to query data from other blockchains. You'll learn how to register queries, process the results, and build applications that can react to state changes on connected chains.\n\n```\n\n---\n\n## 2. Introduction to CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/introduction_to_cosmwasm.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Introduction to CosmWasm\"\n- Line 6: This tutorial provides a gentle introduction to smart contract development on Neutron using CosmWasm. You'll learn the fundamentals of smart contracts and how to build them step by step.\n- Line 12: The counter contract template can be found in [this GitHub repository](https://github.com/CosmWasm/cw-template).\n- Line 16: A smart contract can be considered an instance of a singleton object whose internal state is persisted on the blockchain. Users can trigger state changes by sending the smart contract JSON messages, and users can also query its state by sending a request formatted as a JSON message.\n- Line 22: 3. `query()`: gets called when a user wants to get data out of a smart contract, this invokes one of the query messages defined in the contract under `QueryMsg` enum which is a list of queries the contract supports\n\n**Content Preview:**\n```\n---\ntitle: \"Introduction to CosmWasm\"\ndescription: \"A gentle introduction to smart contract development on Neutron\"\n\n---\n\n\nThis tutorial provides a gentle introduction to smart contract development on Neutron using CosmWasm. You'll learn the fundamentals of smart contracts and how to build them step by step.\n\n\n---\n\n\nThe counter contract template can be found in [this GitHub repository](https://github.com/CosmWasm/cw-template).\n\n```\n\n---\n\n## 3. Interchain Accounts with CosmWasm\n**File:** /root/neutron/docs/developers/tutorials/cosmwasm_ica.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Interchain Accounts with CosmWasm\"\n- Line 23: - Have a basic understanding of CosmWasm smart contract development\n- Line 25: - Have completed the [Introduction to CosmWasm](/developers/tutorials/introduction_to_cosmwasm) tutorial\n- Line 29: Start by creating a new CosmWasm project using cargo-generate:\n- Line 32: cargo generate --git https://github.com/CosmWasm/cw-template.git --name neutron-ica-example\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Accounts with CosmWasm\"\ndescription: \"Learn how to build smart contracts that utilize interchain accounts to execute transactions on other chains\"\n\n---\n\n\n- Have a basic understanding of CosmWasm smart contract development\n- Be familiar with [Neutron's architecture](/developers/overview)\n\n---\n\n- Be familiar with [Neutron's architecture](/developers/overview)\n- Have completed the [Introduction to CosmWasm](/developers/tutorials/introduction_to_cosmwasm) tutorial\n\n```\n\n---\n\n## 4. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 8: ## Key Advantages of SubQuery\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 5. How-to\n**File:** /root/neutron/docs/developers/modules/contractmanager/how-to.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 12: // Example of a proper IBC acknowledgment handler in CosmWasm\n- Line 37: To check if your contract has experienced any failures, you can use the Contract Manager query functionality:\n- Line 42: neutrond query contractmanager failures [contract-address]\n- Line 52: \"error\": \"codespace: wasm, code: 5\",\n- Line 59: ### Via CosmWasm Contract\n\n**Content Preview:**\n```\n```rust\n// Example of a proper IBC acknowledgment handler in CosmWasm\n#[entry_point]\n\n---\n\n\nTo check if your contract has experienced any failures, you can use the Contract Manager query functionality:\n\n\n---\n\n```bash\nneutrond query contractmanager failures [contract-address]\n```\n```\n\n---\n\n## 6. How-to\n**File:** /root/neutron/docs/developers/modules/cron/how-to.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 11: - Familiarity with CosmWasm contract development\n- Line 80: neutrond tx gov submit-proposal [proposal-file.json] \\\n- Line 102: use cosmwasm_std::{\n- Line 342: ### Querying Schedules\n- Line 348: neutrond query cron list-schedule\n\n**Content Preview:**\n```\n- Understanding of Neutron governance processes\n- Familiarity with CosmWasm contract development\n- Access to governance proposal submission (for schedule creation)\n\n---\n\n# Submit governance proposal\nneutrond tx gov submit-proposal [proposal-file.json] \\\n  --from=<your-key> \\\n\n---\n\n```rust\nuse cosmwasm_std::{\n    entry_point, DepsMut, Env, MessageInfo, Response, StdResult,\n```\n\n---\n\n## 7. How-To Guide\n**File:** /root/neutron/docs/developers/modules/globalfee/how-to.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 18: neutrond tx gov submit-proposal param-change proposal.json \\\n- Line 153: **Query Current Parameters:**\n- Line 156: const client = await SigningCosmWasmClient.connectWithSigner(rpcUrl, signer);\n- Line 158: const params = await client.queryContractSmart(\n- Line 190: neutrond query txs --events 'message.action=/cosmos.gov.v1beta1.MsgVote' \\\n\n**Content Preview:**\n```\n```bash\nneutrond tx gov submit-proposal param-change proposal.json \\\n  --from validator \\\n\n---\n\n\n**Query Current Parameters:**\n\n\n---\n\n```javascript\nconst client = await SigningCosmWasmClient.connectWithSigner(rpcUrl, signer);\n\n```\n\n---\n\n## 8. Developer Quickstart\n**File:** /root/neutron/docs/developers/quickstart.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 22: rustup target add wasm32-unknown-unknown\n- Line 46: # Build the neutrond binary\n- Line 50: neutrond version\n- Line 68: git clone https://github.com/neutron-org/neutron-query-relayer.git\n- Line 121: ## Create and Deploy a CosmWasm Smart Contract\n\n**Content Preview:**\n```\n    rustup default stable\n    rustup target add wasm32-unknown-unknown\n    \n\n---\n\n    \n    # Build the neutrond binary\n    make install\n\n---\n\n    # Verify installation\n    neutrond version\n    ```\n```\n\n---\n\n## 9. Chain Integration Tests\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/chain.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 21: go get github.com/neutron-org/neutron/v4/cmd/neutrond\n- Line 26: cargo add cosmwasm-std --features testing\n- Line 98: // Query the price\n- Line 99: queryClient := oracletypes.NewQueryClient(val.ClientCtx)\n- Line 100: resp, err := queryClient.ExchangeRate(context.Background(), &oracletypes.QueryExchangeRateRequest{\n\n**Content Preview:**\n```\ngo mod init neutron-integration-tests\ngo get github.com/neutron-org/neutron/v4/cmd/neutrond\ngo get github.com/cosmos/cosmos-sdk/testutil\n\n---\n\n# For Rust-based contract tests\ncargo add cosmwasm-std --features testing\ncargo add cw-multi-test\n\n---\n\n    \n    // Query the price\n    queryClient := oracletypes.NewQueryClient(val.ClientCtx)\n```\n\n---\n\n## 10. Frequently Asked Questions\n**File:** /root/neutron/docs/developers/faq.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 39: - **Celatone Smart Contract Explorer**: Provides a great UI to upload, query and execute contracts.\n- Line 58: ### What CosmWasm version is used?\n- Line 60: We are using a patched 0.51.0 version of wasmd.\n- Line 62: ### I'm getting \"out of gas\" errors when querying smart contracts. How do I fix this?\n- Line 67: out of gas in location: Wasm engine function execution; gasWanted: 3000000, gasUsed: 3000000: out of gas: unknown request\n\n**Content Preview:**\n```\n  - <a href=\"https://mintscan.io/neutron-testnet\" target=\"_blank\" className=\"text-primary hover:underline\">Testnet (pion-1)</a>\n- **Celatone Smart Contract Explorer**: Provides a great UI to upload, query and execute contracts.\n\n\n---\n\n\n### What CosmWasm version is used?\n\n\n---\n\n\nWe are using a patched 0.51.0 version of wasmd.\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "c6dffb89-10d9-4f66-acb8-f44c95559534",
+            "tool_call_id": "call_NKQDNVMpWxRJetCH6ZWLTIXB",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_8AgWQ2b3NXTyQgpY3zx3lYYE",
+                        "function": {
+                            "arguments": "{\"query\": \"neutrond query block height\", \"section\": \"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 361,
+                    "prompt_tokens": 5841,
+                    "total_tokens": 6202,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 320,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eZT32yJgPaBIoEoj54ZkBxywRBs",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--601d98a3-3a5a-41c6-8346-896f07fa6eac-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "neutrond query block height",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_8AgWQ2b3NXTyQgpY3zx3lYYE",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 5841,
+                "output_tokens": 361,
+                "total_tokens": 6202,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 320
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"neutrond query block height\":\n\n## 1. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 8: ## Key Advantages of SubQuery\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 2. How-To Guide\n**File:** /root/neutron/docs/developers/modules/globalfee/how-to.mdx\n**Section:** developers\n**Relevance Score:** 14\n\n**Matching lines:**\n- Line 18: neutrond tx gov submit-proposal param-change proposal.json \\\n- Line 153: **Query Current Parameters:**\n- Line 158: const params = await client.queryContractSmart(\n- Line 190: neutrond query txs --events 'message.action=/cosmos.gov.v1beta1.MsgVote' \\\n- Line 198: neutrond query block [height] | jq '.block.data.txs[] | select(.body.messages[].type_url | contains(\"MsgVote\"))'\n\n**Content Preview:**\n```\n```bash\nneutrond tx gov submit-proposal param-change proposal.json \\\n  --from validator \\\n\n---\n\n\n**Query Current Parameters:**\n\n\n---\n\n\nconst params = await client.queryContractSmart(\n  \"neutron1...\", // Global fee module address\n```\n\n---\n\n## 3. How-to\n**File:** /root/neutron/docs/developers/modules/feerefunder/how-to.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 47: timeout_height: None,\n- Line 99: // Query the module parameters to get minimum required fees\n- Line 100: let params: QueryParamsResponse = deps.querier.query(\n- Line 101: &QueryRequest::Custom(NeutronQuery::FeerefunderParams {})\n- Line 133: neutrond query feerefunder params\n\n**Content Preview:**\n```\n    receiver: \"cosmos1...\".to_string(),\n    timeout_height: None,\n    timeout_timestamp: Some(timeout_timestamp),\n\n---\n\n```rust\n// Query the module parameters to get minimum required fees\nlet params: QueryParamsResponse = deps.querier.query(\n\n---\n\n// Query the module parameters to get minimum required fees\nlet params: QueryParamsResponse = deps.querier.query(\n    &QueryRequest::Custom(NeutronQuery::FeerefunderParams {})\n```\n\n---\n\n## 4. Chain Integration Tests\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/chain.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 21: go get github.com/neutron-org/neutron/v4/cmd/neutrond\n- Line 64: s.Require().NoError(s.network.WaitForNextBlock())\n- Line 95: // Wait for next block\n- Line 96: s.Require().NoError(s.network.WaitForNextBlock())\n- Line 98: // Query the price\n\n**Content Preview:**\n```\ngo mod init neutron-integration-tests\ngo get github.com/neutron-org/neutron/v4/cmd/neutrond\ngo get github.com/cosmos/cosmos-sdk/testutil\n\n---\n\n    \n    s.Require().NoError(s.network.WaitForNextBlock())\n}\n\n---\n\n    \n    // Wait for next block\n    s.Require().NoError(s.network.WaitForNextBlock())\n```\n\n---\n\n## 5. ICTX Explanation\n**File:** /root/neutron/docs/developers/modules/interchaintxs/explanation.mdx\n**Section:** developers\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 5: The Interchain Transactions module leverages IBC (Inter-Blockchain Communication) to enable CosmWasm smart contracts on Neutron to control accounts and execute transactions on remote chains. This document explains the key concepts and mechanics behind this functionality.\n- Line 142: For detailed error information, you can query the packet events on the remote chain using:\n- Line 155: If you don't have the remote channel ID, you can query it using:\n- Line 158: neutrond q ibc channel end <src-port> <src-channel-id>\n\n**Content Preview:**\n```\n\nThe Interchain Transactions module leverages IBC (Inter-Blockchain Communication) to enable CosmWasm smart contracts on Neutron to control accounts and execute transactions on remote chains. This document explains the key concepts and mechanics behind this functionality.\n\n\n---\n\n\nFor detailed error information, you can query the packet events on the remote chain using:\n\n\n---\n\n\nIf you don't have the remote channel ID, you can query it using:\n\n```\n\n---\n\n## 6. Frequently Asked Questions\n**File:** /root/neutron/docs/developers/faq.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 32: ### Where is the block explorer?\n- Line 34: We recommend using the following block explorers:\n- Line 39: - **Celatone Smart Contract Explorer**: Provides a great UI to upload, query and execute contracts.\n- Line 62: ### I'm getting \"out of gas\" errors when querying smart contracts. How do I fix this?\n- Line 72: 1. **General Cosmos SDK Query Gas Limit** (`query-gas-limit` in root of app.toml):\n\n**Content Preview:**\n```\n\n### Where is the block explorer?\n\n\n---\n\n\nWe recommend using the following block explorers:\n\n\n---\n\n  - <a href=\"https://mintscan.io/neutron-testnet\" target=\"_blank\" className=\"text-primary hover:underline\">Testnet (pion-1)</a>\n- **Celatone Smart Contract Explorer**: Provides a great UI to upload, query and execute contracts.\n\n```\n\n---\n\n## 7. How-to\n**File:** /root/neutron/docs/developers/modules/admin/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 61: neutrond tx wasm execute neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh \\\n- Line 75: neutrond tx wasm submit-proposal proposal.json \\\n- Line 163: ## Querying the Admin Module\n- Line 165: While you cannot submit proposals directly, you can query the admin module's state using standard query commands:\n- Line 168: # Query module parameters (if available)\n\n**Content Preview:**\n```\n# Execute a propose message on the Main DAO contract\nneutrond tx wasm execute neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh \\\n  '{\"propose\": {\"msg\": {\"propose_single\": {\"title\": \"Your Proposal Title\", \"description\": \"Your proposal description\", \"msgs\": [/* your admin module messages */]}}}}' \\\n\n---\n\n# Submit proposal via WASM module\nneutrond tx wasm submit-proposal proposal.json \\\n  --from=<your-key> \\\n\n---\n\n\n## Querying the Admin Module\n\n```\n\n---\n\n## 8. How-to\n**File:** /root/neutron/docs/developers/modules/contractmanager/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 37: To check if your contract has experienced any failures, you can use the Contract Manager query functionality:\n- Line 42: neutrond query contractmanager failures [contract-address]\n- Line 61: You can query failures from within another contract using bindings:\n- Line 64: // Query failures from a CosmWasm contract\n- Line 65: pub fn query_failures(\n\n**Content Preview:**\n```\n\nTo check if your contract has experienced any failures, you can use the Contract Manager query functionality:\n\n\n---\n\n```bash\nneutrond query contractmanager failures [contract-address]\n```\n\n---\n\n\nYou can query failures from within another contract using bindings:\n\n```\n\n---\n\n## 9. Understanding Cron\n**File:** /root/neutron/docs/developers/modules/cron/explanation.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 10: The Cron module enables on-chain time-based automation by maintaining a registry of schedules and executing them at the appropriate block heights. Traditional blockchain applications require external triggers for time-sensitive operations, which creates several challenges:\n- Line 17: The Cron module solves these problems by moving time-based automation directly onto the blockchain, ensuring deterministic, reliable, and decentralized execution of scheduled operations.\n- Line 31: - The execution period (in blocks)\n- Line 33: - The execution stage (BEGIN_BLOCKER or END_BLOCKER)\n- Line 39: The module hooks into Neutron's block production process to check for schedules due for execution:\n\n**Content Preview:**\n```\n\nThe Cron module enables on-chain time-based automation by maintaining a registry of schedules and executing them at the appropriate block heights. Traditional blockchain applications require external triggers for time-sensitive operations, which creates several challenges:\n\n\n---\n\n\nThe Cron module solves these problems by moving time-based automation directly onto the blockchain, ensuring deterministic, reliable, and decentralized execution of scheduled operations.\n\n\n---\n\n- A unique name for identification\n- The execution period (in blocks)\n- One or more CosmWasm contract messages to execute\n```\n\n---\n\n## 10. How-to\n**File:** /root/neutron/docs/developers/modules/cron/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 41: \"description\": \"Creates a schedule to distribute rewards every 7200 blocks (approximately daily)\",\n- Line 54: \"execution_stage\": \"EXECUTION_STAGE_END_BLOCKER\"\n- Line 66: - **`period`**: Number of blocks between executions\n- Line 70: - **`execution_stage`**: When to execute (`EXECUTION_STAGE_BEGIN_BLOCKER` or `EXECUTION_STAGE_END_BLOCKER`)\n- Line 80: neutrond tx gov submit-proposal [proposal-file.json] \\\n\n**Content Preview:**\n```\n  \"title\": \"Add Daily Reward Distribution Schedule\",\n  \"description\": \"Creates a schedule to distribute rewards every 7200 blocks (approximately daily)\",\n  \"messages\": [\n\n---\n\n      ],\n      \"execution_stage\": \"EXECUTION_STAGE_END_BLOCKER\"\n    }\n\n---\n\n- **`name`**: Unique identifier for the schedule\n- **`period`**: Number of blocks between executions\n- **`msgs`**: Array of contract messages to execute\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "30e6ee9e-a7a7-4598-990b-642e287e600a",
+            "tool_call_id": "call_8AgWQ2b3NXTyQgpY3zx3lYYE",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_qjSEqOFj4VW5yHQEmTsYXSqK",
+                        "function": {
+                            "arguments": "{\"query\": \"neutrond query block latest\", \"section\": \"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 361,
+                    "prompt_tokens": 9118,
+                    "total_tokens": 9479,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 320,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 5760
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eZjLn7PX0OLDSuRjUTJZbLAWCHp",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--93652cbe-e213-4939-9f07-7ba3c3ad554a-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "neutrond query block latest",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_qjSEqOFj4VW5yHQEmTsYXSqK",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 9118,
+                "output_tokens": 361,
+                "total_tokens": 9479,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 5760
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 320
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"neutrond query block latest\":\n\n## 1. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 8: ## Key Advantages of SubQuery\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 2. Frequently Asked Questions\n**File:** /root/neutron/docs/developers/faq.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 32: ### Where is the block explorer?\n- Line 34: We recommend using the following block explorers:\n- Line 39: - **Celatone Smart Contract Explorer**: Provides a great UI to upload, query and execute contracts.\n- Line 41: ### Where can I download the latest snapshots?\n- Line 62: ### I'm getting \"out of gas\" errors when querying smart contracts. How do I fix this?\n\n**Content Preview:**\n```\n\n### Where is the block explorer?\n\n\n---\n\n\nWe recommend using the following block explorers:\n\n\n---\n\n  - <a href=\"https://mintscan.io/neutron-testnet\" target=\"_blank\" className=\"text-primary hover:underline\">Testnet (pion-1)</a>\n- **Celatone Smart Contract Explorer**: Provides a great UI to upload, query and execute contracts.\n\n```\n\n---\n\n## 3. How-To Guide\n**File:** /root/neutron/docs/developers/modules/globalfee/how-to.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 18: neutrond tx gov submit-proposal param-change proposal.json \\\n- Line 153: **Query Current Parameters:**\n- Line 158: const params = await client.queryContractSmart(\n- Line 190: neutrond query txs --events 'message.action=/cosmos.gov.v1beta1.MsgVote' \\\n- Line 198: neutrond query block [height] | jq '.block.data.txs[] | select(.body.messages[].type_url | contains(\"MsgVote\"))'\n\n**Content Preview:**\n```\n```bash\nneutrond tx gov submit-proposal param-change proposal.json \\\n  --from validator \\\n\n---\n\n\n**Query Current Parameters:**\n\n\n---\n\n\nconst params = await client.queryContractSmart(\n  \"neutron1...\", // Global fee module address\n```\n\n---\n\n## 4. Chain Integration Tests\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/chain.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 21: go get github.com/neutron-org/neutron/v4/cmd/neutrond\n- Line 64: s.Require().NoError(s.network.WaitForNextBlock())\n- Line 95: // Wait for next block\n- Line 96: s.Require().NoError(s.network.WaitForNextBlock())\n- Line 98: // Query the price\n\n**Content Preview:**\n```\ngo mod init neutron-integration-tests\ngo get github.com/neutron-org/neutron/v4/cmd/neutrond\ngo get github.com/cosmos/cosmos-sdk/testutil\n\n---\n\n    \n    s.Require().NoError(s.network.WaitForNextBlock())\n}\n\n---\n\n    \n    // Wait for next block\n    s.Require().NoError(s.network.WaitForNextBlock())\n```\n\n---\n\n## 5. ICTX Explanation\n**File:** /root/neutron/docs/developers/modules/interchaintxs/explanation.mdx\n**Section:** developers\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 5: The Interchain Transactions module leverages IBC (Inter-Blockchain Communication) to enable CosmWasm smart contracts on Neutron to control accounts and execute transactions on remote chains. This document explains the key concepts and mechanics behind this functionality.\n- Line 142: For detailed error information, you can query the packet events on the remote chain using:\n- Line 155: If you don't have the remote channel ID, you can query it using:\n- Line 158: neutrond q ibc channel end <src-port> <src-channel-id>\n\n**Content Preview:**\n```\n\nThe Interchain Transactions module leverages IBC (Inter-Blockchain Communication) to enable CosmWasm smart contracts on Neutron to control accounts and execute transactions on remote chains. This document explains the key concepts and mechanics behind this functionality.\n\n\n---\n\n\nFor detailed error information, you can query the packet events on the remote chain using:\n\n\n---\n\n\nIf you don't have the remote channel ID, you can query it using:\n\n```\n\n---\n\n## 6. How-to\n**File:** /root/neutron/docs/developers/modules/admin/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 61: neutrond tx wasm execute neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh \\\n- Line 75: neutrond tx wasm submit-proposal proposal.json \\\n- Line 163: ## Querying the Admin Module\n- Line 165: While you cannot submit proposals directly, you can query the admin module's state using standard query commands:\n- Line 168: # Query module parameters (if available)\n\n**Content Preview:**\n```\n# Execute a propose message on the Main DAO contract\nneutrond tx wasm execute neutron1436kxs0w2es6xlqpp9rd35e3d0cjnw4sv8j3a7483sgks29jqwgshlt6zh \\\n  '{\"propose\": {\"msg\": {\"propose_single\": {\"title\": \"Your Proposal Title\", \"description\": \"Your proposal description\", \"msgs\": [/* your admin module messages */]}}}}' \\\n\n---\n\n# Submit proposal via WASM module\nneutrond tx wasm submit-proposal proposal.json \\\n  --from=<your-key> \\\n\n---\n\n\n## Querying the Admin Module\n\n```\n\n---\n\n## 7. How-to\n**File:** /root/neutron/docs/developers/modules/contractmanager/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 37: To check if your contract has experienced any failures, you can use the Contract Manager query functionality:\n- Line 42: neutrond query contractmanager failures [contract-address]\n- Line 61: You can query failures from within another contract using bindings:\n- Line 64: // Query failures from a CosmWasm contract\n- Line 65: pub fn query_failures(\n\n**Content Preview:**\n```\n\nTo check if your contract has experienced any failures, you can use the Contract Manager query functionality:\n\n\n---\n\n```bash\nneutrond query contractmanager failures [contract-address]\n```\n\n---\n\n\nYou can query failures from within another contract using bindings:\n\n```\n\n---\n\n## 8. How-to\n**File:** /root/neutron/docs/developers/modules/cron/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 41: \"description\": \"Creates a schedule to distribute rewards every 7200 blocks (approximately daily)\",\n- Line 54: \"execution_stage\": \"EXECUTION_STAGE_END_BLOCKER\"\n- Line 66: - **`period`**: Number of blocks between executions\n- Line 70: - **`execution_stage`**: When to execute (`EXECUTION_STAGE_BEGIN_BLOCKER` or `EXECUTION_STAGE_END_BLOCKER`)\n- Line 80: neutrond tx gov submit-proposal [proposal-file.json] \\\n\n**Content Preview:**\n```\n  \"title\": \"Add Daily Reward Distribution Schedule\",\n  \"description\": \"Creates a schedule to distribute rewards every 7200 blocks (approximately daily)\",\n  \"messages\": [\n\n---\n\n      ],\n      \"execution_stage\": \"EXECUTION_STAGE_END_BLOCKER\"\n    }\n\n---\n\n- **`name`**: Unique identifier for the schedule\n- **`period`**: Number of blocks between executions\n- **`msgs`**: Array of contract messages to execute\n```\n\n---\n\n## 9. How-to\n**File:** /root/neutron/docs/developers/modules/dynamicfees/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 60: neutrond tx gov submit-proposal proposal.json \\\n- Line 73: neutrond tx gov vote 123 yes \\\n- Line 127: ## Querying Module Information\n- Line 129: ### Query Current Parameters\n- Line 132: # Query current asset prices\n\n**Content Preview:**\n```\n```bash\nneutrond tx gov submit-proposal proposal.json \\\n  --from your-key \\\n\n---\n\n# Vote yes on proposal ID 123\nneutrond tx gov vote 123 yes \\\n  --from your-key \\\n\n---\n\n\n## Querying Module Information\n\n```\n\n---\n\n## 10. How-to\n**File:** /root/neutron/docs/developers/modules/feeburner/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 5: This guide provides practical instructions for interacting with the Fee Burner module, primarily for operators, validators, and users who need to query information about burned fees.\n- Line 7: ## Querying Module Parameters\n- Line 9: You can query the current parameters of the Fee Burner module using the CLI:\n- Line 12: neutrond query feeburner params\n- Line 33: To query the total amount of NTRN tokens that have been burned since genesis:\n\n**Content Preview:**\n```\n\nThis guide provides practical instructions for interacting with the Fee Burner module, primarily for operators, validators, and users who need to query information about burned fees.\n\n\n---\n\n\n## Querying Module Parameters\n\n\n---\n\n\nYou can query the current parameters of the Fee Burner module using the CLI:\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "7be58a9d-5f58-4abb-93a5-b2368f05b487",
+            "tool_call_id": "call_qjSEqOFj4VW5yHQEmTsYXSqK",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Show the current block height of the Neutron chain\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"connect_rpc_endpoint\",\n        \"description\": \"Connect to a reachable Neutron RPC endpoint (e.g., https://rpc-kralum.neutron.org) to ensure the CLI can query chain data.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"neutrond_status\",\n        \"description\": \"Run `neutrond status --node <rpc-endpoint>` to fetch the node\u2019s sync information.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"extract_block_height\",\n        \"description\": \"Parse the JSON response and read `result.sync_info.latest_block_height`.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Confirm the extracted height is a positive integer.\",\n      \"Re-run the query after a few seconds to verify the height increases, proving it is the latest value.\"\n    ]\n  },\n  {\n    \"intent\": \"Query the code hash of a specific smart contract\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"validate_contract_address\",\n        \"description\": \"Ensure the provided contract address is a valid Bech32 Neutron address.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_contract_info\",\n        \"description\": \"Execute `neutrond query wasm contract <contract-address>` to obtain the contract\u2019s metadata, including its `code_id`.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"extract_code_id\",\n        \"description\": \"Read the `code_id` field from the contract info response.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"query_code_info\",\n        \"description\": \"Run `neutrond query wasm code-info <code_id>` to fetch the code information that contains the `code_hash`.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"extract_code_hash\",\n        \"description\": \"Parse the `code_hash` value from the code-info JSON response.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Ensure a 64-character hexadecimal `code_hash` is returned.\",\n      \"Verify that the `code_hash` field is not empty or null.\"\n    ]\n  },\n  {\n    \"intent\": \"List all smart contracts deployed by my account\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_creator_address\",\n        \"description\": \"Determine the user\u2019s wallet (creator) address from the connected keyring or wallet context.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"validate_creator_address\",\n        \"description\": \"Confirm the creator address follows correct Bech32 formatting.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"query_contracts_by_creator\",\n        \"description\": \"Execute `neutrond query wasm list-contract-by-creator <creator-address> --limit 1000` to retrieve contracts deployed by the user.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"handle_pagination\",\n        \"description\": \"If the response includes a `pagination.next_key`, repeat the query with `--page-key` until all contracts are collected.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Return an array of contract addresses (or an empty list if none exist).\",\n      \"Validate each returned address is a properly formatted Bech32 Neutron contract address.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 1930,
+                    "prompt_tokens": 12241,
+                    "total_tokens": 14171,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1152,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-C9eZwTpzTSUOcMtTGpM6xR23LQ1He",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--f8c303d0-3d96-4f13-820e-1235293d9f9c-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 12241,
+                "output_tokens": 1930,
+                "total_tokens": 14171,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1152
+                }
+            }
+        }
+    ]
+}

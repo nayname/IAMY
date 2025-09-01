@@ -1,0 +1,26 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 declares a JavaScript helper that retrieves and validates the deployed NeutronTemplate contract address from environment variables.",
+            "code": "export const loadContractAddress = () => {\n  // It\u2019s recommended to store contract addresses in environment variables\n  // so you can easily switch between testnet, mainnet, and localnet.\n  const address =\n    import.meta.env.VITE_TEMPLATE_CONTRACT_ADDRESS ||\n    process.env.NEXT_PUBLIC_TEMPLATE_CONTRACT_ADDRESS;\n\n  if (!address) {\n    throw new Error(\n      'NeutronTemplate contract address is not defined in environment variables.'\n    );\n  }\n\n  // Basic sanity-check: Neutron bech32 addresses start with `ntrn1` and are 43 chars long.\n  if (!/^ntrn1[0-9a-z]{38}$/.test(address)) {\n    throw new Error('Invalid Neutron contract address format.');\n  }\n\n  return address;\n};",
+            "usage": "const contractAddress = loadContractAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 builds the exact query message required by the NeutronTemplate contract to fetch the global counter.",
+            "code": "export const constructWasmQueryMsg = () => {\n  // Message schema follows the contract\u2019s public interface.\n  return {\n    get_global_counter: {}\n  };\n};",
+            "usage": "const queryMsg = constructWasmQueryMsg();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 connects to a Neutron RPC endpoint with CosmJS and performs the smart-query, returning the current global counter value.",
+            "code": "import { StargateClient } from '@cosmjs/stargate';\nimport { loadContractAddress } from './loadContractAddress.js';\nimport { constructWasmQueryMsg } from './constructWasmQueryMsg.js';\n\n/**\n * Queries the NeutronTemplate contract for its global counter value.\n * @param {string} rpcEndpoint - Full RPC URL, e.g. \"https://rpc-kralum.neutron-1.neutron.org\".\n * @returns {Promise<number>} - The current counter value stored on-chain.\n */\nexport const queryContractGlobalCounter = async (rpcEndpoint) => {\n  try {\n    // 1. Connect to the chain.\n    const client = await StargateClient.connect(rpcEndpoint);\n\n    // 2. Prepare contract address & query msg.\n    const contractAddress = loadContractAddress();\n    const queryMsg = constructWasmQueryMsg();\n\n    // 3. Execute the smart query.\n    const response = await client.queryContractSmart(contractAddress, queryMsg);\n    // Expected response shape: { count: <number> }\n\n    if (!response || typeof response.count !== 'number') {\n      throw new Error('Unexpected response format from contract.');\n    }\n\n    return response.count;\n  } catch (error) {\n    console.error('Failed to query global counter:', error);\n    throw error;\n  }\n};",
+            "usage": "const count = await queryContractGlobalCounter('https://rpc-kralum.neutron-1.neutron.org');\nconsole.log('Global counter value:', count);"
+        }
+    ]
+}

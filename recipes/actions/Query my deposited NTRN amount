@@ -1,0 +1,33 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 obtains the sender\u2019s Neutron address by ensuring the user\u2019s Keplr wallet is connected and reading the first account.",
+            "code": "// src/utils/getSenderAddress.js\nexport const getSenderAddress = async () => {\n  const chainId = 'neutron-1';\n\n  // Ensure Keplr is available in the browser\n  if (!window || !window.keplr) {\n    throw new Error('Keplr wallet extension is not installed.');\n  }\n\n  try {\n    // Request wallet access for Neutron\n    await window.keplr.enable(chainId);\n\n    // Get an offline signer for the chain\n    const signer = window.getOfflineSigner(chainId);\n    const accounts = await signer.getAccounts();\n\n    if (!accounts || accounts.length === 0) {\n      throw new Error('No accounts found in the connected wallet.');\n    }\n\n    // Return the first account\u2019s address\n    return accounts[0].address;\n  } catch (err) {\n    console.error('Error while fetching sender address:', err);\n    throw err;\n  }\n};",
+            "usage": "const senderAddress = await getSenderAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 loads the stored NeutronTemplate contract address from an environment variable (or any config source).",
+            "code": "// src/config/loadContractAddress.js\nexport const loadContractAddress = () => {\n  // BEST PRACTICE: Keep contract addresses in env variables or config files, not hard-coded.\n  const contractAddress = process.env.REACT_APP_TEMPLATE_CONTRACT_ADDRESS;\n\n  if (!contractAddress) {\n    throw new Error('NeutronTemplate contract address is not configured.');\n  }\n\n  return contractAddress;\n};",
+            "usage": "const contractAddress = loadContractAddress();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 constructs the smart-query payload that the NeutronTemplate contract expects for requesting a user\u2019s deposit balance.",
+            "code": "// src/utils/constructWasmQueryMsg.js\n/**\n * Creates the query message for `{ get_deposit: { address: <sender> } }`.\n * @param {string} senderAddress - Bech32 Neutron account address whose deposit is queried.\n * @returns {object} A properly-shaped query message ready for CosmWasmClient.\n */\nexport const constructWasmQueryMsg = (senderAddress) => {\n  if (!senderAddress) {\n    throw new Error('Sender address must be provided to construct the query.');\n  }\n\n  return {\n    get_deposit: {\n      address: senderAddress,\n    },\n  };\n};",
+            "usage": "const queryMsg = constructWasmQueryMsg(senderAddress);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 performs the smart-contract query with CosmWasmClient and returns the deposited NTRN amount.",
+            "code": "// src/queries/queryContractSmart.js\nimport { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';\n\n/**\n * Queries a CosmWasm contract on Neutron for a given message.\n * @param {string} rpcEndpoint - Full RPC endpoint, e.g. 'https://rpc-kralum.neutron-1.neutron.org:443'.\n * @param {string} contractAddress - Bech32 address of the NeutronTemplate contract.\n * @param {object} queryMsg - JSON query message constructed in Step 3.\n * @returns {Promise<any>} Result returned by the contract.\n */\nexport const queryContractSmart = async (rpcEndpoint, contractAddress, queryMsg) => {\n  if (!rpcEndpoint || !contractAddress || !queryMsg) {\n    throw new Error('RPC endpoint, contract address, and query message are all required.');\n  }\n\n  try {\n    // Create a read-only CosmWasm client\n    const client = await CosmWasmClient.connect(rpcEndpoint);\n\n    // Execute the smart query\n    const result = await client.queryContractSmart(contractAddress, queryMsg);\n\n    return result; // Expected shape: { amount: \"<uNTRN>\" }\n  } catch (err) {\n    console.error('Smart-contract query failed:', err);\n    throw err;\n  }\n};",
+            "usage": "const rpcEndpoint = 'https://rpc-kralum.neutron-1.neutron.org:443';\nconst depositInfo = await queryContractSmart(rpcEndpoint, contractAddress, queryMsg);\nconsole.log('Deposited uNTRN:', depositInfo.amount);"
+        }
+    ]
+}

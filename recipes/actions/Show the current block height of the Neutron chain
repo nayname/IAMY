@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that verifies connectivity to a given Neutron RPC endpoint.",
+            "code": "import requests\nfrom typing import Optional\n\ndef connect_rpc_endpoint(rpc_endpoint: str = 'https://rpc-kralum.neutron.org') -> str:\n    \"\"\"\n    Attempts to connect to the given Neutron RPC endpoint by querying the `/status`\n    route. Returns the endpoint string if successful; raises an exception otherwise.\n    \"\"\"\n    try:\n        # Hit `/status` to confirm the node is alive\n        url = rpc_endpoint.rstrip('/') + '/status'\n        response = requests.get(url, timeout=5)\n        response.raise_for_status()\n\n        # Basic sanity check on the payload\n        if 'result' not in response.json():\n            raise ValueError('Unexpected response payload from RPC endpoint.')\n\n        return rpc_endpoint\n    except requests.RequestException as err:\n        raise ConnectionError(\n            f'Unable to reach Neutron RPC endpoint at {rpc_endpoint}: {err}'\n        ) from err",
+            "usage": "rpc_endpoint = connect_rpc_endpoint('https://rpc-kralum.neutron.org')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 wraps the `neutrond status --node <endpoint>` CLI call in Python and returns the parsed JSON.",
+            "code": "import json\nimport subprocess\nfrom typing import Dict\n\ndef neutrond_status(rpc_endpoint: str) -> Dict:\n    \"\"\"\n    Executes `neutrond status --node <rpc_endpoint>` via subprocess and returns\n    the parsed JSON dictionary containing the node's sync information.\n    \"\"\"\n    try:\n        cmd = [\n            'neutrond',\n            'status',\n            '--node',\n            rpc_endpoint,\n        ]\n        result = subprocess.run(\n            cmd,\n            capture_output=True,\n            text=True,\n            check=True,\n        )\n        return json.loads(result.stdout)\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f'`neutrond status` failed: {err.stderr}') from err\n    except json.JSONDecodeError as err:\n        raise ValueError('Failed to parse JSON from neutrond output.') from err",
+            "usage": "status_json = neutrond_status(rpc_endpoint)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 extracts `result.sync_info.latest_block_height` from the status JSON.",
+            "code": "from typing import Dict\n\ndef extract_block_height(status_json: Dict) -> int:\n    \"\"\"\n    Extracts the latest block height from the status JSON returned by `neutrond status`.\n    \"\"\"\n    try:\n        height_str = status_json['result']['sync_info']['latest_block_height']\n        return int(height_str)\n    except (KeyError, TypeError, ValueError) as err:\n        raise ValueError(\n            'Invalid status JSON format: unable to locate `latest_block_height`.'\n        ) from err",
+            "usage": "latest_height = extract_block_height(status_json)"
+        }
+    ]
+}

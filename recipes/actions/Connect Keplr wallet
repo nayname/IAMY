@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 checks that the Keplr browser extension is installed and unlocked before any further interaction with the Neutron chain.",
+            "code": "export const ensureKeplrInstalled = async () => {\n  // Verifies Keplr is injected into the browser window.\n  if (typeof window === 'undefined' || !window.keplr) {\n    // If not installed, open the official download page and throw an error.\n    window.open('https://www.keplr.app/download', '_blank');\n    throw new Error('Keplr extension is not installed.');\n  }\n\n  // At this point Keplr exists; returning it allows subsequent steps to use the instance.\n  return window.keplr;\n};",
+            "usage": "const keplr = await ensureKeplrInstalled();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 programmatically suggests the Neutron chain to Keplr so the user can add it to their wallet.",
+            "code": "export const suggestNeutronChain = async (keplr, network = 'mainnet') => {\n  if (!keplr || !keplr.experimentalSuggestChain) {\n    throw new Error('Keplr experimentalSuggestChain API is unavailable.');\n  }\n\n  // Define minimal, reliable endpoints for both mainnet and testnet.\n  const ENDPOINTS = {\n    mainnet: {\n      chainId: 'neutron-1',\n      rpc: 'https://rpc-kralum.neutron-1.neutron.org',\n      rest: 'https://rest-kralum.neutron-1.neutron.org'\n    },\n    testnet: {\n      chainId: 'pion-1',\n      rpc: 'https://rpc-palvus.pion-1.ntrn.tech',\n      rest: 'https://rest-palvus.pion-1.ntrn.tech'\n    }\n  };\n\n  const cfg = ENDPOINTS[network];\n  if (!cfg) {\n    throw new Error(`Unsupported network tag: ${network}`);\n  }\n\n  const chainConfig = {\n    chainId: cfg.chainId,\n    chainName: network === 'mainnet' ? 'Neutron' : 'Neutron Testnet',\n    rpc: cfg.rpc,\n    rest: cfg.rest,\n    bip44: { coinType: 118 },\n    bech32Config: {\n      bech32PrefixAccAddr: 'neutron',\n      bech32PrefixAccPub: 'neutronpub',\n      bech32PrefixValAddr: 'neutronvaloper',\n      bech32PrefixValPub: 'neutronvaloperpub',\n      bech32PrefixConsAddr: 'neutronvalcons',\n      bech32PrefixConsPub: 'neutronvalconspub'\n    },\n    currencies: [\n      {\n        coinDenom: 'NTRN',\n        coinMinimalDenom: 'untrn',\n        coinDecimals: 6,\n        coinGeckoId: 'neutron'\n      }\n    ],\n    feeCurrencies: [\n      {\n        coinDenom: 'NTRN',\n        coinMinimalDenom: 'untrn',\n        coinDecimals: 6,\n        coinGeckoId: 'neutron',\n        gasPriceStep: { low: 0.01, average: 0.025, high: 0.04 }\n      }\n    ],\n    stakeCurrency: {\n      coinDenom: 'NTRN',\n      coinMinimalDenom: 'untrn',\n      coinDecimals: 6,\n      coinGeckoId: 'neutron'\n    },\n    features: ['stargate', 'ibc-transfer', 'cosmwasm']\n  };\n\n  try {\n    await keplr.experimentalSuggestChain(chainConfig);\n  } catch (err) {\n    console.error('Failed to suggest Neutron chain:', err);\n    throw err;\n  }\n};",
+            "usage": "await suggestNeutronChain(window.keplr);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 requests the user\u2019s approval to let the dApp access the Neutron chain in Keplr.",
+            "code": "export const enableNeutron = async (chainId = 'neutron-1') => {\n  if (!window.keplr) {\n    throw new Error('Keplr extension not detected.');\n  }\n  try {\n    await window.keplr.enable(chainId); // Opens the Keplr approval popup.\n    return true; // Success indicates the site now has access to the chain.\n  } catch (err) {\n    console.error(`User rejected enabling ${chainId}:`, err);\n    throw err;\n  }\n};",
+            "usage": "await enableNeutron();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 fetches the OfflineSigner for Neutron and extracts the first user address for use in transactions or queries.",
+            "code": "export const getOfflineSignerAndAddress = async (chainId = 'neutron-1') => {\n  if (!window.keplr) {\n    throw new Error('Keplr extension not found.');\n  }\n\n  // Obtain the signer (supports Amino & Direct)\n  const offlineSigner = window.getOfflineSigner(chainId);\n  const accounts = await offlineSigner.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No accounts returned from Keplr.');\n  }\n\n  return {\n    signer: offlineSigner,\n    address: accounts[0].address\n  };\n};",
+            "usage": "const { signer, address } = await getOfflineSignerAndAddress();"
+        }
+    ]
+}

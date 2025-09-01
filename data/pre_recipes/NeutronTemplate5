@@ -1,0 +1,147 @@
+[
+    {
+        "intent": "Query contract metadata on Celatone",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_celatone_explorer",
+                "description": "Launch the Celatone explorer in a web browser and select the correct Neutron network (mainnet: neutron-1 or testnet: pion-1)."
+            },
+            {
+                "step": 2,
+                "tool": "search_contract_address",
+                "description": "Paste the target contract address into the Celatone search bar and press Enter."
+            },
+            {
+                "step": 3,
+                "tool": "navigate_to_metadata_tab",
+                "description": "Click the \u201cMetadata\u201d (or equivalent) tab in Celatone\u2019s contract view to load stored contract information."
+            },
+            {
+                "step": 4,
+                "tool": "download_metadata_json",
+                "description": "Use Celatone\u2019s \u201cDownload\u201d (</>) button to fetch the raw metadata JSON for local inspection or downstream processing."
+            }
+        ],
+        "outcome_checks": [
+            "The contract\u2019s code hash, instantiate msg, and schema files are visible in Celatone.",
+            "The metadata JSON file contains the expected fields such as name, description, and entry points."
+        ]
+    },
+    {
+        "intent": "Connect Keplr wallet",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "install_keplr_extension",
+                "description": "Ensure the Keplr browser extension is installed and unlocked."
+            },
+            {
+                "step": 2,
+                "tool": "suggest_chain_to_keplr",
+                "description": "From the dApp (NeutronTemplate) call window.keplr.experimentalSuggestChain with Neutron chain parameters (chainId, rpc/rest endpoints, stake currency)."
+            },
+            {
+                "step": 3,
+                "tool": "keplr_enable_chain",
+                "description": "Invoke window.keplr.enable('neutron-1') (or 'pion-1') to trigger the approval popup and grant site access."
+            },
+            {
+                "step": 4,
+                "tool": "get_keplr_offline_signer",
+                "description": "Fetch the OfflineSigner via window.getOfflineSigner('neutron-1') and store the user\u2019s first address in app state."
+            }
+        ],
+        "outcome_checks": [
+            "The app state reflects the connected Neutron address.",
+            "Keplr shows the dApp under \"Connected Sites\" with Neutron permissions."
+        ]
+    },
+    {
+        "intent": "Connect Leap wallet",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "detect_leap_provider",
+                "description": "Check for window.leap or use @cosmos-kit/leap adapter to detect the Leap extension."
+            },
+            {
+                "step": 2,
+                "tool": "leap_suggest_chain",
+                "description": "Send the chain configuration object to window.leap.experimentalSuggestChain so Leap knows about Neutron."
+            },
+            {
+                "step": 3,
+                "tool": "leap_enable_chain",
+                "description": "Call window.leap.enable('neutron-1') to request user approval."
+            },
+            {
+                "step": 4,
+                "tool": "retrieve_leap_accounts",
+                "description": "Use window.leap.getOfflineSigner('neutron-1') and store the primary address for subsequent tx signing."
+            }
+        ],
+        "outcome_checks": [
+            "Leap returns at least one account address.",
+            "The UI reflects the connected wallet with the correct Neutron balance."
+        ]
+    },
+    {
+        "intent": "Enable mobile wallet support",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "add_walletconnect_client",
+                "description": "Install @cosmos-kit/core and @cosmos-kit/walletconnect packages and initialize WalletConnect v2 in the NeutronTemplate project."
+            },
+            {
+                "step": 2,
+                "tool": "register_mobile_wallets",
+                "description": "Register supported mobile wallets (Keplr Mobile, Leap Mobile, Cosmostation) by supplying their WalletConnect namespaces in the CosmosKit config."
+            },
+            {
+                "step": 3,
+                "tool": "generate_qr_or_deep_link",
+                "description": "Render a WalletConnect QR modal on desktop or trigger an app-scheme deep link on mobile for seamless pairing."
+            },
+            {
+                "step": 4,
+                "tool": "store_wc_session",
+                "description": "Persist the WalletConnect session in local storage to auto-reconnect on page refresh."
+            }
+        ],
+        "outcome_checks": [
+            "Scanning the QR code from a mobile wallet successfully connects and returns an address.",
+            "Transactions signed on the phone are broadcast and confirmed on Neutron."
+        ]
+    },
+    {
+        "intent": "Query transaction history for my address",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "select_data_provider",
+                "description": "Choose a data source (Celatone API, SubQuery, or LCD /txs endpoint) based on latency and pagination needs."
+            },
+            {
+                "step": 2,
+                "tool": "build_history_query",
+                "description": "Construct a REST or GraphQL query filtering by `message.sender={address}` and order by timestamp descending."
+            },
+            {
+                "step": 3,
+                "tool": "execute_query_request",
+                "description": "Send the HTTP request (fetch/axios) and handle pagination via `offset` or `pageInfo.endCursor`."
+            },
+            {
+                "step": 4,
+                "tool": "normalize_tx_results",
+                "description": "Map raw results into a uniform schema (hash, blockHeight, action, fee, success) for the frontend table."
+            }
+        ],
+        "outcome_checks": [
+            "At least one transaction object is returned or an explicit 'no transactions found' message is displayed.",
+            "Block heights and timestamps align with Mintscan or another public explorer for spot-checking accuracy."
+        ]
+    }
+]

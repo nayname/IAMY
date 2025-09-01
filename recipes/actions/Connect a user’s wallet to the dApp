@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 provides a JavaScript helper that detects a supported wallet (Keplr, Leap, or WalletConnect via window.walletConnect) and requests connection permission.",
+            "code": "/*\n * connectWallet()\n * Detects an injected Cosmos-SDK wallet (Keplr or Leap) or a WalletConnect provider\n * and requests access to the user\u2019s accounts.\n */\nexport const connectWallet = async () => {\n  const chainId = 'neutron-1';\n\n  // Detect supported wallets in order of preference\n  const wallet = (window.keplr || window.leap || window.walletConnect) ?? null;\n  if (!wallet) {\n    throw new Error('No supported wallet found. Please install Keplr or Leap, or connect via WalletConnect.');\n  }\n\n  try {\n    // Ask the wallet to enable access to Neutron\n    await wallet.enable(chainId);\n\n    // Retrieve an OfflineSigner that will be used in later steps\n    const signer = await wallet.getOfflineSignerAuto(chainId);\n\n    return { wallet, signer };\n  } catch (error) {\n    console.error('connectWallet() failed:', error);\n    throw new Error('Wallet connection was rejected or failed.');\n  }\n};",
+            "usage": "const { wallet, signer } = await connectWallet();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 verifies that the connected wallet has Neutron mainnet (chain-id: neutron-1) configured; if it is missing, it proactively suggests the chain and then re-enables it.",
+            "code": "/*\n * ensureNetworkNeutron(wallet)\n * Makes sure the wallet is configured for Neutron mainnet. If the chain is not\n * present, it sends an experimentalSuggestChain() request with recommended\n * parameters. Finally, it enables the chain again to refresh permissions.\n */\nexport const ensureNetworkNeutron = async (wallet) => {\n  const chainId = 'neutron-1';\n\n  // Neutron chain parameters \u2014 tweak RPC/REST endpoints as needed for production\n  const neutronChainInfo = {\n    chainId: 'neutron-1',\n    chainName: 'Neutron',\n    rpc: 'https://rpc-kralum.neutron-1.neutron.org',\n    rest: 'https://rest-kralum.neutron-1.neutron.org',\n    stakeCurrency: { coinDenom: 'NTRN', coinMinimalDenom: 'untrn', coinDecimals: 6 },\n    bip44: { coinType: 118 },\n    bech32Config: {\n      bech32PrefixAccAddr: 'neutron',\n      bech32PrefixAccPub: 'neutronpub',\n      bech32PrefixValAddr: 'neutronvaloper',\n      bech32PrefixValPub: 'neutronvaloperpub',\n      bech32PrefixConsAddr: 'neutronvalcons',\n      bech32PrefixConsPub: 'neutronvalconspub'\n    },\n    currencies: [\n      { coinDenom: 'NTRN', coinMinimalDenom: 'untrn', coinDecimals: 6 }\n    ],\n    feeCurrencies: [\n      { coinDenom: 'NTRN', coinMinimalDenom: 'untrn', coinDecimals: 6, gasPriceStep: { low: 0.01, average: 0.025, high: 0.04 } }\n    ],\n    features: ['stargate', 'ibc-transfer', 'cosmwasm']\n  };\n\n  try {\n    // Attempt to query the chain; if it throws, the chain likely isn't added yet\n    await wallet.getKey(chainId);\n  } catch (_) {\n    // Use Keplr/Leap experimental API to suggest the chain\n    if (wallet.experimentalSuggestChain) {\n      await wallet.experimentalSuggestChain(neutronChainInfo);\n    } else {\n      throw new Error('The connected wallet does not support adding new chains.');\n    }\n  }\n\n  // Re-enable to make sure we have permission on the (new) chain\n  await wallet.enable(chainId);\n};",
+            "usage": "await ensureNetworkNeutron(wallet);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 fetches the user\u2019s Neutron address & public key from the OfflineSigner and stores them in sessionStorage for easy access throughout the dApp session.",
+            "code": "/*\n * storeSessionAccount(signer)\n * Extracts the first account (address+pubkey) from the provided signer and\n * persists it into sessionStorage under the key `neutron_session_account`.\n */\nexport const storeSessionAccount = async (signer) => {\n  try {\n    const accounts = await signer.getAccounts();\n    if (!accounts || accounts.length === 0) {\n      throw new Error('No accounts returned by signer.');\n    }\n    const { address, pubkey } = accounts[0];\n\n    // Save as JSON for later retrieval\n    const sessionData = JSON.stringify({ address, pubkey: Buffer.from(pubkey).toString('base64') });\n    sessionStorage.setItem('neutron_session_account', sessionData);\n\n    return { address, pubkey };\n  } catch (error) {\n    console.error('storeSessionAccount() failed:', error);\n    throw new Error('Unable to retrieve or store account information.');\n  }\n};",
+            "usage": "const { address } = await storeSessionAccount(signer);\nconsole.log('Connected Neutron address:', address);"
+        }
+    ]
+}

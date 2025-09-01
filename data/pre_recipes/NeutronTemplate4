@@ -1,0 +1,182 @@
+[
+    {
+        "intent": "Migrate an existing smart contract to a new code ID",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_contract_address",
+                "description": "Prompt the user for the on-chain address of the contract that needs migration."
+            },
+            {
+                "step": 2,
+                "tool": "validate_new_code_id",
+                "description": "Check that the supplied code ID exists on-chain and is compatible with the contract."
+            },
+            {
+                "step": 3,
+                "tool": "collect_migrate_msg",
+                "description": "Ask the user for the JSON migrate message required by the new contract code (often `{}` if no parameters)."
+            },
+            {
+                "step": 4,
+                "tool": "construct_tx_wasm_migrate",
+                "description": "Build a `wasm migrate` transaction with the contract address, new code ID, migrate msg, and appropriate gas/fees."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the transaction with the contract admin key and broadcast it to the Neutron network."
+            }
+        ],
+        "outcome_checks": [
+            "Query `wasm contract-info` and confirm the contract's `code_id` now matches the new code ID.",
+            "Optionally call a read-only method to make sure the contract behaves as expected after migration."
+        ]
+    },
+    {
+        "intent": "Set the user's own address as the admin of a smart contract",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_address",
+                "description": "Determine the wallet address that should become the admin."
+            },
+            {
+                "step": 2,
+                "tool": "get_contract_address",
+                "description": "Prompt for the target contract address."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_wasm_update_admin",
+                "description": "Create a `wasm set-contract-admin` transaction setting admin to the user's address."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign with the current admin key (or governance key) and broadcast the transaction."
+            }
+        ],
+        "outcome_checks": [
+            "Query `wasm contract-info` and verify the `admin` field equals the user's address."
+        ]
+    },
+    {
+        "intent": "Transfer contract admin rights to another address",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_current_admin_address",
+                "description": "Fetch and display the contract's current admin address for confirmation."
+            },
+            {
+                "step": 2,
+                "tool": "validate_new_admin_address",
+                "description": "Ensure the provided new admin address is a valid Bech32 address."
+            },
+            {
+                "step": 3,
+                "tool": "get_contract_address",
+                "description": "Ask for the contract address whose admin will be changed."
+            },
+            {
+                "step": 4,
+                "tool": "construct_tx_wasm_update_admin",
+                "description": "Build a `wasm set-contract-admin` (or `update-admin`) transaction that assigns the new admin address."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign with the current admin key and broadcast to the network."
+            }
+        ],
+        "outcome_checks": [
+            "Re-query contract info and confirm the `admin` field matches the new address.",
+            "Optionally verify that the original admin can no longer execute admin-only messages."
+        ]
+    },
+    {
+        "intent": "Launch a local Neutron CosmoPark testnet",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "ensure_cosmopark_installed",
+                "description": "Detect or install the CosmoPark CLI and required Docker images."
+            },
+            {
+                "step": 2,
+                "tool": "run_cosmopark_init",
+                "description": "Initialize a fresh CosmoPark workspace (download genesis, build containers, etc.)."
+            },
+            {
+                "step": 3,
+                "tool": "run_cosmopark_start",
+                "description": "Start the local multi-node testnet with `cosmopark start`."
+            },
+            {
+                "step": 4,
+                "tool": "verify_local_chain_running",
+                "description": "Poll the local RPC endpoint (e.g., http://localhost:26657/status) until it responds with a latest block height."
+            }
+        ],
+        "outcome_checks": [
+            "RPC endpoint returns status with a non-zero `latest_block_height`.",
+            "CLI commands like `neutrond q bank total` succeed against the local node."
+        ]
+    },
+    {
+        "intent": "Compile and deploy the Neutron example contract to the local CosmoPark testnet",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "compile_wasm_contract",
+                "description": "Run `cargo wasm && wasm-opt` (or `cargo run-script optimize`) in the contract directory to produce an optimized `.wasm` binary."
+            },
+            {
+                "step": 2,
+                "tool": "get_local_chain_account",
+                "description": "Load or create a local key (e.g., `cosmopark` default) and make sure it has test NTRN from the built-in faucet."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_wasm_store",
+                "description": "Create a `wasm store` transaction uploading the optimized contract binary."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the store transaction with the local key and broadcast it."
+            },
+            {
+                "step": 5,
+                "tool": "parse_code_id_from_receipt",
+                "description": "Extract the new `code_id` from the transaction logs."
+            },
+            {
+                "step": 6,
+                "tool": "construct_tx_wasm_instantiate",
+                "description": "Build a `wasm instantiate` transaction using the retrieved code ID, an init msg, label, and (optionally) an admin address."
+            },
+            {
+                "step": 7,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the instantiate transaction."
+            },
+            {
+                "step": 8,
+                "tool": "parse_contract_address_from_receipt",
+                "description": "Capture the newly created contract address from the instantiate logs."
+            },
+            {
+                "step": 9,
+                "tool": "query_contract_state",
+                "description": "Perform a simple `wasm query` against the contract to confirm it responds correctly."
+            }
+        ],
+        "outcome_checks": [
+            "A valid `code_id` was generated and stored on-chain.",
+            "The instantiate transaction succeeded and yielded a contract address.",
+            "A test query returns expected default state, proving the contract is live on the local net."
+        ]
+    }
+]

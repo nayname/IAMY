@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "validateAddressFormat sends the address to a backend API and confirms that it is a properly-formatted Neutron bech32 address.",
+            "function": "validateAddressFormat(address)",
+            "usage": "await validateAddressFormat('neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "query_contract_info contacts the Neutron LCD and returns the full metadata for the specified contract, including its code_id.",
+            "function": "query_contract_info(contract_address, lcd)",
+            "usage": "contract_info = query_contract_info('neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No implemented function exists in the provided codebase to extract code_id directly from the contract-info payload.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "query_code_info fetches the code-level metadata for a given code_id, returning a JSON object that includes the code_hash.",
+            "function": "query_code_info(code_id, lcd)",
+            "usage": "code_info = query_code_info(code_id)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "extract_code_hash safely pulls the hexadecimal code_hash from the code-info JSON response.",
+            "function": "extract_code_hash(code_info)",
+            "usage": "code_hash = extract_code_hash(code_info)"
+        }
+    ],
+    "frontend": [
+        "await validateAddressFormat('neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');//step: 1 Tool: validate_contract_address Desciption: Ensure the provided contract address is a valid Bech32 Neutron address."
+    ],
+    "backend": [
+        "contract_info = query_contract_info('neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')#step: 2 Tool: query_contract_info Desciption: Execute `neutrond query wasm contract <contract-address>` to obtain the contract\u2019s metadata, including its `code_id`.",
+        "undef#step: 3 Tool: extract_code_id Desciption: Read the `code_id` field from the contract info response.",
+        "code_info = query_code_info(code_id)#step: 4 Tool: query_code_info Desciption: Run `neutrond query wasm code-info <code_id>` to fetch the code information that contains the `code_hash`.",
+        "code_hash = extract_code_hash(code_info)#step: 5 Tool: extract_code_hash Desciption: Parse the `code_hash` value from the code-info JSON response."
+    ],
+    "intent": "Query the code hash of a specific smart contract",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_contract_address",
+            "description": "Ensure the provided contract address is a valid Bech32 Neutron address."
+        },
+        {
+            "step": 2,
+            "tool": "query_contract_info",
+            "description": "Execute `neutrond query wasm contract <contract-address>` to obtain the contract\u2019s metadata, including its `code_id`."
+        },
+        {
+            "step": 3,
+            "tool": "extract_code_id",
+            "description": "Read the `code_id` field from the contract info response."
+        },
+        {
+            "step": 4,
+            "tool": "query_code_info",
+            "description": "Run `neutrond query wasm code-info <code_id>` to fetch the code information that contains the `code_hash`."
+        },
+        {
+            "step": 5,
+            "tool": "extract_code_hash",
+            "description": "Parse the `code_hash` value from the code-info JSON response."
+        }
+    ],
+    "outcome_checks": [
+        "Ensure a 64-character hexadecimal `code_hash` is returned.",
+        "Verify that the `code_hash` field is not empty or null."
+    ]
+}

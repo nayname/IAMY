@@ -1,0 +1,139 @@
+[
+    {
+        "intent": "Increment my personal counter",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Identify the caller\u2019s wallet address (this will also become the key for their personal counter)."
+            },
+            {
+                "step": 2,
+                "tool": "load_contract_address",
+                "description": "Retrieve or confirm the deployed NeutronTemplate contract address that exposes the counter API."
+            },
+            {
+                "step": 3,
+                "tool": "construct_wasm_execute_msg",
+                "description": "Build the execute message: {\"increment_personal\":{}} targeted at the contract address."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the transaction with the caller\u2019s key and broadcast it to the Neutron network."
+            }
+        ],
+        "outcome_checks": [
+            "Ensure the transaction hash is included in a finalized block.",
+            "Query the contract for the caller\u2019s personal counter and confirm the returned value has increased by exactly 1 compared to the previous value."
+        ]
+    },
+    {
+        "intent": "Increment the global counter",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Identify the caller\u2019s wallet (needed for fee payment and signing)."
+            },
+            {
+                "step": 2,
+                "tool": "load_contract_address",
+                "description": "Retrieve or confirm the deployed NeutronTemplate contract address."
+            },
+            {
+                "step": 3,
+                "tool": "construct_wasm_execute_msg",
+                "description": "Build the execute message: {\"increment_global\":{}}."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the increment-global transaction."
+            }
+        ],
+        "outcome_checks": [
+            "Verify the transaction was successfully committed to a block.",
+            "Query the contract\u2019s global counter and confirm the value increased by 1."
+        ]
+    },
+    {
+        "intent": "Query my personal counter value",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Determine the caller\u2019s address which will be supplied in the query."
+            },
+            {
+                "step": 2,
+                "tool": "load_contract_address",
+                "description": "Fetch the deployed NeutronTemplate contract address."
+            },
+            {
+                "step": 3,
+                "tool": "construct_wasm_query_msg",
+                "description": "Create the smart-query payload: {\"get_personal_counter\":{\"address\":\"<sender>\"}}."
+            },
+            {
+                "step": 4,
+                "tool": "query_contract_smart",
+                "description": "Execute the query against the contract and return the counter value."
+            }
+        ],
+        "outcome_checks": [
+            "The query returns a valid Uint128 value representing the caller\u2019s personal counter."
+        ]
+    },
+    {
+        "intent": "Query my deposited NTRN amount",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Identify the wallet address whose deposit balance is being requested."
+            },
+            {
+                "step": 2,
+                "tool": "load_contract_address",
+                "description": "Retrieve the NeutronTemplate contract address."
+            },
+            {
+                "step": 3,
+                "tool": "construct_wasm_query_msg",
+                "description": "Build the query payload: {\"get_deposit\":{\"address\":\"<sender>\"}}."
+            },
+            {
+                "step": 4,
+                "tool": "query_contract_smart",
+                "description": "Execute the smart query to obtain the deposited NTRN amount."
+            }
+        ],
+        "outcome_checks": [
+            "The query returns the caller\u2019s deposit as a Coin or Uint128 amount denominated in untrn."
+        ]
+    },
+    {
+        "intent": "Query the global counter value",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "load_contract_address",
+                "description": "Fetch the deployed NeutronTemplate contract address."
+            },
+            {
+                "step": 2,
+                "tool": "construct_wasm_query_msg",
+                "description": "Create the query payload: {\"get_global_counter\":{}}."
+            },
+            {
+                "step": 3,
+                "tool": "query_contract_smart",
+                "description": "Perform the smart-query and retrieve the global counter value."
+            }
+        ],
+        "outcome_checks": [
+            "The query returns a valid Uint128 value representing the global counter."
+        ]
+    }
+]

@@ -1,0 +1,40 @@
+{
+    "label": "upload",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 provides a Python helper that verifies the presence of the compiled WASM file and returns its absolute path.",
+            "code": "from pathlib import Path\n\n# Locate the compiled CosmWasm binary (.wasm) and verify that it exists.\n# Returns an absolute Path object so the next steps can reliably read the file.\ndef get_wasm_file_path(relative_path: str) -> Path:\n    path = Path(relative_path).expanduser().resolve()\n    if not path.is_file():\n        raise FileNotFoundError(f'WASM file not found at {path}')\n    return path",
+            "usage": "wasm_path = get_wasm_file_path('artifacts/counter.wasm')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 hashes the binary with SHA-256 so you can later cross-check integrity on-chain.",
+            "code": "import hashlib\nfrom pathlib import Path\n\n# Compute the SHA-256 checksum of the wasm binary and return it as a hex string.\n# This checksum can be cross-checked against the chain for provenance.\ndef validate_wasm_checksum(wasm_path: Path) -> str:\n    if not wasm_path.is_file():\n        raise FileNotFoundError(f'File not found: {wasm_path}')\n\n    sha256 = hashlib.sha256()\n    with wasm_path.open('rb') as f:\n        for chunk in iter(lambda: f.read(8192), b''):\n            sha256.update(chunk)\n    checksum = sha256.hexdigest()\n    return checksum",
+            "usage": "checksum = validate_wasm_checksum(wasm_path)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 constructs an unsigned MsgStoreCode transaction that embeds the wasm bytes and sets instantiate permission to Everybody.",
+            "code": "from pathlib import Path\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.protos.cosmwasm.wasm.v1 import tx_pb2 as wasm_tx_pb2, types_pb2\n\n# Build a MsgStoreCode transaction containing the wasm binary.\n# Returns an unsigned Transaction object ready for signing.\ndef construct_tx_store_code(wasm_path: Path, sender_address: str) -> Transaction:\n    wasm_bytes = wasm_path.read_bytes()\n\n    access_config = types_pb2.AccessConfig(\n        permission=types_pb2.AccessType.ACCESS_TYPE_EVERYBODY,\n        address=''  # empty when permission is Everybody\n    )\n\n    msg = wasm_tx_pb2.MsgStoreCode(\n        sender=sender_address,\n        wasm_byte_code=wasm_bytes,\n        instantiate_permission=access_config\n    )\n\n    tx = Transaction()\n    tx.add_message(msg)\n    # You can still tweak gas / fee before signing, e.g.:\n    # tx = tx.with_gas(1_500_000).with_fee('5000untrn')\n    return tx",
+            "usage": "tx = construct_tx_store_code(wasm_path, sender_address)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 signs the transaction with the local wallet and broadcasts it to the Neutron network.",
+            "code": "from cosmpy.aerial.wallet import LocalWallet\nfrom cosmpy.clients import LedgerClient\nfrom cosmpy.aerial.tx import Transaction\n\n# Sign the Transaction with the provided wallet and broadcast it.\n# Raises an exception on error and returns the successful TxResponse.\ndef sign_and_broadcast_tx(tx: Transaction, wallet: LocalWallet, client: LedgerClient):\n    # Fill in sequence & account number from chain state\n    tx = tx.with_sequence(wallet.get_sequence(client)).with_account_number(wallet.get_account_number(client))\n\n    signed_tx = tx.sign(wallet)\n    response = client.broadcast_tx(signed_tx)\n\n    if response.tx_response.code != 0:\n        raise RuntimeError(f'Tx failed with log: {response.tx_response.raw_log}')\n\n    return response",
+            "usage": "response = sign_and_broadcast_tx(tx, wallet, client)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 parses the transaction result and extracts the newly assigned code_id.",
+            "code": "import json\nimport re\n\n# Extract the code_id emitted by the store_code event in the TxResponse.\n# Tries JSON parsing first, then falls back to regex scanning.\ndef extract_code_id_from_tx(response) -> int:\n    raw_log = response.tx_response.raw_log\n\n    # Attempt JSON parsing (preferred because it is deterministic)\n    try:\n        parsed_logs = json.loads(raw_log)[0]\n        for event in parsed_logs.get('events', []):\n            if event.get('type') == 'store_code':\n                for attr in event.get('attributes', []):\n                    if attr.get('key') == 'code_id':\n                        return int(attr.get('value'))\n    except (json.JSONDecodeError, KeyError, IndexError):\n        pass\n\n    # Fallback: regex scanning for robustness\n    match = re.search(r'\\\"code_id\\\":\\s*\\\"?(\\d+)\\\"?', raw_log)\n    if match:\n        return int(match.group(1))\n\n    raise ValueError('code_id not found in transaction logs')",
+            "usage": "code_id = extract_code_id_from_tx(response)"
+        }
+    ]
+}
