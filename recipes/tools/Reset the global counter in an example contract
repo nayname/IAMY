@@ -1,0 +1,79 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Fetches the administrator\u2019s LocalWallet from the ADMIN_MNEMONIC environment variable, giving us access to the admin address and signing key.",
+            "function": "get_admin_wallet()",
+            "usage": "admin_wallet = get_admin_wallet()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Retrieves and validates the deployed counter contract\u2019s address from the CONTRACT_ADDRESS environment variable.",
+            "function": "get_contract_address()",
+            "usage": "contract_addr = get_contract_address()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Builds an unsigned MsgExecuteContract transaction that calls `{ \"reset\": {} }` on the counter contract with zero funds attached.",
+            "function": "construct_tx_execute_contract(contract_addr, admin_wallet, gas=200000)",
+            "usage": "tx = construct_tx_execute_contract(contract_addr, admin_wallet)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the prepared transaction with the admin wallet and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, admin_wallet, client)",
+            "usage": "tx_response = sign_and_broadcast_tx(tx, admin_wallet, client)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Queries the smart contract to obtain the current `count` value after the reset transaction is confirmed.",
+            "function": "query_contract_state(client, contract_addr, query_msg)",
+            "usage": "count_state = query_contract_state(client, contract_addr, {\"get_count\":{}})"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "admin_wallet = get_admin_wallet()#step: 1 Tool: get_admin_address Desciption: Identify the wallet address that has admin privileges over the contract.",
+        "contract_addr = get_contract_address()#step: 2 Tool: get_contract_address Desciption: Specify the address of the deployed counter contract.",
+        "tx = construct_tx_execute_contract(contract_addr, admin_wallet)#step: 3 Tool: construct_tx_execute_contract Desciption: Create a `MsgExecuteContract` with `{ \"reset\": {} }` as the execute message and 0 funds.",
+        "tx_response = sign_and_broadcast_tx(tx, admin_wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the transaction with the admin\u2019s key and broadcast it to the network.",
+        "count_state = query_contract_state(client, contract_addr, {\"get_count\":{}})#step: 5 Tool: query_wasm_contract_state Desciption: After inclusion, query `count` via `neutrond q wasm contract-state smart <contract_addr> '{\"get_count\":{}}'`."
+    ],
+    "intent": "Reset the global counter in an example contract",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_admin_address",
+            "description": "Identify the wallet address that has admin privileges over the contract."
+        },
+        {
+            "step": 2,
+            "tool": "get_contract_address",
+            "description": "Specify the address of the deployed counter contract."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_execute_contract",
+            "description": "Create a `MsgExecuteContract` with `{ \"reset\": {} }` as the execute message and 0 funds."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the transaction with the admin\u2019s key and broadcast it to the network."
+        },
+        {
+            "step": 5,
+            "tool": "query_wasm_contract_state",
+            "description": "After inclusion, query `count` via `neutrond q wasm contract-state smart <contract_addr> '{\"get_count\":{}}'`."
+        }
+    ],
+    "outcome_checks": [
+        "Transaction included in a block with code 0.",
+        "Returned `count` value equals `0`, confirming the reset."
+    ]
+}

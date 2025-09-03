@@ -1,8 +1,38 @@
-# step:1 file: Query transaction history for my address
 import time
 import requests
 from typing import Dict
+import os
+from cosmpy.aerial.tx import Transaction
+from cosmpy.aerial.client import NetworkConfig
+from cosmpy.aerial.client import LedgerClient
+from cosmpy.aerial.wallet import LocalWallet
+from cosmpy.aerial.tx import Transaction
 
+import json
+import subprocess
+import time
+import base64
+from datetime import datetime
+from typing import Dict, Any, List
+
+import requests
+from cosmpy.aerial.wallet import LocalWallet
+# Note: In a real project, these proto imports would point to your generated files.
+# from neutron_proto.cron import MsgAddSchedule
+# from cosmos_proto.cosmos.gov.v1 import MsgSubmitProposal, TextProposal
+# from google.protobuf.any_pb2 import Any as Any_pb
+
+from typing import List, Dict, Any, Optional
+import asyncio
+
+cfg = NetworkConfig(
+    chain_id="neutron-1",
+    url="grpc+https://grpc-kralum.neutron-1.neutron.org",
+    fee_minimum_gas_price=0.01,
+    fee_denomination="untrn",
+    staking_denomination="untrn",
+)
+client = LedgerClient(cfg)
 
 def _ping(url: str, timeout: float = 1.5) -> float:
     """Return response-time in seconds (∞ if unreachable)."""
@@ -247,10 +277,6 @@ def get_local_chain_account(key_name: str = 'cosmopark', faucet_url: str | None 
     return {'name': key_name, 'address': address}
 
 
-# step:9 file: Compile and deploy the Neutron example contract to the local CosmoPark testnet
-from cosmpy.aerial.client import LedgerClient
-
-
 def query_contract_state(client: LedgerClient, contract_address: str, query_msg: dict):
     """Query the contract’s state using a custom query message."""
     try:
@@ -439,20 +465,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
 
-# step:6 file: Withdraw 50 NTRN from the smart contract
-# Step 6 – Python backend balance query
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.wallet import LocalWallet
-
-NETWORK = NetworkConfig(
-    chain_id="neutron-1",
-    url="https://rpc-kralum.neutron.org",  # same RPC used by frontend
-    fee_denomination="untrn",
-    staking_denomination="untrn",
-)
-
-client = LedgerClient(NETWORK)
-
 def query_bank_balance(address: str, denom: str = "untrn") -> int:
     """Return current balance for `address` in the given `denom`."""
     try:
@@ -506,21 +518,6 @@ def get_contract_address() -> str:
     if not _BECH32_RE.match(contract_addr):
         raise ValueError("CONTRACT_ADDRESS env-var is missing or not a valid Neutron bech32 address.")
     return contract_addr
-
-
-# step:3 file: Reset the global counter in an example contract
-import json
-import os
-from cosmpy.aerial.tx import Transaction
-from cosmpy.aerial.client import NetworkConfig
-from cosmpy.aerial.protoutil import create_msg_execute_contract
-
-# A single NetworkConfig / LedgerClient can be re-used across calls
-NETWORK_CFG = NetworkConfig(
-    chain_id=os.getenv("CHAIN_ID", "neutron-1"),
-    url=os.getenv("RPC_ENDPOINT", "https://rpc-kralum.neutron.org"),
-    fee_min_denom="untrn",
-)
 
 
 def construct_tx_execute_contract(contract_addr: str, wallet, gas: int = 200000) -> Transaction:
@@ -1190,15 +1187,6 @@ async def query_contracts_by_creator(
         return response.json()
 
 
-
-# step:4 file: List all smart contracts deployed by my account
-"""pagination_helper.py
-Combines all pages from the `query_contracts_by_creator` helper.
-"""
-from typing import List, Dict, Any, Optional
-import asyncio
-from query_contracts import query_contracts_by_creator
-
 async def fetch_all_contracts_by_creator(creator_address: str, page_limit: int = 1000) -> List[str]:
     """Return a complete list of contract addresses deployed by `creator_address`."""
     contracts: List[str] = []
@@ -1248,11 +1236,6 @@ def validate_wasm_checksum(wasm_path: Path) -> str:
     return checksum
 
 
-# step:4 file: Upload the example contract WASM code
-from cosmpy.aerial.wallet import LocalWallet
-from cosmpy.clients import LedgerClient
-from cosmpy.aerial.tx import Transaction
-
 # Sign the Transaction with the provided wallet and broadcast it.
 # Raises an exception on error and returns the successful TxResponse.
 def sign_and_broadcast_tx(tx: Transaction, wallet: LocalWallet, client: LedgerClient):
@@ -1296,36 +1279,144 @@ def extract_code_id_from_tx(response) -> int:
     raise ValueError('code_id not found in transaction logs')
 
 
-import os
-from flask import Flask, request, jsonify
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.exceptions import NotFoundError, QueryError
-from bech32 import bech32_decode, bech32_encode, ConvertBaseError
-
 # ===================================================================================
-# == Configuration & Setup
+# == !!!!CRON FUNCTIONS!!!!
+# == Governance and Proposal Functions
 # ===================================================================================
 
-# It's recommended to set these as environment variables for security and flexibility.
-RPC_ENDPOINT = os.environ.get("RPC_ENDPOINT", "https://rpc-kralum.neutron-1.neutron.org:443")
-CHAIN_ID = os.environ.get("CHAIN_ID", "neutron-1")
+def construct_param_change_proposal(new_security_address: str, deposit: str = "10000000untrn", output_path: str = "proposal.json") -> str:
+    """Generate a Param-Change proposal file that updates the Cron module's security_address."""
+    proposal = {
+        "title": "Update Cron security_address",
+        "description": f"Updates Cron module security_address param to {new_security_address}.",
+        "changes": [{"subspace": "cron", "key": "SecurityAddress", "value": f"\"{new_security_address}\""}],
+        "deposit": deposit
+    }
+    try:
+        with open(output_path, "w", encoding="utf-8") as fp:
+            json.dump(proposal, fp, indent=2)
+    except IOError as err:
+        raise RuntimeError(f"Could not write proposal file: {err}") from err
+    return output_path
 
-# Initialize the Flask application
-app = Flask(__name__)
+def build_dao_proposal(msg_update_params: Dict, title: str, description: str) -> Dict:
+    """Return the message to execute against a cw-dao core contract."""
+    proposal = {
+        "propose": {
+            "title": title,
+            "description": description,
+            "msgs": [{"custom": msg_update_params}],
+        }
+    }
+    return proposal
 
-# Create a reusable network configuration and LedgerClient
-# This avoids reconnecting on every single request.
-try:
-    cfg = NetworkConfig(
-        chain_id=CHAIN_ID,
-        url=f"rest+{RPC_ENDPOINT.replace('https://', '').replace(':443', '')}",  # Adjust URL for REST
-        fee_denomination="untrn",
+def wait_for_voting_result(proposal_id: str, chain_id: str = "neutron-1", node: str = "https://rpc-kralum.neutron.org:443", poll_interval: int = 15, max_attempts: int = 800) -> str:
+    """Polls proposal status via CLI until it is finalized or times out."""
+    for _ in range(max_attempts):
+        try:
+            proc = subprocess.run(
+                ["neutrond", "query", "gov", "proposal", str(proposal_id), "--chain-id", chain_id, "--node", node, "--output", "json"],
+                capture_output=True, text=True, check=True
+            )
+            status = json.loads(proc.stdout).get("status")
+            print(f"[poll] proposal {proposal_id} status: {status}")
+            if status == "PROPOSAL_STATUS_PASSED":
+                return status
+            if status in ("PROPOSAL_STATUS_REJECTED", "PROPOSAL_STATUS_FAILED", "PROPOSAL_STATUS_ABORTED"):
+                raise RuntimeError(f"Proposal {proposal_id} ended with status {status}")
+        except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
+            print(f"Polling error: {e}. Retrying...")
+        time.sleep(poll_interval)
+    raise TimeoutError("Exceeded maximum attempts while waiting for proposal to pass.")
+
+# ===================================================================================
+# == Cron Module Functions
+# ===================================================================================
+
+def query_cron_params(chain_id: str = "neutron-1", node: str = "https://rpc-kralum.neutron.org:443") -> dict:
+    """Fetches the current Cron module parameters via CLI."""
+    proc = subprocess.run(
+        ["neutrond", "query", "cron", "params", "--chain-id", chain_id, "--node", node, "--output", "json"],
+        capture_output=True, text=True, check=True
     )
-    client = LedgerClient(cfg)
-except Exception as e:
-    print(f"Error: Could not connect to LedgerClient. Please check RPC_ENDPOINT. Details: {e}")
-    client = None
+    return json.loads(proc.stdout).get("params", {})
 
+def query_cron_schedule(schedule_name: str, node: str = "https://rpc.neutron.org:443") -> Dict:
+    """Fetch schedule metadata from the Neutron Cron module via `neutrond` CLI."""
+    try:
+        cmd = ["neutrond", "query", "cron", "schedule", schedule_name, "--output", "json", "--node", node]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        return json.loads(result.stdout)
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(f"Failed to query schedule '{schedule_name}': {exc.stderr.strip()}") from exc
+    except json.JSONDecodeError as exc:
+        raise ValueError("Received non-JSON response from neutrond CLI") from exc
 
+def query_all_cron_schedules(limit: int = 1000) -> List[Dict]:
+    """Return every cron schedule on-chain, handling pagination."""
+    schedules: List[Dict] = []
+    next_key: str = ""
+    while True:
+        cmd = ["neutrond", "query", "cron", "schedules", "--limit", str(limit), "--output", "json"]
+        if next_key:
+            cmd += ["--page-key", next_key]
+        raw = subprocess.check_output(cmd, text=True)
+        data = json.loads(raw)
+        schedules.extend(data.get("schedules", []))
+        next_key = data.get("pagination", {}).get("next_key")
+        if not next_key:
+            break
+    return schedules
 
+def build_msg_add_schedule(authority: str, name: str, period: int, msgs: List[Dict], execution_stage: str = "EXECUTION_STAGE_END_BLOCKER") -> Dict:
+    """Return an SDK-compatible MsgAddSchedule dictionary."""
+    return {
+        "@type": "/neutron.cron.MsgAddSchedule",
+        "authority": authority,
+        "name": name,
+        "period": str(period),
+        "msgs": msgs,
+        "execution_stage": execution_stage,
+    }
+
+def build_msg_delete_schedule(authority: str, schedule_name: str = "protocol_update") -> dict:
+    """Return an amino/JSON-encoded MsgDeleteSchedule body."""
+    return {
+        "@type": "/neutron.admin.MsgDeleteSchedule",
+        "authority_address": authority,
+        "name": schedule_name
+    }
+
+def schedule_removed(name: str) -> bool:
+    """Returns True only if the schedule no longer exists by checking the CLI."""
+    try:
+        subprocess.run(
+            ["neutrond", "query", "cron", "show-schedule", name, "--output=json"],
+            capture_output=True, text=True, check=True,
+        )
+        return False
+    except subprocess.CalledProcessError as err:
+        if "not found" in err.stderr.lower():
+            return True
+        raise
+
+# ===================================================================================
+# == Utility and Verification Functions
+# ===================================================================================
+
+def verify_security_address(expected: str, chain_id: str = "neutron-1", node: str = "https://rpc-kralum.neutron.org:443") -> bool:
+    """Validates that the on-chain security_address equals the expected value."""
+    params = query_cron_params(chain_id, node)
+    actual = params.get("security_address")
+    if actual == expected:
+        print("✅ Cron security_address matches expected value.")
+        return True
+    raise ValueError(f"security_address mismatch: expected {expected}, got {actual}")
+
+def extract_last_execution_height(schedule_data: dict) -> int:
+    """Return the most recent execution height from schedule JSON."""
+    for key in ("last_execution_height", "last_executed_height"):
+        if (value := schedule_data.get(key)) is not None:
+            return int(value)
+    raise KeyError("Could not find last execution height field in schedule data.")
 

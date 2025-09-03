@@ -1,0 +1,26 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Fetches the complete registry of on-chain cron schedules via the neutrond CLI, transparently paging through all results.",
+            "function": "query_all_cron_schedules(limit: int = 1000)",
+            "usage": "schedules = query_all_cron_schedules()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "schedules = query_all_cron_schedules()#step: 1 Tool: query_cron_list_schedules Desciption: Execute `neutrond query cron list-schedules` (or the REST `/neutron/cron/schedules` endpoint) to retrieve the full schedule registry."
+    ],
+    "intent": "List all existing cron schedules",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "query_cron_list_schedules",
+            "description": "Execute `neutrond query cron list-schedules` (or the REST `/neutron/cron/schedules` endpoint) to retrieve the full schedule registry."
+        }
+    ],
+    "outcome_checks": [
+        "The command returns a JSON array of schedule objects with their names, periods, and next_execution heights."
+    ]
+}

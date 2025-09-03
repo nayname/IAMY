@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Checks whether the CosmoPark CLI and its Docker images are present, installing or updating them if necessary.",
+            "function": "ensure_cosmopark_installed()",
+            "usage": "ensure_cosmopark_installed()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Initialises a new CosmoPark workspace directory by running `cosmopark init` inside it.",
+            "function": "run_cosmopark_init(workspace_path='./localnet')",
+            "usage": "run_cosmopark_init('./localnet')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Launches the local multi-node testnet by executing `cosmopark start` in the chosen workspace.",
+            "function": "run_cosmopark_start(workspace_path='./localnet')",
+            "usage": "run_cosmopark_start('./localnet')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Continuously polls the local RPC endpoint until a latest block height is returned, confirming the chain is running.",
+            "function": "verify_local_chain_running(rpc_url='http://localhost:26657/status', timeout=60)",
+            "usage": "latest_height = verify_local_chain_running('http://localhost:26657/status')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "ensure_cosmopark_installed()#step: 1 Tool: ensure_cosmopark_installed Desciption: Detect or install the CosmoPark CLI and required Docker images.",
+        "run_cosmopark_init('./localnet')#step: 2 Tool: run_cosmopark_init Desciption: Initialize a fresh CosmoPark workspace (download genesis, build containers, etc.).",
+        "run_cosmopark_start('./localnet')#step: 3 Tool: run_cosmopark_start Desciption: Start the local multi-node testnet with `cosmopark start`.",
+        "latest_height = verify_local_chain_running('http://localhost:26657/status')#step: 4 Tool: verify_local_chain_running Desciption: Poll the local RPC endpoint (e.g., http://localhost:26657/status) until it responds with a latest block height."
+    ],
+    "intent": "Launch a local Neutron CosmoPark testnet",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "ensure_cosmopark_installed",
+            "description": "Detect or install the CosmoPark CLI and required Docker images."
+        },
+        {
+            "step": 2,
+            "tool": "run_cosmopark_init",
+            "description": "Initialize a fresh CosmoPark workspace (download genesis, build containers, etc.)."
+        },
+        {
+            "step": 3,
+            "tool": "run_cosmopark_start",
+            "description": "Start the local multi-node testnet with `cosmopark start`."
+        },
+        {
+            "step": 4,
+            "tool": "verify_local_chain_running",
+            "description": "Poll the local RPC endpoint (e.g., http://localhost:26657/status) until it responds with a latest block height."
+        }
+    ],
+    "outcome_checks": [
+        "RPC endpoint returns status with a non-zero `latest_block_height`.",
+        "CLI commands like `neutrond q bank total` succeed against the local node."
+    ]
+}

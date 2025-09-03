@@ -1,0 +1,79 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "build_msg_delete_schedule creates an SDK-formatted MsgDeleteSchedule object that specifies the DAO authority and the cron schedule to remove.",
+            "function": "build_msg_delete_schedule(authority, schedule_name)",
+            "usage": "delete_msg = build_msg_delete_schedule(dao_address, \"daily_rewards\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "build_dao_proposal wraps the delete-schedule message inside a DAO-compatible proposal ready for on-chain submission.",
+            "function": "build_dao_proposal(msg_update_params, title, description)",
+            "usage": "proposal = build_dao_proposal(delete_msg, \"Remove daily_rewards\", \"Deletes the daily_rewards cron schedule\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "sign_and_broadcast_tx signs the prepared transaction with the provided wallet and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "tx_hash = sign_and_broadcast_tx(proposal_tx, admin_wallet, client)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "wait_for_voting_result continuously polls the chain until the proposal reaches its final status, confirming whether it has passed and executed.",
+            "function": "wait_for_voting_result(proposal_id, chain_id='neutron-1', node='https://rpc-kralum.neutron.org:443', poll_interval=15, max_attempts=800)",
+            "usage": "status = wait_for_voting_result(\"42\")"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "schedule_removed checks the cron module and returns true only when the specified schedule is no longer found, confirming successful deletion.",
+            "function": "schedule_removed(name)",
+            "usage": "assert schedule_removed(\"daily_rewards\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "delete_msg = build_msg_delete_schedule(dao_address, \"daily_rewards\")#step: 1 Tool: construct_msg_remove_schedule Desciption: Create a MsgRemoveSchedule with fields: authority=<DAO address>, name=\"daily_rewards\".",
+        "proposal = build_dao_proposal(delete_msg, \"Remove daily_rewards\", \"Deletes the daily_rewards cron schedule\")#step: 2 Tool: wrap_in_dao_proposal Desciption: Place the MsgRemoveSchedule into a DAO proposal for approval.",
+        "tx_hash = sign_and_broadcast_tx(proposal_tx, admin_wallet, client)#step: 3 Tool: sign_and_broadcast_tx Desciption: Submit the proposal through the Main DAO contract and broadcast the transaction.",
+        "status = wait_for_voting_result(\"42\")#step: 4 Tool: monitor_proposal_status Desciption: Wait for the proposal to pass and execute, indicating the schedule removal was processed.",
+        "assert schedule_removed(\"daily_rewards\")#step: 5 Tool: query_cron_show_schedule Desciption: Attempt to query \"daily_rewards\" to ensure it no longer exists (expect a not-found error)."
+    ],
+    "intent": "Remove the cron schedule named \"daily_rewards\"",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "construct_msg_remove_schedule",
+            "description": "Create a MsgRemoveSchedule with fields: authority=<DAO address>, name=\"daily_rewards\"."
+        },
+        {
+            "step": 2,
+            "tool": "wrap_in_dao_proposal",
+            "description": "Place the MsgRemoveSchedule into a DAO proposal for approval."
+        },
+        {
+            "step": 3,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Submit the proposal through the Main DAO contract and broadcast the transaction."
+        },
+        {
+            "step": 4,
+            "tool": "monitor_proposal_status",
+            "description": "Wait for the proposal to pass and execute, indicating the schedule removal was processed."
+        },
+        {
+            "step": 5,
+            "tool": "query_cron_show_schedule",
+            "description": "Attempt to query \"daily_rewards\" to ensure it no longer exists (expect a not-found error)."
+        }
+    ],
+    "outcome_checks": [
+        "The DAO proposal status is `Executed`.",
+        "`neutrond query cron show-schedule daily_rewards` returns `schedule not found`."
+    ]
+}

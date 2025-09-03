@@ -1,0 +1,93 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "ensureWalletConnected connects to the user\u2019s browser wallet (Keplr/Leap) and returns an OfflineSigner, confirming the wallet is ready.",
+            "function": "ensureWalletConnected()",
+            "usage": "const signer = await ensureWalletConnected();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "getWalletAddress obtains the sender\u2019s bech32 Neutron address from the OfflineSigner.",
+            "function": "getWalletAddress(signer)",
+            "usage": "const sender = await getWalletAddress(signer);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "validateAddressFormat calls a backend endpoint to make sure the recipient string is a valid Neutron bech32 address.",
+            "function": "validateAddressFormat(address)",
+            "usage": "await validateAddressFormat(recipient);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "convertToBaseUnits converts 10 NTRN into its micro-denomination (10 000 000 untrn).",
+            "function": "convertToBaseUnits(amount, decimals)",
+            "usage": "const microAmount = convertToBaseUnits(10);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "No fully implemented function is available in the current codebase to build a MsgSend (bank-send) transaction.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 6,
+            "label": "frontend",
+            "introduction": "signAndBroadcast signs the prepared transaction with the wallet\u2019s OfflineSigner and broadcasts it to Neutron, returning the tx hash.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo)",
+            "usage": "const txHash = await signAndBroadcast(signer, sender, [msgSend], \"auto\");"
+        }
+    ],
+    "frontend": [
+        "const signer = await ensureWalletConnected();//step: 1 Tool: ensure_wallet_connected Desciption: Verify the user\u2019s wallet is connected.",
+        "const sender = await getWalletAddress(signer);//step: 2 Tool: get_sender_address Desciption: Retrieve the sender\u2019s Neutron address from the wallet.",
+        "await validateAddressFormat(recipient);//step: 3 Tool: validate_recipient_address Desciption: Check that the provided recipient address is a valid Bech32 Neutron address.",
+        "const microAmount = convertToBaseUnits(10);//step: 4 Tool: convert_to_base_units Desciption: Convert 10 NTRN to its micro-denom value (10 \u00d7 10^6 = 10 000 000 untrn).",
+        "undef//step: 5 Tool: construct_tx_bank_send Desciption: Build a MsgSend with sender, recipient, and amount (10 000 000 untrn).",
+        "const txHash = await signAndBroadcast(signer, sender, [msgSend], \"auto\");//step: 6 Tool: sign_and_broadcast_tx Desciption: Ask the wallet to sign the transaction and broadcast it to Neutron."
+    ],
+    "backend": [],
+    "intent": "Send 10 NTRN to a specified recipient address",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "ensure_wallet_connected",
+            "description": "Verify the user\u2019s wallet is connected."
+        },
+        {
+            "step": 2,
+            "tool": "get_sender_address",
+            "description": "Retrieve the sender\u2019s Neutron address from the wallet."
+        },
+        {
+            "step": 3,
+            "tool": "validate_recipient_address",
+            "description": "Check that the provided recipient address is a valid Bech32 Neutron address."
+        },
+        {
+            "step": 4,
+            "tool": "convert_to_base_units",
+            "description": "Convert 10 NTRN to its micro-denom value (10 \u00d7 10^6 = 10 000 000 untrn)."
+        },
+        {
+            "step": 5,
+            "tool": "construct_tx_bank_send",
+            "description": "Build a MsgSend with sender, recipient, and amount (10 000 000 untrn)."
+        },
+        {
+            "step": 6,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Ask the wallet to sign the transaction and broadcast it to Neutron."
+        }
+    ],
+    "outcome_checks": [
+        "Transaction hash is returned by the wallet.",
+        "Tx is included in a block and marked `success`.",
+        "Recipient\u2019s balance increases by 10 NTRN (minus fees) when queried."
+    ]
+}

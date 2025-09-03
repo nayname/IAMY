@@ -1,0 +1,19 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that queries the Neutron LCD endpoint for details about a specific cron schedule (e.g. \u201cdaily_maintenance\u201d).",
+            "code": "import os\nimport requests\nfrom typing import Any, Dict\n\n# Constants ------------------------------------------------------------------\nLCD_ENDPOINT = os.getenv(\"NEUTRON_LCD\", \"https://lcd-kralum.neutron.org\")\nCRON_SCHEDULE_PATH = \"/neutron/cron/schedule/{schedule_name}\"  # REST path\n\n# Exceptions -----------------------------------------------------------------\nclass CronQueryError(Exception):\n    \"\"\"Raised when the cron\u2010schedule query fails.\"\"\"\n\n# Core Logic -----------------------------------------------------------------\n\ndef query_cron_schedule(schedule_name: str) -> Dict[str, Any]:\n    \"\"\"Query cron schedule details from Neutron LCD.\n\n    Args:\n        schedule_name: Name of the cron schedule to query.\n\n    Returns:\n        Parsed JSON response as a Python dict.\n\n    Raises:\n        CronQueryError: If the request fails or returns non-200 status.\n    \"\"\"\n    url = f\"{LCD_ENDPOINT}{CRON_SCHEDULE_PATH.format(schedule_name=schedule_name)}\"\n    try:\n        response = requests.get(url, timeout=10)\n        response.raise_for_status()\n    except requests.RequestException as exc:\n        raise CronQueryError(f\"Failed to query cron schedule '{schedule_name}': {exc}\") from exc\n\n    try:\n        return response.json()\n    except ValueError as exc:\n        raise CronQueryError(\"LCD returned invalid JSON response\") from exc",
+            "usage": "details = query_cron_schedule(\"daily_maintenance\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 provides a utility that extracts the schedule\u2019s key fields from the raw JSON returned in Step 1.",
+            "code": "from typing import Any, Dict, TypedDict\n\nclass ParsedSchedule(TypedDict):\n    name: str\n    period: str\n    msgs: Any  # List of encoded Cosmos messages\n    last_execution_height: int\n\n# ---------------------------------------------------------------------------\n\ndef parse_json_response(raw: Dict[str, Any]) -> ParsedSchedule:\n    \"\"\"Parse required fields from cron schedule JSON.\n\n    Args:\n        raw: The raw JSON dict returned by query_cron_schedule.\n\n    Returns:\n        A TypedDict containing the requested fields.\n\n    Raises:\n        KeyError: If any expected field is missing.\n        ValueError: If a field has an unexpected type/format.\n    \"\"\"\n    try:\n        schedule = raw[\"schedule\"]  # LCD nests data under the `schedule` key\n        parsed: ParsedSchedule = {\n            \"name\": schedule[\"name\"],\n            \"period\": schedule[\"period\"],\n            \"msgs\": schedule[\"msgs\"],\n            \"last_execution_height\": int(schedule[\"last_execution_height\"]),\n        }\n        return parsed\n    except KeyError as exc:\n        raise KeyError(f\"Expected key not found in response: {exc}\") from exc\n    except (TypeError, ValueError) as exc:\n        raise ValueError(f\"Malformed field in cron schedule response: {exc}\") from exc",
+            "usage": "parsed_schedule = parse_json_response(details)\nprint(parsed_schedule)"
+        }
+    ]
+}

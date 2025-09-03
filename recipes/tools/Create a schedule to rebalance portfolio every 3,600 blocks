@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "get_admin_wallet loads the DAO\u2019s admin wallet from the ADMIN_MNEMONIC variable so its address can be used as the Cron authority.",
+            "function": "get_admin_wallet()",
+            "usage": "authority_address = str(get_admin_wallet().address())"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "build_msg_add_schedule assembles the MsgAddSchedule that tells Cron to call the portfolio manager\u2019s rebalance method every 3,600 blocks.",
+            "function": "build_msg_add_schedule(authority, name, period, msgs, execution_stage=\"EXECUTION_STAGE_END_BLOCKER\")",
+            "usage": "msg_schedule = build_msg_add_schedule(authority_address, \"portfolio_rebalance\", 3600, [rebalance_msg])"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "build_dao_proposal packages the MsgAddSchedule into a CW-DAO governance proposal with a title and description.",
+            "function": "build_dao_proposal(msg_update_params, title, description)",
+            "usage": "proposal_msg = build_dao_proposal(msg_schedule, \"Portfolio Rebalance\", \"Maintain target asset weights via hourly rebalances\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "sign_and_broadcast_tx signs the proposal transaction with the DAO wallet and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "tx_hash = sign_and_broadcast_tx(proposal_tx, dao_wallet, neutron_client)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "authority_address = str(get_admin_wallet().address())#step: 1 Tool: get_dao_authority_address Desciption: Obtain the DAO authority address.",
+        "msg_schedule = build_msg_add_schedule(authority_address, \"portfolio_rebalance\", 3600, [rebalance_msg])#step: 2 Tool: build_msg_add_schedule Desciption: Compose MsgAddSchedule with: name=\"portfolio_rebalance\", period=3600, msgs=[contract call to the portfolio manager\u2019s `rebalance` method], and gas_limit sized for the rebalance operation.",
+        "proposal_msg = build_dao_proposal(msg_schedule, \"Portfolio Rebalance\", \"Maintain target asset weights via hourly rebalances\")#step: 3 Tool: package_into_gov_proposal Desciption: Create a governance proposal that contains the MsgAddSchedule and includes rationale (e.g., keep target asset weights).",
+        "tx_hash = sign_and_broadcast_tx(proposal_tx, dao_wallet, neutron_client)#step: 4 Tool: sign_and_broadcast_tx Desciption: DAO signs and submits the proposal TX."
+    ],
+    "intent": "Create a schedule to rebalance portfolio every 3,600 blocks",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_dao_authority_address",
+            "description": "Obtain the DAO authority address."
+        },
+        {
+            "step": 2,
+            "tool": "build_msg_add_schedule",
+            "description": "Compose MsgAddSchedule with: name=\"portfolio_rebalance\", period=3600, msgs=[contract call to the portfolio manager\u2019s `rebalance` method], and gas_limit sized for the rebalance operation."
+        },
+        {
+            "step": 3,
+            "tool": "package_into_gov_proposal",
+            "description": "Create a governance proposal that contains the MsgAddSchedule and includes rationale (e.g., keep target asset weights)."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "DAO signs and submits the proposal TX."
+        }
+    ],
+    "outcome_checks": [
+        "After passage, verify schedule \"portfolio_rebalance\" exists with a 3,600-block period.",
+        "Observe at least one successful `rebalance` contract execution after 3,600 blocks."
+    ]
+}

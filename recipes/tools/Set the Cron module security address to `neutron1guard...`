@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Generates a JSON Gov Param-Change file that sets the Cron module\u2019s security_address to the desired guardian address.",
+            "function": "construct_param_change_proposal(new_security_address, deposit=\"10000000untrn\", output_path=\"proposal.json\")",
+            "usage": "proposal_path = construct_param_change_proposal(\"neutron1guard...\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Signs the MsgSubmitProposal transaction and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "tx_response = sign_and_broadcast_tx(gov_tx, my_wallet, ledger_client)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Continuously polls on-chain governance until the proposal reaches the PASSED status.",
+            "function": "wait_for_voting_result(proposal_id, chain_id=\"neutron-1\", node=\"https://rpc-kralum.neutron.org:443\", poll_interval=15, max_attempts=800)",
+            "usage": "wait_for_voting_result(\"123\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Fetches the live Cron module parameters to confirm that the security_address was updated.",
+            "function": "query_cron_params(chain_id=\"neutron-1\", node=\"https://rpc-kralum.neutron.org:443\")",
+            "usage": "params = query_cron_params()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "proposal_path = construct_param_change_proposal(\"neutron1guard...\")#step: 1 Tool: construct_param_change_proposal Desciption: Create a Param-Change proposal that updates Cron parameter `security_address` to `neutron1guard...`.",
+        "tx_response = sign_and_broadcast_tx(gov_tx, my_wallet, ledger_client)#step: 2 Tool: submit_gov_proposal Desciption: Submit the proposal via `neutrond tx gov submit-proposal`.",
+        "wait_for_voting_result(\"123\")#step: 3 Tool: wait_for_voting_result Desciption: Track the proposal until it is `PASSED`.",
+        "params = query_cron_params()#step: 4 Tool: query_cron_params Desciption: Re-query Cron parameters to verify the new `security_address` value."
+    ],
+    "intent": "Set the Cron module security address to `neutron1guard...`",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "construct_param_change_proposal",
+            "description": "Create a Param-Change proposal that updates Cron parameter `security_address` to `neutron1guard...`."
+        },
+        {
+            "step": 2,
+            "tool": "submit_gov_proposal",
+            "description": "Submit the proposal via `neutrond tx gov submit-proposal`."
+        },
+        {
+            "step": 3,
+            "tool": "wait_for_voting_result",
+            "description": "Track the proposal until it is `PASSED`."
+        },
+        {
+            "step": 4,
+            "tool": "query_cron_params",
+            "description": "Re-query Cron parameters to verify the new `security_address` value."
+        }
+    ],
+    "outcome_checks": [
+        "Proposal passes with status `PASSED`.",
+        "`security_address` field in `neutrond query cron params` equals `neutron1guard...`."
+    ]
+}

@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Queries the Cron module parameters to obtain the current security_address, which is the DAO authority address required for creating Cron schedules.",
+            "function": "query_cron_params(chain_id=\"neutron-1\", node=\"https://rpc-kralum.neutron.org:443\")",
+            "usage": "dao_authority = query_cron_params()[\"security_address\"]"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Builds an SDK-compatible MsgAddSchedule dictionary that defines the \"fee_collection\" schedule to run every 1,200 blocks.",
+            "function": "build_msg_add_schedule(authority, name, period, msgs, execution_stage=\"EXECUTION_STAGE_END_BLOCKER\")",
+            "usage": "schedule_msg = build_msg_add_schedule(dao_authority, \"fee_collection\", 1200, harvest_msgs)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Wraps the MsgAddSchedule inside a DAO governance proposal message ready for on-chain submission.",
+            "function": "build_dao_proposal(msg_update_params, title, description)",
+            "usage": "proposal_msg = build_dao_proposal(schedule_msg, \"Automated Fee Harvesting\", \"Creates a cron schedule to harvest fees every 1,200 blocks.\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the prepared Transaction with the DAO wallet and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "tx_hash = sign_and_broadcast_tx(tx, dao_wallet, client)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "dao_authority = query_cron_params()[\"security_address\"]#step: 1 Tool: get_dao_authority_address Desciption: Retrieve the Main DAO\u2019s authority address required to create Cron schedules.",
+        "schedule_msg = build_msg_add_schedule(dao_authority, \"fee_collection\", 1200, harvest_msgs)#step: 2 Tool: build_msg_add_schedule Desciption: Construct a MsgAddSchedule with: name=\"fee_collection\", period=1200, msgs=[Cosmos SDK/Wasmd message that calls the treasury contract\u2019s `harvest_fees` entry-point], and an appropriate gas_limit.",
+        "proposal_msg = build_dao_proposal(schedule_msg, \"Automated Fee Harvesting\", \"Creates a cron schedule to harvest fees every 1,200 blocks.\")#step: 3 Tool: package_into_gov_proposal Desciption: Wrap the MsgAddSchedule inside a DAO governance proposal (e.g., MsgSubmitProposal or DAO-execute message). Include a title and description explaining the automated fee harvesting.",
+        "tx_hash = sign_and_broadcast_tx(tx, dao_wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Have the DAO sign and broadcast the proposal transaction to the Neutron network."
+    ],
+    "intent": "Create a fee_collection schedule to harvest fees every 1,200 blocks",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_dao_authority_address",
+            "description": "Retrieve the Main DAO\u2019s authority address required to create Cron schedules."
+        },
+        {
+            "step": 2,
+            "tool": "build_msg_add_schedule",
+            "description": "Construct a MsgAddSchedule with: name=\"fee_collection\", period=1200, msgs=[Cosmos SDK/Wasmd message that calls the treasury contract\u2019s `harvest_fees` entry-point], and an appropriate gas_limit."
+        },
+        {
+            "step": 3,
+            "tool": "package_into_gov_proposal",
+            "description": "Wrap the MsgAddSchedule inside a DAO governance proposal (e.g., MsgSubmitProposal or DAO-execute message). Include a title and description explaining the automated fee harvesting."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Have the DAO sign and broadcast the proposal transaction to the Neutron network."
+        }
+    ],
+    "outcome_checks": [
+        "After the proposal passes, query the Cron module and confirm a schedule with name \"fee_collection\" exists and shows a 1,200-block period.",
+        "Monitor the next block height \u2265 current_height + 1,200 and verify that the `harvest_fees` contract execution event is emitted."
+    ]
+}

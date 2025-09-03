@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates a cosmpy LedgerClient that is pre-configured for the Pion-1 testnet (chain-id, RPC URL, fees, bech32 prefix).",
+            "function": "get_neutron_client()",
+            "usage": "client = get_neutron_client()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Fetches or resolves the appropriate `code_id` to instantiate, either from an explicit value or by querying the chain for uploads by the wallet.",
+            "function": "get_code_id(client, uploader, explicit_code_id=None)",
+            "usage": "code_id = get_code_id(client, uploader_address)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Builds a MsgInstantiateContract transaction with an initial JSON state and optional admin address.",
+            "function": "build_instantiate_tx(client, code_id, init_msg, label, admin=None)",
+            "usage": "tx = build_instantiate_tx(client, code_id, {\"count\": 0}, \"demo-contract\", admin=uploader_address)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the previously built transaction with the wallet and broadcasts it to the Pion-1 network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "response = sign_and_broadcast_tx(tx, wallet, client)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Parses the transaction logs to extract and return the newly created contract address.",
+            "function": "extract_contract_address(response)",
+            "usage": "contract_addr = extract_contract_address(response)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "client = get_neutron_client()#step: 1 Tool: set_chain_context Desciption: Configure CLI for the Pion-1 testnet (`--chain-id pion-1`, correct RPC endpoint, and fees).",
+        "code_id = get_code_id(client, uploader_address)#step: 2 Tool: get_code_id Desciption: Specify the `code_id` obtained from the prior store-code step (or an existing one on Pion-1).",
+        "tx = build_instantiate_tx(client, code_id, {\"count\": 0}, \"demo-contract\", admin=uploader_address)#step: 3 Tool: construct_tx_instantiate_contract Desciption: Build a `MsgInstantiateContract` with initial state (e.g., `{ \"count\": 0 }`) and optionally set an admin address.",
+        "response = sign_and_broadcast_tx(tx, wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the instantiate transaction on Pion-1.",
+        "contract_addr = extract_contract_address(response)#step: 5 Tool: extract_contract_address_from_tx Desciption: Parse transaction events to capture the newly created contract address."
+    ],
+    "intent": "Instantiate the example contract on Pion-1",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "set_chain_context",
+            "description": "Configure CLI for the Pion-1 testnet (`--chain-id pion-1`, correct RPC endpoint, and fees)."
+        },
+        {
+            "step": 2,
+            "tool": "get_code_id",
+            "description": "Specify the `code_id` obtained from the prior store-code step (or an existing one on Pion-1)."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_instantiate_contract",
+            "description": "Build a `MsgInstantiateContract` with initial state (e.g., `{ \"count\": 0 }`) and optionally set an admin address."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the instantiate transaction on Pion-1."
+        },
+        {
+            "step": 5,
+            "tool": "extract_contract_address_from_tx",
+            "description": "Parse transaction events to capture the newly created contract address."
+        }
+    ],
+    "outcome_checks": [
+        "Tx included with code 0.",
+        "A valid contract address (`neutron1...`) appears in instantiate logs.",
+        "Querying `get_count` returns the initial value (e.g., 0)."
+    ]
+}

@@ -1,0 +1,79 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No implemented backend or frontend function is available that directly builds a MsgUpdateParams message.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "build_dao_proposal creates the JSON body that embeds the MsgUpdateParams inside a DAO proposal for on-chain voting.",
+            "function": "build_dao_proposal(msg_update_params, title, description)",
+            "usage": "dao_msg = build_dao_proposal(msg_update_params, \"Cron limit change\", \"Set schedules_per_block to 30\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "sign_and_broadcast_tx signs the prepared transaction with the provided wallet and submits it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "tx_hash = sign_and_broadcast_tx(tx, wallet, client)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "wait_for_voting_result continuously polls the governance module until the proposal reaches a final status.",
+            "function": "wait_for_voting_result(proposal_id, chain_id=\"neutron-1\", node=\"https://rpc-kralum.neutron.org:443\")",
+            "usage": "status = wait_for_voting_result(proposal_id)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "query_cron_params fetches the current Cron module parameters to verify schedules_per_block is set to 30.",
+            "function": "query_cron_params(chain_id=\"neutron-1\", node=\"https://rpc-kralum.neutron.org:443\")",
+            "usage": "params = query_cron_params()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: construct_msg_update_params Desciption: Build a MsgUpdateParams with fields: authority=<DAO address>, params={\"schedules_per_block\":30}.",
+        "dao_msg = build_dao_proposal(msg_update_params, \"Cron limit change\", \"Set schedules_per_block to 30\")#step: 2 Tool: wrap_in_dao_proposal Desciption: Insert the MsgUpdateParams into a DAO proposal for network approval.",
+        "tx_hash = sign_and_broadcast_tx(tx, wallet, client)#step: 3 Tool: sign_and_broadcast_tx Desciption: Submit the proposal transaction via the Main DAO contract.",
+        "status = wait_for_voting_result(proposal_id)#step: 4 Tool: monitor_proposal_status Desciption: Track the proposal until it is executed, applying the new parameter.",
+        "params = query_cron_params()#step: 5 Tool: query_cron_params Desciption: Query the Cron module parameters (`neutrond query cron params`) to confirm `schedules_per_block` is now 30."
+    ],
+    "intent": "Update the Cron module limit parameter to 30 schedules per block",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "construct_msg_update_params",
+            "description": "Build a MsgUpdateParams with fields: authority=<DAO address>, params={\"schedules_per_block\":30}."
+        },
+        {
+            "step": 2,
+            "tool": "wrap_in_dao_proposal",
+            "description": "Insert the MsgUpdateParams into a DAO proposal for network approval."
+        },
+        {
+            "step": 3,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Submit the proposal transaction via the Main DAO contract."
+        },
+        {
+            "step": 4,
+            "tool": "monitor_proposal_status",
+            "description": "Track the proposal until it is executed, applying the new parameter."
+        },
+        {
+            "step": 5,
+            "tool": "query_cron_params",
+            "description": "Query the Cron module parameters (`neutrond query cron params`) to confirm `schedules_per_block` is now 30."
+        }
+    ],
+    "outcome_checks": [
+        "The DAO proposal status is `Executed`.",
+        "`schedules_per_block` in `neutrond query cron params` equals `30`."
+    ]
+}

@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Runs the neutrond CLI to retrieve the Cron module parameters and returns them as a parsed JSON dictionary.",
+            "function": "query_cron_params(chain_id='neutron-1', node='https://rpc-kralum.neutron.org:443')",
+            "usage": "params = query_cron_params()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No dedicated helper exists in the current codebase to further parse the Cron-parameter JSON response.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "params = query_cron_params()#step: 1 Tool: query_cron_params Desciption: Run `neutrond query cron params` (or equivalent gRPC/REST call) to fetch the current Cron module parameters.",
+        "undef#step: 2 Tool: parse_json_response Desciption: Decode the JSON response and extract fields such as `max_msg_length`, `min_period`, `security_address`, etc."
+    ],
+    "intent": "Query Cron module parameters",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "query_cron_params",
+            "description": "Run `neutrond query cron params` (or equivalent gRPC/REST call) to fetch the current Cron module parameters."
+        },
+        {
+            "step": 2,
+            "tool": "parse_json_response",
+            "description": "Decode the JSON response and extract fields such as `max_msg_length`, `min_period`, `security_address`, etc."
+        }
+    ],
+    "outcome_checks": [
+        "HTTP/gRPC call succeeds (code 0).",
+        "Response contains a non-empty `params` object with expected keys."
+    ]
+}

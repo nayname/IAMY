@@ -1,0 +1,33 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 loads the DAO authority address from an environment variable or a local JSON configuration file so that subsequent messages can be signed with the correct authority.",
+            "code": "def get_dao_authority_address(config_path: str = \"dao_config.json\") -> str:\n    \"\"\"\n    Return the DAO authority address.\n    Priority:\n      1. Environment variable DAO_AUTHORITY_ADDRESS\n      2. JSON file (default: dao_config.json) with key `authority_address`.\n    \"\"\"\n    import os, json\n\n    # 1\ufe0f\u20e3  Environment override\n    env_addr = os.getenv(\"DAO_AUTHORITY_ADDRESS\")\n    if env_addr:\n        return env_addr.strip()\n\n    # 2\ufe0f\u20e3  Fallback to config file\n    try:\n        with open(config_path, \"r\") as fp:\n            data = json.load(fp)\n            return data[\"authority_address\"]\n    except (FileNotFoundError, KeyError, json.JSONDecodeError) as err:\n        raise RuntimeError(\"Unable to determine DAO authority address\") from err\n",
+            "usage": "authority = get_dao_authority_address()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 builds a neutron.cron MsgAddSchedule that triggers the portfolio-manager contract\u2019s `rebalance` method every hour (3600 s).",
+            "code": "def build_msg_add_schedule(authority: str, contract_address: str, gas_limit: int = 200000):\n    \"\"\"\n    Compose a MsgAddSchedule that calls `portfolio_manager.rebalance()` every 3600 seconds.\n    \"\"\"\n    from google.protobuf.any_pb2 import Any\n    from neutron.cron import cron_pb2 as crontypes\n    from cosmwasm.wasm.v1 import tx_pb2 as wasmtypes\n\n    if not authority or not contract_address:\n        raise ValueError(\"Both `authority` and `contract_address` are required\")\n\n    # \ud83d\udc47 Inner Wasm execute message\n    wasm_execute = wasmtypes.MsgExecuteContract(\n        sender=authority,\n        contract=contract_address,\n        msg=b\"{\\\"rebalance\\\":{}}\",  # JSON \u2192 bytes\n        funds=[]\n    )\n\n    inner_any = Any()\n    inner_any.Pack(wasm_execute, type_url_prefix=\"/\")\n\n    # \ud83d\udc47 Cron schedule message\n    schedule_msg = crontypes.MsgAddSchedule(\n        authority=authority,\n        name=\"portfolio_rebalance\",\n        period=3600,              # seconds\n        msgs=[inner_any],\n        gas_limit=gas_limit\n    )\n    return schedule_msg\n",
+            "usage": "schedule_msg = build_msg_add_schedule(authority, portfolio_mgr_addr)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 wraps the MsgAddSchedule inside a governance MsgSubmitProposal, giving it a title, summary, and initial deposit so that DAO token-holders can vote on it.",
+            "code": "def package_into_gov_proposal(authority: str, schedule_msg, deposit: int = 10000000, denom: str = \"untrn\"):\n    \"\"\"\n    Package the schedule into a gov proposal message.\n    \"\"\"\n    from google.protobuf.any_pb2 import Any\n    from cosmos.gov.v1beta1 import gov_pb2 as govtypes\n    from cosmos.base.v1beta1 import coin_pb2 as cointypes\n\n    if schedule_msg is None:\n        raise ValueError(\"`schedule_msg` cannot be None\")\n\n    content_any = Any()\n    content_any.Pack(schedule_msg, type_url_prefix=\"/\")\n\n    proposal_msg = govtypes.MsgSubmitProposal(\n        content=content_any,\n        initial_deposit=[cointypes.Coin(amount=str(deposit), denom=denom)],\n        proposer=authority\n    )\n\n    # Extra user-facing metadata (displayed by wallets/explorers)\n    proposal_msg.title = \"Add Cron Schedule: portfolio_rebalance\"\n    proposal_msg.summary = (\n        \"Adds an hourly cron job that calls portfolio_manager.rebalance to maintain target asset weights.\"\n    )\n    proposal_msg.metadata = \"https://github.com/your-dao/proposals/001\"\n    return proposal_msg\n",
+            "usage": "proposal_msg = package_into_gov_proposal(authority, schedule_msg)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 signs the MsgSubmitProposal with the DAO\u2019s key and broadcasts it to the Neutron network, returning the transaction hash on success.",
+            "code": "def sign_and_broadcast_tx(proposal_msg, client, wallet, gas: int = 350000, fee_amount: int = 15000, fee_denom: str = \"untrn\") -> str:\n    \"\"\"\n    Sign with the DAO authority wallet and broadcast the proposal transaction.\n\n    Args:\n        proposal_msg:   MsgSubmitProposal generated in step 3.\n        client:         cosmpy LedgerClient (already connected to Neutron).\n        wallet:         cosmpy PrivateKey or Wallet instance holding DAO key.\n    Returns:\n        Transaction hash (str).\n    \"\"\"\n    from cosmpy.aerial.tx import Transaction\n\n    if proposal_msg is None:\n        raise ValueError(\"`proposal_msg` is required\")\n\n    # \u270d\ufe0f Build and sign the Tx\n    tx = Transaction()\n    tx.add_message(proposal_msg)\n    tx.with_gas(gas)\n    tx.with_fee(amount=fee_amount, denom=fee_denom)\n\n    try:\n        tx_signed = tx.sign(wallet)\n        tx_response = client.broadcast_block(tx_signed)\n        if tx_response.is_tx_error():\n            raise RuntimeError(f\"Tx failed (code={tx_response.code}): {tx_response.raw_log}\")\n        return tx_response.tx_hash\n    except Exception as err:\n        raise RuntimeError(f\"Failed to broadcast transaction: {err}\") from err\n",
+            "usage": "tx_hash = sign_and_broadcast_tx(proposal_msg, client, wallet)"
+        }
+    ]
+}

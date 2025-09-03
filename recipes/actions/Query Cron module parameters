@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that performs an LCD (REST) call to fetch the current Cron module parameters from a Neutron node.",
+            "code": "import requests\nfrom typing import Dict, Any\n\ndef query_cron_params(rest_endpoint: str) -> Dict[str, Any]:\n    \"\"\"\n    Fetch the Cron module parameters from a Neutron LCD (REST) endpoint.\n\n    Args:\n        rest_endpoint (str): Base URL of the LCD endpoint (e.g., \"https://lcd.neutron.org\").\n\n    Returns:\n        Dict[str, Any]: The JSON payload containing Cron parameters.\n\n    Raises:\n        RuntimeError: For network problems or HTTP errors.\n        ValueError: If the response does not contain the expected shape.\n    \"\"\"\n    # Ensure there is no trailing slash to avoid double slashes when concatenating\n    rest_endpoint = rest_endpoint.rstrip('/')\n    url = f\"{rest_endpoint}/neutron/cron/v1/params\"\n\n    try:\n        response = requests.get(url, timeout=10)\n        response.raise_for_status()               # Raise if the status code indicates an error\n        data = response.json()\n        if \"params\" not in data:\n            raise ValueError(\"Missing 'params' field in Cron parameters response.\")\n        return data\n    except requests.exceptions.RequestException as exc:\n        # Wrap lower-level network errors into a more descriptive exception\n        raise RuntimeError(f\"Failed to query Cron params from {url}: {exc}\") from exc",
+            "usage": "params_json = query_cron_params(\"https://lcd.neutron.org\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 parses the JSON returned from Step 1 and extracts key Cron parameter fields for downstream use.",
+            "code": "from typing import Dict, Any\n\ndef parse_cron_params(params_json: Dict[str, Any]) -> Dict[str, Any]:\n    \"\"\"\n    Extract important fields from the raw Cron parameters response.\n\n    Args:\n        params_json (Dict[str, Any]): Raw JSON structure returned by `query_cron_params`.\n\n    Returns:\n        Dict[str, Any]: A simplified dictionary containing selected Cron parameters.\n\n    Raises:\n        KeyError: If the expected keys are not found.\n    \"\"\"\n    try:\n        params = params_json[\"params\"]\n        parsed = {\n            \"max_msg_length\": int(params.get(\"max_msg_length\", 0)),\n            \"min_period\": int(params.get(\"min_period\", 0)),\n            \"security_address\": params.get(\"security_address\", \"\"),\n            \"fee_currency\": params.get(\"fee_currency\", \"\"),\n            \"fee_amount\": params.get(\"fee_amount\", \"\")\n        }\n        return parsed\n    except KeyError as exc:\n        raise KeyError(f\"Expected key not found while parsing Cron params: {exc}\") from exc",
+            "usage": "parsed_params = parse_cron_params(params_json)\nprint(parsed_params)"
+        }
+    ]
+}

@@ -20,10 +20,14 @@ from cosmpy.aerial.exceptions import NotFoundError
 from cosmpy.aerial.tx import Transaction
 from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgStoreCode, MsgInstantiateContract
 from cosmpy.aerial.client import LedgerClient
+from sympy.strategies.core import switch
 
-from create import generate_code
-from recipes.backend import extract_code_id_from_tx
-
+from create import generate_code, glue
+from ner.inference import NERExtractor
+from recipes.backend import extract_code_id_from_tx, select_data_provider, build_history_query, execute_query_request, \
+    normalize_tx_results, open_celatone_explorer, search_contract_address, navigate_to_metadata_tab, \
+    download_metadata_json, query_contract_info, query_code_info, extract_code_hash, query_bank_balance, \
+    connect_rpc_endpoint, neutrond_status, extract_block_height, build_msg_delete_schedule
 
 # --- Placeholder for your generation logic ---
 # This function simulates the work of your generate_code() and NER model.
@@ -74,10 +78,12 @@ app.add_middleware(
 # app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+QUERIES = {"Withdraw 50 NTRN from the smart contract":{"label":"execute"}}
 
 # Pydantic model for the request body to ensure type safety
 class GenerateRequest(BaseModel):
     text: str
+    address: str
 
 cfg = NetworkConfig(
     chain_id="neutron-1",
@@ -295,7 +301,7 @@ async def handle_generate(request_data: GenerateRequest):
     # return templates.TemplateResponse("table.html", {"request": request, "table": map})
 
 
-@app.post("/generate")
+@app.post("/generate_")
 async def handle_generate(request_data: GenerateRequest):
     """
     Receives text from the frontend, generates a response,
@@ -309,6 +315,68 @@ async def handle_generate(request_data: GenerateRequest):
     print(response_data)
 
     return JSONResponse(content=response_data)
+    # return templates.TemplateResponse("table.html", {"request": request, "table": map})
+
+
+@app.post("/generate_reponse")
+async def generate_reponse(request_data: Request):
+    req = await request_data.json();
+    input_text = req["text"]
+
+    ner_ = NERExtractor().extract_entities(input_text)
+
+    if (input_text in QUERIES):
+        return {
+            "label": QUERIES[input_text]["label"].title(),
+            "params": glue(ner_),
+        }
+    else:
+        return {"label": "Others", "params": glue(ner_)}
+
+@app.post("/generate")
+async def handle_generate(request_data: Request):
+    """
+    Receives text from the frontend, generates a response,
+    and returns it as JSON.
+    """
+    # Get the text from the request body
+    req = await request_data.json();
+    input_text = req["text"]
+
+    match input_text:
+        case "Query transaction history for my address":
+            provider = select_data_provider()#step: 1 Tool: select_data_provider Desciption: Choose a data source (Celatone API, SubQuery, or LCD /txs endpoint) based on latency and pagination needs.",
+            query, vars = build_history_query(provider, req["address"])#step: 2 Tool: build_history_query Desciption: Construct a REST or GraphQL query filtering by `message.sender={address}` and order by timestamp descending.",
+            raw_results, next_token = execute_query_request(provider, query, vars)#step: 3 Tool: execute_query_request Desciption: Send the HTTP request (fetch/axios) and handle pagination via `offset` or `pageInfo.endCursor`.",
+            table_rows = normalize_tx_results(provider, raw_results)#step: 4 Tool: normalize_tx_results Desciption: Map raw results into a uniform schema (hash, blockHeight, action, fee, success) for the frontend table."
+            return JSONResponse(content=table_rows)
+        case "Query contract metadata on Celatone":
+            driver = open_celatone_explorer('neutron-1', '/tmp')#step: 1 Tool: open_celatone_explorer Desciption: Launch the Celatone explorer in a web browser and select the correct Neutron network (mainnet: neutron-1 or testnet: pion-1).",
+            search_contract_address(driver, req["address"])#step: 2 Tool: search_contract_address Desciption: Paste the target contract address into the Celatone search bar and press Enter.",
+            navigate_to_metadata_tab(driver)#step: 3 Tool: navigate_to_metadata_tab Desciption: Click the \u201cMetadata\u201d (or equivalent) tab in Celatone\u2019s contract view to load stored contract information.",
+            metadata_path = download_metadata_json(driver, '/tmp')#step: 4 Tool: download_metadata_json Desciption: Use Celatone\u2019s \u201cDownload\u201d (</>) button to fetch the raw metadata JSON for local inspection or downstream processing."
+            return JSONResponse(content=metadata_path)
+        case "Query the code hash of a specific smart contract":
+            # UNDEF
+            contract_info = query_contract_info('neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')#step: 2 Tool: query_contract_info Desciption: Execute `neutrond query wasm contract <contract-address>` to obtain the contract\u2019s metadata, including its `code_id`.",
+            # undef#step: 3 Tool: extract_code_id Desciption: Read the `code_id` field from the contract info response.",
+            # code_info = query_code_info(code_id)#step: 4 Tool: query_code_info Desciption: Run `neutrond query wasm code-info <code_id>` to fetch the code information that contains the `code_hash`.",
+            # code_hash = extract_code_hash(code_info)#step: 5 Tool: extract_code_hash Desciption: Parse the `code_hash` value from the code-info JSON response."
+        case "Withdraw 50 NTRN from the smart contract":
+            new_balance = query_bank_balance(req["address"])#step: 6 Tool: query_bank_balance Desciption: After confirmation, re-query the user\u2019s bank balance to reflect the incoming 50 NTRN."
+            return JSONResponse(content=new_balance)
+        case "Show the current block height of the Neutron chain":
+            rpc = connect_rpc_endpoint('https://rpc-kralum.neutron.org')#step: 1 Tool: connect_rpc_endpoint Desciption: Connect to a reachable Neutron RPC endpoint (e.g., https://rpc-kralum.neutron.org) to ensure the CLI can query chain data.",
+            status_json = neutrond_status(rpc)#step: 2 Tool: neutrond_status Desciption: Run `neutrond status --node <rpc-endpoint>` to fetch the node\u2019s sync information.",
+            latest_height = extract_block_height(status_json)#step: 3 Tool: extract_block_height Desciption: Parse the JSON response and read `result.sync_info.latest_block_height`."
+            return JSONResponse(content=latest_height)
+
+    # case _:
+        #     # Default case (optional), executed if no other pattern matches
+        # Call your generation logic
+    # response_data = generate_code(input_text)
+    # print(response_data)
+
     # return templates.TemplateResponse("table.html", {"request": request, "table": map})
 
 
@@ -395,7 +463,7 @@ def handle_query_contract(data: GenerateRequest):
 
 
 @app.post("/api/validate-address")
-def handle_validate_address(data: GenerateRequest):
+async def handle_validate_address(data: Request):
     """
     Validates a bech32 address. This moves the validation logic and bech32
     library dependency from the frontend to the backend.
@@ -405,10 +473,13 @@ def handle_validate_address(data: GenerateRequest):
         "address": "neutron1..."
     }
     """
-    if not data or "address" not in data:
+    req = await data.json();
+    input_text = req["text"]
+
+    if not input_text:
         return JSONResponse(content={"isValid": False, "message": "Missing 'address' in request body."}, status_code=400)
 
-    address = data["address"]
+    address = input_text
     expected_prefix = "neutron"
 
     try:
@@ -427,7 +498,7 @@ def handle_validate_address(data: GenerateRequest):
 
 
 @app.post("/api/broadcast-tx")
-def handle_broadcast_tx(data: GenerateRequest):
+async def handle_broadcast_tx(data: Request):
     """
     Receives raw, signed transaction bytes from the client and broadcasts them
     to the blockchain. This is a "relayer" or "gas station" pattern.
@@ -437,16 +508,19 @@ def handle_broadcast_tx(data: GenerateRequest):
         "signedTxBytes": "<base64_encoded_signed_tx_bytes>"
     }
     """
+    req = await data.json()
+    input_text = req["text"]
+
     if not client:
         return JSONResponse(content={"message": "Backend client is not connected to the blockchain."}, status_code=503)
 
-    if not data or "signedTxBytes" not in data:
+    if not data:
         return JSONResponse(content={"message": "Missing 'signedTxBytes' in request body."}, status_code=400)
 
     # In a real application, you would decode the base64 bytes here.
     # For this example, we assume the frontend sends the bytes in a format
     # that cosmpy's `broadcast_tx` can handle directly.
-    signed_tx_bytes = data["signedTxBytes"]  # Placeholder
+    signed_tx_bytes = input_text  # Placeholder
 
     try:
         # The frontend signs, the backend just broadcasts

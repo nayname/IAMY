@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Queries on-chain Cron parameters to retrieve the DAO security_address that serves as the authority for schedule deletion.",
+            "function": "query_cron_params(chain_id='neutron-1', node='https://rpc-kralum.neutron.org:443')",
+            "usage": "authority_addr = query_cron_params()[\"security_address\"]"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Builds an amino-encoded MsgDeleteSchedule that targets the existing \"protocol_update\" schedule and specifies the DAO authority.",
+            "function": "build_msg_delete_schedule(authority_addr, schedule_name='protocol_update')",
+            "usage": "delete_msg = build_msg_delete_schedule(authority_addr, 'protocol_update')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Packages the delete-schedule message into a DAO governance proposal with a human-readable title and description.",
+            "function": "build_dao_proposal(msg_update_params, title, description)",
+            "usage": "proposal = build_dao_proposal(delete_msg, 'Remove protocol_update schedule', 'This proposal removes the obsolete protocol_update cron schedule.')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the proposal transaction with the DAO wallet and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "tx_hash = sign_and_broadcast_tx(tx, dao_wallet, ledger_client)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "authority_addr = query_cron_params()[\"security_address\"]#step: 1 Tool: get_dao_authority_address Desciption: Fetch the Main DAO authority address (required to delete schedules).",
+        "delete_msg = build_msg_delete_schedule(authority_addr, 'protocol_update')#step: 2 Tool: build_msg_delete_schedule Desciption: Create a MsgDeleteSchedule with: name=\"protocol_update\".",
+        "proposal = build_dao_proposal(delete_msg, 'Remove protocol_update schedule', 'This proposal removes the obsolete protocol_update cron schedule.')#step: 3 Tool: package_into_gov_proposal Desciption: Embed the MsgDeleteSchedule in a DAO governance proposal explaining why the schedule should be removed.",
+        "tx_hash = sign_and_broadcast_tx(tx, dao_wallet, ledger_client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the proposal with the DAO authority and broadcast it."
+    ],
+    "intent": "Remove the existing schedule named protocol_update",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_dao_authority_address",
+            "description": "Fetch the Main DAO authority address (required to delete schedules)."
+        },
+        {
+            "step": 2,
+            "tool": "build_msg_delete_schedule",
+            "description": "Create a MsgDeleteSchedule with: name=\"protocol_update\"."
+        },
+        {
+            "step": 3,
+            "tool": "package_into_gov_proposal",
+            "description": "Embed the MsgDeleteSchedule in a DAO governance proposal explaining why the schedule should be removed."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the proposal with the DAO authority and broadcast it."
+        }
+    ],
+    "outcome_checks": [
+        "Query the Cron schedule registry after the proposal executes and confirm that no schedule with name \"protocol_update\" is present.",
+        "Ensure no further contract executions are emitted for the removed schedule at its former cadence."
+    ]
+}

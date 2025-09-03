@@ -1,0 +1,106 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Fetches the Cron-module parameters so the script can read the DAO (security) address that must be placed in the authority field of every schedule.",
+            "function": "query_cron_params(chain_id=\"neutron-1\", node=\"https://rpc-kralum.neutron.org:443\")",
+            "usage": "authority = query_cron_params()[\"security_address\"]"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Creates a plain JavaScript object that encodes a CosmWasm /cosmwasm.wasm.v1.MsgExecuteContract message ready to be included in a batch.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds = [])",
+            "usage": "const call_1 = constructTxWasmExecute(sender, contract1, msgPayload1);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Packages the three execute-contract messages together with timing and authority data into an amino-JSON MsgAddSchedule object.",
+            "function": "build_msg_add_schedule(authority, name, period, msgs, execution_stage=\"EXECUTION_STAGE_END_BLOCKER\")",
+            "usage": "schedule_msg = build_msg_add_schedule(authority, \"protocol_update\", 100800, [call_1, call_2, call_3])"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Generates a governance proposal JSON file (proposal.json) that can be submitted on-chain via the standard gov submit-proposal flow.",
+            "function": "construct_param_change_proposal(new_security_address, deposit=\"10000000untrn\", output_path=\"proposal.json\")",
+            "usage": "proposal_file = construct_param_change_proposal(authority)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Signs and broadcasts the prepared governance transaction to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "tx_hash = sign_and_broadcast_tx(tx, wallet, client)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Polls the chain at regular intervals until the governance proposal enters the PASSED state or errors out.",
+            "function": "wait_for_voting_result(proposal_id, chain_id=\"neutron-1\", node=\"https://rpc-kralum.neutron.org:443\", poll_interval=15, max_attempts=800)",
+            "usage": "status = wait_for_voting_result(proposal_id)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Queries the Cron module to confirm that the newly-added schedule named \"protocol_update\" is present on-chain.",
+            "function": "query_cron_schedule(schedule_name, node=\"https://rpc.neutron.org:443\")",
+            "usage": "schedule_info = query_cron_schedule(\"protocol_update\")"
+        }
+    ],
+    "frontend": [
+        "const call_1 = constructTxWasmExecute(sender, contract1, msgPayload1);//step: 2 Tool: construct_msg_execute_contract Desciption: Build three individual `MsgExecuteContract` objects (placeholders `call_1`, `call_2`, `call_3`) with desired contract addresses/msgs."
+    ],
+    "backend": [
+        "authority = query_cron_params()[\"security_address\"]#step: 1 Tool: get_governance_authority Desciption: Retrieve the Main DAO address that must appear in the `authority` field of Cron messages.",
+        "schedule_msg = build_msg_add_schedule(authority, \"protocol_update\", 100800, [call_1, call_2, call_3])#step: 3 Tool: construct_msg_add_schedule Desciption: Assemble a `MsgAddSchedule` with fields: `{ authority, name: \"protocol_update\", period: 100800, msgs: [call_1, call_2, call_3] }`.",
+        "proposal_file = construct_param_change_proposal(authority)#step: 4 Tool: wrap_into_governance_proposal Desciption: Embed the `MsgAddSchedule` inside a message-based governance proposal JSON (type `/cosmos.gov.v1.MsgSubmitProposal`).",
+        "tx_hash = sign_and_broadcast_tx(tx, wallet, client)#step: 5 Tool: submit_gov_proposal Desciption: Broadcast the proposal with `neutrond tx gov submit-proposal proposal.json --from=<proposer>`.",
+        "status = wait_for_voting_result(proposal_id)#step: 6 Tool: wait_for_voting_result Desciption: Monitor proposal status until it reaches `PASSED`.",
+        "schedule_info = query_cron_schedule(\"protocol_update\")#step: 7 Tool: query_cron_schedule Desciption: After passage, query `protocol_update` schedule to confirm registration."
+    ],
+    "intent": "Create a multi-message cron schedule \"protocol_update\" that executes three contract calls every 100 800 blocks",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_governance_authority",
+            "description": "Retrieve the Main DAO address that must appear in the `authority` field of Cron messages."
+        },
+        {
+            "step": 2,
+            "tool": "construct_msg_execute_contract",
+            "description": "Build three individual `MsgExecuteContract` objects (placeholders `call_1`, `call_2`, `call_3`) with desired contract addresses/msgs."
+        },
+        {
+            "step": 3,
+            "tool": "construct_msg_add_schedule",
+            "description": "Assemble a `MsgAddSchedule` with fields: `{ authority, name: \"protocol_update\", period: 100800, msgs: [call_1, call_2, call_3] }`."
+        },
+        {
+            "step": 4,
+            "tool": "wrap_into_governance_proposal",
+            "description": "Embed the `MsgAddSchedule` inside a message-based governance proposal JSON (type `/cosmos.gov.v1.MsgSubmitProposal`)."
+        },
+        {
+            "step": 5,
+            "tool": "submit_gov_proposal",
+            "description": "Broadcast the proposal with `neutrond tx gov submit-proposal proposal.json --from=<proposer>`."
+        },
+        {
+            "step": 6,
+            "tool": "wait_for_voting_result",
+            "description": "Monitor proposal status until it reaches `PASSED`."
+        },
+        {
+            "step": 7,
+            "tool": "query_cron_schedule",
+            "description": "After passage, query `protocol_update` schedule to confirm registration."
+        }
+    ],
+    "outcome_checks": [
+        "Governance proposal final status is `PASSED`.",
+        "`protocol_update` appears in `neutrond query cron schedule protocol_update` with `period = 100800` and `msgs.length = 3`."
+    ]
+}

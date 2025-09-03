@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 builds a Param-Change proposal JSON file that sets a new Cron module security_address and saves it to disk.",
+            "code": "import json\n\n\ndef construct_param_change_proposal(new_security_address: str, deposit: str = \"10000000untrn\", output_path: str = \"proposal.json\") -> str:\n    \"\"\"Generate a Param-Change proposal file that updates the Cron module's security_address parameter.\"\"\"\n\n    proposal = {\n        \"title\": \"Update Cron security_address\",\n        \"description\": f\"Updates Cron module security_address param to {new_security_address}.\",\n        \"changes\": [\n            {\n                \"subspace\": \"cron\",\n                \"key\": \"SecurityAddress\",\n                \"value\": f\"\\\"{new_security_address}\\\"\"\n            }\n        ],\n        \"deposit\": deposit\n    }\n\n    try:\n        with open(output_path, \"w\", encoding=\"utf-8\") as fp:\n            json.dump(proposal, fp, indent=2)\n    except IOError as err:\n        raise RuntimeError(f\"Could not write proposal file: {err}\") from err\n\n    return output_path",
+            "usage": "proposal_path = construct_param_change_proposal(\"neutron1guard...\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 wraps the neutrond CLI call that submits the generated proposal to on-chain governance and returns the resulting proposal_id.",
+            "code": "import json, subprocess\n\n\ndef submit_gov_proposal(proposal_file: str, from_key: str, chain_id: str = \"neutron-1\", node: str = \"https://rpc-kralum.neutron.org:443\", fees: str = \"2000untrn\", gas: str = \"400000\") -> str:\n    \"\"\"Submits the param-change proposal and extracts the proposal_id from the tx response.\"\"\"\n\n    cmd = [\n        \"neutrond\", \"tx\", \"gov\", \"submit-proposal\", \"param-change\", proposal_file,\n        \"--from\", from_key,\n        \"--chain-id\", chain_id,\n        \"--node\", node,\n        \"--fees\", fees,\n        \"--gas\", gas,\n        \"-y\",\n        \"--output\", \"json\"\n    ]\n\n    try:\n        completed = subprocess.run(cmd, check=True, capture_output=True, text=True)\n        tx_response = json.loads(completed.stdout)\n        proposal_id = None\n        for log in tx_response.get(\"logs\", []):\n            for event in log.get(\"events\", []):\n                if event.get(\"type\") == \"submit_proposal\":\n                    for attr in event.get(\"attributes\", []):\n                        if attr.get(\"key\") == \"proposal_id\":\n                            proposal_id = attr.get(\"value\")\n                            break\n        if not proposal_id:\n            raise RuntimeError(\"Proposal submitted but proposal_id not found in transaction logs.\")\n        return proposal_id\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"Failed to submit proposal: {err.stderr}\") from err",
+            "usage": "proposal_id = submit_gov_proposal(proposal_path, \"validator\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 continuously polls the governance module until the proposal reaches the PASSED state or fails/times out.",
+            "code": "import json, subprocess, time\n\n\ndef wait_for_voting_result(proposal_id: str, chain_id: str = \"neutron-1\", node: str = \"https://rpc-kralum.neutron.org:443\", poll_interval: int = 15, max_attempts: int = 800) -> str:\n    \"\"\"Polls proposal status until finalised (PASSED/REJECTED) or timeout.\"\"\"\n\n    attempts = 0\n    while attempts < max_attempts:\n        attempts += 1\n        proc = subprocess.run([\n            \"neutrond\", \"query\", \"gov\", \"proposal\", str(proposal_id),\n            \"--chain-id\", chain_id,\n            \"--node\", node,\n            \"--output\", \"json\"\n        ], capture_output=True, text=True)\n\n        if proc.returncode != 0:\n            raise RuntimeError(proc.stderr)\n\n        status = json.loads(proc.stdout).get(\"status\")\n        print(f\"[poll] proposal {proposal_id} status: {status}\")\n\n        if status == \"PROPOSAL_STATUS_PASSED\":\n            return status\n        if status in (\"PROPOSAL_STATUS_REJECTED\", \"PROPOSAL_STATUS_FAILED\", \"PROPOSAL_STATUS_ABORTED\"):\n            raise RuntimeError(f\"Proposal {proposal_id} ended with status {status}\")\n\n        time.sleep(poll_interval)\n\n    raise TimeoutError(\"Exceeded maximum attempts while waiting for proposal to pass.\")",
+            "usage": "wait_for_voting_result(proposal_id)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 re-queries the Cron params to confirm that the security_address was updated as expected.",
+            "code": "import json, subprocess\n\n\ndef query_cron_params(chain_id: str = \"neutron-1\", node: str = \"https://rpc-kralum.neutron.org:443\") -> dict:\n    \"\"\"Fetches the current Cron module parameters.\"\"\"\n\n    proc = subprocess.run([\n        \"neutrond\", \"query\", \"cron\", \"params\",\n        \"--chain-id\", chain_id,\n        \"--node\", node,\n        \"--output\", \"json\"\n    ], capture_output=True, text=True)\n\n    if proc.returncode != 0:\n        raise RuntimeError(proc.stderr)\n\n    return json.loads(proc.stdout).get(\"params\", {})\n\n\ndef verify_security_address(expected: str, chain_id: str = \"neutron-1\", node: str = \"https://rpc-kralum.neutron.org:443\") -> bool:\n    \"\"\"Validates that security_address equals the expected value.\"\"\"\n\n    params = query_cron_params(chain_id, node)\n    actual = params.get(\"security_address\")\n    if actual == expected:\n        print(\"\u2705 Cron security_address updated successfully.\")\n        return True\n    raise ValueError(f\"security_address mismatch: expected {expected}, got {actual}\")",
+            "usage": "verify_security_address(\"neutron1guard...\")"
+        }
+    ]
+}

@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "query_cron_params() fetches the current Cron-module configuration so the DAO\u2019s on-chain authority address can be read.",
+            "function": "query_cron_params(chain_id=\"neutron-1\", node=\"https://rpc-kralum.neutron.org:443\")",
+            "usage": "authority = query_cron_params().get(\"authority\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "construct_param_change_proposal(...) creates a JSON file that encodes the desired MsgUpdateParams parameter changes for Cron.",
+            "function": "construct_param_change_proposal(new_security_address, deposit=\"10000000untrn\", output_path=\"proposal.json\")",
+            "usage": "proposal_path = construct_param_change_proposal(\"neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "build_dao_proposal(...) wraps the MsgUpdateParams object inside a CW-DAO governance proposal structure.",
+            "function": "build_dao_proposal(msg_update_params, title, description)",
+            "usage": "dao_msg = build_dao_proposal(msg_update_params, \"Cron Param Update\", \"Increase max_schedules to 1000\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "sign_and_broadcast_tx(...) signs the ready transaction with the DAO wallet and broadcasts it to the Neutron chain.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "tx_result = sign_and_broadcast_tx(tx, dao_wallet, client)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "authority = query_cron_params().get(\"authority\")#step: 1 Tool: get_dao_authority_address Desciption: Retrieve the DAO authority address to update module params.",
+        "proposal_path = construct_param_change_proposal(\"neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\")#step: 2 Tool: build_msg_update_params Desciption: Construct MsgUpdateParams with the new desired parameters (e.g., max_schedules=1,000, default_gas_limit, or other Cron tunables).",
+        "dao_msg = build_dao_proposal(msg_update_params, \"Cron Param Update\", \"Increase max_schedules to 1000\")#step: 3 Tool: package_into_gov_proposal Desciption: Wrap MsgUpdateParams in a governance proposal explaining each parameter change.",
+        "tx_result = sign_and_broadcast_tx(tx, dao_wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: DAO signs and broadcasts the proposal to the chain."
+    ],
+    "intent": "Submit a proposal to update Cron module parameters",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_dao_authority_address",
+            "description": "Retrieve the DAO authority address to update module params."
+        },
+        {
+            "step": 2,
+            "tool": "build_msg_update_params",
+            "description": "Construct MsgUpdateParams with the new desired parameters (e.g., max_schedules=1,000, default_gas_limit, or other Cron tunables)."
+        },
+        {
+            "step": 3,
+            "tool": "package_into_gov_proposal",
+            "description": "Wrap MsgUpdateParams in a governance proposal explaining each parameter change."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "DAO signs and broadcasts the proposal to the chain."
+        }
+    ],
+    "outcome_checks": [
+        "After execution, query `neutron/cron/params` and confirm the on-chain parameters match the proposal.",
+        "Ensure existing schedules still execute correctly under the new parameters."
+    ]
+}

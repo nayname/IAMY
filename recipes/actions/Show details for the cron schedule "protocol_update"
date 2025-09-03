@@ -1,0 +1,12 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "This Python utility queries Neutron\u2019s cron module to retrieve full metadata for the schedule named \u201cprotocol_update\u201d by invoking the neutrond CLI and returning the parsed JSON response.",
+            "code": "import json\nimport subprocess\nfrom typing import Dict\n\n\ndef query_cron_show_schedule(schedule_name: str, node: str = \"https://rpc.neutron.org:26657\") -> Dict:\n    \"\"\"Fetch cron schedule metadata from a Neutron node.\n\n    Args:\n        schedule_name (str): The name of the cron schedule to query.\n        node (str): Optional RPC node URL. Defaults to a public Neutron RPC.\n\n    Returns:\n        Dict: Parsed JSON data describing the schedule.\n\n    Raises:\n        RuntimeError: If the neutrond binary is missing or the command fails.\n    \"\"\"\n    # Construct neutrond CLI command\n    cmd = [\n        \"neutrond\", \"query\", \"cron\", \"show-schedule\", schedule_name,\n        \"--node\", node,\n        \"--output\", \"json\"\n    ]\n\n    try:\n        completed = subprocess.run(cmd, check=True, capture_output=True, text=True)\n    except FileNotFoundError as err:\n        raise RuntimeError(\"'neutrond' CLI not found. Install it and ensure it is in your PATH.\") from err\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"CLI returned error while querying schedule '{schedule_name}': {err.stderr}\") from err\n\n    # Parse the JSON output\n    try:\n        return json.loads(completed.stdout)\n    except json.JSONDecodeError as err:\n        raise RuntimeError(\"Failed to decode neutrond JSON output.\") from err\n\n\nif __name__ == \"__main__\":\n    # Example invocation\n    schedule_meta = query_cron_show_schedule(\"protocol_update\")\n    print(json.dumps(schedule_meta, indent=2))",
+            "usage": "metadata = query_cron_show_schedule('protocol_update')"
+        }
+    ]
+}

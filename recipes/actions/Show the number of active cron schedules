@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that calls the Neutron CLI (`neutrond query cron schedules`) in a paginated loop and returns the complete `schedules` array.",
+            "code": "import json\nimport subprocess\nfrom typing import List, Dict\n\n\ndef query_all_cron_schedules(limit: int = 1000) -> List[Dict]:\n    \"\"\"Return every cron schedule on-chain.\n\n    Args:\n        limit: Max items per page (must be \u2264 CLI max-limit).\n\n    Returns:\n        A list with all schedule objects.\n    \"\"\"\n    schedules: List[Dict] = []\n    next_key: str | None = \"\"\n\n    try:\n        while True:\n            # Build CLI command\n            cmd = [\n                \"neutrond\", \"query\", \"cron\", \"schedules\",\n                \"--limit\", str(limit), \"--output\", \"json\"\n            ]\n            if next_key:\n                cmd += [\"--page-key\", next_key]\n\n            # Execute the command and parse stdout\n            raw = subprocess.check_output(cmd, text=True)\n            data = json.loads(raw)\n\n            # Merge current page\n            schedules.extend(data.get(\"schedules\", []))\n\n            # Prepare for the next loop\n            next_key = data.get(\"pagination\", {}).get(\"next_key\")\n            if not next_key:\n                break\n    except FileNotFoundError:\n        raise RuntimeError(\"`neutrond` CLI not found \u2013 please install or add to PATH.\")\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"CLI call failed: {err.stderr or err}\")\n    except json.JSONDecodeError as err:\n        raise RuntimeError(f\"Unexpected CLI output \u2013 JSON decode error: {err}\")\n\n    return schedules",
+            "usage": "all_schedules = query_all_cron_schedules()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 adds a tiny utility that counts how many schedules were returned.",
+            "code": "def count_array_elements(items: list) -> int:\n    \"\"\"Safely count array length with a sanity check.\"\"\"\n    if items is None:\n        raise ValueError(\"Input is None \u2013 expected a list.\")\n    if not isinstance(items, list):\n        raise TypeError(f\"Expected list, got {type(items)}\")\n    return len(items)",
+            "usage": "schedule_count = count_array_elements(all_schedules)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 is a simple print helper to display the result to the operator or log aggregator.",
+            "code": "def display_result(count: int) -> None:\n    \"\"\"Print the final schedule count in the required format.\"\"\"\n    if count < 0:\n        raise ValueError(\"Count cannot be negative.\")\n    print(f\"Active schedules: {count}\")",
+            "usage": "display_result(schedule_count)"
+        }
+    ]
+}

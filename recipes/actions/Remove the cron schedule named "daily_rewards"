@@ -1,0 +1,40 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Creates the Cron module MsgRemoveSchedule message that will later be wrapped in a DAO proposal.",
+            "code": "export const constructMsgRemoveSchedule = (authority, name = \"daily_rewards\") => {\n  if (!authority) {\n    throw new Error(\"Authority (DAO address) is required\");\n  }\n\n  // EncodeObject compatible with CosmJS\n  return {\n    typeUrl: \"/neutron.cron.MsgRemoveSchedule\",\n    value: {\n      authority,\n      name,\n    },\n  };\n};",
+            "usage": "const removeScheduleMsg = constructMsgRemoveSchedule(daoAddress, \"daily_rewards\");"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Wraps the MsgRemoveSchedule into a cw-dao proposal using the proposal-single module\u2019s `propose` endpoint.",
+            "code": "import { EncodeObject, Registry } from \"@cosmjs/proto-signing\";\nimport { toUtf8 } from \"@cosmjs/encoding\";\n\n/**\n * Creates a MsgExecuteContract that submits a proposal to the DAO proposal module.\n * @param {Registry} registry               \u2013 Proto registry holding Neutron types.\n * @param {EncodeObject[]} msgs            \u2013 Array of on-chain messages to execute if the proposal passes.\n * @param {string} proposalModuleAddress   \u2013 Address of the DAO's proposal-single module.\n * @param {string} title                   \u2013 Proposal title.\n * @param {string} description             \u2013 Proposal description.\n * @returns {EncodeObject}                 \u2013 MsgExecuteContract ready to be signed & broadcast.\n */\nexport const wrapInDaoProposal = (\n  registry,\n  msgs,\n  proposalModuleAddress,\n  title = \"Remove daily cron schedule\",\n  description = \"This proposal removes the 'daily_rewards' cron schedule.\"\n) => {\n  if (!proposalModuleAddress) throw new Error(\"proposalModuleAddress is required\");\n  if (!msgs.length) throw new Error(\"At least one message must be supplied\");\n\n  // Convert each EncodeObject -> stargate format expected by cw-dao\n  const encodedMsgs = msgs.map((msg) => {\n    const binary = registry.encode(msg);\n    return {\n      stargate: {\n        type_url: msg.typeUrl,\n        value: Buffer.from(binary).toString(\"base64\"),\n      },\n    };\n  });\n\n  // cw-proposal-single JSON payload\n  const proposeMsg = {\n    propose: {\n      title,\n      description,\n      msgs: encodedMsgs,\n    },\n  };\n\n  // Wrap into MsgExecuteContract (CosmWasm)\n  return {\n    typeUrl: \"/cosmwasm.wasm.v1.MsgExecuteContract\",\n    value: {\n      sender: \"\",                // filled automatically just before signing\n      contract: proposalModuleAddress,\n      msg: toUtf8(JSON.stringify(proposeMsg)),\n      funds: [],\n    },\n  };\n};",
+            "usage": "const execMsg = wrapInDaoProposal(registry, [removeScheduleMsg], proposalModule, \"Remove daily_rewards schedule\", \"Deletes the obsolete daily reward distribution.\");"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Signs and broadcasts the proposal transaction through the user\u2019s Keplr wallet.",
+            "code": "import { SigningStargateClient } from \"@cosmjs/stargate\";\n\n/**\n * Signs & broadcasts a DAO proposal using Keplr.\n */\nexport const signAndBroadcastTx = async (\n  executeMsg,\n  rpcEndpoint = \"https://rpc-kralum.neutron.org\",\n  chainId = \"neutron-1\",\n  fee = \"auto\"\n) => {\n  const { keplr } = window;\n  if (!keplr) throw new Error(\"Keplr wallet is not installed\");\n\n  // Enable chain & fetch signer\n  await keplr.enable(chainId);\n  const offlineSigner = keplr.getOfflineSigner(chainId);\n  const [account] = await offlineSigner.getAccounts();\n\n  // Patch sender field now that we know the address\n  executeMsg.value.sender = account.address;\n\n  // Broadcast\n  const client = await SigningStargateClient.connectWithSigner(rpcEndpoint, offlineSigner);\n  const res = await client.signAndBroadcast(account.address, [executeMsg], fee);\n  if (res.code !== 0) {\n    throw new Error(`Broadcast failed: ${res.rawLog}`);\n  }\n  return res.transactionHash;\n};",
+            "usage": "const txHash = await signAndBroadcastTx(execMsg);\nconsole.log(`Proposal submitted in tx ${txHash}`);"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Continuously polls the DAO proposal module until the proposal status becomes \u201cpassed\u201d (and executed).",
+            "code": "import asyncio\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\n\nNETWORK = NetworkConfig(\n    chain_id=\"neutron-1\",\n    url=\"https://rpc-kralum.neutron.org\",\n)\nclient = LedgerClient(NETWORK)\n\nasync def monitor_proposal_status(proposal_module: str, proposal_id: int, poll: int = 10):\n    \"\"\"Waits until the proposal passes & is executed.\"\"\"\n    while True:\n        try:\n            state = client.query_contract_state_smart(\n                proposal_module,\n                {\"proposal\": {\"proposal_id\": proposal_id}}\n            )\n            status = state.get(\"proposal\", {}).get(\"status\")\n            if status in (\"passed\", \"executed\"):\n                return state\n            print(f\"Proposal {proposal_id} still {status}; sleeping {poll}s \u2026\")\n        except Exception as err:\n            print(f\"Error while querying proposal: {err}\")\n        await asyncio.sleep(poll)",
+            "usage": "await monitor_proposal_status(proposal_module_addr, new_proposal_id)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Queries the Cron module to confirm the `daily_rewards` schedule has been deleted (expects a NOT_FOUND error).",
+            "code": "import subprocess\n\ndef schedule_removed(name: str) -> bool:\n    \"\"\"Returns True only if the schedule no longer exists.\"\"\"\n    try:\n        # neutrond must be in $PATH and already configured for neutron-1\n        out = subprocess.run(\n            [\n                \"neutrond\",\n                \"query\",\n                \"cron\",\n                \"show-schedule\",\n                name,\n                \"--output=json\"\n            ],\n            capture_output=True,\n            text=True,\n            check=True,\n        )\n        # If the command succeeds, the schedule is still present\n        print(f\"Schedule still exists: {out.stdout}\")\n        return False\n    except subprocess.CalledProcessError as err:\n        # Cron module returns non-zero + \"not found\" when the schedule is gone\n        if \"not found\" in err.stderr.lower():\n            return True\n        raise",
+            "usage": "assert schedule_removed(\"daily_rewards\"), \"Schedule was NOT removed\""
+        }
+    ]
+}

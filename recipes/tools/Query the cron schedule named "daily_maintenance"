@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Queries the Neutron Cron module for the schedule called \u201cdaily_maintenance\u201d and returns its JSON definition.",
+            "function": "query_cron_schedule(schedule_name, node=\"https://rpc.neutron.org:443\")",
+            "usage": "schedule = query_cron_schedule(\"daily_maintenance\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Extracts the last_execution_height from the schedule JSON (name, period and msgs remain directly accessible on the same object).",
+            "function": "extract_last_execution_height(schedule_data)",
+            "usage": "last_height = extract_last_execution_height(schedule)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "schedule = query_cron_schedule(\"daily_maintenance\")#step: 1 Tool: query_cron_schedule Desciption: Invoke `neutrond query cron schedule daily_maintenance` (or REST `/neutron/cron/schedule/daily_maintenance`).",
+        "last_height = extract_last_execution_height(schedule)#step: 2 Tool: parse_json_response Desciption: Parse the returned schedule details: `name`, `period`, `msgs`, `last_execution_height`."
+    ],
+    "intent": "Query the cron schedule named \"daily_maintenance\"",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "query_cron_schedule",
+            "description": "Invoke `neutrond query cron schedule daily_maintenance` (or REST `/neutron/cron/schedule/daily_maintenance`)."
+        },
+        {
+            "step": 2,
+            "tool": "parse_json_response",
+            "description": "Parse the returned schedule details: `name`, `period`, `msgs`, `last_execution_height`."
+        }
+    ],
+    "outcome_checks": [
+        "Schedule `name` equals `daily_maintenance`.",
+        "`period` and at least one `msgs` entry are present."
+    ]
+}

@@ -1,0 +1,132 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Compiles the CosmWasm project and returns the path of the optimized .wasm binary.",
+            "function": "compile_wasm_contract(contract_dir)",
+            "usage": "optimized_wasm = compile_wasm_contract(\"./contracts/counter\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Creates (or loads) a local CosmoPark key and tops it up with faucet NTRN if necessary.",
+            "function": "get_local_chain_account(key_name='cosmopark', faucet_url='http://localhost:4500/credit')",
+            "usage": "acct = get_local_chain_account()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Builds a MsgStoreCode transaction that uploads the compiled wasm to the chain.",
+            "function": "build_store_code_tx(client, wasm_path, memo='Upload contract')",
+            "usage": "store_tx = build_store_code_tx(client, optimized_wasm)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the store-code transaction with the local wallet and broadcasts it to the node.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "store_resp = sign_and_broadcast_tx(store_tx, wallet, client)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Parses the transaction logs to obtain the newly assigned code_id.",
+            "function": "extract_code_id_from_tx(response)",
+            "usage": "code_id = extract_code_id_from_tx(store_resp)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Creates a MsgInstantiateContract transaction using the retrieved code_id and init parameters.",
+            "function": "build_instantiate_tx(client, code_id, init_msg, label, admin=None)",
+            "usage": "instantiate_tx = build_instantiate_tx(client, code_id, {\"count\": 0}, \"counter\", admin=acct['address'])"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Signs and broadcasts the instantiate transaction to create the contract instance.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "instantiate_resp = sign_and_broadcast_tx(instantiate_tx, wallet, client)"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Extracts the freshly instantiated contract\u2019s address from the instantiate receipt.",
+            "function": "extract_contract_address(response)",
+            "usage": "contract_addr = extract_contract_address(instantiate_resp)"
+        },
+        {
+            "step": 9,
+            "label": "backend",
+            "introduction": "Queries the contract to verify it responds as expected after deployment.",
+            "function": "query_contract_state(client, contract_address, query_msg)",
+            "usage": "state = query_contract_state(client, contract_addr, {\"get_count\": {}})"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "optimized_wasm = compile_wasm_contract(\"./contracts/counter\")#step: 1 Tool: compile_wasm_contract Desciption: Run `cargo wasm && wasm-opt` (or `cargo run-script optimize`) in the contract directory to produce an optimized `.wasm` binary.",
+        "acct = get_local_chain_account()#step: 2 Tool: get_local_chain_account Desciption: Load or create a local key (e.g., `cosmopark` default) and make sure it has test NTRN from the built-in faucet.",
+        "store_tx = build_store_code_tx(client, optimized_wasm)#step: 3 Tool: construct_tx_wasm_store Desciption: Create a `wasm store` transaction uploading the optimized contract binary.",
+        "store_resp = sign_and_broadcast_tx(store_tx, wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the store transaction with the local key and broadcast it.",
+        "code_id = extract_code_id_from_tx(store_resp)#step: 5 Tool: parse_code_id_from_receipt Desciption: Extract the new `code_id` from the transaction logs.",
+        "instantiate_tx = build_instantiate_tx(client, code_id, {\"count\": 0}, \"counter\", admin=acct['address'])#step: 6 Tool: construct_tx_wasm_instantiate Desciption: Build a `wasm instantiate` transaction using the retrieved code ID, an init msg, label, and (optionally) an admin address.",
+        "instantiate_resp = sign_and_broadcast_tx(instantiate_tx, wallet, client)#step: 7 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the instantiate transaction.",
+        "contract_addr = extract_contract_address(instantiate_resp)#step: 8 Tool: parse_contract_address_from_receipt Desciption: Capture the newly created contract address from the instantiate logs.",
+        "state = query_contract_state(client, contract_addr, {\"get_count\": {}})#step: 9 Tool: query_contract_state Desciption: Perform a simple `wasm query` against the contract to confirm it responds correctly."
+    ],
+    "intent": "Compile and deploy the Neutron example contract to the local CosmoPark testnet",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "compile_wasm_contract",
+            "description": "Run `cargo wasm && wasm-opt` (or `cargo run-script optimize`) in the contract directory to produce an optimized `.wasm` binary."
+        },
+        {
+            "step": 2,
+            "tool": "get_local_chain_account",
+            "description": "Load or create a local key (e.g., `cosmopark` default) and make sure it has test NTRN from the built-in faucet."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_wasm_store",
+            "description": "Create a `wasm store` transaction uploading the optimized contract binary."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the store transaction with the local key and broadcast it."
+        },
+        {
+            "step": 5,
+            "tool": "parse_code_id_from_receipt",
+            "description": "Extract the new `code_id` from the transaction logs."
+        },
+        {
+            "step": 6,
+            "tool": "construct_tx_wasm_instantiate",
+            "description": "Build a `wasm instantiate` transaction using the retrieved code ID, an init msg, label, and (optionally) an admin address."
+        },
+        {
+            "step": 7,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the instantiate transaction."
+        },
+        {
+            "step": 8,
+            "tool": "parse_contract_address_from_receipt",
+            "description": "Capture the newly created contract address from the instantiate logs."
+        },
+        {
+            "step": 9,
+            "tool": "query_contract_state",
+            "description": "Perform a simple `wasm query` against the contract to confirm it responds correctly."
+        }
+    ],
+    "outcome_checks": [
+        "A valid `code_id` was generated and stored on-chain.",
+        "The instantiate transaction succeeded and yielded a contract address.",
+        "A test query returns expected default state, proving the contract is live on the local net."
+    ]
+}

@@ -1,0 +1,92 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "ensureWalletConnected enables the Neutron network in the user\u2019s Keplr/Leap extension and returns an active OfflineSigner, confirming the wallet session.",
+            "function": "ensureWalletConnected()",
+            "usage": "const signer = await ensureWalletConnected();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "getWalletAddress fetches the first account from the signer and returns the depositor\u2019s Neutron bech32 address.",
+            "function": "getWalletAddress(signer)",
+            "usage": "const sender = await getWalletAddress(signer);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "validateAddressFormat calls a backend validator to ensure the supplied contract address is a correctly-formatted Neutron CosmWasm address.",
+            "function": "validateAddressFormat(address)",
+            "usage": "await validateAddressFormat(contractAddress);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "convertToBaseUnits converts a human-readable NTRN amount into its micro-denomination (untrn) string for on-chain use.",
+            "function": "convertToBaseUnits(amount, decimals)",
+            "usage": "const uNtrn = convertToBaseUnits(100);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "constructTxWasmExecute builds a MsgExecuteContract object with the `{ deposit: {} }` payload and attaches the specified untrn funds.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds)",
+            "usage": "const execMsg = constructTxWasmExecute(sender, contractAddress, { deposit: {} }, [{ amount: uNtrn, denom: 'untrn' }]);"
+        },
+        {
+            "step": 6,
+            "label": "frontend",
+            "introduction": "signAndBroadcast signs the prepared execute message with the user\u2019s wallet and sends it to the backend relayer for broadcasting to the Neutron chain.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo)",
+            "usage": "const txHash = await signAndBroadcast(signer, sender, [execMsg], 'auto');"
+        }
+    ],
+    "frontend": [
+        "const signer = await ensureWalletConnected();//step: 1 Tool: ensure_wallet_connected Desciption: Confirm the user\u2019s wallet session is active.",
+        "const sender = await getWalletAddress(signer);//step: 2 Tool: get_sender_address Desciption: Retrieve the depositor\u2019s Neutron address.",
+        "await validateAddressFormat(contractAddress);//step: 3 Tool: validate_contract_address Desciption: Ensure the provided contract address is a valid Neutron CosmWasm address.",
+        "const uNtrn = convertToBaseUnits(100);//step: 4 Tool: convert_to_base_units Desciption: Convert 100 NTRN to 100 000 000 untrn.",
+        "const execMsg = constructTxWasmExecute(sender, contractAddress, { deposit: {} }, [{ amount: uNtrn, denom: 'untrn' }]);//step: 5 Tool: construct_tx_wasm_execute Desciption: Create a `MsgExecuteContract` with `{ \"deposit\": {} }` as the message payload and attach 100 000 000 untrn as funds.",
+        "const txHash = await signAndBroadcast(signer, sender, [execMsg], 'auto');//step: 6 Tool: sign_and_broadcast_tx Desciption: Prompt the wallet to sign and broadcast the execution transaction."
+    ],
+    "backend": [],
+    "intent": "Deposit 100 NTRN into a smart contract",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "ensure_wallet_connected",
+            "description": "Confirm the user\u2019s wallet session is active."
+        },
+        {
+            "step": 2,
+            "tool": "get_sender_address",
+            "description": "Retrieve the depositor\u2019s Neutron address."
+        },
+        {
+            "step": 3,
+            "tool": "validate_contract_address",
+            "description": "Ensure the provided contract address is a valid Neutron CosmWasm address."
+        },
+        {
+            "step": 4,
+            "tool": "convert_to_base_units",
+            "description": "Convert 100 NTRN to 100 000 000 untrn."
+        },
+        {
+            "step": 5,
+            "tool": "construct_tx_wasm_execute",
+            "description": "Create a `MsgExecuteContract` with `{ \"deposit\": {} }` as the message payload and attach 100 000 000 untrn as funds."
+        },
+        {
+            "step": 6,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Prompt the wallet to sign and broadcast the execution transaction."
+        }
+    ],
+    "outcome_checks": [
+        "Transaction confirms successfully on-chain.",
+        "A follow-up query to the contract\u2019s state or an emitted event shows the user\u2019s deposit balance increased by 100 NTRN."
+    ]
+}

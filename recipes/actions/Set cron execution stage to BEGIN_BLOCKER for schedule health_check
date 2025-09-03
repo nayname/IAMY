@@ -1,0 +1,54 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Queries the current \\\"health_check\\\" cron schedule so we can reuse its period and msgs.",
+            "code": "import requests\n\n\ndef query_cron_schedule(rest_endpoint: str, schedule_name: str) -> dict:\n    \"\"\"Fetch an existing cron schedule from Neutron's REST API.\"\"\"\n    try:\n        url = f\"{rest_endpoint}/neutron/cron/schedules/{schedule_name}\"\n        response = requests.get(url, timeout=10)\n        response.raise_for_status()\n        data = response.json()\n        # The schedule is usually wrapped under the `schedule` key, but we fall back just in case.\n        return data.get(\"schedule\", data)\n    except requests.RequestException as err:\n        raise RuntimeError(f\"Failed to query schedule: {err}\") from err\n\n\n# Manual test\nif __name__ == \"__main__\":\n    schedule = query_cron_schedule(\"https://rest.neutron.org\", \"health_check\")\n    print(schedule)",
+            "usage": "schedule = query_cron_schedule(REST_ENDPOINT, 'health_check')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Builds a MsgRemoveSchedule that removes the existing cron schedule via governance.",
+            "code": "def construct_msg_remove_schedule(schedule_name: str, authority: str) -> dict:\n    \"\"\"Return a MsgRemoveSchedule ready for inclusion in a proposal.\"\"\"\n    return {\n        \"@type\": \"/neutron.cron.MsgRemoveSchedule\",\n        \"authority\": authority,\n        \"name\": schedule_name,\n    }",
+            "usage": "remove_msg = construct_msg_remove_schedule('health_check', GOV_AUTHORITY_ADDR)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Re-creates the cron schedule but forces it to run in the BEGIN_BLOCKER stage.",
+            "code": "def construct_msg_add_schedule(schedule_name: str, period: int, msgs: list, authority: str) -> dict:\n    \"\"\"Return a MsgAddSchedule that runs at BEGIN_BLOCKER.\"\"\"\n    return {\n        \"@type\": \"/neutron.cron.MsgAddSchedule\",\n        \"authority\": authority,\n        \"name\": schedule_name,\n        \"period\": str(period),              # protobuf JSON expects strings for integers\n        \"execution_stages\": [\"BEGIN_BLOCKER\"],\n        \"msgs\": msgs,\n    }",
+            "usage": "add_msg = construct_msg_add_schedule('health_check', schedule['period'], schedule['msgs'], GOV_AUTHORITY_ADDR)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Packs both cron messages into a single gov-proposal JSON file so they execute atomically.",
+            "code": "import json\n\n\ndef create_json_proposal_file(msgs: list, title: str, description: str, deposit: str, outfile: str = \"proposal.json\") -> str:\n    \"\"\"Writes a Neutron governance proposal JSON to disk.\"\"\"\n    proposal = {\n        \"title\": title,\n        \"description\": description,\n        \"deposit\": deposit,           # e.g. \"1000000untrn\"\n        \"messages\": msgs,\n    }\n    with open(outfile, \"w\", encoding=\"utf-8\") as fp:\n        json.dump(proposal, fp, indent=2)\n    return outfile",
+            "usage": "proposal_path = create_json_proposal_file([remove_msg, add_msg], 'Move health_check to BEGIN_BLOCKER', 'Updates execution_stage of the health_check cron job', '1000000untrn')"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Uses CosmJS + wallet signer to submit the proposal to the Main DAO contract.",
+            "code": "import { SigningCosmWasmClient } from \"@cosmjs/cosmwasm-stargate\";\n\nconst rpcEndpoint = \"https://rpc.neutron.org\";\nconst daoAddress = \"<MAIN_DAO_CONTRACT_ADDRESS>\"; // replace with actual address\n\n/**\n * Submit a proposal to the Main DAO.\n * @param {OfflineSigner} offlineSigner \u2013 Keplr/Leap signer already connected to the chain.\n * @param {string} sender \u2013 Bech32 address of the proposer.\n * @param {object} proposal \u2013 Parsed JSON { title, description, messages }.\n */\nexport const submitProposalToMainDao = async (offlineSigner, sender, proposal) => {\n  try {\n    const client = await SigningCosmWasmClient.connectWithSigner(rpcEndpoint, offlineSigner);\n\n    // Wrap the Cron messages in a CW-dao single-choice proposal\n    const execMsg = {\n      propose: {\n        msg: {\n          propose_single: {\n            title: proposal.title,\n            description: proposal.description,\n            msgs: proposal.messages,\n          },\n        },\n      },\n    };\n\n    const fee = \"auto\";\n    const result = await client.execute(sender, daoAddress, execMsg, fee);\n    return result;\n  } catch (error) {\n    console.error(\"Failed to submit proposal\", error);\n    throw error;\n  }\n};",
+            "usage": "const tx = await submitProposalToMainDao(offlineSigner, userAddr, proposalJson);"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Automatically votes YES on the proposal and polls until the chain marks it PASSED.",
+            "code": "import time\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import PrivateKey\n\n\ndef vote_and_wait_for_passage(rpc_endpoint: str, proposal_id: int, voter_priv_hex: str, chain_id: str, poll: int = 15):\n    \"\"\"Casts a YES vote, then waits until the proposal status is PASSED (or fails).\"\"\"\n    key = PrivateKey.from_hex(voter_priv_hex)\n    cfg = NetworkConfig(\n        chain_id=chain_id,\n        url=rpc_endpoint,\n        fee_denomination=\"untrn\",\n        fee_minimum_gas_price=0.025,\n    )\n    client = LedgerClient(cfg)\n\n    # VoteOptionYes = 1\n    client.gov_vote(proposal_id, key.address(), 1)\n    print(f\"YES vote submitted from {key.address()} on proposal {proposal_id}\")\n\n    while True:\n        status = client.gov_proposal(proposal_id)[\"status\"]\n        print(\"Current status:\", status)\n        if status == \"PROPOSAL_STATUS_PASSED\":\n            print(\"\ud83c\udf89 Proposal PASSED\")\n            return True\n        if status in (\"PROPOSAL_STATUS_REJECTED\", \"PROPOSAL_STATUS_FAILED\"):\n            raise RuntimeError(f\"Proposal ended with status {status}\")\n        time.sleep(poll)",
+            "usage": "vote_and_wait_for_passage(RPC_ENDPOINT, proposal_id, PRIVATE_KEY_HEX, 'neutron-1')"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Re-queries the schedule to ensure its execution_stage is now BEGIN_BLOCKER.",
+            "code": "def confirm_execution_stage(rest_endpoint: str, schedule_name: str) -> bool:\n    \"\"\"Returns True if the cron job now runs at BEGIN_BLOCKER.\"\"\"\n    schedule = query_cron_schedule(rest_endpoint, schedule_name)\n    return schedule.get(\"execution_stage\") == \"BEGIN_BLOCKER\"",
+            "usage": "assert confirm_execution_stage(REST_ENDPOINT, 'health_check')"
+        }
+    ]
+}

@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects to the browser wallet and returns both the signer and the creator\u2019s Neutron bech32 address.",
+            "function": "getOfflineSignerAndAddress(chainId='neutron-1')",
+            "usage": "const { address, signer } = await getOfflineSignerAndAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Verifies that the retrieved creator address is a valid Neutron Bech32 string.",
+            "function": "validateAddressFormat(address)",
+            "usage": "await validateAddressFormat(address);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Queries the Neutron LCD for one page of contracts that were created by the specified address.",
+            "function": "query_contracts_by_creator(creator_address, limit=1000, pagination_key=None)",
+            "usage": "page_data = await query_contracts_by_creator(creator_address, limit=1000);"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Handles pagination by repeatedly requesting pages until every contract created by the user has been gathered.",
+            "function": "fetch_all_contracts_by_creator(creator_address, page_limit=1000)",
+            "usage": "all_contracts = await fetch_all_contracts_by_creator(creator_address);"
+        }
+    ],
+    "frontend": [
+        "const { address, signer } = await getOfflineSignerAndAddress();//step: 1 Tool: get_creator_address Desciption: Determine the user\u2019s wallet (creator) address from the connected keyring or wallet context.",
+        "await validateAddressFormat(address);//step: 2 Tool: validate_creator_address Desciption: Confirm the creator address follows correct Bech32 formatting."
+    ],
+    "backend": [
+        "page_data = await query_contracts_by_creator(creator_address, limit=1000);#step: 3 Tool: query_contracts_by_creator Desciption: Execute `neutrond query wasm list-contract-by-creator <creator-address> --limit 1000` to retrieve contracts deployed by the user.",
+        "all_contracts = await fetch_all_contracts_by_creator(creator_address);#step: 4 Tool: handle_pagination Desciption: If the response includes a `pagination.next_key`, repeat the query with `--page-key` until all contracts are collected."
+    ],
+    "intent": "List all smart contracts deployed by my account",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_creator_address",
+            "description": "Determine the user\u2019s wallet (creator) address from the connected keyring or wallet context."
+        },
+        {
+            "step": 2,
+            "tool": "validate_creator_address",
+            "description": "Confirm the creator address follows correct Bech32 formatting."
+        },
+        {
+            "step": 3,
+            "tool": "query_contracts_by_creator",
+            "description": "Execute `neutrond query wasm list-contract-by-creator <creator-address> --limit 1000` to retrieve contracts deployed by the user."
+        },
+        {
+            "step": 4,
+            "tool": "handle_pagination",
+            "description": "If the response includes a `pagination.next_key`, repeat the query with `--page-key` until all contracts are collected."
+        }
+    ],
+    "outcome_checks": [
+        "Return an array of contract addresses (or an empty list if none exist).",
+        "Validate each returned address is a properly formatted Bech32 Neutron contract address."
+    ]
+}

@@ -1,0 +1,106 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Initialises a cosmpy LedgerClient configured for Neutron mainnet, thereby setting the correct chain-id and RPC/LCD endpoints.",
+            "function": "get_neutron_mainnet_client(mnemonic, rpc_url=\"https://rpc-kralum.neutron-1.neutron.org:443\")",
+            "usage": "client = get_neutron_mainnet_client(MY_MNEMONIC)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Verifies that the compiled .wasm binary exists, is below 4 MiB, and returns its absolute path.",
+            "function": "ensure_wasm_file(path)",
+            "usage": "wasm_path = ensure_wasm_file(\"./artifacts/example.wasm\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Creates a MsgStoreCode transaction ready to upload the contract byte-code to Neutron mainnet.",
+            "function": "build_store_code_tx(client, wasm_path, memo=\"Upload contract\")",
+            "usage": "store_tx = build_store_code_tx(client, wasm_path)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the MsgStoreCode transaction with the provided wallet and broadcasts it to Neutron mainnet, returning the Tx response for later code_id extraction.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "store_resp = sign_and_broadcast_tx(store_tx, wallet, client)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Builds a MsgInstantiateContract transaction using the freshly obtained code_id together with the desired init state and admin.",
+            "function": "build_instantiate_tx(client, code_id, init_msg, label, admin=None)",
+            "usage": "inst_tx = build_instantiate_tx(client, code_id, init_msg, \"my-label\", admin=wallet.address())"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Signs and broadcasts the instantiate transaction to Neutron mainnet, producing a response that contains the contract-creation logs.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "inst_resp = sign_and_broadcast_tx(inst_tx, wallet, client)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Parses the instantiate Tx logs to extract and return the newly created contract\u2019s address.",
+            "function": "extract_contract_address(response)",
+            "usage": "contract_addr = extract_contract_address(inst_resp.tx_response)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "client = get_neutron_mainnet_client(MY_MNEMONIC)#step: 1 Tool: set_chain_context Desciption: Switch CLI to Neutron mainnet (`--chain-id neutron-1`) and point to a mainnet RPC/LCD endpoint.",
+        "wasm_path = ensure_wasm_file(\"./artifacts/example.wasm\")#step: 2 Tool: get_wasm_file_path Desciption: Reuse or confirm the compiled example contract `.wasm` file.",
+        "store_tx = build_store_code_tx(client, wasm_path)#step: 3 Tool: construct_tx_store_code Desciption: Build a `MsgStoreCode` for mainnet upload, mindful of higher fees and memos if required.",
+        "store_resp = sign_and_broadcast_tx(store_tx, wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the store-code transaction to mainnet; record the resulting `code_id`.",
+        "inst_tx = build_instantiate_tx(client, code_id, init_msg, \"my-label\", admin=wallet.address())#step: 5 Tool: construct_tx_instantiate_contract Desciption: Using the new `code_id`, craft an instantiate message with desired initial state and admin.",
+        "inst_resp = sign_and_broadcast_tx(inst_tx, wallet, client)#step: 6 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the instantiate transaction to mainnet.",
+        "contract_addr = extract_contract_address(inst_resp.tx_response)#step: 7 Tool: extract_contract_address_from_tx Desciption: Capture the new contract\u2019s address from transaction logs."
+    ],
+    "intent": "Deploy the example contract to Neutron mainnet",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "set_chain_context",
+            "description": "Switch CLI to Neutron mainnet (`--chain-id neutron-1`) and point to a mainnet RPC/LCD endpoint."
+        },
+        {
+            "step": 2,
+            "tool": "get_wasm_file_path",
+            "description": "Reuse or confirm the compiled example contract `.wasm` file."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_store_code",
+            "description": "Build a `MsgStoreCode` for mainnet upload, mindful of higher fees and memos if required."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the store-code transaction to mainnet; record the resulting `code_id`."
+        },
+        {
+            "step": 5,
+            "tool": "construct_tx_instantiate_contract",
+            "description": "Using the new `code_id`, craft an instantiate message with desired initial state and admin."
+        },
+        {
+            "step": 6,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the instantiate transaction to mainnet."
+        },
+        {
+            "step": 7,
+            "tool": "extract_contract_address_from_tx",
+            "description": "Capture the new contract\u2019s address from transaction logs."
+        }
+    ],
+    "outcome_checks": [
+        "Both store-code and instantiate transactions succeed with code 0.",
+        "Returned `code_id` and contract address are non-empty and valid.",
+        "A follow-up smart query (e.g., `get_count`) returns the expected initial state."
+    ]
+}

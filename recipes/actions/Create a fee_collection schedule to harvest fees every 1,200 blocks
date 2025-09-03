@@ -1,0 +1,33 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "This Python helper queries the DAO smart-contract to discover the authority address that must authorise a new Cron schedule.",
+            "code": "from cosmpy.aerial.client import LedgerClient, NetworkConfig\n\n\ndef get_dao_authority_address(rpc_endpoint: str, dao_contract: str) -> str:\n    \"\"\"Return the DAO authority address or raise if it cannot be found.\"\"\"\n    try:\n        cfg = NetworkConfig(\n            chain_id=\"neutron-1\",\n            url=rpc_endpoint,\n            fee_minimum_gas_price=0,\n            fee_denomination=\"untrn\",\n        )\n        client = LedgerClient(cfg)\n\n        # The query shape {\"authority\": {}} is conventional for cw-dao based DAOs.\n        response: dict = client.wasm_contract_query(dao_contract, {\"authority\": {}})\n        authority = response.get(\"authority\")\n        if not authority:\n            raise ValueError(\"DAO contract did not return an authority field\")\n        return authority\n    except Exception as err:\n        # Convert any lower-level error into an explicit failure that upstream code can catch.\n        raise RuntimeError(f\"Failed to obtain DAO authority address: {err}\") from err",
+            "usage": "AUTHORITY_ADDR = get_dao_authority_address(\"https://rpc.mainnet.neutron.org:443\", DAO_CONTRACT_ADDR)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Build a neutron.cron.v1.MsgAddSchedule that calls the treasury contract\u2019s `harvest_fees` entry-point every 1 200 s (\u224820 min).",
+            "code": "import json\nfrom google.protobuf.any_pb2 import Any\nfrom neutron.cron.v1.cron_pb2 import MsgAddSchedule\nfrom cosmwasm.wasm.v1.tx_pb2 import MsgExecuteContract\n\n\ndef build_msg_add_schedule(authority: str, treasury_contract: str, gas_limit: int = 500000) -> MsgAddSchedule:\n    \"\"\"Return a fully-formed MsgAddSchedule protobuf message.\"\"\"\n    # 1. Craft the inner Wasm execute instruction that triggers `harvest_fees {}`.\n    inner_execute = MsgExecuteContract(\n        sender=authority,\n        contract=treasury_contract,\n        msg=json.dumps({\"harvest_fees\": {}}).encode(\"utf-8\"),\n        funds=[]  # no additional funds are sent\n    )\n\n    # 2. Pack the execute message into protobuf Any (Cron schedules carry generic msgs).\n    any_msg = Any()\n    any_msg.Pack(inner_execute)\n\n    # 3. Assemble the MsgAddSchedule itself.\n    schedule_msg = MsgAddSchedule(\n        authority=authority,\n        name=\"fee_collection\",\n        period=1200,      # seconds\n        msgs=[any_msg],\n        gas_limit=gas_limit,\n    )\n    return schedule_msg",
+            "usage": "add_schedule_msg = build_msg_add_schedule(AUTHORITY_ADDR, TREASURY_CONTRACT_ADDR)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Wrap the MsgAddSchedule inside a DAO governance proposal so token-holders can vote on enabling the automation.",
+            "code": "from google.protobuf.any_pb2 import Any\nfrom cosmos.gov.v1beta1.tx_pb2 import MsgSubmitProposal\nfrom cosmos.base.v1beta1.coin_pb2 import Coin\n\n\ndef package_into_gov_proposal(schedule_msg: MsgAddSchedule,\n                              proposer: str,\n                              deposit_amount: int = 1000000,\n                              deposit_denom: str = \"untrn\") -> MsgSubmitProposal:\n    \"\"\"Return MsgSubmitProposal containing the provided schedule message.\"\"\"\n    # 1. Pack the schedule into Any so the gov module can understand it.\n    content_any = Any()\n    content_any.Pack(schedule_msg)\n\n    # 2. Construct the on-chain proposal message.\n    proposal_msg = MsgSubmitProposal(\n        content=content_any,\n        initial_deposit=[Coin(amount=str(deposit_amount), denom=deposit_denom)],\n        proposer=proposer,\n        title=\"Automated DAO Fee Harvesting\",\n        description=\"Adds a cron schedule named \u2018fee_collection\u2019 that calls the treasury contract\u2019s `harvest_fees` every 20 minutes.\",\n    )\n    return proposal_msg",
+            "usage": "gov_proposal_msg = package_into_gov_proposal(add_schedule_msg, AUTHORITY_ADDR)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Sign the proposal with the DAO\u2019s authority key and broadcast it to the Neutron network.",
+            "code": "from cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import Wallet\nfrom cosmpy.aerial.tx import Transaction\n\n\ndef sign_and_broadcast_tx(rpc_endpoint: str,\n                          chain_id: str,\n                          mnemonic: str,\n                          msgs: list,\n                          fee_amount: int = 4000,\n                          gas_limit: int = 800000,\n                          fee_denom: str = \"untrn\") -> str:\n    \"\"\"Sign the provided messages and broadcast; return the tx-hash.\"\"\"\n    try:\n        # A. Connect to the ledger.\n        cfg = NetworkConfig(\n            chain_id=chain_id,\n            url=rpc_endpoint,\n            fee_minimum_gas_price=0,\n            fee_denomination=fee_denom,\n        )\n        client = LedgerClient(cfg)\n\n        # B. Load DAO wallet from mnemonic (keep mnemonic secret!).\n        wallet = Wallet(mnemonic=mnemonic)\n\n        # C. Build the transaction.\n        tx = Transaction()\n        for m in msgs:\n            tx.add_message(m)\n        tx.with_chain_id(chain_id)\n        tx.with_fee(gas_limit, f\"{fee_amount}{fee_denom}\")\n        tx.with_memo(\"DAO governance: add fee-collection cron schedule\")\n        tx.with_account_num(client.get_account_number(wallet.address()))\n        tx.with_sequence(client.get_sequence_number(wallet.address()))\n\n        # D. Sign & broadcast.\n        tx.sign(wallet)\n        tx_bytes = tx.get_tx_data()\n        resp = client.broadcast_tx(tx_bytes)\n        if resp.is_err():\n            raise RuntimeError(f\"Broadcast failed: {resp}\")\n        return resp.tx_hash\n    except Exception as err:\n        raise RuntimeError(f\"Could not sign and broadcast governance proposal: {err}\") from err",
+            "usage": "tx_hash = sign_and_broadcast_tx(\n    rpc_endpoint=\"https://rpc.mainnet.neutron.org:443\",\n    chain_id=\"neutron-1\",\n    mnemonic=DAO_AUTHORITY_MNEMONIC,\n    msgs=[gov_proposal_msg]\n)"
+        }
+    ]
+}

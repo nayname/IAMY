@@ -1,0 +1,93 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Creates the MsgExecuteContract object that will be run by the new cron schedule.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds = [])",
+            "usage": "const execMsg = constructTxWasmExecute(userAddr, rewardsContract, { distribute_rewards: {} });"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Builds an amino/SDK-compatible MsgAddSchedule describing the \u201cdaily_rewards\u201d job.",
+            "function": "build_msg_add_schedule(authority, name, period, msgs, execution_stage = \"EXECUTION_STAGE_END_BLOCKER\")",
+            "usage": "scheduleMsg = build_msg_add_schedule(daoAddress, \"daily_rewards\", 7200, [execMsg], \"EXECUTION_STAGE_END_BLOCKER\");"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Wraps the MsgAddSchedule inside a cw-dao `propose` message so the DAO can vote on it.",
+            "function": "build_dao_proposal(msg_update_params, title, description)",
+            "usage": "proposalBody = build_dao_proposal(scheduleMsg, \"Add daily rewards schedule\", \"Distributes rewards every 7,200 blocks\");"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the DAO transaction that submits the proposal and broadcasts it to the network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "txHash = sign_and_broadcast_tx(proposalTx, daoWallet, ledgerClient);"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Continuously polls governance until the proposal reaches a final (executed) state.",
+            "function": "wait_for_voting_result(proposal_id, chain_id = \"neutron-1\", node = \"https://rpc-kralum.neutron.org:443\", poll_interval = 15, max_attempts = 800)",
+            "usage": "finalStatus = wait_for_voting_result(String(proposalId));"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Queries the Cron module to confirm that the \u201cdaily_rewards\u201d schedule now exists on-chain.",
+            "function": "query_cron_schedule(schedule_name, node = \"https://rpc.neutron.org:443\")",
+            "usage": "scheduleInfo = query_cron_schedule(\"daily_rewards\");"
+        }
+    ],
+    "frontend": [
+        "const execMsg = constructTxWasmExecute(userAddr, rewardsContract, { distribute_rewards: {} });//step: 1 Tool: gather_schedule_inputs Desciption: Collect the schedule name (daily_rewards), execution period (7200 blocks), execution stage (END_BLOCKER), target contract address, and the MsgExecuteContract payload that handles reward distribution."
+    ],
+    "backend": [
+        "scheduleMsg = build_msg_add_schedule(daoAddress, \"daily_rewards\", 7200, [execMsg], \"EXECUTION_STAGE_END_BLOCKER\");#step: 2 Tool: construct_msg_add_schedule Desciption: Build a MsgAddSchedule object with fields: authority=<DAO address>, name=\"daily_rewards\", period=7200, msgs=[compiled MsgExecuteContract], execution_stage=\"END_BLOCKER\".",
+        "proposalBody = build_dao_proposal(scheduleMsg, \"Add daily rewards schedule\", \"Distributes rewards every 7,200 blocks\");#step: 3 Tool: wrap_in_dao_proposal Desciption: Embed the MsgAddSchedule in a DAO governance proposal (propose_single) so that the Main DAO can approve the new schedule.",
+        "txHash = sign_and_broadcast_tx(proposalTx, daoWallet, ledgerClient);#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the DAO `wasm/execute` transaction that submits the proposal and broadcast it to the network.",
+        "finalStatus = wait_for_voting_result(String(proposalId));#step: 5 Tool: monitor_proposal_status Desciption: Track the proposal until it reaches the `Executed` state, indicating the schedule has been added.",
+        "scheduleInfo = query_cron_schedule(\"daily_rewards\");#step: 6 Tool: query_cron_show_schedule Desciption: Query the Cron module for \"daily_rewards\" to confirm the schedule now exists with the correct parameters."
+    ],
+    "intent": "Create a cron schedule named \"daily_rewards\" that distributes rewards every 7,200 blocks at END_BLOCKER",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "gather_schedule_inputs",
+            "description": "Collect the schedule name (daily_rewards), execution period (7200 blocks), execution stage (END_BLOCKER), target contract address, and the MsgExecuteContract payload that handles reward distribution."
+        },
+        {
+            "step": 2,
+            "tool": "construct_msg_add_schedule",
+            "description": "Build a MsgAddSchedule object with fields: authority=<DAO address>, name=\"daily_rewards\", period=7200, msgs=[compiled MsgExecuteContract], execution_stage=\"END_BLOCKER\"."
+        },
+        {
+            "step": 3,
+            "tool": "wrap_in_dao_proposal",
+            "description": "Embed the MsgAddSchedule in a DAO governance proposal (propose_single) so that the Main DAO can approve the new schedule."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the DAO `wasm/execute` transaction that submits the proposal and broadcast it to the network."
+        },
+        {
+            "step": 5,
+            "tool": "monitor_proposal_status",
+            "description": "Track the proposal until it reaches the `Executed` state, indicating the schedule has been added."
+        },
+        {
+            "step": 6,
+            "tool": "query_cron_show_schedule",
+            "description": "Query the Cron module for \"daily_rewards\" to confirm the schedule now exists with the correct parameters."
+        }
+    ],
+    "outcome_checks": [
+        "The DAO proposal status is `Executed`.",
+        "\"daily_rewards\" appears in `neutrond query cron show-schedule daily_rewards` with period 7200 and stage END_BLOCKER."
+    ]
+}

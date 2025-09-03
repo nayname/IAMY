@@ -1,0 +1,61 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 queries the chain\u2019s Cron module parameters to discover the authority address required when building MsgAddSchedule.",
+            "code": "import requests\n\ndef get_cron_authority(lcd_endpoint: str) -> str:\n    \"\"\"Return the Cron module authority address (e.g. the Main DAO address).\"\"\"\n    try:\n        url = f\"{lcd_endpoint}/neutron/cron/v1/params\"\n        response = requests.get(url, timeout=10)\n        response.raise_for_status()\n        # The expected JSON shape is: {\"params\": {\"authority\": \"neutron1...\"}}\n        return response.json()[\"params\"][\"authority\"]\n    except (requests.RequestException, KeyError) as err:\n        raise RuntimeError(f\"Unable to fetch Cron authority: {err}\")",
+            "usage": "authority_addr = get_cron_authority(\"https://lcd.neutron-1.neutron.org\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 confirms that the staking-rewards contract address exists on-chain and is in the INSTANCIATED/LIVE state.",
+            "code": "import requests\n\ndef validate_contract(address: str, lcd_endpoint: str) -> bool:\n    \"\"\"Return True when the contract exists and is instantiated.\"\"\"\n    try:\n        url = f\"{lcd_endpoint}/cosmwasm/wasm/v1/contract/{address}\"\n        response = requests.get(url, timeout=10)\n        response.raise_for_status()\n        info = response.json().get(\"contract_info\", {})\n        # Minimal sanity-check: the endpoint echoes back the queried address\n        return info.get(\"address\") == address\n    except requests.RequestException:\n        return False",
+            "usage": "assert validate_contract(staking_rewards_addr, \"https://lcd.neutron-1.neutron.org\"), \"Staking-rewards contract not found!\""
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 builds the MsgExecuteContract that will trigger `{ \"distribute_rewards\": {} }` whenever Cron fires. The `sender` is set to `\"cron\"` so the module can execute later.",
+            "code": "import json, base64\n\ndef build_msg_execute_contract(staking_contract: str, cron_sender: str = \"cron\") -> dict:\n    \"\"\"Return a MsgExecuteContract dict compatible with protobuf/CLI JSON.\"\"\"\n    inner_msg = {\"distribute_rewards\": {}}\n    return {\n        \"@type\": \"/cosmwasm.wasm.v1.MsgExecuteContract\",\n        \"sender\": cron_sender,\n        \"contract\": staking_contract,\n        \"msg\": base64.b64encode(json.dumps(inner_msg).encode()).decode(),  # base64-encoded\n        \"funds\": []\n    }",
+            "usage": "exec_msg = build_msg_execute_contract(staking_rewards_addr)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 wraps the execute message from Step 3 inside a MsgAddSchedule that Cron understands.",
+            "code": "def build_msg_add_schedule(authority: str, execute_msg: dict) -> dict:\n    \"\"\"Create a MsgAddSchedule that invokes the provided execute message every 100 800 blocks (~7 days).\"\"\"\n    return {\n        \"@type\": \"/neutron.cron.MsgAddSchedule\",\n        \"name\": \"weekly_staking_rewards\",\n        \"period\": \"100800\",  # 7 days at 6-second blocks\n        \"msgs\": [execute_msg],\n        \"execution_stage\": \"EXECUTION_STAGE_END_BLOCKER\",  # default\n        \"authority\": authority\n    }",
+            "usage": "add_schedule_msg = build_msg_add_schedule(authority_addr, exec_msg)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 persists the MsgAddSchedule inside a governance proposal JSON file that can be fed directly to `neutrond tx wasm submit-proposal`.",
+            "code": "import json\n\ndef write_proposal_file(msg_add_schedule: dict, filename: str = \"proposal.json\") -> str:\n    \"\"\"Write the governance proposal to disk and return the file name.\"\"\"\n    proposal = {\n        \"title\": \"Add weekly staking-reward cron\",\n        \"description\": \"Distribute staking rewards every week automatically\",\n        \"messages\": [msg_add_schedule]\n    }\n    with open(filename, \"w\", encoding=\"utf-8\") as fp:\n        json.dump(proposal, fp, indent=2)\n    return filename",
+            "usage": "proposal_path = write_proposal_file(add_schedule_msg)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Step 6 submits the proposal file to the Main DAO using the Neutron CLI. It relies on a local keyring account to sign the transaction.",
+            "code": "import subprocess\n\ndef submit_proposal(file_path: str, from_key: str, chain_id: str, node: str) -> None:\n    \"\"\"Call neutrond CLI to submit the proposal for voting.\"\"\"\n    cmd = [\n        \"neutrond\", \"tx\", \"wasm\", \"submit-proposal\", file_path,\n        \"--from\", from_key,\n        \"--chain-id\", chain_id,\n        \"--node\", node,\n        \"--gas\", \"auto\",\n        \"--gas-adjustment\", \"1.3\",\n        \"-y\"\n    ]\n    try:\n        subprocess.run(cmd, check=True)\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"Proposal submission failed: {err}\")",
+            "usage": "submit_proposal(proposal_path, \"my-dao-key\", \"neutron-1\", \"https://rpc.neutron-1.neutron.org:443\")"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Step 7 repeatedly polls the governance module until the proposal reaches PASSED status (3).",
+            "code": "import requests, time\n\ndef wait_for_proposal_passage(proposal_id: int, lcd_endpoint: str, poll: int = 15, timeout: int = 3600) -> None:\n    \"\"\"Block until the proposal is PASSED or raise if REJECTED/EXPIRED/timeout.\"\"\"\n    deadline = time.time() + timeout\n    gov_url = f\"{lcd_endpoint}/cosmos/gov/v1/proposals/{proposal_id}\"\n    while time.time() < deadline:\n        response = requests.get(gov_url, timeout=10)\n        response.raise_for_status()\n        status = int(response.json()[\"proposal\"][\"status\"])\n        if status == 3:  # PASSED\n            print(f\"\u2705  Proposal {proposal_id} PASSED\")\n            return\n        if status in (4, 5):  # REJECTED or FAILED\n            raise RuntimeError(f\"\u274c  Proposal {proposal_id} failed with status {status}\")\n        print(f\"\u23f3  Waiting... current status = {status}\")\n        time.sleep(poll)\n    raise TimeoutError(\"Timed out waiting for proposal to pass\")",
+            "usage": "wait_for_proposal_passage(proposal_id=42, lcd_endpoint=\"https://lcd.neutron-1.neutron.org\")"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Step 8 queries the Cron module to make sure the `weekly_staking_rewards` schedule exists and is correctly configured.",
+            "code": "import requests\n\ndef query_cron_schedule(name: str, lcd_endpoint: str) -> dict:\n    \"\"\"Return the on-chain definition of the given Cron schedule name.\"\"\"\n    url = f\"{lcd_endpoint}/neutron/cron/v1/schedule/{name}\"\n    response = requests.get(url, timeout=10)\n    response.raise_for_status()\n    return response.json()",
+            "usage": "schedule = query_cron_schedule(\"weekly_staking_rewards\", \"https://lcd.neutron-1.neutron.org\")"
+        }
+    ]
+}

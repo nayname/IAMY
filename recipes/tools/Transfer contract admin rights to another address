@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Retrieves the contract\u2019s metadata from the LCD so the current admin address can be read and shown to the user.",
+            "function": "query_contract_info(contract_address)",
+            "usage": "info = query_contract_info(contract_address)"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Validates that the user-supplied new admin address conforms to Neutron\u2019s Bech32 format.",
+            "function": "validateAddressFormat(address)",
+            "usage": "await validateAddressFormat(newAdminAddress);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Pulls the contract address from a DOM input element for subsequent processing.",
+            "function": "getContractAddress(elementId)",
+            "usage": "const contractAddress = getContractAddress();"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Builds an unsigned MsgUpdateAdmin transaction that designates the chosen new admin address.",
+            "function": "construct_update_admin_tx(sender_address, contract_address, new_admin_address)",
+            "usage": "tx, client = construct_update_admin_tx(currentAdminAddr, contractAddress, newAdminAddress)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Signs the prepared transaction with the admin\u2019s wallet and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "tx_response = sign_and_broadcast_tx(tx, wallet, client)"
+        }
+    ],
+    "frontend": [
+        "await validateAddressFormat(newAdminAddress);//step: 2 Tool: validate_new_admin_address Desciption: Ensure the provided new admin address is a valid Bech32 address.",
+        "const contractAddress = getContractAddress();//step: 3 Tool: get_contract_address Desciption: Ask for the contract address whose admin will be changed."
+    ],
+    "backend": [
+        "info = query_contract_info(contract_address)#step: 1 Tool: get_current_admin_address Desciption: Fetch and display the contract's current admin address for confirmation.",
+        "tx, client = construct_update_admin_tx(currentAdminAddr, contractAddress, newAdminAddress)#step: 4 Tool: construct_tx_wasm_update_admin Desciption: Build a `wasm set-contract-admin` (or `update-admin`) transaction that assigns the new admin address.",
+        "tx_response = sign_and_broadcast_tx(tx, wallet, client)#step: 5 Tool: sign_and_broadcast_tx Desciption: Sign with the current admin key and broadcast to the network."
+    ],
+    "intent": "Transfer contract admin rights to another address",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_current_admin_address",
+            "description": "Fetch and display the contract's current admin address for confirmation."
+        },
+        {
+            "step": 2,
+            "tool": "validate_new_admin_address",
+            "description": "Ensure the provided new admin address is a valid Bech32 address."
+        },
+        {
+            "step": 3,
+            "tool": "get_contract_address",
+            "description": "Ask for the contract address whose admin will be changed."
+        },
+        {
+            "step": 4,
+            "tool": "construct_tx_wasm_update_admin",
+            "description": "Build a `wasm set-contract-admin` (or `update-admin`) transaction that assigns the new admin address."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign with the current admin key and broadcast to the network."
+        }
+    ],
+    "outcome_checks": [
+        "Re-query contract info and confirm the `admin` field matches the new address.",
+        "Optionally verify that the original admin can no longer execute admin-only messages."
+    ]
+}

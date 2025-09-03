@@ -1,0 +1,47 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Collect all user-supplied parameters needed to create the daily rewards cron schedule.",
+            "code": "/* gatherScheduleInputs.js\n * Helper that can be wired to a form or wizard.\n */\nexport const gatherScheduleInputs = () => {\n  // In a real app you would read these from form fields or a config file.\n  const scheduleName = \"daily_rewards\";            // Unique schedule identifier\n  const period = 7200;                              // Blocks between executions\n  const executionStage = \"EXECUTION_STAGE_END_BLOCKER\"; // When to fire (Begin/End block)\n  const targetContract = \"neutron1contract...\";     // Rewards contract address\n\n  // CosmWasm execute payload that the cron job will run each period\n  const rewardsMsg = {\n    distribute: {}\n  };\n\n  // MsgExecuteContract that the Cron module will invoke\n  const compiledExecuteMsg = {\n    \"@type\": \"/cosmwasm.wasm.v1.MsgExecuteContract\",\n    \"sender\": targetContract,         // will be overwritten by Cron when executed\n    \"contract\": targetContract,\n    \"msg\": Buffer.from(JSON.stringify(rewardsMsg)).toString(\"base64\"),\n    \"funds\": []\n  };\n\n  return {\n    scheduleName,\n    period,\n    executionStage,\n    authority: \"neutron1mainDAOaddress...\", // DAO (gov) address that controls Cron\n    msgs: [compiledExecuteMsg]\n  };\n};",
+            "usage": "const scheduleInputs = gatherScheduleInputs();\n// scheduleInputs now holds everything for the next steps"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Create a valid MsgAddSchedule object that can later be embedded into a DAO proposal.",
+            "code": "import json\nfrom typing import List, Dict\n\nclass CronMessageError(Exception):\n    \"\"\"Raised when mandatory fields are missing or invalid\"\"\"\n\n\ndef construct_msg_add_schedule(\n    authority: str,\n    name: str,\n    period: int,\n    msgs: List[Dict],\n    execution_stage: str = \"EXECUTION_STAGE_END_BLOCKER\",\n) -> Dict:\n    \"\"\"Return an SDK-compatible MsgAddSchedule dictionary.\n\n    Parameters\n    ----------\n    authority : str\n        Address that has cron authority (DAO address).\n    name : str\n        Unique schedule name.\n    period : int\n        Number of blocks between executions.\n    msgs : List[Dict]\n        List of Cosmos Msgs to execute (already compiled).\n    execution_stage : str\n        BEGIN_BLOCKER or END_BLOCKER constant (default END_BLOCKER).\n    \"\"\"\n    if not authority or not name or not period or not msgs:\n        raise CronMessageError(\"All fields authority, name, period, msgs are required\")\n\n    return {\n        \"@type\": \"/neutron.cron.MsgAddSchedule\",\n        \"authority\": authority,\n        \"name\": name,\n        \"period\": str(period),  # JSON numbers must be strings in Cosmos messages\n        \"msgs\": msgs,\n        \"execution_stage\": execution_stage,\n    }\n",
+            "usage": "# schedule_inputs was obtained from Step 1\ncron_msg = construct_msg_add_schedule(\n    authority=scheduleInputs[\"authority\"],\n    name=scheduleInputs[\"scheduleName\"],\n    period=scheduleInputs[\"period\"],\n    msgs=scheduleInputs[\"msgs\"],\n    execution_stage=scheduleInputs[\"executionStage\"],\n)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Wrap the MsgAddSchedule inside a cw-dao `propose_single` execute payload so that the DAO can vote on it.",
+            "code": "import base64\nimport json\nfrom typing import Dict\n\nclass ProposalBuildError(Exception):\n    pass\n\n\ndef wrap_in_dao_proposal(\n    dao_contract: str,\n    proposer_addr: str,\n    schedule_msg: Dict,\n    title: str = \"Add daily_rewards cron schedule\",\n    description: str = \"Creates a cron job that distributes daily rewards at END_BLOCKER every 7200 blocks.\",\n) -> Dict:\n    \"\"\"Return a MsgExecuteContract that submits a `propose` call to a cw-dao-single contract.\"\"\"\n    if not dao_contract or not proposer_addr or not schedule_msg:\n        raise ProposalBuildError(\"dao_contract, proposer_addr, and schedule_msg are mandatory\")\n\n    # cw-dao expects its internal Cosmos messages to be passed as base64-encoded binary Anys.\n    # For simplicity we send the raw JSON (accepted by cosmjs), letting the chain pack it.\n    proposal_msg = {\n        \"propose\": {\n            \"title\": title,\n            \"description\": description,\n            \"msgs\": [\n                {\n                    \"stargate\": {\n                        \"type_url\": \"/neutron.cron.MsgAddSchedule\",\n                        \"value\": base64.b64encode(json.dumps(schedule_msg).encode()).decode()\n                    }\n                }\n            ],\n            \"latest\": None\n        }\n    }\n\n    return {\n        \"@type\": \"/cosmwasm.wasm.v1.MsgExecuteContract\",\n        \"sender\": proposer_addr,\n        \"contract\": dao_contract,\n        \"msg\": base64.b64encode(json.dumps(proposal_msg).encode()).decode(),\n        \"funds\": []\n    }\n",
+            "usage": "proposal_exec_msg = wrap_in_dao_proposal(\n    dao_contract=\"neutron1mainDAOaddress...\",\n    proposer_addr=\"neutron1yourwallet...\",\n    schedule_msg=cron_msg,\n)"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Sign and broadcast the MsgExecuteContract that submits the proposal using CosmJS.",
+            "code": "/* signAndBroadcastTx.js */\nimport { SigningStargateClient, GasPrice } from \"@cosmjs/stargate\";\n\nexport const signAndBroadcastTx = async (\n  offlineSigner,\n  rpcEndpoint,\n  messages,\n  memo = \"\",\n) => {\n  try {\n    const client = await SigningStargateClient.connectWithSigner(\n      rpcEndpoint,\n      offlineSigner,\n      { gasPrice: GasPrice.fromString(\"0.025untrn\") }\n    );\n\n    const [{ address }] = await offlineSigner.getAccounts();\n\n    // Auto estimate fee; fallback to explicit if needed\n    const fee = await client.simulate(address, messages, memo).then((gas) => ({\n      amount: [{ denom: \"untrn\", amount: \"0\" }],\n      gas: String(Math.round(gas * 1.3)), // 30% safety margin\n    }));\n\n    const txResult = await client.signAndBroadcast(address, messages, fee, memo);\n\n    if (txResult.code !== 0) throw new Error(`Tx failed: ${txResult.rawLog}`);\n    return txResult.transactionHash;\n  } catch (err) {\n    console.error(\"signAndBroadcastTx error\", err);\n    throw err;\n  }\n};",
+            "usage": "// signer was obtained from wallet connection\n// proposal_exec_msg was produced in Step 3\nconst txHash = await signAndBroadcastTx(signer, \"https://rpc.ntrn.tech:443\", [proposal_exec_msg]);\nconsole.log(\"Submitted proposal, txHash:\", txHash);"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Poll the DAO contract until the proposal reaches the Executed state.",
+            "code": "import asyncio\nimport aiohttp\n\nAPI_TIMEOUT = 300  # seconds\n\nasync def monitor_proposal_status(dao_contract: str, proposal_id: int, lcd_endpoint: str) -> str:\n    \"\"\"Return final status (\"Open\", \"Passed\", \"Executed\", etc.) or raise on timeout.\"\"\"\n    query = {\n        \"proposal\": {\"proposal_id\": proposal_id}\n    }\n\n    async def fetch_status(session):\n        async with session.get(f\"{lcd_endpoint}/wasm/v1/contract/{dao_contract}/smart/{base64.b64encode(json.dumps(query).encode()).decode()}\") as resp:\n            data = await resp.json()\n            return data[\"data\"][\"status\"]\n\n    start = asyncio.get_event_loop().time()\n    async with aiohttp.ClientSession() as session:\n        while True:\n            status = await fetch_status(session)\n            if status == \"Executed\":\n                print(\"Proposal executed!\")\n                return status\n            if asyncio.get_event_loop().time() - start > API_TIMEOUT:\n                raise TimeoutError(\"Monitoring timed out\")\n            await asyncio.sleep(10)\n",
+            "usage": "await monitor_proposal_status(\n    dao_contract=\"neutron1mainDAOaddress...\",\n    proposal_id=42,  # obtained from the Tx logs or DAO event\n    lcd_endpoint=\"https://rest.ntrn.tech:443\",\n)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Query the Cron module to verify the `daily_rewards` schedule now exists and has the expected parameters.",
+            "code": "import requests\n\ndef query_cron_show_schedule(name: str, grpc_endpoint: str = \"https://rest.ntrn.tech:443\") -> dict:\n    \"\"\"Return the on-chain representation of the given cron schedule.\"\"\"\n    path = f\"{grpc_endpoint}/neutron/cron/v1/schedule/{name}\"\n    resp = requests.get(path, timeout=10)\n    if resp.status_code != 200:\n        raise RuntimeError(f\"Cron query failed: {resp.text}\")\n    return resp.json()\n",
+            "usage": "schedule = query_cron_show_schedule(\"daily_rewards\")\nprint(schedule)"
+        }
+    ]
+}

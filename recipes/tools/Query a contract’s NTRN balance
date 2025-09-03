@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Reads the CONTRACT_ADDRESS environment variable and returns it after confirming it is a valid Neutron bech32 address.",
+            "function": "get_contract_address()",
+            "usage": "contract_addr = get_contract_address()"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Calls a backend endpoint to make sure the provided contract address follows Neutron\u2019s bech32 format.",
+            "function": "validateAddressFormat(address)",
+            "usage": "await validateAddressFormat(contract_addr)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Executes the neutrond CLI to retrieve the raw JSON bank balance for the contract in the specified denom.",
+            "function": "query_bank_balance(contract_addr, denom='untrn')",
+            "usage": "raw_balance_json = query_bank_balance(contract_addr, 'untrn')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Parses the JSON output from the bank query and extracts a human-readable NTRN balance.",
+            "function": "parse_balance_response(raw_json, denom='untrn')",
+            "usage": "balance_info = parse_balance_response(raw_balance_json, 'untrn')"
+        }
+    ],
+    "frontend": [
+        "await validateAddressFormat(contract_addr)//step: 2 Tool: validate_address_format Desciption: Ensure the contract address is a valid Neutron (bech32) address."
+    ],
+    "backend": [
+        "contract_addr = get_contract_address()#step: 1 Tool: get_contract_address Desciption: Obtain the bech32 address of the target smart contract.",
+        "raw_balance_json = query_bank_balance(contract_addr, 'untrn')#step: 3 Tool: query_bank_balance Desciption: Run `neutrond q bank balances <contract_addr> --denom untrn` to fetch the NTRN balance for the contract.",
+        "balance_info = parse_balance_response(raw_balance_json, 'untrn')#step: 4 Tool: parse_balance_response Desciption: Parse the CLI/JSON response and extract the amount associated with denom `untrn`."
+    ],
+    "intent": "Query a contract\u2019s NTRN balance",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_contract_address",
+            "description": "Obtain the bech32 address of the target smart contract."
+        },
+        {
+            "step": 2,
+            "tool": "validate_address_format",
+            "description": "Ensure the contract address is a valid Neutron (bech32) address."
+        },
+        {
+            "step": 3,
+            "tool": "query_bank_balance",
+            "description": "Run `neutrond q bank balances <contract_addr> --denom untrn` to fetch the NTRN balance for the contract."
+        },
+        {
+            "step": 4,
+            "tool": "parse_balance_response",
+            "description": "Parse the CLI/JSON response and extract the amount associated with denom `untrn`."
+        }
+    ],
+    "outcome_checks": [
+        "The CLI call returns HTTP/Tx code 0 (success).",
+        "A numeric amount for denom `untrn` is present in the response."
+    ]
+}

@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Retrieves the user-entered contract address from a DOM input field.",
+            "function": "getContractAddress(elementId)",
+            "usage": "const contractAddr = getContractAddress('contract-address-input');"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Checks on-chain that the provided code ID exists and is different from the contract\u2019s current code ID.",
+            "function": "validate_new_code_id(contract_address, new_code_id, rpc_url)",
+            "usage": "await validate_new_code_id(contractAddr, 1234);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "undef",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "undef",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Signs the prepared transaction with the admin wallet and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "const txHash = sign_and_broadcast_tx(tx, adminWallet, neutronClient);"
+        }
+    ],
+    "frontend": [
+        "const contractAddr = getContractAddress('contract-address-input');//step: 1 Tool: get_contract_address Desciption: Prompt the user for the on-chain address of the contract that needs migration.",
+        "undef//step: 3 Tool: collect_migrate_msg Desciption: Ask the user for the JSON migrate message required by the new contract code (often `{}` if no parameters)."
+    ],
+    "backend": [
+        "await validate_new_code_id(contractAddr, 1234);#step: 2 Tool: validate_new_code_id Desciption: Check that the supplied code ID exists on-chain and is compatible with the contract.",
+        "undef#step: 4 Tool: construct_tx_wasm_migrate Desciption: Build a `wasm migrate` transaction with the contract address, new code ID, migrate msg, and appropriate gas/fees.",
+        "const txHash = sign_and_broadcast_tx(tx, adminWallet, neutronClient);#step: 5 Tool: sign_and_broadcast_tx Desciption: Sign the transaction with the contract admin key and broadcast it to the Neutron network."
+    ],
+    "intent": "Migrate an existing smart contract to a new code ID",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_contract_address",
+            "description": "Prompt the user for the on-chain address of the contract that needs migration."
+        },
+        {
+            "step": 2,
+            "tool": "validate_new_code_id",
+            "description": "Check that the supplied code ID exists on-chain and is compatible with the contract."
+        },
+        {
+            "step": 3,
+            "tool": "collect_migrate_msg",
+            "description": "Ask the user for the JSON migrate message required by the new contract code (often `{}` if no parameters)."
+        },
+        {
+            "step": 4,
+            "tool": "construct_tx_wasm_migrate",
+            "description": "Build a `wasm migrate` transaction with the contract address, new code ID, migrate msg, and appropriate gas/fees."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the transaction with the contract admin key and broadcast it to the Neutron network."
+        }
+    ],
+    "outcome_checks": [
+        "Query `wasm contract-info` and confirm the contract's `code_id` now matches the new code ID.",
+        "Optionally call a read-only method to make sure the contract behaves as expected after migration."
+    ]
+}

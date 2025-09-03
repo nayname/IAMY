@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Retrieves the admin wallet configured for the deployment, from which the DAO authority address can be derived.",
+            "function": "get_admin_wallet()",
+            "usage": "dao_authority_addr = str(get_admin_wallet().address())"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Creates an on-chain MsgAddSchedule object that tells Cron to run the health-check message every 300 blocks.",
+            "function": "build_msg_add_schedule(authority, name, period, msgs, execution_stage='EXECUTION_STAGE_END_BLOCKER')",
+            "usage": "msg = build_msg_add_schedule(authority=dao_authority_addr, name='health_check', period=300, msgs=check_msgs)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Wraps the MsgAddSchedule into a cw-DAO proposal message with a title and description.",
+            "function": "build_dao_proposal(msg_update_params, title, description)",
+            "usage": "proposal_msg = build_dao_proposal(msg, 'Health-Check Schedule', 'Run health checks every 300 blocks')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the assembled transaction with the DAO wallet and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "tx_result = sign_and_broadcast_tx(proposal_tx, dao_wallet, neutron_client)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "dao_authority_addr = str(get_admin_wallet().address())#step: 1 Tool: get_dao_authority_address Desciption: Fetch the DAO authority address.",
+        "msg = build_msg_add_schedule(authority=dao_authority_addr, name='health_check', period=300, msgs=check_msgs)#step: 2 Tool: build_msg_add_schedule Desciption: Build MsgAddSchedule with: name=\"health_check\", period=300, msgs=[execute the monitoring contract\u2019s `perform_checks` entry-point], gas_limit sized for health-check logic.",
+        "proposal_msg = build_dao_proposal(msg, 'Health-Check Schedule', 'Run health checks every 300 blocks')#step: 3 Tool: package_into_gov_proposal Desciption: Place the MsgAddSchedule into a DAO governance proposal that justifies the 300-block cadence for system health monitoring.",
+        "tx_result = sign_and_broadcast_tx(proposal_tx, dao_wallet, neutron_client)#step: 4 Tool: sign_and_broadcast_tx Desciption: DAO signs and submits the proposal transaction."
+    ],
+    "intent": "Create a schedule to perform health checks every 300 blocks",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_dao_authority_address",
+            "description": "Fetch the DAO authority address."
+        },
+        {
+            "step": 2,
+            "tool": "build_msg_add_schedule",
+            "description": "Build MsgAddSchedule with: name=\"health_check\", period=300, msgs=[execute the monitoring contract\u2019s `perform_checks` entry-point], gas_limit sized for health-check logic."
+        },
+        {
+            "step": 3,
+            "tool": "package_into_gov_proposal",
+            "description": "Place the MsgAddSchedule into a DAO governance proposal that justifies the 300-block cadence for system health monitoring."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "DAO signs and submits the proposal transaction."
+        }
+    ],
+    "outcome_checks": [
+        "Confirm the \"health_check\" schedule appears in Cron state with a 300-block period.",
+        "Watch for `perform_checks` contract execution events every ~300 blocks to verify regular health-check execution."
+    ]
+}

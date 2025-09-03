@@ -32,7 +32,8 @@ onliners = {
 }
 
 pages = {
-    "NeutronTemplate":"data/pages/NeutronTemplate"
+    # "NeutronTemplate":"data/pages/NeutronTemplate",
+    "Cron":"data/pages/Cron",
 }
 
 synthesize_ners = open("prompts/synthesize_ners").read()
@@ -205,7 +206,7 @@ async def create_actions(session, config):
     with os.scandir("data/pre_recipes") as entries:
         for entry in entries:
             if entry.is_file():  # Check if it's a file
-                if not entry.path.endswith("result.txt"):
+                if not entry.path.endswith("result.txt") and "Cron" in entry.path:
                     with open(entry.path, 'r') as f:
                         items = json.load(f)
 
@@ -223,18 +224,17 @@ async def create_actions(session, config):
 
 
 async def pick_tools(session, config):
-    count = 0
-
     with os.scandir("data/pre_recipes") as entries:
         for entry in entries:
             if entry.is_file():  # Check if it's a file
-                count += 1
-                if not entry.path.endswith("result.txt"):
+                if not entry.path.endswith("result.txt") and "Cron" in entry.path:
                     with open(entry.path, 'r') as f: 
                         items = json.load(f)
 
                     for key in items:
-                        if not os.path.exists('recipes/tools/' + key['intent']) and count < 7: #action == key['intent'] and
+                        if not os.path.exists('recipes/tools/' + key['intent']) \
+                                and key['intent'] != "Connect a user’s wallet to the dApp" \
+                                and key['intent'] != "Query the connected wallet’s NTRN balance": #action == key['intent'] and
                             with open("/root/neutron/IAMY/recipes/frontend.jsx", "r") as f:
                                 frontend = f.read()
 

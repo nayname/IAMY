@@ -1,0 +1,26 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Queries Neutron\u2019s Cron module through the neutrond CLI and returns the full JSON metadata for a specified schedule.",
+            "function": "query_cron_schedule(schedule_name, node=\"https://rpc.neutron.org:443\")",
+            "usage": "metadata = query_cron_schedule(\"protocol_update\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "metadata = query_cron_schedule(\"protocol_update\")#step: 1 Tool: query_cron_show_schedule Desciption: Run `neutrond query cron show-schedule protocol_update` to fetch the schedule's full metadata."
+    ],
+    "intent": "Show details for the cron schedule \"protocol_update\"",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "query_cron_show_schedule",
+            "description": "Run `neutrond query cron show-schedule protocol_update` to fetch the schedule's full metadata."
+        }
+    ],
+    "outcome_checks": [
+        "The returned object contains the fields name=\"protocol_update\", period, next_execution_height, execution_stage, and embedded Msgs."
+    ]
+}

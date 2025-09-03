@@ -1,0 +1,79 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Compiles the contract directory (if needed) and returns the absolute path to the optimized `.wasm` binary.",
+            "function": "compile_wasm_contract(contract_dir)",
+            "usage": "wasm_path = compile_wasm_contract('./contracts/counter')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Calculates the SHA-256 checksum of the located WASM file for later verification.",
+            "function": "validate_wasm_checksum(wasm_path)",
+            "usage": "checksum = validate_wasm_checksum(Path(wasm_path))"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Builds a MsgStoreCode transaction embedding the WASM bytes, sender address, and `instantiate-everybody` permission.",
+            "function": "build_store_code_tx(client, wasm_path, memo='Upload contract')",
+            "usage": "tx = build_store_code_tx(client, wasm_path)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the constructed transaction with the provided wallet and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "response = sign_and_broadcast_tx(tx, wallet, client)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Parses the transaction logs to extract and return the newly assigned `code_id`.",
+            "function": "extract_code_id_from_tx(response)",
+            "usage": "code_id = extract_code_id_from_tx(response)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "wasm_path = compile_wasm_contract('./contracts/counter')#step: 1 Tool: get_wasm_file_path Desciption: Locate the compiled `.wasm` file for the example contract (e.g., `artifacts/counter.wasm`).",
+        "checksum = validate_wasm_checksum(Path(wasm_path))#step: 2 Tool: validate_wasm_checksum Desciption: Calculate and record the SHA-256 checksum of the WASM binary.",
+        "tx = build_store_code_tx(client, wasm_path)#step: 3 Tool: construct_tx_store_code Desciption: Build a `MsgStoreCode` including the WASM binary, sender address, and instantiate permission (e.g., `--instantiate-everybody`).",
+        "response = sign_and_broadcast_tx(tx, wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the store-code transaction.",
+        "code_id = extract_code_id_from_tx(response)#step: 5 Tool: extract_code_id_from_tx Desciption: Parse the transaction logs to retrieve the newly assigned `code_id`."
+    ],
+    "intent": "Upload the example contract WASM code",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_wasm_file_path",
+            "description": "Locate the compiled `.wasm` file for the example contract (e.g., `artifacts/counter.wasm`)."
+        },
+        {
+            "step": 2,
+            "tool": "validate_wasm_checksum",
+            "description": "Calculate and record the SHA-256 checksum of the WASM binary."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_store_code",
+            "description": "Build a `MsgStoreCode` including the WASM binary, sender address, and instantiate permission (e.g., `--instantiate-everybody`)."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the store-code transaction."
+        },
+        {
+            "step": 5,
+            "tool": "extract_code_id_from_tx",
+            "description": "Parse the transaction logs to retrieve the newly assigned `code_id`."
+        }
+    ],
+    "outcome_checks": [
+        "Tx response shows code 0.",
+        "`code_id` is present and greater than 0 in the logs."
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "This Python helper queries the Cron module for a schedule named `daily_rewards` (or any provided name) and returns the decoded JSON response.",
+            "code": "import subprocess\nimport json\nfrom typing import Dict\n\n\ndef query_cron_schedule(schedule_name: str, node: str = \"https://rpc.neutron.org:443\") -> Dict:\n    \"\"\"Fetch schedule metadata from the Neutron Cron module via `neutrond` CLI.\n\n    Args:\n        schedule_name (str): The unique schedule identifier (e.g., \"daily_rewards\").\n        node (str, optional): RPC endpoint to query. Defaults to main-net RPC.\n\n    Returns:\n        Dict: Parsed JSON representing the schedule metadata.\n\n    Raises:\n        RuntimeError: If the CLI call fails.\n        ValueError:  If the response cannot be decoded as JSON.\n    \"\"\"\n    try:\n        cmd = [\n            \"neutrond\",\n            \"query\",\n            \"cron\",\n            \"schedule\",\n            schedule_name,\n            \"--output\",\n            \"json\",\n            \"--node\",\n            node,\n        ]\n        # Run the command and capture STDOUT/STDERR\n        result = subprocess.run(cmd, capture_output=True, text=True, check=True)\n        return json.loads(result.stdout)\n    except subprocess.CalledProcessError as exc:\n        # Bubble up a descriptive error when the CLI exits with non-zero status.\n        raise RuntimeError(\n            f\"Failed to query schedule '{schedule_name}': {exc.stderr.strip()}\"\n        ) from exc\n    except json.JSONDecodeError as exc:\n        # Handle malformed JSON (e.g., non-JSON output)\n        raise ValueError(\"Received non-JSON response from neutrond CLI\") from exc",
+            "usage": "schedule_data = query_cron_schedule(\"daily_rewards\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Extract the `last_execution_height` (or `last_executed_height`) field from the previously fetched schedule JSON.",
+            "code": "def extract_last_execution_height(schedule_data: dict) -> int:\n    \"\"\"Return the most recent execution height from schedule JSON.\n\n    Supports both possible proto field names: `last_execution_height` (preferred)\n    or the legacy `last_executed_height`.\n    \"\"\"\n    for key in (\"last_execution_height\", \"last_executed_height\"):\n        value = schedule_data.get(key)\n        if value is not None:\n            try:\n                return int(value)\n            except (TypeError, ValueError):\n                raise ValueError(f\"Field '{key}' is not an integer: {value}\")\n\n    raise KeyError(\"Neither 'last_execution_height' nor 'last_executed_height' were found in the schedule data.\")",
+            "usage": "last_height = extract_last_execution_height(schedule_data)"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Simple JavaScript helper to display the last execution height in the browser console (or anywhere in your UI layer).",
+            "code": "export const displayLastExecutionHeight = (height) => {\n  if (height === undefined || height === null) {\n    console.error('Height is not provided.');\n    return;\n  }\n  console.log(`Last execution height: ${height}`);\n  // You can additionally inject this into the DOM, e.g.,\n  // document.getElementById('last-height').textContent = `Last execution height: ${height}`;\n};",
+            "usage": "displayLastExecutionHeight(last_height);"
+        }
+    ]
+}

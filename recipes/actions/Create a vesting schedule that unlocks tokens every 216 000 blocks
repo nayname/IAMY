@@ -1,0 +1,47 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates a Python helper that builds a MsgExecuteContract message for calling the vesting contract\u2019s `release_tokens` entrypoint.",
+            "code": "import json\nfrom neutron_proto.cosmwasm.wasm.v1.tx_pb2 import MsgExecuteContract\n\n\ndef build_release_tokens_msg(sender: str, vesting_contract: str) -> MsgExecuteContract:\n    \"\"\"Constructs a MsgExecuteContract that triggers the `release_tokens` method of the vesting contract.\"\"\"\n    try:\n        execute_msg = {\"release_tokens\": {}}\n        msg = MsgExecuteContract(\n            sender=sender,\n            contract=vesting_contract,\n            msg=json.dumps(execute_msg).encode(),\n            funds=[]  # No funds sent with the call\n        )\n        return msg\n    except Exception as e:\n        raise ValueError(f\"Failed to build MsgExecuteContract: {e}\")",
+            "usage": "release_msg = build_release_tokens_msg(sender_address, vesting_contract_address)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Builds a MsgAddSchedule that registers a recurring cron schedule named `token_unlock` every 216 000 blocks, embedding the release_tokens message from Step 1.",
+            "code": "from neutron_proto.neutron.cron.v1.tx_pb2 import MsgAddSchedule\n\n\ndef build_add_schedule_msg(authority: str, release_msg, period: int = 216000, name: str = \"token_unlock\") -> MsgAddSchedule:\n    \"\"\"Constructs a MsgAddSchedule message for the Cron module.\"\"\"\n    try:\n        schedule_msg = MsgAddSchedule(\n            authority=authority,\n            name=name,\n            period=period,\n            msgs=[release_msg]\n        )\n        return schedule_msg\n    except Exception as e:\n        raise ValueError(f\"Failed to build MsgAddSchedule: {e}\")",
+            "usage": "schedule_msg = build_add_schedule_msg(authority_address, release_msg)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Wraps the MsgAddSchedule into a governance proposal JSON that can be submitted via CLI or RPC.",
+            "code": "import json\nfrom google.protobuf.json_format import MessageToDict\n\n\ndef wrap_into_gov_proposal(schedule_msg, title: str = \"Add token_unlock schedule\", summary: str = \"Adds periodic token unlock via Cron\", deposit: str = \"10000000untrn\") -> str:\n    \"\"\"Serialises the schedule message into a governance proposal JSON string.\"\"\"\n    try:\n        schedule_dict = MessageToDict(schedule_msg, preserving_proto_field_name=True)\n        schedule_dict[\"@type\"] = \"/neutron.cron.MsgAddSchedule\"\n\n        proposal = {\n            \"messages\": [schedule_dict],\n            \"metadata\": \"\",\n            \"deposit\": deposit,\n            \"title\": title,\n            \"summary\": summary\n        }\n        return json.dumps(proposal, indent=2)\n    except Exception as e:\n        raise ValueError(f\"Failed to wrap proposal JSON: {e}\")",
+            "usage": "proposal_json_str = wrap_into_gov_proposal(schedule_msg)\nwith open(\"proposal.json\", \"w\") as fp:\n    fp.write(proposal_json_str)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Submits the governance proposal on-chain by broadcasting a MsgSubmitProposal transaction.",
+            "code": "import json\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import LocalWallet\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.protos.cosmos.gov.v1.tx_pb2 import MsgSubmitProposal\n\n\ndef submit_gov_proposal(rpc_endpoint: str, wallet: LocalWallet, proposal_json_path: str) -> str:\n    \"\"\"Reads the proposal file, builds MsgSubmitProposal, signs it with `wallet` and broadcasts to `rpc_endpoint`. Returns the tx hash.\"\"\"\n    try:\n        with open(proposal_json_path, \"r\") as fp:\n            proposal_dict = json.load(fp)\n\n        # Build MsgSubmitProposal message\n        msg = MsgSubmitProposal(\n            proposers=[str(wallet.address())],\n            messages=[json.dumps(m).encode() for m in proposal_dict[\"messages\"]],\n            initial_deposit=[{\"denom\": proposal_dict[\"deposit\"][-5:], \"amount\": proposal_dict[\"deposit\"][:-5]}],\n            title=proposal_dict[\"title\"],\n            summary=proposal_dict[\"summary\"],\n            metadata=proposal_dict.get(\"metadata\", \"\")\n        )\n\n        cfg = NetworkConfig.fetch_network_config(rpc_endpoint)\n        client = LedgerClient(cfg)\n\n        tx = Transaction()\n        tx.add_message(msg)\n        tx.with_gas_auto_estimate(client, wallet.address())\n        tx.sign(wallet)\n        tx_response = client.broadcast_tx(tx)\n        if tx_response.is_err():\n            raise RuntimeError(f\"Tx failed: {tx_response.log}\")\n        return tx_response.tx_hash\n    except Exception as e:\n        raise RuntimeError(f\"Failed to submit governance proposal: {e}\")",
+            "usage": "tx_hash = submit_gov_proposal(\"https://rpc.neutron.org:443\", my_wallet, \"proposal.json\")"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Continuously polls the governance module until the submitted proposal has status `PASSED`.",
+            "code": "import asyncio, time\nfrom cosmpy.aerial.client import LedgerClient\nfrom cosmpy.protos.cosmos.gov.v1.gov_pb2 import Proposal\n\n\nasync def wait_for_voting_result(client: LedgerClient, proposal_id: int, poll_interval: int = 15, timeout: int = 86400) -> None:\n    \"\"\"Waits until the given proposal_id status becomes PASSED or raises if rejected/timeout.\"\"\"\n    start_time = time.time()\n    while True:\n        try:\n            gov_info = client.query_governance_proposal(proposal_id)\n            status_name = Proposal.Status.Name(gov_info.status)\n            print(f\"Proposal {proposal_id} status: {status_name}\")\n            if status_name == \"PROPOSAL_STATUS_PASSED\":\n                print(\"\u2705 Proposal passed!\")\n                return\n            if status_name in (\"PROPOSAL_STATUS_REJECTED\", \"PROPOSAL_STATUS_FAILED\"):\n                raise RuntimeError(f\"Proposal {proposal_id} did not pass (status={status_name})\")\n            if time.time() - start_time > timeout:\n                raise TimeoutError(\"Timed out waiting for proposal to pass.\")\n            await asyncio.sleep(poll_interval)\n        except Exception as e:\n            print(f\"Error fetching proposal status: {e}. Retrying\u2026\")\n            await asyncio.sleep(poll_interval)",
+            "usage": "await wait_for_voting_result(client, proposal_id)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Queries the Cron module to verify that the `token_unlock` schedule exists and has the expected period.",
+            "code": "import grpc\nfrom neutron_proto.neutron.cron.v1.query_pb2 import QueryScheduleRequest\nfrom neutron_proto.neutron.cron.v1.query_pb2_grpc import QueryStub\n\n\ndef query_cron_schedule(grpc_endpoint: str, name: str = \"token_unlock\", expected_period: int = 216000) -> dict:\n    \"\"\"Fetches a schedule by name and asserts its `period`.\"\"\"\n    try:\n        with grpc.insecure_channel(grpc_endpoint) as channel:\n            stub = QueryStub(channel)\n            response = stub.Schedule(QueryScheduleRequest(name=name))\n            schedule = response.schedule\n            if schedule.period != expected_period:\n                raise ValueError(f\"Schedule found but period is {schedule.period}, expected {expected_period}\")\n            return {\n                \"name\": schedule.name,\n                \"period\": schedule.period,\n                \"msgs\": len(schedule.msgs)\n            }\n    except Exception as e:\n        raise RuntimeError(f\"Failed to query schedule: {e}\")",
+            "usage": "schedule_info = query_cron_schedule(\"grpc.neutron.org:9090\")"
+        }
+    ]
+}

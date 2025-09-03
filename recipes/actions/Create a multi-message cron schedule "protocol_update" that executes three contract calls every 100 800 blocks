@@ -1,0 +1,54 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Fetches the Main DAO address that must be set as `authority` in Cron messages. Falls back to an environment variable if the REST query fails.",
+            "code": "# utils/governance.py\nimport os\nimport requests\n\n\ndef get_governance_authority(rest_endpoint: str = 'https://rest-kralum.neutron.org') -> str:\n    '''\n    Fetch the current Main DAO address from the cron params endpoint.\n    Fallback to the MAIN_DAO_ADDRESS environment variable if the\n    endpoint is unavailable or the field is missing.\n    '''\n    try:\n        resp = requests.get(f'{rest_endpoint}/neutron/cron/v1/params', timeout=10)\n        resp.raise_for_status()\n        data = resp.json()\n        # Try multiple likely field names for robustness.\n        authority = (\n            data.get('params', {}).get('governance_account')\n            or data.get('params', {}).get('authority')\n        )\n        if authority:\n            return authority\n        raise ValueError('Authority field not found in response.')\n    except Exception as err:\n        # Log and fall back to env var so the workflow can continue.\n        print(f'[WARN] Unable to fetch authority from REST API: {err}')\n        fallback = os.getenv('MAIN_DAO_ADDRESS')\n        if not fallback:\n            raise RuntimeError('MAIN_DAO_ADDRESS env var is not set.') from err\n        return fallback\n",
+            "usage": "authority = get_governance_authority()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Builds three placeholder MsgExecuteContract objects that will later be executed by the Cron schedule.",
+            "code": "# utils/contracts.py\nfrom typing import List\nimport json\nfrom google.protobuf.any_pb2 import Any\nfrom cosmpy.protos.cosmwasm.wasm.v1 import tx_pb2 as wasm_tx\n\n\ndef build_execute_msg(sender: str, contract: str, msg: dict, funds: List[dict] | None = None) -> wasm_tx.MsgExecuteContract:\n    '''\n    Converts a Python dict into the binary-encoded message required by\n    MsgExecuteContract and optionally attaches funds.\n    '''\n    try:\n        execute = wasm_tx.MsgExecuteContract(\n            sender=sender,\n            contract=contract,\n            msg=json.dumps(msg).encode('utf-8'),  # CosmWasm expects binary JSON\n        )\n        if funds:\n            for coin in funds:\n                execute.funds.add(denom=coin['denom'], amount=str(coin['amount']))\n        return execute\n    except Exception as err:\n        raise ValueError(f'Failed to build MsgExecuteContract: {err}')\n\n\n# ---------------------------------------------------------------------\n# Example placeholder calls\n# ---------------------------------------------------------------------\n\ndef build_placeholder_calls(authority: str):\n    call_1 = build_execute_msg(\n        sender=authority,\n        contract='neutron1contractaddr1...',\n        msg={'update_config': {'param': 42}},\n    )\n    call_2 = build_execute_msg(\n        sender=authority,\n        contract='neutron1contractaddr2...',\n        msg={'set_admin': {'new_admin': authority}},\n    )\n    call_3 = build_execute_msg(\n        sender=authority,\n        contract='neutron1contractaddr3...',\n        msg={'migrate': {'code_id': 99}},\n    )\n    return call_1, call_2, call_3\n",
+            "usage": "call_1, call_2, call_3 = build_placeholder_calls(authority)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Creates the MsgAddSchedule that wires the three contract calls into a single Cron job executed every 100 800 blocks.",
+            "code": "# utils/cron.py\nfrom typing import List\nfrom neutron.protos.neutron.cron import tx_pb2 as cron_tx\n\n\ndef build_add_schedule(authority: str, name: str, period: int, msgs: List) -> cron_tx.MsgAddSchedule:\n    '''Create a MsgAddSchedule for the Cron module.'''\n    if not msgs:\n        raise ValueError('Msgs list cannot be empty')\n    try:\n        schedule = cron_tx.MsgAddSchedule(\n            authority=authority,\n            name=name,\n            period=period,\n            msgs=msgs,\n        )\n        return schedule\n    except Exception as err:\n        raise RuntimeError(f'Unable to build MsgAddSchedule: {err}')\n",
+            "usage": "schedule_msg = build_add_schedule(authority, 'protocol_update', 100800, [call_1, call_2, call_3])"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Wraps the MsgAddSchedule into a MsgSubmitProposal so it can be voted on through Neutron governance.",
+            "code": "# utils/governance.py (continued)\nfrom typing import List\nfrom google.protobuf.any_pb2 import Any\nfrom cosmos.protos.cosmos.gov.v1 import tx_pb2 as gov_tx\nfrom cosmos.protos.cosmos.base.v1beta1 import coin_pb2 as base_coin\n\n\ndef wrap_into_submit_proposal(schedule_msg, proposer: str, deposit: List[dict]):\n    '''Pack the MsgAddSchedule into a MsgSubmitProposal.'''    \n    try:\n        any_msg = Any()\n        any_msg.Pack(schedule_msg, type_url_prefix='/')\n\n        submit = gov_tx.MsgSubmitProposal(\n            messages=[any_msg],\n            initial_deposit=[base_coin.Coin(denom=c['denom'], amount=str(c['amount'])) for c in deposit],\n            proposer=proposer,\n            title='Register Cron schedule: protocol_update',\n            summary='Adds a cron schedule that executes three contract calls every 100,800 blocks.',\n        )\n        return submit\n    except Exception as err:\n        raise RuntimeError(f'Unable to create MsgSubmitProposal: {err}')\n",
+            "usage": "proposal_msg = wrap_into_submit_proposal(schedule_msg, proposer_address, [{'denom': 'untrn', 'amount': '100000000'}])"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Signs and broadcasts the governance proposal to the network.",
+            "code": "# utils/tx.py\nimport asyncio\nfrom cosmpy.aerial.wallet import PrivateKey\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.tx import Transaction\n\n\nasync def submit_proposal(rpc_endpoint: str, chain_id: str, mnemonic: str, proposal_msg):\n    '''Sign and broadcast the MsgSubmitProposal.'''\n    try:\n        pk = PrivateKey.from_mnemonic(mnemonic)\n        address = pk.to_public_key().address()\n\n        client = LedgerClient(NetworkConfig(chain_id=chain_id, url=rpc_endpoint))\n\n        tx = (\n            Transaction()\n            .with_messages(proposal_msg)\n            .with_sequence(client.get_sequence(address))\n            .with_account_num(client.get_number(address))\n            .with_chain_id(chain_id)\n            .with_gas(400000)\n            .with_fee(400000, 'untrn')\n            .with_memo('Cron schedule proposal')\n        )\n\n        tx = tx.sign(pk)\n        resp = client.broadcast_tx(tx)\n        if resp.is_err():\n            raise RuntimeError(f'Broadcast failed: {resp.tx_response.raw_log}')\n        print(f'Broadcast successful. TxHash: {resp.tx_response.txhash}')\n        return resp.tx_response.txhash\n    except Exception as err:\n        raise RuntimeError(f'Unable to submit proposal: {err}')\n",
+            "usage": "tx_hash = asyncio.run(submit_proposal('https://rpc-kralum.neutron.org', 'neutron-1', MNEMONIC, proposal_msg))"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Polls governance until the proposal enters the `PASSED` state or fails.",
+            "code": "# utils/gov_monitor.py\nimport time\nimport requests\n\nSTATUS_PASSED = 'PROPOSAL_STATUS_PASSED'\nTERMINAL_STATES = ['PROPOSAL_STATUS_REJECTED', 'PROPOSAL_STATUS_FAILED', 'PROPOSAL_STATUS_ABORTED']\n\n\ndef wait_for_voting_result(rest_endpoint: str, proposal_id: int, poll_interval: int = 15):\n    '''Block until the governance proposal reaches a final state.'''\n    url = f'{rest_endpoint}/cosmos/gov/v1/proposals/{proposal_id}'\n    while True:\n        try:\n            resp = requests.get(url, timeout=10)\n            resp.raise_for_status()\n            data = resp.json()\n            status = data.get('proposal', {}).get('status')\n            print(f'Proposal {proposal_id} status: {status}')\n            if status == STATUS_PASSED:\n                print('Proposal passed \ud83c\udf89')\n                return True\n            if status in TERMINAL_STATES:\n                raise RuntimeError(f'Proposal ended with status {status}')\n            time.sleep(poll_interval)\n        except Exception as err:\n            print(f'[WARN] error while querying proposal: {err}')\n            time.sleep(poll_interval)\n",
+            "usage": "wait_for_voting_result('https://rest-kralum.neutron.org', PROPOSAL_ID)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Queries the Cron module after the proposal passes to ensure the `protocol_update` schedule is registered.",
+            "code": "# utils/cron.py (continued)\nimport requests\n\n\ndef query_cron_schedule(rest_endpoint: str, name: str):\n    '''Retrieve a cron schedule by name to verify successful registration.'''\n    url = f'{rest_endpoint}/neutron/cron/v1/schedules/{name}'\n    try:\n        resp = requests.get(url, timeout=10)\n        resp.raise_for_status()\n        return resp.json()\n    except Exception as err:\n        raise RuntimeError(f'Failed to fetch schedule {name}: {err}')\n",
+            "usage": "schedule_json = query_cron_schedule('https://rest-kralum.neutron.org', 'protocol_update')"
+        }
+    ]
+}

@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Creates a CosmWasm MsgExecuteContract object that will call the vesting contract\u2019s release_tokens entry-point.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds = [])",
+            "usage": "const execMsg = constructTxWasmExecute(senderAddr, vestingContractAddr, { release_tokens: {} });"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Builds an on-chain MsgAddSchedule describing the periodic 216 000-block unlock task.",
+            "function": "build_msg_add_schedule(authority, name, period, msgs, execution_stage=\"EXECUTION_STAGE_END_BLOCKER\")",
+            "usage": "const scheduleMsg = build_msg_add_schedule(authorityAddr, \"token_unlock\", 216000, [execMsg]);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Wraps the schedule message inside a DAO-style governance proposal JSON object.",
+            "function": "build_dao_proposal(msg_update_params, title, description)",
+            "usage": "const proposalJson = build_dao_proposal(scheduleMsg, \"Token Unlock Schedule\", \"Add periodic vesting release\");"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the governance proposal transaction with the given wallet and broadcasts it to the chain.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "const txHash = sign_and_broadcast_tx(tx, wallet, client);"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Polls the chain until the specified proposal reaches a final status and returns it once passed.",
+            "function": "wait_for_voting_result(proposal_id, chain_id=\"neutron-1\", node=\"https://rpc-kralum.neutron.org:443\", poll_interval=15, max_attempts=800)",
+            "usage": "const status = wait_for_voting_result(proposalId);"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Queries the Cron module to confirm the token_unlock schedule exists with the expected 216 000-block period.",
+            "function": "query_cron_schedule(schedule_name, node=\"https://rpc.neutron.org:443\")",
+            "usage": "const scheduleInfo = query_cron_schedule(\"token_unlock\");"
+        }
+    ],
+    "frontend": [
+        "const execMsg = constructTxWasmExecute(senderAddr, vestingContractAddr, { release_tokens: {} });//step: 1 Tool: construct_msg_execute_contract Desciption: Prepare a `MsgExecuteContract` that calls the vesting contract\u2019s `release_tokens` (or equivalent) entrypoint."
+    ],
+    "backend": [
+        "const scheduleMsg = build_msg_add_schedule(authorityAddr, \"token_unlock\", 216000, [execMsg]);#step: 2 Tool: construct_msg_add_schedule Desciption: Build a `MsgAddSchedule` with `{ authority, name: \"token_unlock\", period: 216000, msgs: [release_tokens_msg] }`.",
+        "const proposalJson = build_dao_proposal(scheduleMsg, \"Token Unlock Schedule\", \"Add periodic vesting release\");#step: 3 Tool: wrap_into_governance_proposal Desciption: Package the schedule message into a governance proposal JSON.",
+        "const txHash = sign_and_broadcast_tx(tx, wallet, client);#step: 4 Tool: submit_gov_proposal Desciption: Broadcast the proposal for voting.",
+        "const status = wait_for_voting_result(proposalId);#step: 5 Tool: wait_for_voting_result Desciption: Wait until proposal status becomes `PASSED`.",
+        "const scheduleInfo = query_cron_schedule(\"token_unlock\");#step: 6 Tool: query_cron_schedule Desciption: Confirm that `token_unlock` schedule is registered with a `period` of 216 000 blocks."
+    ],
+    "intent": "Create a vesting schedule that unlocks tokens every 216 000 blocks",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "construct_msg_execute_contract",
+            "description": "Prepare a `MsgExecuteContract` that calls the vesting contract\u2019s `release_tokens` (or equivalent) entrypoint."
+        },
+        {
+            "step": 2,
+            "tool": "construct_msg_add_schedule",
+            "description": "Build a `MsgAddSchedule` with `{ authority, name: \"token_unlock\", period: 216000, msgs: [release_tokens_msg] }`."
+        },
+        {
+            "step": 3,
+            "tool": "wrap_into_governance_proposal",
+            "description": "Package the schedule message into a governance proposal JSON."
+        },
+        {
+            "step": 4,
+            "tool": "submit_gov_proposal",
+            "description": "Broadcast the proposal for voting."
+        },
+        {
+            "step": 5,
+            "tool": "wait_for_voting_result",
+            "description": "Wait until proposal status becomes `PASSED`."
+        },
+        {
+            "step": 6,
+            "tool": "query_cron_schedule",
+            "description": "Confirm that `token_unlock` schedule is registered with a `period` of 216 000 blocks."
+        }
+    ],
+    "outcome_checks": [
+        "Governance proposal passes.",
+        "`token_unlock` schedule exists with `period = 216000`.",
+        "First execution height equals `(creation_height + 216000)` once chain progresses."
+    ]
+}

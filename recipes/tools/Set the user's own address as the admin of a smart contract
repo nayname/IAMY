@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects to the user\u2019s browser wallet, then returns their bech32 address together with an OfflineSigner.",
+            "function": "getOfflineSignerAndAddress(chainId = 'neutron-1')",
+            "usage": "const { address, signer } = await getOfflineSignerAndAddress('neutron-1');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Fetches the target smart-contract address from a specified input element in the web page.",
+            "function": "getContractAddress(elementId = 'contract-address-input')",
+            "usage": "const contractAddress = getContractAddress('contract-address-input');"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Creates an unsigned MsgUpdateAdmin transaction that will set the contract\u2019s admin to the user\u2019s own address.",
+            "function": "construct_update_admin_tx(sender_address, contract_address, new_admin_address)",
+            "usage": "tx, client = construct_update_admin_tx(current_admin, contractAddress, userAddress)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the prepared transaction with the provided wallet and broadcasts it to the network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "tx_response = sign_and_broadcast_tx(tx, admin_wallet, client)"
+        }
+    ],
+    "frontend": [
+        "const { address, signer } = await getOfflineSignerAndAddress('neutron-1');//step: 1 Tool: get_user_address Desciption: Determine the wallet address that should become the admin.",
+        "const contractAddress = getContractAddress('contract-address-input');//step: 2 Tool: get_contract_address Desciption: Prompt for the target contract address."
+    ],
+    "backend": [
+        "tx, client = construct_update_admin_tx(current_admin, contractAddress, userAddress)#step: 3 Tool: construct_tx_wasm_update_admin Desciption: Create a `wasm set-contract-admin` transaction setting admin to the user's address.",
+        "tx_response = sign_and_broadcast_tx(tx, admin_wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign with the current admin key (or governance key) and broadcast the transaction."
+    ],
+    "intent": "Set the user's own address as the admin of a smart contract",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_address",
+            "description": "Determine the wallet address that should become the admin."
+        },
+        {
+            "step": 2,
+            "tool": "get_contract_address",
+            "description": "Prompt for the target contract address."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_wasm_update_admin",
+            "description": "Create a `wasm set-contract-admin` transaction setting admin to the user's address."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign with the current admin key (or governance key) and broadcast the transaction."
+        }
+    ],
+    "outcome_checks": [
+        "Query `wasm contract-info` and verify the `admin` field equals the user's address."
+    ]
+}
