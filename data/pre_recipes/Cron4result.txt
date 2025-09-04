@@ -1,0 +1,541 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"Cron\", \"query\": \"Create a fee_collection schedule to harvest fees every 1200 blocks\"}, {\"label\": \"Cron\", \"query\": \"Remove schedule protocol_update\"}, {\"label\": \"Cron\", \"query\": \"Create a schedule to rebalance portfolio every 3600 blocks\"}, {\"label\": \"Cron\", \"query\": \"Submit proposal to update cron parameters\"}, {\"label\": \"Cron\", \"query\": \"Create a schedule to perform health checks every 300 blocks\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "ac7d23f5-1967-4ae0-af7c-18c94ec13cd7",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_71AxuaURn6wLARyRkaimkhuk",
+                        "function": {
+                            "arguments": "{\"query\": \"Neutron Cron module create schedule blocks\", \"section\": \"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 426,
+                    "prompt_tokens": 720,
+                    "total_tokens": 1146,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 384,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CBREOfh7G8ybYlZOGtgmTatHmitpt",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--1e045584-e533-425d-aa4c-87c27fcbea3b-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "Neutron Cron module create schedule blocks",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_71AxuaURn6wLARyRkaimkhuk",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 720,
+                "output_tokens": 426,
+                "total_tokens": 1146,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 384
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"Neutron Cron module create schedule blocks\":\n\n## 1. Understanding Cron\n**File:** /root/neutron/docs/developers/modules/cron/explanation.mdx\n**Section:** developers\n**Relevance Score:** 24\n\n**Matching lines:**\n- Line 2: title: \"Understanding Cron\"\n- Line 3: description: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n- Line 6: This document provides a technical explanation of the Cron module architecture, concepts, and design choices.\n- Line 8: ## What is the Cron Module?\n- Line 10: The Cron module enables on-chain time-based automation by maintaining a registry of schedules and executing them at the appropriate block heights. Traditional blockchain applications require external triggers for time-sensitive operations, which creates several challenges:\n\n**Content Preview:**\n```\n---\ntitle: \"Understanding Cron\"\ndescription: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n\n---\n\ntitle: \"Understanding Cron\"\ndescription: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n---\n\n---\n\n\nThis document provides a technical explanation of the Cron module architecture, concepts, and design choices.\n\n```\n\n---\n\n## 2. Cron Module\n**File:** /root/neutron/docs/developers/modules/cron/overview.mdx\n**Section:** developers\n**Relevance Score:** 24\n\n**Matching lines:**\n- Line 2: title: \"Cron Module\"\n- Line 3: description: \"Schedule automated smart contract executions with block-based timing\"\n- Line 6: This document explains the `cron` module for the Neutron network.\n- Line 8: The Cron module allows scheduling automatic smart contract executions at predefined block intervals, similar to Unix cron jobs. This feature enables time-based automation in blockchain applications through governance-controlled schedule management.\n- Line 12: - [Overview](/developers/modules/cron/overview) \u2014 a high-level description of the module.\n\n**Content Preview:**\n```\n---\ntitle: \"Cron Module\"\ndescription: \"Schedule automated smart contract executions with block-based timing\"\n\n---\n\ntitle: \"Cron Module\"\ndescription: \"Schedule automated smart contract executions with block-based timing\"\n---\n\n---\n\n\nThis document explains the `cron` module for the Neutron network.\n\n```\n\n---\n\n## 3. Part 2: Modules & Contracts\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-2-modules-contracts.mdx\n**Section:** developers\n**Relevance Score:** 22\n\n**Matching lines:**\n- Line 2: title: \"Part 2: Modules & Contracts\"\n- Line 3: description: \"Learn how to interact with Neutron modules and other smart contracts\"\n- Line 6: In this tutorial, you'll extend your knowledge by learning how to interact with Neutron's unique modules and call other smart contracts. This is where Neutron's power really shines.\n- Line 10: - How to use Neutron's custom modules (Oracle, Cron, ICQ)\n- Line 13: - Working with Neutron-specific message types\n\n**Content Preview:**\n```\n---\ntitle: \"Part 2: Modules & Contracts\"\ndescription: \"Learn how to interact with Neutron modules and other smart contracts\"\n\n---\n\ntitle: \"Part 2: Modules & Contracts\"\ndescription: \"Learn how to interact with Neutron modules and other smart contracts\"\n---\n\n---\n\n\nIn this tutorial, you'll extend your knowledge by learning how to interact with Neutron's unique modules and call other smart contracts. This is where Neutron's power really shines.\n\n```\n\n---\n\n## 4. Admin Module\n**File:** /root/neutron/docs/developers/modules/admin/overview.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Admin Module\"\n- Line 3: description: \"Central governance module enabling DAO-driven network administration and proposal execution\"\n- Line 6: The admin module serves as Neutron's central governance mechanism, empowering the **Main DAO contract** to propose and execute critical network operations. Built with Cosmos SDK compatibility and upgraded for SDK 0.50, this module enables secure, controlled administration of the entire Neutron network.\n- Line 9: **Main DAO Exclusive Access**: The admin module can **only** be accessed by the Main DAO contract through WebAssembly bindings. Individual users, external contracts, and CLI commands cannot directly interact with this module. All operations must go through Neutron's DAO governance process.\n- Line 12: The admin module provides a unified interface for governance operations, supporting both legacy proposal mechanisms and modern message-based execution. Through careful whitelisting and permission controls, it ensures that only authorized operations can be performed while maintaining the flexibility needed for network evolution.\n\n**Content Preview:**\n```\n---\ntitle: \"Admin Module\"\ndescription: \"Central governance module enabling DAO-driven network administration and proposal execution\"\n\n---\n\ntitle: \"Admin Module\"\ndescription: \"Central governance module enabling DAO-driven network administration and proposal execution\"\n---\n\n---\n\n\nThe admin module serves as Neutron's central governance mechanism, empowering the **Main DAO contract** to propose and execute critical network operations. Built with Cosmos SDK compatibility and upgraded for SDK 0.50, this module enables secure, controlled administration of the entire Neutron network.\n\n```\n\n---\n\n## 5. GMP Module Technical Details\n**File:** /root/neutron/docs/developers/modules/gmp/explanation.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"GMP Module Technical Details\"\n- Line 8: This document provides an in-depth technical explanation of how the GMP (General Message Passing) module works within the Neutron network's IBC stack.\n- Line 12: The GMP module is implemented as an IBC middleware that sits between the IBC core routing and the transfer application. This positioning allows it to intercept and process IBC transfer packets before they reach their final destination.\n- Line 15: IBC Core \u2192 GMP Middleware \u2192 Transfer Module \u2192 Application\n- Line 20: The GMP module implements the standard IBC middleware interface, providing hooks for all IBC packet lifecycle events:\n\n**Content Preview:**\n```\n---\ntitle: \"GMP Module Technical Details\"\ndescription: \"Technical explanation of General Message Passing middleware implementation\"\n\n---\n\n\nThis document provides an in-depth technical explanation of how the GMP (General Message Passing) module works within the Neutron network's IBC stack.\n\n\n---\n\n\nThe GMP module is implemented as an IBC middleware that sits between the IBC core routing and the transfer application. This positioning allows it to intercept and process IBC transfer packets before they reach their final destination.\n\n```\n\n---\n\n## 6. GMP Module\n**File:** /root/neutron/docs/developers/modules/gmp/overview.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"GMP Module\"\n- Line 8: This document explains the `gmp` module for the Neutron network.\n- Line 10: The General Message Passing (GMP) module is an IBC middleware that enables cross-chain message passing by embedding structured messages within IBC transfer packet memo fields. This module allows developers to send both tokens and arbitrary data in a single IBC transaction, enabling sophisticated cross-chain interactions without requiring additional infrastructure.\n- Line 13: The GMP module operates as IBC middleware, intercepting and processing IBC transfer packets that contain structured messages in their memo fields. It works transparently with existing IBC transfer functionality while adding message passing capabilities.\n- Line 18: - [Overview](/developers/modules/gmp/overview) \u2014 a high-level description of the module.\n\n**Content Preview:**\n```\n---\ntitle: \"GMP Module\"\ndescription: \"General Message Passing for cross-chain communication via IBC transfers\"\n\n---\n\n\nThis document explains the `gmp` module for the Neutron network.\n\n\n---\n\n\nThe General Message Passing (GMP) module is an IBC middleware that enables cross-chain message passing by embedding structured messages within IBC transfer packet memo fields. This module allows developers to send both tokens and arbitrary data in a single IBC transaction, enabling sophisticated cross-chain interactions without requiring additional infrastructure.\n\n```\n\n---\n\n## 7. IBC Rate Limit Module\n**File:** /root/neutron/docs/developers/modules/ibc-rate-limit/overview.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"IBC Rate Limit Module\"\n- Line 6: The IBC Rate Limit module provides governance-configurable rate limiting for IBC transfers. It acts as a critical safety control to protect assets on Neutron in the event of security incidents such as bugs or hacks on Neutron, counter-party chains, or in the IBC protocol itself.\n- Line 31: ## Module Interactions\n- Line 33: The IBC Rate Limit module operates as an IBC middleware that:\n- Line 35: - Wraps around the ICS-20 Transfer module\n\n**Content Preview:**\n```\n---\ntitle: \"IBC Rate Limit Module\"\nicon: \"gauge-high\"\n\n---\n\n\nThe IBC Rate Limit module provides governance-configurable rate limiting for IBC transfers. It acts as a critical safety control to protect assets on Neutron in the event of security incidents such as bugs or hacks on Neutron, counter-party chains, or in the IBC protocol itself.\n\n\n---\n\n\n## Module Interactions\n\n```\n\n---\n\n## 8. Interchain Queries Module\n**File:** /root/neutron/docs/developers/modules/interchain-queries/overview.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Interchain Queries Module\"\n- Line 6: This document explains the `interchainqueries` module for the Neutron network.\n- Line 8: Interchain Queries allow developers to get verifiable data from other blockchains. This feature is essential for creating secure cross-chain applications. The module uses Merkle proofs and IBC clients to confirm the accuracy of the data retrieved directly from the storage of the target blockchain. It allows any smart contract to register Interchain Queries without needing any special module on the target blockchain.\n- Line 11: While the Interchain Queries module supports both CLI commands and smart contract integration, most practical applications are implemented through CosmWasm smart contracts. Smart contracts provide more sophisticated handling of query results, automatic processing of updates, and integration with complex application logic.\n- Line 16: - [Overview](/developers/modules/interchain-queries/overview) \u2014 a high-level description of the module.\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Queries Module\"\ndescription: \"Query cross-chain data and receive verification for on-chain use\"\n\n---\n\n\nThis document explains the `interchainqueries` module for the Neutron network.\n\n\n---\n\n\nInterchain Queries allow developers to get verifiable data from other blockchains. This feature is essential for creating secure cross-chain applications. The module uses Merkle proofs and IBC clients to confirm the accuracy of the data retrieved directly from the storage of the target blockchain. It allows any smart contract to register Interchain Queries without needing any special module on the target blockchain.\n\n```\n\n---\n\n## 9. Interchain Transactions Module\n**File:** /root/neutron/docs/developers/modules/interchaintxs/overview.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Interchain Transactions Module\"\n- Line 5: The Interchain Transactions module enables **CosmWasm smart contracts** to interact with other blockchains in the IBC ecosystem by managing interchain accounts and executing transactions on remote zones. This module provides a critical bridge between smart contracts on Neutron and functionality on connected IBC-enabled chains.\n- Line 8: This module is designed exclusively for CosmWasm smart contracts. Individual users cannot directly register interchain accounts or submit transactions through CLI commands.\n- Line 30: - **Cross-Chain DeFi**: Enabling a Neutron-based protocol to participate in DeFi activities on other chains\n- Line 31: - **Governance Participation**: Allowing Neutron contracts to vote in governance proposals on remote chains\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Transactions Module\"\n---\n\n---\n\n\nThe Interchain Transactions module enables **CosmWasm smart contracts** to interact with other blockchains in the IBC ecosystem by managing interchain accounts and executing transactions on remote zones. This module provides a critical bridge between smart contracts on Neutron and functionality on connected IBC-enabled chains.\n\n\n---\n\n<Warning>\nThis module is designed exclusively for CosmWasm smart contracts. Individual users cannot directly register interchain accounts or submit transactions through CLI commands.\n</Warning>\n```\n\n---\n\n## 10. Neutron Modules\n**File:** /root/neutron/docs/developers/modules/overview.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Neutron Modules\"\n- Line 5: Neutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n- Line 7: ## DeFi Modules\n- Line 9: These modules are designed for direct integration with your smart contracts and DeFi applications:\n- Line 12: <Card title=\"Interchain Queries (ICQ)\" icon=\"link\" href=\"/developers/modules/interchain-queries/overview\">\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Modules\"\n---\n\n---\n\n\nNeutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n\n\n---\n\n\n## DeFi Modules\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "4019ca4d-aad1-4545-ad71-e2de3bc690b5",
+            "tool_call_id": "call_71AxuaURn6wLARyRkaimkhuk",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_R6UQdOhUxTNgw6tzpU6IuzJ7",
+                        "function": {
+                            "arguments": "{\"query\": \"cron schedule create\", \"section\": \"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 294,
+                    "prompt_tokens": 4407,
+                    "total_tokens": 4701,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 256,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CBRETrZGy2RD5Qc5jYCEE5AckuQrL",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--d554a81b-c7ae-45ae-bd4b-f92b22551863-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "cron schedule create",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_R6UQdOhUxTNgw6tzpU6IuzJ7",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 4407,
+                "output_tokens": 294,
+                "total_tokens": 4701,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 256
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"cron schedule create\":\n\n## 1. Understanding Cron\n**File:** /root/neutron/docs/developers/modules/cron/explanation.mdx\n**Section:** developers\n**Relevance Score:** 22\n\n**Matching lines:**\n- Line 2: title: \"Understanding Cron\"\n- Line 3: description: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n- Line 6: This document provides a technical explanation of the Cron module architecture, concepts, and design choices.\n- Line 8: ## What is the Cron Module?\n- Line 10: The Cron module enables on-chain time-based automation by maintaining a registry of schedules and executing them at the appropriate block heights. Traditional blockchain applications require external triggers for time-sensitive operations, which creates several challenges:\n\n**Content Preview:**\n```\n---\ntitle: \"Understanding Cron\"\ndescription: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n\n---\n\ntitle: \"Understanding Cron\"\ndescription: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n---\n\n---\n\n\nThis document provides a technical explanation of the Cron module architecture, concepts, and design choices.\n\n```\n\n---\n\n## 2. Cron Module\n**File:** /root/neutron/docs/developers/modules/cron/overview.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Cron Module\"\n- Line 3: description: \"Schedule automated smart contract executions with block-based timing\"\n- Line 6: This document explains the `cron` module for the Neutron network.\n- Line 8: The Cron module allows scheduling automatic smart contract executions at predefined block intervals, similar to Unix cron jobs. This feature enables time-based automation in blockchain applications through governance-controlled schedule management.\n- Line 12: - [Overview](/developers/modules/cron/overview) \u2014 a high-level description of the module.\n\n**Content Preview:**\n```\n---\ntitle: \"Cron Module\"\ndescription: \"Schedule automated smart contract executions with block-based timing\"\n\n---\n\ntitle: \"Cron Module\"\ndescription: \"Schedule automated smart contract executions with block-based timing\"\n---\n\n---\n\n\nThis document explains the `cron` module for the Neutron network.\n\n```\n\n---\n\n## 3. Reference\n**File:** /root/neutron/docs/developers/modules/cron/reference.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 3: description: \"Comprehensive technical reference for the Cron module\"\n- Line 8: The Cron module accepts messages through governance proposals only.\n- Line 10: ### MsgAddSchedule\n- Line 12: Creates a new schedule through governance proposal.\n- Line 15: message MsgAddSchedule {\n\n**Content Preview:**\n```\ntitle: \"Reference\"\ndescription: \"Comprehensive technical reference for the Cron module\"\n---\n\n---\n\n\nThe Cron module accepts messages through governance proposals only.\n\n\n---\n\n\n### MsgAddSchedule\n\n```\n\n---\n\n## 4. Chain Integration Tests\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/chain.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 32: Create `chain_test.go`:\n- Line 108: ### 2. Cron Module Tests\n- Line 111: func (s *IntegrationTestSuite) TestCronModule() {\n- Line 114: // Create a cron schedule\n- Line 115: scheduleMsg := &crontypes.MsgAddSchedule{\n\n**Content Preview:**\n```\n\nCreate `chain_test.go`:\n\n\n---\n\n\n### 2. Cron Module Tests\n\n\n---\n\n```go\nfunc (s *IntegrationTestSuite) TestCronModule() {\n    val := s.network.Validators[0]\n```\n\n---\n\n## 5. Part 2: Modules & Contracts\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-2-modules-contracts.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 10: - How to use Neutron's custom modules (Oracle, Cron, ICQ)\n- Line 29: <Card title=\"Cron\" icon=\"clock\">\n- Line 30: Schedule automated contract executions\n- Line 39: Let's extend our counter contract to use Neutron's Oracle module. We'll create a contract that tracks the price of ATOM and only allows increments when the price is above a certain threshold.\n- Line 273: ## Using the Cron Module\n\n**Content Preview:**\n```\n\n- How to use Neutron's custom modules (Oracle, Cron, ICQ)\n- Inter-contract communication patterns\n\n---\n\n  </Card>\n  <Card title=\"Cron\" icon=\"clock\">\n    Schedule automated contract executions\n\n---\n\n  <Card title=\"Cron\" icon=\"clock\">\n    Schedule automated contract executions\n  </Card>\n```\n\n---\n\n## 6. How-to\n**File:** /root/neutron/docs/developers/modules/cron/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 3: description: \"Step-by-step instructions for using the Cron module through governance\"\n- Line 6: This guide provides practical instructions for working with the Cron module, including creating governance proposals for schedules and handling scheduled executions in smart contracts.\n- Line 12: - Access to governance proposal submission (for schedule creation)\n- Line 14: ## Understanding Cron Module Access\n- Line 16: The Cron module is **governance-gated**, meaning:\n\n**Content Preview:**\n```\ntitle: \"How-to\"\ndescription: \"Step-by-step instructions for using the Cron module through governance\"\n---\n\n---\n\n\nThis guide provides practical instructions for working with the Cron module, including creating governance proposals for schedules and handling scheduled executions in smart contracts.\n\n\n---\n\n- Familiarity with CosmWasm contract development\n- Access to governance proposal submission (for schedule creation)\n\n```\n\n---\n\n## 7. Known Bugs\n**File:** /root/neutron/docs/developers/modules/cron/known-bugs.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 3: description: \"Known issues and limitations of the Cron module\"\n- Line 8: The Cron module is functioning as designed with no known critical bugs at this time.\n- Line 14: The Cron module's execution timing is based on block heights rather than precise timestamps. This means:\n- Line 16: - If average block time changes significantly, the real-world timing of scheduled executions will be affected\n- Line 17: - Schedules are not guaranteed to execute at exact time intervals\n\n**Content Preview:**\n```\ntitle: \"Known Bugs\"\ndescription: \"Known issues and limitations of the Cron module\"\n---\n\n---\n\n\nThe Cron module is functioning as designed with no known critical bugs at this time.\n\n\n---\n\n\nThe Cron module's execution timing is based on block heights rather than precise timestamps. This means:\n\n```\n\n---\n\n## 8. Neutron Modules\n**File:** /root/neutron/docs/developers/modules/overview.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 20: <Card title=\"Cron\" icon=\"clock\" href=\"/developers/modules/cron/overview\">\n- Line 21: Schedule automated contract executions\n- Line 81: ### 2. Create Messages\n\n**Content Preview:**\n```\n  \n  <Card title=\"Cron\" icon=\"clock\" href=\"/developers/modules/cron/overview\">\n    Schedule automated contract executions\n\n---\n\n  <Card title=\"Cron\" icon=\"clock\" href=\"/developers/modules/cron/overview\">\n    Schedule automated contract executions\n  </Card>\n\n---\n\n\n### 2. Create Messages\n```rust\n```\n\n---\n\n## 9. Explanation\n**File:** /root/neutron/docs/developers/modules/revenue/explanation.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 9: The Revenue module's primary responsibility is to assess validator performance, calculate appropriate compensation, and distribute rewards according to configurable schedules. The system leverages real-time performance data and price information to ensure fair and timely compensation.\n- Line 15: A --> D[Check Payment Schedule]\n- Line 37: These thresholds create three performance zones:\n- Line 78: The module supports multiple payment schedule types:\n- Line 84: The payment schedule is stored in two components:\n\n**Content Preview:**\n```\n\nThe Revenue module's primary responsibility is to assess validator performance, calculate appropriate compensation, and distribute rewards according to configurable schedules. The system leverages real-time performance data and price information to ensure fair and timely compensation.\n\n\n---\n\n    A --> C[Process Extended Commit Info]\n    A --> D[Check Payment Schedule]\n    C --> E[Record Validator Participation]\n\n---\n\n\nThese thresholds create three performance zones:\n\n```\n\n---\n\n## 10. How-to\n**File:** /root/neutron/docs/developers/modules/revenue/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 81: // Create the message\n- Line 95: Check the current payment schedule and revenue calculation details.\n- Line 112: \"payment_schedule\": {\n- Line 113: \"monthly_payment_schedule\": {\n- Line 160: \"payment_schedule_type\": {\n\n**Content Preview:**\n```\n```rust\n// Create the message\nlet fund_msg = CosmosMsg::Custom(RevenueMsg::FundTreasury { \n\n---\n\n\nCheck the current payment schedule and revenue calculation details.\n\n\n---\n\n{\n  \"payment_schedule\": {\n    \"monthly_payment_schedule\": {\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "bfbabf2c-c14a-4c1b-ab39-19b6b2f008a2",
+            "tool_call_id": "call_R6UQdOhUxTNgw6tzpU6IuzJ7",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_7IKEw1Hh7BWeLvAt5VgvJaJV",
+                        "function": {
+                            "arguments": "{\"query\": \"MsgAddSchedule cron\", \"section\": \"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 359,
+                    "prompt_tokens": 7214,
+                    "total_tokens": 7573,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 320,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 4352
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CBREbSCdIhfieyhVFZKJfcRhQYg1B",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--c26cb437-c815-4a64-bcb2-7da5d3de89ab-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "MsgAddSchedule cron",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_7IKEw1Hh7BWeLvAt5VgvJaJV",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 7214,
+                "output_tokens": 359,
+                "total_tokens": 7573,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 4352
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 320
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"MsgAddSchedule cron\":\n\n## 1. Understanding Cron\n**File:** /root/neutron/docs/developers/modules/cron/explanation.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Understanding Cron\"\n- Line 3: description: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n- Line 6: This document provides a technical explanation of the Cron module architecture, concepts, and design choices.\n- Line 8: ## What is the Cron Module?\n- Line 10: The Cron module enables on-chain time-based automation by maintaining a registry of schedules and executing them at the appropriate block heights. Traditional blockchain applications require external triggers for time-sensitive operations, which creates several challenges:\n\n**Content Preview:**\n```\n---\ntitle: \"Understanding Cron\"\ndescription: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n\n---\n\ntitle: \"Understanding Cron\"\ndescription: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n---\n\n---\n\n\nThis document provides a technical explanation of the Cron module architecture, concepts, and design choices.\n\n```\n\n---\n\n## 2. Cron Module\n**File:** /root/neutron/docs/developers/modules/cron/overview.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Cron Module\"\n- Line 6: This document explains the `cron` module for the Neutron network.\n- Line 8: The Cron module allows scheduling automatic smart contract executions at predefined block intervals, similar to Unix cron jobs. This feature enables time-based automation in blockchain applications through governance-controlled schedule management.\n- Line 12: - [Overview](/developers/modules/cron/overview) \u2014 a high-level description of the module.\n- Line 13: - [Explanation](/developers/modules/cron/explanation) \u2014 an explanation of the module's concepts and the reasoning behind its design choices.\n\n**Content Preview:**\n```\n---\ntitle: \"Cron Module\"\ndescription: \"Schedule automated smart contract executions with block-based timing\"\n\n---\n\n\nThis document explains the `cron` module for the Neutron network.\n\n\n---\n\n\nThe Cron module allows scheduling automatic smart contract executions at predefined block intervals, similar to Unix cron jobs. This feature enables time-based automation in blockchain applications through governance-controlled schedule management.\n\n```\n\n---\n\n## 3. Reference\n**File:** /root/neutron/docs/developers/modules/cron/reference.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 3: description: \"Comprehensive technical reference for the Cron module\"\n- Line 8: The Cron module accepts messages through governance proposals only.\n- Line 10: ### MsgAddSchedule\n- Line 15: message MsgAddSchedule {\n- Line 50: The primary state object in the Cron module:\n\n**Content Preview:**\n```\ntitle: \"Reference\"\ndescription: \"Comprehensive technical reference for the Cron module\"\n---\n\n---\n\n\nThe Cron module accepts messages through governance proposals only.\n\n\n---\n\n\n### MsgAddSchedule\n\n```\n\n---\n\n## 4. Chain Integration Tests\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/chain.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 108: ### 2. Cron Module Tests\n- Line 111: func (s *IntegrationTestSuite) TestCronModule() {\n- Line 114: // Create a cron schedule\n- Line 115: scheduleMsg := &crontypes.MsgAddSchedule{\n- Line 119: Msgs: []crontypes.MsgExecuteContract{\n\n**Content Preview:**\n```\n\n### 2. Cron Module Tests\n\n\n---\n\n```go\nfunc (s *IntegrationTestSuite) TestCronModule() {\n    val := s.network.Validators[0]\n\n---\n\n    \n    // Create a cron schedule\n    scheduleMsg := &crontypes.MsgAddSchedule{\n```\n\n---\n\n## 5. How-to\n**File:** /root/neutron/docs/developers/modules/cron/how-to.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 3: description: \"Step-by-step instructions for using the Cron module through governance\"\n- Line 6: This guide provides practical instructions for working with the Cron module, including creating governance proposals for schedules and handling scheduled executions in smart contracts.\n- Line 14: ## Understanding Cron Module Access\n- Line 16: The Cron module is **governance-gated**, meaning:\n- Line 25: **No Individual Access**: Unlike other modules, the Cron module does not accept direct user transactions. All schedule management must go through governance proposals.\n\n**Content Preview:**\n```\ntitle: \"How-to\"\ndescription: \"Step-by-step instructions for using the Cron module through governance\"\n---\n\n---\n\n\nThis guide provides practical instructions for working with the Cron module, including creating governance proposals for schedules and handling scheduled executions in smart contracts.\n\n\n---\n\n\n## Understanding Cron Module Access\n\n```\n\n---\n\n## 6. Client\n**File:** /root/neutron/docs/developers/modules/dex/client.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 1015: curl https://rest-falcron.pion-1.ntrn.tech/neutron/dex/params\n- Line 1020: curl https://rest-falcron.pion-1.ntrn.tech/neutron/dex/user/deposits/{address}\n- Line 1025: curl https://rest-falcron.pion-1.ntrn.tech/neutron/dex/user/limit_orders/{address}\n- Line 1030: curl https://rest-falcron.pion-1.ntrn.tech/neutron/dex/pool_metadata\n- Line 1035: curl -X POST https://rest-falcron.pion-1.ntrn.tech/neutron/dex/simulate_multi_hop_swap \\\n\n**Content Preview:**\n```\n```bash\ncurl https://rest-falcron.pion-1.ntrn.tech/neutron/dex/params\n```\n\n---\n\n```bash\ncurl https://rest-falcron.pion-1.ntrn.tech/neutron/dex/user/deposits/{address}\n```\n\n---\n\n```bash\ncurl https://rest-falcron.pion-1.ntrn.tech/neutron/dex/user/limit_orders/{address}\n```\n```\n\n---\n\n## 7. Introduction to Indexers\n**File:** /root/neutron/docs/developers/tutorials/indexers/intro.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 159: ### Cron Job Executions\n- Line 162: // Monitor automated cron executions\n- Line 163: const cronExecutions = await api.query(\n- Line 165: cronExecutions(first: 50) {\n- Line 283: interface CronSchedule {\n\n**Content Preview:**\n```\n\n### Cron Job Executions\n\n\n---\n\n```javascript\n// Monitor automated cron executions\nconst cronExecutions = await api.query(\n\n---\n\n// Monitor automated cron executions\nconst cronExecutions = await api.query(\n  `query {\n```\n\n---\n\n## 8. Part 2: Modules & Contracts\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-2-modules-contracts.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 10: - How to use Neutron's custom modules (Oracle, Cron, ICQ)\n- Line 29: <Card title=\"Cron\" icon=\"clock\">\n- Line 273: ## Using the Cron Module\n- Line 275: Schedule automated executions using Neutron's Cron module:\n- Line 284: let cron_msg = NeutronMsg::AddSchedule {\n\n**Content Preview:**\n```\n\n- How to use Neutron's custom modules (Oracle, Cron, ICQ)\n- Inter-contract communication patterns\n\n---\n\n  </Card>\n  <Card title=\"Cron\" icon=\"clock\">\n    Schedule automated contract executions\n\n---\n\n\n## Using the Cron Module\n\n```\n\n---\n\n## 9. Known Bugs\n**File:** /root/neutron/docs/developers/modules/cron/known-bugs.mdx\n**Section:** developers\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 3: description: \"Known issues and limitations of the Cron module\"\n- Line 8: The Cron module is functioning as designed with no known critical bugs at this time.\n- Line 14: The Cron module's execution timing is based on block heights rather than precise timestamps. This means:\n- Line 30: If you encounter any bugs or issues with the Cron module, please report them through the appropriate channels:\n\n**Content Preview:**\n```\ntitle: \"Known Bugs\"\ndescription: \"Known issues and limitations of the Cron module\"\n---\n\n---\n\n\nThe Cron module is functioning as designed with no known critical bugs at this time.\n\n\n---\n\n\nThe Cron module's execution timing is based on block heights rather than precise timestamps. This means:\n\n```\n\n---\n\n## 10. Developer Tutorials\n**File:** /root/neutron/docs/developers/tutorials/overview.mdx\n**Section:** developers\n**Relevance Score:** 5\n\n**Matching lines:**\n- Line 23: - **[Cron Module](/developers/modules/cron/overview)** - Schedule automated contract executions on-chain without external bots\n- Line 32: Building with ICQ and ICA together with cron and oracle represents Neutron's core value proposition: **integrated cross-chain development** where your smart contracts can seamlessly interact with other blockchains without bridges or external infrastructure.\n\n**Content Preview:**\n```\n\n- **[Cron Module](/developers/modules/cron/overview)** - Schedule automated contract executions on-chain without external bots\n- **[Oracle](/validators/oracle-setup)** - Learn about Neutron's high-frequency price oracle that provides reliable price data\n\n---\n\n\nBuilding with ICQ and ICA together with cron and oracle represents Neutron's core value proposition: **integrated cross-chain development** where your smart contracts can seamlessly interact with other blockchains without bridges or external infrastructure.\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "60a4fe2d-9e6a-4006-9e38-050f7c2ddc4e",
+            "tool_call_id": "call_7IKEw1Hh7BWeLvAt5VgvJaJV",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_c2CHF82VQoKDVFhlhl7fCakW",
+                        "function": {
+                            "arguments": "{\"query\": \"cron module parameters\", \"section\": \"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 550,
+                    "prompt_tokens": 10135,
+                    "total_tokens": 10685,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 512,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CBREiCFLUoE6pmQisGlXxL2y1q0rI",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--3892af0b-a2fa-4900-a743-b584fc5eb68c-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "cron module parameters",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_c2CHF82VQoKDVFhlhl7fCakW",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 10135,
+                "output_tokens": 550,
+                "total_tokens": 10685,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 512
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"cron module parameters\":\n\n## 1. Understanding Cron\n**File:** /root/neutron/docs/developers/modules/cron/explanation.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Understanding Cron\"\n- Line 3: description: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n- Line 6: This document provides a technical explanation of the Cron module architecture, concepts, and design choices.\n- Line 8: ## What is the Cron Module?\n- Line 10: The Cron module enables on-chain time-based automation by maintaining a registry of schedules and executing them at the appropriate block heights. Traditional blockchain applications require external triggers for time-sensitive operations, which creates several challenges:\n\n**Content Preview:**\n```\n---\ntitle: \"Understanding Cron\"\ndescription: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n\n---\n\ntitle: \"Understanding Cron\"\ndescription: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n---\n\n---\n\n\nThis document provides a technical explanation of the Cron module architecture, concepts, and design choices.\n\n```\n\n---\n\n## 2. Cron Module\n**File:** /root/neutron/docs/developers/modules/cron/overview.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Cron Module\"\n- Line 6: This document explains the `cron` module for the Neutron network.\n- Line 8: The Cron module allows scheduling automatic smart contract executions at predefined block intervals, similar to Unix cron jobs. This feature enables time-based automation in blockchain applications through governance-controlled schedule management.\n- Line 12: - [Overview](/developers/modules/cron/overview) \u2014 a high-level description of the module.\n- Line 13: - [Explanation](/developers/modules/cron/explanation) \u2014 an explanation of the module's concepts and the reasoning behind its design choices.\n\n**Content Preview:**\n```\n---\ntitle: \"Cron Module\"\ndescription: \"Schedule automated smart contract executions with block-based timing\"\n\n---\n\n\nThis document explains the `cron` module for the Neutron network.\n\n\n---\n\n\nThe Cron module allows scheduling automatic smart contract executions at predefined block intervals, similar to Unix cron jobs. This feature enables time-based automation in blockchain applications through governance-controlled schedule management.\n\n```\n\n---\n\n## 3. Part 2: Modules & Contracts\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-2-modules-contracts.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Part 2: Modules & Contracts\"\n- Line 3: description: \"Learn how to interact with Neutron modules and other smart contracts\"\n- Line 6: In this tutorial, you'll extend your knowledge by learning how to interact with Neutron's unique modules and call other smart contracts. This is where Neutron's power really shines.\n- Line 10: - How to use Neutron's custom modules (Oracle, Cron, ICQ)\n- Line 21: ## Neutron's Unique Modules\n\n**Content Preview:**\n```\n---\ntitle: \"Part 2: Modules & Contracts\"\ndescription: \"Learn how to interact with Neutron modules and other smart contracts\"\n\n---\n\ntitle: \"Part 2: Modules & Contracts\"\ndescription: \"Learn how to interact with Neutron modules and other smart contracts\"\n---\n\n---\n\n\nIn this tutorial, you'll extend your knowledge by learning how to interact with Neutron's unique modules and call other smart contracts. This is where Neutron's power really shines.\n\n```\n\n---\n\n## 4. Admin Module\n**File:** /root/neutron/docs/developers/modules/admin/overview.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Admin Module\"\n- Line 3: description: \"Central governance module enabling DAO-driven network administration and proposal execution\"\n- Line 6: The admin module serves as Neutron's central governance mechanism, empowering the **Main DAO contract** to propose and execute critical network operations. Built with Cosmos SDK compatibility and upgraded for SDK 0.50, this module enables secure, controlled administration of the entire Neutron network.\n- Line 9: **Main DAO Exclusive Access**: The admin module can **only** be accessed by the Main DAO contract through WebAssembly bindings. Individual users, external contracts, and CLI commands cannot directly interact with this module. All operations must go through Neutron's DAO governance process.\n- Line 12: The admin module provides a unified interface for governance operations, supporting both legacy proposal mechanisms and modern message-based execution. Through careful whitelisting and permission controls, it ensures that only authorized operations can be performed while maintaining the flexibility needed for network evolution.\n\n**Content Preview:**\n```\n---\ntitle: \"Admin Module\"\ndescription: \"Central governance module enabling DAO-driven network administration and proposal execution\"\n\n---\n\ntitle: \"Admin Module\"\ndescription: \"Central governance module enabling DAO-driven network administration and proposal execution\"\n---\n\n---\n\n\nThe admin module serves as Neutron's central governance mechanism, empowering the **Main DAO contract** to propose and execute critical network operations. Built with Cosmos SDK compatibility and upgraded for SDK 0.50, this module enables secure, controlled administration of the entire Neutron network.\n\n```\n\n---\n\n## 5. GMP Module Technical Details\n**File:** /root/neutron/docs/developers/modules/gmp/explanation.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"GMP Module Technical Details\"\n- Line 8: This document provides an in-depth technical explanation of how the GMP (General Message Passing) module works within the Neutron network's IBC stack.\n- Line 12: The GMP module is implemented as an IBC middleware that sits between the IBC core routing and the transfer application. This positioning allows it to intercept and process IBC transfer packets before they reach their final destination.\n- Line 15: IBC Core \u2192 GMP Middleware \u2192 Transfer Module \u2192 Application\n- Line 20: The GMP module implements the standard IBC middleware interface, providing hooks for all IBC packet lifecycle events:\n\n**Content Preview:**\n```\n---\ntitle: \"GMP Module Technical Details\"\ndescription: \"Technical explanation of General Message Passing middleware implementation\"\n\n---\n\n\nThis document provides an in-depth technical explanation of how the GMP (General Message Passing) module works within the Neutron network's IBC stack.\n\n\n---\n\n\nThe GMP module is implemented as an IBC middleware that sits between the IBC core routing and the transfer application. This positioning allows it to intercept and process IBC transfer packets before they reach their final destination.\n\n```\n\n---\n\n## 6. GMP Module\n**File:** /root/neutron/docs/developers/modules/gmp/overview.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"GMP Module\"\n- Line 8: This document explains the `gmp` module for the Neutron network.\n- Line 10: The General Message Passing (GMP) module is an IBC middleware that enables cross-chain message passing by embedding structured messages within IBC transfer packet memo fields. This module allows developers to send both tokens and arbitrary data in a single IBC transaction, enabling sophisticated cross-chain interactions without requiring additional infrastructure.\n- Line 13: The GMP module operates as IBC middleware, intercepting and processing IBC transfer packets that contain structured messages in their memo fields. It works transparently with existing IBC transfer functionality while adding message passing capabilities.\n- Line 18: - [Overview](/developers/modules/gmp/overview) \u2014 a high-level description of the module.\n\n**Content Preview:**\n```\n---\ntitle: \"GMP Module\"\ndescription: \"General Message Passing for cross-chain communication via IBC transfers\"\n\n---\n\n\nThis document explains the `gmp` module for the Neutron network.\n\n\n---\n\n\nThe General Message Passing (GMP) module is an IBC middleware that enables cross-chain message passing by embedding structured messages within IBC transfer packet memo fields. This module allows developers to send both tokens and arbitrary data in a single IBC transaction, enabling sophisticated cross-chain interactions without requiring additional infrastructure.\n\n```\n\n---\n\n## 7. Harpoon Module\n**File:** /root/neutron/docs/developers/modules/harpoon/overview.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Harpoon Module\"\n- Line 3: description: \"Subscribe to staking module hooks from CosmWasm smart contracts\"\n- Line 8: The Harpoon module allows CosmWasm smart contracts to subscribe to staking module hooks. Its primary purpose is to enable the calculation of historical voting power from the staking module, which is essential for governance systems that rely on historical data at specific block heights.\n- Line 12: - [Overview](/developers/modules/harpoon/overview) \u2014 a high-level description of the module.\n- Line 13: - [Explanation](/developers/modules/harpoon/explanation) \u2014 an explanation of the module's concepts and the reasoning behind its design choices.\n\n**Content Preview:**\n```\n---\ntitle: \"Harpoon Module\"\ndescription: \"Subscribe to staking module hooks from CosmWasm smart contracts\"\n\n---\n\ntitle: \"Harpoon Module\"\ndescription: \"Subscribe to staking module hooks from CosmWasm smart contracts\"\n---\n\n---\n\n\nThe Harpoon module allows CosmWasm smart contracts to subscribe to staking module hooks. Its primary purpose is to enable the calculation of historical voting power from the staking module, which is essential for governance systems that rely on historical data at specific block heights.\n\n```\n\n---\n\n## 8. IBC Rate Limit Module\n**File:** /root/neutron/docs/developers/modules/ibc-rate-limit/overview.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"IBC Rate Limit Module\"\n- Line 6: The IBC Rate Limit module provides governance-configurable rate limiting for IBC transfers. It acts as a critical safety control to protect assets on Neutron in the event of security incidents such as bugs or hacks on Neutron, counter-party chains, or in the IBC protocol itself.\n- Line 31: ## Module Interactions\n- Line 33: The IBC Rate Limit module operates as an IBC middleware that:\n- Line 35: - Wraps around the ICS-20 Transfer module\n\n**Content Preview:**\n```\n---\ntitle: \"IBC Rate Limit Module\"\nicon: \"gauge-high\"\n\n---\n\n\nThe IBC Rate Limit module provides governance-configurable rate limiting for IBC transfers. It acts as a critical safety control to protect assets on Neutron in the event of security incidents such as bugs or hacks on Neutron, counter-party chains, or in the IBC protocol itself.\n\n\n---\n\n\n## Module Interactions\n\n```\n\n---\n\n## 9. Interchain Queries Module\n**File:** /root/neutron/docs/developers/modules/interchain-queries/overview.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Interchain Queries Module\"\n- Line 6: This document explains the `interchainqueries` module for the Neutron network.\n- Line 8: Interchain Queries allow developers to get verifiable data from other blockchains. This feature is essential for creating secure cross-chain applications. The module uses Merkle proofs and IBC clients to confirm the accuracy of the data retrieved directly from the storage of the target blockchain. It allows any smart contract to register Interchain Queries without needing any special module on the target blockchain.\n- Line 11: While the Interchain Queries module supports both CLI commands and smart contract integration, most practical applications are implemented through CosmWasm smart contracts. Smart contracts provide more sophisticated handling of query results, automatic processing of updates, and integration with complex application logic.\n- Line 16: - [Overview](/developers/modules/interchain-queries/overview) \u2014 a high-level description of the module.\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Queries Module\"\ndescription: \"Query cross-chain data and receive verification for on-chain use\"\n\n---\n\n\nThis document explains the `interchainqueries` module for the Neutron network.\n\n\n---\n\n\nInterchain Queries allow developers to get verifiable data from other blockchains. This feature is essential for creating secure cross-chain applications. The module uses Merkle proofs and IBC clients to confirm the accuracy of the data retrieved directly from the storage of the target blockchain. It allows any smart contract to register Interchain Queries without needing any special module on the target blockchain.\n\n```\n\n---\n\n## 10. Interchain Transactions Module\n**File:** /root/neutron/docs/developers/modules/interchaintxs/overview.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Interchain Transactions Module\"\n- Line 5: The Interchain Transactions module enables **CosmWasm smart contracts** to interact with other blockchains in the IBC ecosystem by managing interchain accounts and executing transactions on remote zones. This module provides a critical bridge between smart contracts on Neutron and functionality on connected IBC-enabled chains.\n- Line 8: This module is designed exclusively for CosmWasm smart contracts. Individual users cannot directly register interchain accounts or submit transactions through CLI commands.\n- Line 35: ## Module Interactions\n- Line 37: The Interchain Transactions module extensively interacts with:\n\n**Content Preview:**\n```\n---\ntitle: \"Interchain Transactions Module\"\n---\n\n---\n\n\nThe Interchain Transactions module enables **CosmWasm smart contracts** to interact with other blockchains in the IBC ecosystem by managing interchain accounts and executing transactions on remote zones. This module provides a critical bridge between smart contracts on Neutron and functionality on connected IBC-enabled chains.\n\n\n---\n\n<Warning>\nThis module is designed exclusively for CosmWasm smart contracts. Individual users cannot directly register interchain accounts or submit transactions through CLI commands.\n</Warning>\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "ef7533fd-555d-4e73-b428-a822e390e378",
+            "tool_call_id": "call_c2CHF82VQoKDVFhlhl7fCakW",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_3Alm7XZIashkGpHwU6xBqnfg",
+                        "function": {
+                            "arguments": "{\"query\": \"MsgUpdateParams cron\", \"section\": \"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 423,
+                    "prompt_tokens": 13905,
+                    "total_tokens": 14328,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 384,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CBREwyKuXf5NvugKk2CwSWHX1Misa",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--c365c844-c842-4bd1-b5a5-8463048c687a-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "MsgUpdateParams cron",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_3Alm7XZIashkGpHwU6xBqnfg",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 13905,
+                "output_tokens": 423,
+                "total_tokens": 14328,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 384
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"MsgUpdateParams cron\":\n\n## 1. Understanding Cron\n**File:** /root/neutron/docs/developers/modules/cron/explanation.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Understanding Cron\"\n- Line 3: description: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n- Line 6: This document provides a technical explanation of the Cron module architecture, concepts, and design choices.\n- Line 8: ## What is the Cron Module?\n- Line 10: The Cron module enables on-chain time-based automation by maintaining a registry of schedules and executing them at the appropriate block heights. Traditional blockchain applications require external triggers for time-sensitive operations, which creates several challenges:\n\n**Content Preview:**\n```\n---\ntitle: \"Understanding Cron\"\ndescription: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n\n---\n\ntitle: \"Understanding Cron\"\ndescription: \"Detailed explanation of how the Cron module works and why it's designed this way\"\n---\n\n---\n\n\nThis document provides a technical explanation of the Cron module architecture, concepts, and design choices.\n\n```\n\n---\n\n## 2. Cron Module\n**File:** /root/neutron/docs/developers/modules/cron/overview.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Cron Module\"\n- Line 6: This document explains the `cron` module for the Neutron network.\n- Line 8: The Cron module allows scheduling automatic smart contract executions at predefined block intervals, similar to Unix cron jobs. This feature enables time-based automation in blockchain applications through governance-controlled schedule management.\n- Line 12: - [Overview](/developers/modules/cron/overview) \u2014 a high-level description of the module.\n- Line 13: - [Explanation](/developers/modules/cron/explanation) \u2014 an explanation of the module's concepts and the reasoning behind its design choices.\n\n**Content Preview:**\n```\n---\ntitle: \"Cron Module\"\ndescription: \"Schedule automated smart contract executions with block-based timing\"\n\n---\n\n\nThis document explains the `cron` module for the Neutron network.\n\n\n---\n\n\nThe Cron module allows scheduling automatic smart contract executions at predefined block intervals, similar to Unix cron jobs. This feature enables time-based automation in blockchain applications through governance-controlled schedule management.\n\n```\n\n---\n\n## 3. Reference\n**File:** /root/neutron/docs/developers/modules/cron/reference.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 3: description: \"Comprehensive technical reference for the Cron module\"\n- Line 8: The Cron module accepts messages through governance proposals only.\n- Line 35: ### MsgUpdateParams\n- Line 40: message MsgUpdateParams {\n- Line 50: The primary state object in the Cron module:\n\n**Content Preview:**\n```\ntitle: \"Reference\"\ndescription: \"Comprehensive technical reference for the Cron module\"\n---\n\n---\n\n\nThe Cron module accepts messages through governance proposals only.\n\n\n---\n\n\n### MsgUpdateParams\n\n```\n\n---\n\n## 4. How-to\n**File:** /root/neutron/docs/developers/modules/cron/how-to.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 3: description: \"Step-by-step instructions for using the Cron module through governance\"\n- Line 6: This guide provides practical instructions for working with the Cron module, including creating governance proposals for schedules and handling scheduled executions in smart contracts.\n- Line 14: ## Understanding Cron Module Access\n- Line 16: The Cron module is **governance-gated**, meaning:\n- Line 25: **No Individual Access**: Unlike other modules, the Cron module does not accept direct user transactions. All schedule management must go through governance proposals.\n\n**Content Preview:**\n```\ntitle: \"How-to\"\ndescription: \"Step-by-step instructions for using the Cron module through governance\"\n---\n\n---\n\n\nThis guide provides practical instructions for working with the Cron module, including creating governance proposals for schedules and handling scheduled executions in smart contracts.\n\n\n---\n\n\n## Understanding Cron Module Access\n\n```\n\n---\n\n## 5. Client\n**File:** /root/neutron/docs/developers/modules/dex/client.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 1015: curl https://rest-falcron.pion-1.ntrn.tech/neutron/dex/params\n- Line 1020: curl https://rest-falcron.pion-1.ntrn.tech/neutron/dex/user/deposits/{address}\n- Line 1025: curl https://rest-falcron.pion-1.ntrn.tech/neutron/dex/user/limit_orders/{address}\n- Line 1030: curl https://rest-falcron.pion-1.ntrn.tech/neutron/dex/pool_metadata\n- Line 1035: curl -X POST https://rest-falcron.pion-1.ntrn.tech/neutron/dex/simulate_multi_hop_swap \\\n\n**Content Preview:**\n```\n```bash\ncurl https://rest-falcron.pion-1.ntrn.tech/neutron/dex/params\n```\n\n---\n\n```bash\ncurl https://rest-falcron.pion-1.ntrn.tech/neutron/dex/user/deposits/{address}\n```\n\n---\n\n```bash\ncurl https://rest-falcron.pion-1.ntrn.tech/neutron/dex/user/limit_orders/{address}\n```\n```\n\n---\n\n## 6. Messages\n**File:** /root/neutron/docs/developers/modules/dex/messages.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 404: ## MsgUpdateParams\n- Line 407: **Governance-Only Access**: The `MsgUpdateParams` message can only be executed through governance proposals. Individual users cannot directly submit this message via CLI or other means.\n- Line 410: `MsgUpdateParams` allows the governance account to update the module parameters.\n- Line 413: message MsgUpdateParams {\n- Line 414: option (amino.name) = \"dex/MsgUpdateParams\";\n\n**Content Preview:**\n```\n\n## MsgUpdateParams\n\n\n---\n\n<Warning>\n**Governance-Only Access**: The `MsgUpdateParams` message can only be executed through governance proposals. Individual users cannot directly submit this message via CLI or other means.\n</Warning>\n\n---\n\n\n`MsgUpdateParams` allows the governance account to update the module parameters.\n\n```\n\n---\n\n## 7. Introduction to Indexers\n**File:** /root/neutron/docs/developers/tutorials/indexers/intro.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 159: ### Cron Job Executions\n- Line 162: // Monitor automated cron executions\n- Line 163: const cronExecutions = await api.query(\n- Line 165: cronExecutions(first: 50) {\n- Line 283: interface CronSchedule {\n\n**Content Preview:**\n```\n\n### Cron Job Executions\n\n\n---\n\n```javascript\n// Monitor automated cron executions\nconst cronExecutions = await api.query(\n\n---\n\n// Monitor automated cron executions\nconst cronExecutions = await api.query(\n  `query {\n```\n\n---\n\n## 8. Chain Integration Tests\n**File:** /root/neutron/docs/developers/tutorials/integration-tests/chain.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 108: ### 2. Cron Module Tests\n- Line 111: func (s *IntegrationTestSuite) TestCronModule() {\n- Line 114: // Create a cron schedule\n- Line 115: scheduleMsg := &crontypes.MsgAddSchedule{\n- Line 119: Msgs: []crontypes.MsgExecuteContract{\n\n**Content Preview:**\n```\n\n### 2. Cron Module Tests\n\n\n---\n\n```go\nfunc (s *IntegrationTestSuite) TestCronModule() {\n    val := s.network.Validators[0]\n\n---\n\n    \n    // Create a cron schedule\n    scheduleMsg := &crontypes.MsgAddSchedule{\n```\n\n---\n\n## 9. Part 2: Modules & Contracts\n**File:** /root/neutron/docs/developers/tutorials/onboarding/part-2-modules-contracts.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 10: - How to use Neutron's custom modules (Oracle, Cron, ICQ)\n- Line 29: <Card title=\"Cron\" icon=\"clock\">\n- Line 273: ## Using the Cron Module\n- Line 275: Schedule automated executions using Neutron's Cron module:\n- Line 284: let cron_msg = NeutronMsg::AddSchedule {\n\n**Content Preview:**\n```\n\n- How to use Neutron's custom modules (Oracle, Cron, ICQ)\n- Inter-contract communication patterns\n\n---\n\n  </Card>\n  <Card title=\"Cron\" icon=\"clock\">\n    Schedule automated contract executions\n\n---\n\n\n## Using the Cron Module\n\n```\n\n---\n\n## 10. Known Bugs\n**File:** /root/neutron/docs/developers/modules/cron/known-bugs.mdx\n**Section:** developers\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 3: description: \"Known issues and limitations of the Cron module\"\n- Line 8: The Cron module is functioning as designed with no known critical bugs at this time.\n- Line 14: The Cron module's execution timing is based on block heights rather than precise timestamps. This means:\n- Line 30: If you encounter any bugs or issues with the Cron module, please report them through the appropriate channels:\n\n**Content Preview:**\n```\ntitle: \"Known Bugs\"\ndescription: \"Known issues and limitations of the Cron module\"\n---\n\n---\n\n\nThe Cron module is functioning as designed with no known critical bugs at this time.\n\n\n---\n\n\nThe Cron module's execution timing is based on block heights rather than precise timestamps. This means:\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "7717478e-f7cd-4ff4-9ab3-e6b669bcfd94",
+            "tool_call_id": "call_3Alm7XZIashkGpHwU6xBqnfg",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_bSk87O013opzuWxHNA6x8Yzv",
+                        "function": {
+                            "arguments": "{\"query\": \"MsgAddSchedule field\", \"section\": \"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 551,
+                    "prompt_tokens": 16814,
+                    "total_tokens": 17365,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 512,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 7168
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CBRF9MAbXx4WnZcSZz3XwZt63z6yh",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--6e607634-5464-4168-9de1-7df97a42e2a9-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "MsgAddSchedule field",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_bSk87O013opzuWxHNA6x8Yzv",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 16814,
+                "output_tokens": 551,
+                "total_tokens": 17365,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7168
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 512
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"MsgAddSchedule field\":\n\n## 1. How-to\n**File:** /root/neutron/docs/developers/modules/cron/how-to.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 44: \"@type\": \"/neutron.cron.MsgAddSchedule\",\n- Line 62: The `MsgAddSchedule` message contains:\n- Line 198: \"@type\": \"/neutron.cron.MsgAddSchedule\",\n- Line 224: \"@type\": \"/neutron.cron.MsgAddSchedule\",\n- Line 250: \"@type\": \"/neutron.cron.MsgAddSchedule\",\n\n**Content Preview:**\n```\n    {\n      \"@type\": \"/neutron.cron.MsgAddSchedule\",\n      \"authority\": \"neutron1...\",\n\n---\n\n\nThe `MsgAddSchedule` message contains:\n\n\n---\n\n    {\n      \"@type\": \"/neutron.cron.MsgAddSchedule\",\n      \"authority\": \"neutron1...\",\n```\n\n---\n\n## 2. Messages\n**File:** /root/neutron/docs/developers/modules/dex/messages.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 43: | Field | Type | Description |\n- Line 57: | Field | Type | Description |\n- Line 89: | Field | Type | Description |\n- Line 120: | Field | Type | Description |\n- Line 149: | Field | Type | Description |\n\n**Content Preview:**\n```\n\n| Field | Type | Description |\n| --- | --- | --- |\n\n---\n\n\n| Field | Type | Description |\n| --- | --- | --- |\n\n---\n\n\n| Field | Type | Description |\n| --- | --- | --- |\n```\n\n---\n\n## 3. GMP Module Technical Details\n**File:** /root/neutron/docs/developers/modules/gmp/explanation.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 48: #### Step 2: Memo Field Analysis\n- Line 58: The module attempts to parse the memo field as a GMP message. If parsing fails or the payload is empty, the packet is treated as a standard transfer and passed through unchanged.\n- Line 98: ### Field Descriptions\n- Line 120: 2. **Parsing**: Memo field successfully parsed as GMP message\n- Line 129: 2. **Parsing**: Memo field parsing fails or payload is empty\n\n**Content Preview:**\n```\n\n#### Step 2: Memo Field Analysis\n```go\n\n---\n\n\nThe module attempts to parse the memo field as a GMP message. If parsing fails or the payload is empty, the packet is treated as a standard transfer and passed through unchanged.\n\n\n---\n\n\n### Field Descriptions\n\n```\n\n---\n\n## 4. How-to\n**File:** /root/neutron/docs/developers/modules/gmp/how-to.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 12: The GMP module processes messages embedded in IBC transfer memo fields. To use GMP, you embed a structured JSON message in the memo field of a standard IBC transfer.\n- Line 67: Use the GMP message as the memo field in your IBC transfer:\n- Line 149: \"\"\"Create a GMP message for IBC transfer memo field\"\"\"\n- Line 234: Applications receiving GMP-processed transfers will see the extracted payload in the memo field, not the original GMP message structure.\n- Line 258: // The memo field now contains the extracted payload\n\n**Content Preview:**\n```\n\nThe GMP module processes messages embedded in IBC transfer memo fields. To use GMP, you embed a structured JSON message in the memo field of a standard IBC transfer.\n\n\n---\n\n\nUse the GMP message as the memo field in your IBC transfer:\n\n\n---\n\ndef create_gmp_message(source_chain, source_address, payload, message_type=1):\n    \"\"\"Create a GMP message for IBC transfer memo field\"\"\"\n    \n```\n\n---\n\n## 5. GMP Module\n**File:** /root/neutron/docs/developers/modules/gmp/overview.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 10: The General Message Passing (GMP) module is an IBC middleware that enables cross-chain message passing by embedding structured messages within IBC transfer packet memo fields. This module allows developers to send both tokens and arbitrary data in a single IBC transaction, enabling sophisticated cross-chain interactions without requiring additional infrastructure.\n- Line 13: The GMP module operates as IBC middleware, intercepting and processing IBC transfer packets that contain structured messages in their memo fields. It works transparently with existing IBC transfer functionality while adding message passing capabilities.\n- Line 26: The GMP module processes two types of messages embedded in IBC transfer memo fields:\n- Line 34: 1. Attempts to parse the memo field as a structured GMP message\n- Line 39: If the memo field doesn't contain a valid GMP message, the packet is passed through unchanged, ensuring compatibility with standard IBC transfers.\n\n**Content Preview:**\n```\n\nThe General Message Passing (GMP) module is an IBC middleware that enables cross-chain message passing by embedding structured messages within IBC transfer packet memo fields. This module allows developers to send both tokens and arbitrary data in a single IBC transaction, enabling sophisticated cross-chain interactions without requiring additional infrastructure.\n\n\n---\n\n<Info>\nThe GMP module operates as IBC middleware, intercepting and processing IBC transfer packets that contain structured messages in their memo fields. It works transparently with existing IBC transfer functionality while adding message passing capabilities.\n</Info>\n\n---\n\n\nThe GMP module processes two types of messages embedded in IBC transfer memo fields:\n\n```\n\n---\n\n## 6. Reference\n**File:** /root/neutron/docs/developers/modules/gmp/reference.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 6: The GMP (General Message Passing) module is an IBC middleware that processes messages embedded in IBC transfer packet memo fields.\n- Line 10: GMP messages are embedded in IBC transfer memo fields as JSON:\n- Line 21: ### Field Requirements\n- Line 23: | Field | Type | Required | Description |\n- Line 52: 2. **Parse GMP message** from memo field (if valid JSON with non-empty payload)\n\n**Content Preview:**\n```\n\nThe GMP (General Message Passing) module is an IBC middleware that processes messages embedded in IBC transfer packet memo fields.\n\n\n---\n\n\nGMP messages are embedded in IBC transfer memo fields as JSON:\n\n\n---\n\n\n### Field Requirements\n\n```\n\n---\n\n## 7. Reference\n**File:** /root/neutron/docs/developers/modules/interchaintxs/reference.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 53: | Field | Type | Description |\n- Line 70: | Field | Type | Description |\n- Line 117: | Field | Type | Description |\n- Line 136: | Field | Type | Description |\n- Line 180: | Field | Type | Description |\n\n**Content Preview:**\n```\n\n| Field | Type | Description |\n| --- | --- | --- |\n\n---\n\n\n| Field | Type | Description |\n| --- | --- | --- |\n\n---\n\n\n| Field | Type | Description |\n| --- | --- | --- |\n```\n\n---\n\n## 8. Reference\n**File:** /root/neutron/docs/developers/modules/tokenfactory/reference.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 22: **Fields:**\n- Line 32: **Fields:**\n- Line 40: **Fields:**\n- Line 48: **Fields:**\n- Line 56: **Fields:**\n\n**Content Preview:**\n```\n\n**Fields:**\n- `sender`: Address creating the token\n\n---\n\n\n**Fields:**\n- `sender`: Token admin address\n\n---\n\n\n**Fields:**\n- `sender`: Token admin address\n```\n\n---\n\n## 9. Reference\n**File:** /root/neutron/docs/developers/modules/admin/reference.mdx\n**Section:** developers\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 17: **Fields:**\n- Line 24: **Fields:**\n- Line 31: **Fields:**\n- Line 38: **Fields:**\n\n**Content Preview:**\n```\n\n**Fields:**\n- `messages`: Array of messages to execute\n\n---\n\n\n**Fields:**\n- `content`: Proposal content in legacy format\n\n---\n\n\n**Fields:**\n- `creator`: Address adding the admin\n```\n\n---\n\n## 10. Reference\n**File:** /root/neutron/docs/developers/modules/interchain-queries/reference.mdx\n**Section:** developers\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 51: **Fields:**\n- Line 67: For TX queries, the `transactions_filter` field expects a JSON array:\n- Line 70: {\"field\": \"transfer.recipient\", \"op\": \"eq\", \"value\": \"cosmos1...\"},\n- Line 71: {\"field\": \"tx.height\", \"op\": \"gte\", \"value\": 1000000}\n\n**Content Preview:**\n```\n\n**Fields:**\n- `query_type` - The query type identifier: `\"kv\"` or `\"tx\"`\n\n---\n\n**Transaction Filter Format:**\nFor TX queries, the `transactions_filter` field expects a JSON array:\n```json\n\n---\n\n[\n  {\"field\": \"transfer.recipient\", \"op\": \"eq\", \"value\": \"cosmos1...\"},\n  {\"field\": \"tx.height\", \"op\": \"gte\", \"value\": 1000000}\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "66ab0b41-9c2e-409f-837f-2048c997aa5d",
+            "tool_call_id": "call_bSk87O013opzuWxHNA6x8Yzv",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Create a fee_collection schedule to harvest fees every 1,200 blocks\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_dao_authority_address\",\n        \"description\": \"Retrieve the Main DAO\u2019s authority address required to create Cron schedules.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"build_msg_add_schedule\",\n        \"description\": \"Construct a MsgAddSchedule with: name=\\\"fee_collection\\\", period=1200, msgs=[Cosmos SDK/Wasmd message that calls the treasury contract\u2019s `harvest_fees` entry-point], and an appropriate gas_limit.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"package_into_gov_proposal\",\n        \"description\": \"Wrap the MsgAddSchedule inside a DAO governance proposal (e.g., MsgSubmitProposal or DAO-execute message). Include a title and description explaining the automated fee harvesting.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Have the DAO sign and broadcast the proposal transaction to the Neutron network.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"After the proposal passes, query the Cron module and confirm a schedule with name \\\"fee_collection\\\" exists and shows a 1,200-block period.\",\n      \"Monitor the next block height \u2265 current_height + 1,200 and verify that the `harvest_fees` contract execution event is emitted.\"\n    ]\n  },\n  {\n    \"intent\": \"Remove the existing schedule named protocol_update\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_dao_authority_address\",\n        \"description\": \"Fetch the Main DAO authority address (required to delete schedules).\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"build_msg_delete_schedule\",\n        \"description\": \"Create a MsgDeleteSchedule with: name=\\\"protocol_update\\\".\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"package_into_gov_proposal\",\n        \"description\": \"Embed the MsgDeleteSchedule in a DAO governance proposal explaining why the schedule should be removed.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the proposal with the DAO authority and broadcast it.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Query the Cron schedule registry after the proposal executes and confirm that no schedule with name \\\"protocol_update\\\" is present.\",\n      \"Ensure no further contract executions are emitted for the removed schedule at its former cadence.\"\n    ]\n  },\n  {\n    \"intent\": \"Create a schedule to rebalance portfolio every 3,600 blocks\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_dao_authority_address\",\n        \"description\": \"Obtain the DAO authority address.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"build_msg_add_schedule\",\n        \"description\": \"Compose MsgAddSchedule with: name=\\\"portfolio_rebalance\\\", period=3600, msgs=[contract call to the portfolio manager\u2019s `rebalance` method], and gas_limit sized for the rebalance operation.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"package_into_gov_proposal\",\n        \"description\": \"Create a governance proposal that contains the MsgAddSchedule and includes rationale (e.g., keep target asset weights).\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"DAO signs and submits the proposal TX.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"After passage, verify schedule \\\"portfolio_rebalance\\\" exists with a 3,600-block period.\",\n      \"Observe at least one successful `rebalance` contract execution after 3,600 blocks.\"\n    ]\n  },\n  {\n    \"intent\": \"Submit a proposal to update Cron module parameters\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_dao_authority_address\",\n        \"description\": \"Retrieve the DAO authority address to update module params.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"build_msg_update_params\",\n        \"description\": \"Construct MsgUpdateParams with the new desired parameters (e.g., max_schedules=1,000, default_gas_limit, or other Cron tunables).\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"package_into_gov_proposal\",\n        \"description\": \"Wrap MsgUpdateParams in a governance proposal explaining each parameter change.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"DAO signs and broadcasts the proposal to the chain.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"After execution, query `neutron/cron/params` and confirm the on-chain parameters match the proposal.\",\n      \"Ensure existing schedules still execute correctly under the new parameters.\"\n    ]\n  },\n  {\n    \"intent\": \"Create a schedule to perform health checks every 300 blocks\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_dao_authority_address\",\n        \"description\": \"Fetch the DAO authority address.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"build_msg_add_schedule\",\n        \"description\": \"Build MsgAddSchedule with: name=\\\"health_check\\\", period=300, msgs=[execute the monitoring contract\u2019s `perform_checks` entry-point], gas_limit sized for health-check logic.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"package_into_gov_proposal\",\n        \"description\": \"Place the MsgAddSchedule into a DAO governance proposal that justifies the 300-block cadence for system health monitoring.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"DAO signs and submits the proposal transaction.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Confirm the \\\"health_check\\\" schedule appears in Cron state with a 300-block period.\",\n      \"Watch for `perform_checks` contract execution events every ~300 blocks to verify regular health-check execution.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2076,
+                    "prompt_tokens": 19638,
+                    "total_tokens": 21714,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 704,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CBRFMXhPvenDjub5bFNyQTtgxuqoh",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--4fd34dbb-9a12-42b4-a630-581ea45d540f-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 19638,
+                "output_tokens": 2076,
+                "total_tokens": 21714,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 704
+                }
+            }
+        }
+    ]
+}

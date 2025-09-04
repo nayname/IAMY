@@ -1,0 +1,177 @@
+[
+    {
+        "intent": "Submit a governance proposal to add a daily reward-distribution cron schedule",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "gather_schedule_details",
+                "description": "Prompt the user for schedule name (e.g., daily_rewards), target contract address, CosmWasm execute msg (base64-encoded), desired block period for one day (\u224814 400 blocks), block position (END_BLOCKER), and optional offset."
+            },
+            {
+                "step": 2,
+                "tool": "construct_cron_msg_add_schedule",
+                "description": "Create a MsgAddSchedule JSON using the gathered details and the governance authority address (Main DAO)."
+            },
+            {
+                "step": 3,
+                "tool": "build_governance_proposal",
+                "description": "Wrap the MsgAddSchedule in a proposal.json file with title, description, deposit and metadata."
+            },
+            {
+                "step": 4,
+                "tool": "neutrond_tx_gov_submit_proposal",
+                "description": "Broadcast the proposal:  neutrond tx gov submit-proposal legacy-content proposal.json --from=<key> --deposit=<amount><denom> --chain-id=<chain-id>."
+            },
+            {
+                "step": 5,
+                "tool": "vote_gov_proposal",
+                "description": "Monitor the proposal ID, cast Yes votes with neutrond tx gov vote, and wait until the voting period ends."
+            }
+        ],
+        "outcome_checks": [
+            "The proposal status is PASSED when queried via neutrond q gov proposal <id>.",
+            "neutrond q cron list-schedules shows the new daily_rewards schedule with period \u224814 400 and block=END_BLOCKER.",
+            "Within 1\u20132 days a cron execution event is emitted and the target contract processes the reward distribution successfully."
+        ]
+    },
+    {
+        "intent": "Submit a governance proposal to remove the cron schedule named weekly_rewards",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_cron_list_schedules",
+                "description": "Ensure weekly_rewards exists and capture its exact name string."
+            },
+            {
+                "step": 2,
+                "tool": "construct_cron_msg_remove_schedule",
+                "description": "Create a MsgRemoveSchedule JSON containing authority=Main DAO and name=weekly_rewards."
+            },
+            {
+                "step": 3,
+                "tool": "build_governance_proposal",
+                "description": "Generate proposal.json with the MsgRemoveSchedule message, title, description and deposit."
+            },
+            {
+                "step": 4,
+                "tool": "neutrond_tx_gov_submit_proposal",
+                "description": "Broadcast the proposal to the chain."
+            },
+            {
+                "step": 5,
+                "tool": "vote_gov_proposal",
+                "description": "Coordinate voting to reach quorum and pass the proposal."
+            }
+        ],
+        "outcome_checks": [
+            "Proposal status is PASSED.",
+            "weekly_rewards no longer appears in neutrond q cron list-schedules output.",
+            "Any previously expected weekly executions stop after the removal height."
+        ]
+    },
+    {
+        "intent": "Create (via governance) a weekly_rewards schedule that runs every 50 400 blocks at END_BLOCKER",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "gather_schedule_details",
+                "description": "Confirm period=50 400, block=END_BLOCKER, name=weekly_rewards, offset (if any), target contract address, and execute msg payload."
+            },
+            {
+                "step": 2,
+                "tool": "construct_cron_msg_add_schedule",
+                "description": "Build MsgAddSchedule with the confirmed values and authority=Main DAO."
+            },
+            {
+                "step": 3,
+                "tool": "build_governance_proposal",
+                "description": "Assemble proposal.json embedding the MsgAddSchedule."
+            },
+            {
+                "step": 4,
+                "tool": "neutrond_tx_gov_submit_proposal",
+                "description": "Submit the proposal to the chain."
+            },
+            {
+                "step": 5,
+                "tool": "vote_gov_proposal",
+                "description": "Facilitate validator votes until the proposal passes."
+            }
+        ],
+        "outcome_checks": [
+            "Proposal passes with status PASSED.",
+            "neutrond q cron list-schedules shows weekly_rewards with period=50 400 and block=END_BLOCKER.",
+            "At the next END_BLOCKER when height % 50 400 == offset, the schedule executes successfully."
+        ]
+    },
+    {
+        "intent": "Add a BEGIN_BLOCKER schedule for daily state cleanup every 7 200 blocks",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "gather_schedule_details",
+                "description": "Collect name (e.g., state_cleanup_daily), period=7 200, block=BEGIN_BLOCKER, offset, target contract, and cleanup execute msg."
+            },
+            {
+                "step": 2,
+                "tool": "construct_cron_msg_add_schedule",
+                "description": "Produce MsgAddSchedule JSON with the gathered parameters and authority=Main DAO."
+            },
+            {
+                "step": 3,
+                "tool": "build_governance_proposal",
+                "description": "Create proposal.json wrapping the MsgAddSchedule."
+            },
+            {
+                "step": 4,
+                "tool": "neutrond_tx_gov_submit_proposal",
+                "description": "Submit the proposal on-chain with an adequate deposit."
+            },
+            {
+                "step": 5,
+                "tool": "vote_gov_proposal",
+                "description": "Coordinate voting to ensure passage."
+            }
+        ],
+        "outcome_checks": [
+            "Proposal passes.",
+            "Cron list shows state_cleanup_daily with BEGIN_BLOCKER and 7 200-block cadence.",
+            "First BEGIN_BLOCKER execution emits an event and the contract performs the cleanup logic."
+        ]
+    },
+    {
+        "intent": "Emergency-remove the cron schedule named problematic_schedule via the Security SubDAO",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_subdao_contract_address",
+                "description": "Retrieve the on-chain address of the Security SubDAO governance contract responsible for emergency actions."
+            },
+            {
+                "step": 2,
+                "tool": "construct_cron_msg_remove_schedule",
+                "description": "Build MsgRemoveSchedule with authority set to the Admin module / Main DAO and name=problematic_schedule."
+            },
+            {
+                "step": 3,
+                "tool": "build_subdao_proposal_payload",
+                "description": "Wrap the MsgRemoveSchedule inside the Security SubDAO's proposal format (WASM execute payload) so that, once executed, it forwards the message to the admin module."
+            },
+            {
+                "step": 4,
+                "tool": "submit_subdao_proposal",
+                "description": "Execute the propose method on the Security SubDAO contract, supplying the payload and required deposit."
+            },
+            {
+                "step": 5,
+                "tool": "vote_subdao_proposal",
+                "description": "Coordinate subDAO members to vote Yes; when the proposal passes, the SubDAO contract automatically executes the embedded MsgRemoveSchedule."
+            }
+        ],
+        "outcome_checks": [
+            "The SubDAO proposal shows status EXECUTED.",
+            "neutrond q cron list-schedules confirms problematic_schedule is absent.",
+            "No further executions of problematic_schedule occur after removal block height."
+        ]
+    }
+]

@@ -1,0 +1,153 @@
+[
+    {
+        "intent": "Query Cron module parameters",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_cron_params",
+                "description": "Run `neutrond query cron params` (or equivalent gRPC/REST call) to fetch the current Cron module parameters."
+            },
+            {
+                "step": 2,
+                "tool": "parse_json_response",
+                "description": "Decode the JSON response and extract fields such as `max_msg_length`, `min_period`, `security_address`, etc."
+            }
+        ],
+        "outcome_checks": [
+            "HTTP/gRPC call succeeds (code 0).",
+            "Response contains a non-empty `params` object with expected keys."
+        ]
+    },
+    {
+        "intent": "Query the cron schedule named \"daily_maintenance\"",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_cron_schedule",
+                "description": "Invoke `neutrond query cron schedule daily_maintenance` (or REST `/neutron/cron/schedule/daily_maintenance`)."
+            },
+            {
+                "step": 2,
+                "tool": "parse_json_response",
+                "description": "Parse the returned schedule details: `name`, `period`, `msgs`, `last_execution_height`."
+            }
+        ],
+        "outcome_checks": [
+            "Schedule `name` equals `daily_maintenance`.",
+            "`period` and at least one `msgs` entry are present."
+        ]
+    },
+    {
+        "intent": "Create a multi-message cron schedule \"protocol_update\" that executes three contract calls every 100 800 blocks",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_governance_authority",
+                "description": "Retrieve the Main DAO address that must appear in the `authority` field of Cron messages."
+            },
+            {
+                "step": 2,
+                "tool": "construct_msg_execute_contract",
+                "description": "Build three individual `MsgExecuteContract` objects (placeholders `call_1`, `call_2`, `call_3`) with desired contract addresses/msgs."
+            },
+            {
+                "step": 3,
+                "tool": "construct_msg_add_schedule",
+                "description": "Assemble a `MsgAddSchedule` with fields: `{ authority, name: \"protocol_update\", period: 100800, msgs: [call_1, call_2, call_3] }`."
+            },
+            {
+                "step": 4,
+                "tool": "wrap_into_governance_proposal",
+                "description": "Embed the `MsgAddSchedule` inside a message-based governance proposal JSON (type `/cosmos.gov.v1.MsgSubmitProposal`)."
+            },
+            {
+                "step": 5,
+                "tool": "submit_gov_proposal",
+                "description": "Broadcast the proposal with `neutrond tx gov submit-proposal proposal.json --from=<proposer>`."
+            },
+            {
+                "step": 6,
+                "tool": "wait_for_voting_result",
+                "description": "Monitor proposal status until it reaches `PASSED`."
+            },
+            {
+                "step": 7,
+                "tool": "query_cron_schedule",
+                "description": "After passage, query `protocol_update` schedule to confirm registration."
+            }
+        ],
+        "outcome_checks": [
+            "Governance proposal final status is `PASSED`.",
+            "`protocol_update` appears in `neutrond query cron schedule protocol_update` with `period = 100800` and `msgs.length = 3`."
+        ]
+    },
+    {
+        "intent": "Set the Cron module security address to `neutron1guard...`",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "construct_param_change_proposal",
+                "description": "Create a Param-Change proposal that updates Cron parameter `security_address` to `neutron1guard...`."
+            },
+            {
+                "step": 2,
+                "tool": "submit_gov_proposal",
+                "description": "Submit the proposal via `neutrond tx gov submit-proposal`."
+            },
+            {
+                "step": 3,
+                "tool": "wait_for_voting_result",
+                "description": "Track the proposal until it is `PASSED`."
+            },
+            {
+                "step": 4,
+                "tool": "query_cron_params",
+                "description": "Re-query Cron parameters to verify the new `security_address` value."
+            }
+        ],
+        "outcome_checks": [
+            "Proposal passes with status `PASSED`.",
+            "`security_address` field in `neutrond query cron params` equals `neutron1guard...`."
+        ]
+    },
+    {
+        "intent": "Create a vesting schedule that unlocks tokens every 216 000 blocks",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "construct_msg_execute_contract",
+                "description": "Prepare a `MsgExecuteContract` that calls the vesting contract\u2019s `release_tokens` (or equivalent) entrypoint."
+            },
+            {
+                "step": 2,
+                "tool": "construct_msg_add_schedule",
+                "description": "Build a `MsgAddSchedule` with `{ authority, name: \"token_unlock\", period: 216000, msgs: [release_tokens_msg] }`."
+            },
+            {
+                "step": 3,
+                "tool": "wrap_into_governance_proposal",
+                "description": "Package the schedule message into a governance proposal JSON."
+            },
+            {
+                "step": 4,
+                "tool": "submit_gov_proposal",
+                "description": "Broadcast the proposal for voting."
+            },
+            {
+                "step": 5,
+                "tool": "wait_for_voting_result",
+                "description": "Wait until proposal status becomes `PASSED`."
+            },
+            {
+                "step": 6,
+                "tool": "query_cron_schedule",
+                "description": "Confirm that `token_unlock` schedule is registered with a `period` of 216 000 blocks."
+            }
+        ],
+        "outcome_checks": [
+            "Governance proposal passes.",
+            "`token_unlock` schedule exists with `period = 216000`.",
+            "First execution height equals `(creation_height + 216000)` once chain progresses."
+        ]
+    }
+]

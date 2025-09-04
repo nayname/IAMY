@@ -1,6 +1,20 @@
 {
     "tools": [
         {
+            "step": -1,
+            "label": "frontend",
+            "introduction": "ensureWalletConnected connects to the user\u2019s browser wallet (Keplr/Leap) and returns an OfflineSigner, confirming the wallet is ready.",
+            "function": "ensureWalletConnected()",
+            "usage": "const signer = await ensureWalletConnected();"
+        },
+        {
+            "step": 0,
+            "label": "frontend",
+            "introduction": "getWalletAddress obtains the sender\u2019s bech32 Neutron address from the OfflineSigner.",
+            "function": "getWalletAddress(signer)",
+            "usage": "const sender = await getWalletAddress(signer);"
+        },
+        {
             "step": 1,
             "label": "backend",
             "introduction": "Chooses the fastest reachable transaction-data API (Celatone GraphQL or LCD REST).",

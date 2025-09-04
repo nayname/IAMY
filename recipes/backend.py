@@ -34,40 +34,82 @@ cfg = NetworkConfig(
 )
 client = LedgerClient(cfg)
 
-def _ping(url: str, timeout: float = 1.5) -> float:
-    """Return response-time in seconds (∞ if unreachable)."""
-    start = time.time()
+def _ping(base_url: str, path: str, timeout_s: float = 2.5) -> float:
+    """Return latency in ms if endpoint is reachable, else inf."""
+    url = base_url.rstrip("/") + path
+    t0 = time.time()
     try:
-        requests.head(url, timeout=timeout)
-        return time.time() - start
-    except requests.RequestException:
-        return float("inf")
+        # For REST health we can GET the node_info. Any HTTP status < 600 counts as reachable.
+        r = requests.get(url, timeout=timeout_s)
+        if r.status_code < 600:
+            return (time.time() - t0) * 1000.0
+    except Exception:
+        pass
+    return float("inf")
 
 
 def select_data_provider(prefer_graphql: bool = True) -> Dict[str, str]:
     """Choose the fastest available provider and return a descriptor dict."""
-    providers = [
+    # Pick network: "neutron-1" (mainnet) or "pion-1" (testnet)
+    NETWORK = "neutron-1"
+    print(NETWORK)
+    PROVIDERS: List[Dict[str, str]] = [
+        # ---- MAINNET ----
         {
-            "name": "celatone",
-            "base_url": "https://celatone-api.neutron.org/v1/graphql",
-            "api_type": "graphql",
+            "name": "neutron-rest-solara",
+            "base_url": "https://rest-solara.neutron-1.neutron.org",
+            "api_type": "rest",
+            "health": "/cosmos/base/tendermint/v1beta1/node_info",
+            "network": "neutron-1",
         },
         {
-            "name": "lcd",
-            "base_url": "https://lcd.neutron.org",
+            "name": "neutron-rest-vertexa",
+            "base_url": "https://rest-vertexa.neutron-1.neutron.org",
             "api_type": "rest",
+            "health": "/cosmos/base/tendermint/v1beta1/node_info",
+            "network": "neutron-1",
+        },
+        # Cosmos Directory proxy (routes to live nodes)
+        {
+            "name": "cosmos-directory-rest",
+            "base_url": "https://rest.cosmos.directory/neutron",
+            "api_type": "rest",
+            "health": "/cosmos/base/tendermint/v1beta1/node_info",
+            "network": "neutron-1",
+        },
+
+        # ---- TESTNET (pion-1) ----
+        {
+            "name": "pion-rest-palvus",
+            "base_url": "https://rest-palvus.pion-1.neutron.org",
+            "api_type": "rest",
+            "health": "/cosmos/base/tendermint/v1beta1/node_info",
+            "network": "pion-1",
+        },
+        {
+            "name": "pion-rest-nodestake",
+            "base_url": "https://api-t.neutron.nodestake.top",
+            "api_type": "rest",
+            "health": "/cosmos/base/tendermint/v1beta1/node_info",
+            "network": "pion-1",
         },
     ]
 
-    # If GraphQL is preferred, try it first.
-    if prefer_graphql:
-        graphql_providers = [p for p in providers if p["api_type"] == "graphql"]
-        if graphql_providers and _ping(graphql_providers[0]["base_url"]) != float("inf"):
-            return graphql_providers[0]
+    candidates = [p for p in PROVIDERS if p["network"] == NETWORK]
 
-    # Fallback: choose the provider with the lowest latency.
-    best = min(providers, key=lambda p: _ping(p["base_url"]))
-    if _ping(best["base_url"]) == float("inf"):
+    # (Optional) If you later add a *real* GraphQL indexer (e.g., SubQuery),
+    # you can prioritize it here. For now, Celatone GraphQL is not a public endpoint.
+    # See: Neutron docs recommend REST/RPC/GRPC endpoints. :contentReference[oaicite:1]{index=1}
+
+    # Measure latency once per provider using its proper health path
+    scored = []
+    for p in candidates:
+        latency = _ping(p["base_url"], p["health"])
+        scored.append((latency, p))
+
+    # Pick the best reachable one
+    best_latency, best = min(scored, key=lambda t: t[0])
+    if best_latency == float("inf"):
         raise RuntimeError("No data provider is reachable at the moment.")
     return best
 
@@ -982,7 +1024,7 @@ def extract_block_height(status_json: Dict) -> int:
     Extracts the latest block height from the status JSON returned by `neutrond status`.
     """
     try:
-        height_str = status_json['result']['sync_info']['latest_block_height']
+        height_str = status_json['sync_info']['latest_block_height']
         return int(height_str)
     except (KeyError, TypeError, ValueError) as err:
         raise ValueError(
@@ -1156,35 +1198,14 @@ import httpx
 
 LCD_URL = "https://lcd.neutron.org"  # Change to your preferred public or self-hosted LCD
 
-async def query_contracts_by_creator(
-    creator_address: str,
-    limit: int = 1000,
-    pagination_key: Optional[str] = None,
-) -> Dict[str, Any]:
-    """Query one page of contracts created by `creator_address`.
-
-    Args:
-        creator_address (str): Bech32 Neutron address.
-        limit (int, optional): Maximum results per page. Defaults to 1000.
-        pagination_key (str, optional): The opaque `next_key` from the previous
-            response. If provided, the query continues from that key.
-
-    Returns:
-        Dict[str, Any]: JSON response from the LCD containing contracts and pagination data.
-    """
-    params = {
-        "creator": creator_address,
-        "pagination.limit": str(limit),
-    }
-    if pagination_key:
-        params["pagination.key"] = pagination_key
-
-    url = f"{LCD_URL}/cosmwasm/wasm/v1/contracts"
-
-    async with httpx.AsyncClient(timeout=10) as client:
-        response = await client.get(url, params=params)
-        response.raise_for_status()  # Raises if HTTP != 200
-        return response.json()
+def query_contracts_by_creator(address: str, node: str = "https://neutron-rpc.polkachu.com:443") -> Dict:
+    """Fetch schedule metadata from the Neutron Cron module via `neutrond` CLI."""
+    try:
+        cmd = ["neutrond", "query", "wasm", "list-contracts-by-creator", address, "--output", "json", "--node", node]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        return json.loads(result.stdout)
+    except:
+        raise ValueError("Received non-JSON response from neutrond CLI") from exc
 
 
 async def fetch_all_contracts_by_creator(creator_address: str, page_limit: int = 1000) -> List[str]:
@@ -1280,7 +1301,7 @@ def extract_code_id_from_tx(response) -> int:
 
 
 # ===================================================================================
-# == !!!!CRON FUNCTIONS!!!!
+# == CRON FUNCTIONS!!!!
 # == Governance and Proposal Functions
 # ===================================================================================
 
@@ -1333,7 +1354,7 @@ def wait_for_voting_result(proposal_id: str, chain_id: str = "neutron-1", node: 
 # == Cron Module Functions
 # ===================================================================================
 
-def query_cron_params(chain_id: str = "neutron-1", node: str = "https://rpc-kralum.neutron.org:443") -> dict:
+def query_cron_params(chain_id: str = "neutron-1", node: str = "https://neutron-rpc.polkachu.com:443") -> dict:
     """Fetches the current Cron module parameters via CLI."""
     proc = subprocess.run(
         ["neutrond", "query", "cron", "params", "--chain-id", chain_id, "--node", node, "--output", "json"],
@@ -1341,10 +1362,10 @@ def query_cron_params(chain_id: str = "neutron-1", node: str = "https://rpc-kral
     )
     return json.loads(proc.stdout).get("params", {})
 
-def query_cron_schedule(schedule_name: str, node: str = "https://rpc.neutron.org:443") -> Dict:
+def query_cron_schedule(schedule_name: str, node: str = "https://neutron-rpc.polkachu.com:443") -> Dict:
     """Fetch schedule metadata from the Neutron Cron module via `neutrond` CLI."""
     try:
-        cmd = ["neutrond", "query", "cron", "schedule", schedule_name, "--output", "json", "--node", node]
+        cmd = ["neutrond", "query", "cron", "show-schedule", schedule_name, "--output", "json", "--node", node]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         return json.loads(result.stdout)
     except subprocess.CalledProcessError as exc:
@@ -1352,12 +1373,12 @@ def query_cron_schedule(schedule_name: str, node: str = "https://rpc.neutron.org
     except json.JSONDecodeError as exc:
         raise ValueError("Received non-JSON response from neutrond CLI") from exc
 
-def query_all_cron_schedules(limit: int = 1000) -> List[Dict]:
+def query_all_cron_schedules(limit: int = 1000, node: str = "https://neutron-rpc.polkachu.com:443") -> List[Dict]:
     """Return every cron schedule on-chain, handling pagination."""
     schedules: List[Dict] = []
     next_key: str = ""
     while True:
-        cmd = ["neutrond", "query", "cron", "schedules", "--limit", str(limit), "--output", "json"]
+        cmd = ["neutrond", "query", "cron", "list-schedule", "--limit", str(limit), "--output", "json", "--node", node]
         if next_key:
             cmd += ["--page-key", next_key]
         raw = subprocess.check_output(cmd, text=True)

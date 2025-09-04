@@ -1,0 +1,147 @@
+[
+    {
+        "intent": "Create a fee_collection schedule to harvest fees every 1,200 blocks",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_dao_authority_address",
+                "description": "Retrieve the Main DAO\u2019s authority address required to create Cron schedules."
+            },
+            {
+                "step": 2,
+                "tool": "build_msg_add_schedule",
+                "description": "Construct a MsgAddSchedule with: name=\"fee_collection\", period=1200, msgs=[Cosmos SDK/Wasmd message that calls the treasury contract\u2019s `harvest_fees` entry-point], and an appropriate gas_limit."
+            },
+            {
+                "step": 3,
+                "tool": "package_into_gov_proposal",
+                "description": "Wrap the MsgAddSchedule inside a DAO governance proposal (e.g., MsgSubmitProposal or DAO-execute message). Include a title and description explaining the automated fee harvesting."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Have the DAO sign and broadcast the proposal transaction to the Neutron network."
+            }
+        ],
+        "outcome_checks": [
+            "After the proposal passes, query the Cron module and confirm a schedule with name \"fee_collection\" exists and shows a 1,200-block period.",
+            "Monitor the next block height \u2265 current_height + 1,200 and verify that the `harvest_fees` contract execution event is emitted."
+        ]
+    },
+    {
+        "intent": "Remove the existing schedule named protocol_update",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_dao_authority_address",
+                "description": "Fetch the Main DAO authority address (required to delete schedules)."
+            },
+            {
+                "step": 2,
+                "tool": "build_msg_delete_schedule",
+                "description": "Create a MsgDeleteSchedule with: name=\"protocol_update\"."
+            },
+            {
+                "step": 3,
+                "tool": "package_into_gov_proposal",
+                "description": "Embed the MsgDeleteSchedule in a DAO governance proposal explaining why the schedule should be removed."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the proposal with the DAO authority and broadcast it."
+            }
+        ],
+        "outcome_checks": [
+            "Query the Cron schedule registry after the proposal executes and confirm that no schedule with name \"protocol_update\" is present.",
+            "Ensure no further contract executions are emitted for the removed schedule at its former cadence."
+        ]
+    },
+    {
+        "intent": "Create a schedule to rebalance portfolio every 3,600 blocks",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_dao_authority_address",
+                "description": "Obtain the DAO authority address."
+            },
+            {
+                "step": 2,
+                "tool": "build_msg_add_schedule",
+                "description": "Compose MsgAddSchedule with: name=\"portfolio_rebalance\", period=3600, msgs=[contract call to the portfolio manager\u2019s `rebalance` method], and gas_limit sized for the rebalance operation."
+            },
+            {
+                "step": 3,
+                "tool": "package_into_gov_proposal",
+                "description": "Create a governance proposal that contains the MsgAddSchedule and includes rationale (e.g., keep target asset weights)."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "DAO signs and submits the proposal TX."
+            }
+        ],
+        "outcome_checks": [
+            "After passage, verify schedule \"portfolio_rebalance\" exists with a 3,600-block period.",
+            "Observe at least one successful `rebalance` contract execution after 3,600 blocks."
+        ]
+    },
+    {
+        "intent": "Submit a proposal to update Cron module parameters",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_dao_authority_address",
+                "description": "Retrieve the DAO authority address to update module params."
+            },
+            {
+                "step": 2,
+                "tool": "build_msg_update_params",
+                "description": "Construct MsgUpdateParams with the new desired parameters (e.g., max_schedules=1,000, default_gas_limit, or other Cron tunables)."
+            },
+            {
+                "step": 3,
+                "tool": "package_into_gov_proposal",
+                "description": "Wrap MsgUpdateParams in a governance proposal explaining each parameter change."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "DAO signs and broadcasts the proposal to the chain."
+            }
+        ],
+        "outcome_checks": [
+            "After execution, query `neutron/cron/params` and confirm the on-chain parameters match the proposal.",
+            "Ensure existing schedules still execute correctly under the new parameters."
+        ]
+    },
+    {
+        "intent": "Create a schedule to perform health checks every 300 blocks",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_dao_authority_address",
+                "description": "Fetch the DAO authority address."
+            },
+            {
+                "step": 2,
+                "tool": "build_msg_add_schedule",
+                "description": "Build MsgAddSchedule with: name=\"health_check\", period=300, msgs=[execute the monitoring contract\u2019s `perform_checks` entry-point], gas_limit sized for health-check logic."
+            },
+            {
+                "step": 3,
+                "tool": "package_into_gov_proposal",
+                "description": "Place the MsgAddSchedule into a DAO governance proposal that justifies the 300-block cadence for system health monitoring."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "DAO signs and submits the proposal transaction."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm the \"health_check\" schedule appears in Cron state with a 300-block period.",
+            "Watch for `perform_checks` contract execution events every ~300 blocks to verify regular health-check execution."
+        ]
+    }
+]

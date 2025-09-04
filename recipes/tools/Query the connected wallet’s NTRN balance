@@ -1,0 +1,72 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Ensures the user has a browser wallet (Keplr/Leap) connected to the Neutron chain and returns an OfflineSigner that can later be used for queries or transactions.",
+            "function": "ensureWalletConnected()",
+            "usage": "wasm_path = compile_wasm_contract('./contracts/counter')"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Fetches the first account from the provided signer and returns the corresponding Neutron address.",
+            "function": "getWalletAddress()",
+            "usage": "checksum = validate_wasm_checksum(Path(wasm_path))"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Defines a Python utility (cosmpy) that queries the Bank module for the raw balance (in micro-denom, e.g. `untrn`) of a given address.",
+            "function": "query_bank_balance()",
+            "usage": "tx = query_bank_balance(client, wasm_path)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Converts the raw micro-denominated amount obtained in Step 3 to a human-readable NTRN value with six-decimal precision.",
+            "function": "format_amount()",
+            "usage": "response = format_amount(tx, wallet, client)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "wasm_path = compile_wasm_contract('./contracts/counter')#step: 1 Tool: get_wasm_file_path Desciption: Locate the compiled `.wasm` file for the example contract (e.g., `artifacts/counter.wasm`).",
+        "checksum = validate_wasm_checksum(Path(wasm_path))#step: 2 Tool: validate_wasm_checksum Desciption: Calculate and record the SHA-256 checksum of the WASM binary.",
+        "tx = build_store_code_tx(client, wasm_path)#step: 3 Tool: construct_tx_store_code Desciption: Build a `MsgStoreCode` including the WASM binary, sender address, and instantiate permission (e.g., `--instantiate-everybody`).",
+        "response = sign_and_broadcast_tx(tx, wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the store-code transaction.",
+        "code_id = extract_code_id_from_tx(response)#step: 5 Tool: extract_code_id_from_tx Desciption: Parse the transaction logs to retrieve the newly assigned `code_id`."
+    ],
+    "intent": "Upload the example contract WASM code",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_wasm_file_path",
+            "description": "Locate the compiled `.wasm` file for the example contract (e.g., `artifacts/counter.wasm`)."
+        },
+        {
+            "step": 2,
+            "tool": "validate_wasm_checksum",
+            "description": "Calculate and record the SHA-256 checksum of the WASM binary."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_store_code",
+            "description": "Build a `MsgStoreCode` including the WASM binary, sender address, and instantiate permission (e.g., `--instantiate-everybody`)."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the store-code transaction."
+        },
+        {
+            "step": 5,
+            "tool": "extract_code_id_from_tx",
+            "description": "Parse the transaction logs to retrieve the newly assigned `code_id`."
+        }
+    ],
+    "outcome_checks": [
+        "Tx response shows code 0.",
+        "`code_id` is present and greater than 0 in the logs."
+    ]
+}

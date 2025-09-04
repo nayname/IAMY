@@ -1,0 +1,177 @@
+[
+    {
+        "intent": "Create a schedule to distribute staking rewards weekly",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "fetch_governance_authority_address",
+                "description": "Query the Main DAO contract or network params to obtain the authority address that must be used in MsgAddSchedule."
+            },
+            {
+                "step": 2,
+                "tool": "validate_target_contract",
+                "description": "Ensure the staking-rewards contract address is correct and live."
+            },
+            {
+                "step": 3,
+                "tool": "construct_msg_execute_contract",
+                "description": "Build the MsgExecuteContract that calls `{ \"distribute_rewards\": {} }` on the staking-rewards contract, setting the sender to the Cron module (\"cron\") so it can execute later."
+            },
+            {
+                "step": 4,
+                "tool": "construct_msg_add_schedule",
+                "description": "Create a MsgAddSchedule with:\n  \u2022 name: \"weekly_staking_rewards\"\n  \u2022 period: 100800   // ~7 days at 6 s blocks\n  \u2022 msgs: the array from step 3\n  \u2022 execution_stage: END_BLOCKER (default)\n  \u2022 authority: value from step 1"
+            },
+            {
+                "step": 5,
+                "tool": "create_json_proposal_file",
+                "description": "Wrap the MsgAddSchedule in a JSON proposal:\n{\n  \"title\": \"Add weekly staking-reward cron\",\n  \"description\": \"Distribute staking rewards every week automatically\",\n  \"messages\": [ <MsgAddSchedule JSON> ]\n}"
+            },
+            {
+                "step": 6,
+                "tool": "submit_proposal_to_main_dao",
+                "description": "Use `neutrond tx wasm execute <main_dao> '{\"propose\":{...}}'` or `neutrond tx wasm submit-proposal proposal.json` to submit the file for voting."
+            },
+            {
+                "step": 7,
+                "tool": "vote_and_wait_for_passage",
+                "description": "Stakeholders vote; wait until the proposal status is PASSED."
+            },
+            {
+                "step": 8,
+                "tool": "query_cron_schedule",
+                "description": "Run `neutrond query cron schedule weekly_staking_rewards` to confirm the schedule is active with the correct period."
+            }
+        ],
+        "outcome_checks": [
+            "The query in step 8 returns the schedule with period 100 800 and the expected MsgExecuteContract.",
+            "After ~100 800 blocks the staking-rewards contract\u2019s distribute event is emitted automatically."
+        ]
+    },
+    {
+        "intent": "Set cron execution stage to BEGIN_BLOCKER for schedule health_check",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_cron_schedule",
+                "description": "Fetch the existing \"health_check\" schedule to copy its period and msgs."
+            },
+            {
+                "step": 2,
+                "tool": "construct_msg_remove_schedule",
+                "description": "Create MsgRemoveSchedule { name: \"health_check\", authority: <gov-authority> }."
+            },
+            {
+                "step": 3,
+                "tool": "construct_msg_add_schedule",
+                "description": "Re-create the schedule with execution_stage set to BEGIN_BLOCKER:\n  \u2022 name: \"health_check\"\n  \u2022 period: value from step 1\n  \u2022 execution_stage: BEGIN_BLOCKER\n  \u2022 msgs: value from step 1\n  \u2022 authority: <gov-authority>"
+            },
+            {
+                "step": 4,
+                "tool": "create_json_proposal_file",
+                "description": "Place the MsgRemoveSchedule followed by MsgAddSchedule in the `messages` array so they execute atomically."
+            },
+            {
+                "step": 5,
+                "tool": "submit_proposal_to_main_dao",
+                "description": "Submit the proposal for voting via Main DAO."
+            },
+            {
+                "step": 6,
+                "tool": "vote_and_wait_for_passage",
+                "description": "Wait until proposal status is PASSED."
+            },
+            {
+                "step": 7,
+                "tool": "query_cron_schedule",
+                "description": "Confirm `execution_stage` now shows BEGIN_BLOCKER for \"health_check\"."
+            }
+        ],
+        "outcome_checks": [
+            "Schedule \"health_check\" exists and `execution_stage` == \"BEGIN_BLOCKER\".",
+            "Next block\u2019s BeginBlocker logs show the schedule execution event."
+        ]
+    },
+    {
+        "intent": "Show the number of active cron schedules",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_all_cron_schedules",
+                "description": "Run `neutrond query cron schedules --limit 1000` (iterate pagination if needed) to retrieve the full list."
+            },
+            {
+                "step": 2,
+                "tool": "count_array_elements",
+                "description": "Count the length of the returned `schedules` array."
+            },
+            {
+                "step": 3,
+                "tool": "display_result",
+                "description": "Print `Active schedules: <count>` to the user."
+            }
+        ],
+        "outcome_checks": [
+            "The CLI command succeeds (non-empty JSON).",
+            "Printed count matches the length of the array returned by the query."
+        ]
+    },
+    {
+        "intent": "Show last execution height for schedule daily_rewards",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_cron_schedule",
+                "description": "Execute `neutrond query cron schedule daily_rewards` to fetch the schedule metadata."
+            },
+            {
+                "step": 2,
+                "tool": "extract_field",
+                "description": "Read `last_execution_height` (or `last_executed_height` depending on proto) from the JSON response."
+            },
+            {
+                "step": 3,
+                "tool": "display_result",
+                "description": "Output `Last execution height: <height>`."
+            }
+        ],
+        "outcome_checks": [
+            "`last_execution_height` is a positive integer (\u2265 schedule creation height).",
+            "If the schedule just ran, height matches recent block heights."
+        ]
+    },
+    {
+        "intent": "Create a governance proposal file for daily maintenance schedule",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "gather_schedule_requirements",
+                "description": "Define schedule parameters:\n  \u2022 name: \"daily_maintenance\"\n  \u2022 period: 14 400  // ~1 day at 6 s blocks\n  \u2022 execution_stage: END_BLOCKER\n  \u2022 msgs: MsgExecuteContract calling `{ \"maintain\": {} }` on the maintenance contract."
+            },
+            {
+                "step": 2,
+                "tool": "construct_msg_execute_contract",
+                "description": "Create the MsgExecuteContract needed by the schedule (sender will be Cron module)."
+            },
+            {
+                "step": 3,
+                "tool": "construct_msg_add_schedule",
+                "description": "Fill MsgAddSchedule with the fields from step 1 and authority set to the governance address."
+            },
+            {
+                "step": 4,
+                "tool": "create_json_proposal_file",
+                "description": "Write `daily_maintenance_proposal.json` with structure:\n{\n  \"title\": \"Add daily maintenance cron\",\n  \"description\": \"Automate housekeeping tasks every 24 h\",\n  \"messages\": [ <MsgAddSchedule JSON> ]\n}"
+            },
+            {
+                "step": 5,
+                "tool": "validate_json",
+                "description": "Run `jq . daily_maintenance_proposal.json` (or equivalent) to ensure the file is valid JSON."
+            }
+        ],
+        "outcome_checks": [
+            "`daily_maintenance_proposal.json` exists and passes JSON validation.",
+            "The file\u2019s `messages[0]` has `@type` = \"/neutron.cron.MsgAddSchedule\" and name = \"daily_maintenance\"."
+        ]
+    }
+]

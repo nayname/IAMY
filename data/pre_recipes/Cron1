@@ -1,0 +1,135 @@
+[
+    {
+        "intent": "Create a cron schedule named \"daily_rewards\" that distributes rewards every 7,200 blocks at END_BLOCKER",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "gather_schedule_inputs",
+                "description": "Collect the schedule name (daily_rewards), execution period (7200 blocks), execution stage (END_BLOCKER), target contract address, and the MsgExecuteContract payload that handles reward distribution."
+            },
+            {
+                "step": 2,
+                "tool": "construct_msg_add_schedule",
+                "description": "Build a MsgAddSchedule object with fields: authority=<DAO address>, name=\"daily_rewards\", period=7200, msgs=[compiled MsgExecuteContract], execution_stage=\"END_BLOCKER\"."
+            },
+            {
+                "step": 3,
+                "tool": "wrap_in_dao_proposal",
+                "description": "Embed the MsgAddSchedule in a DAO governance proposal (propose_single) so that the Main DAO can approve the new schedule."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the DAO `wasm/execute` transaction that submits the proposal and broadcast it to the network."
+            },
+            {
+                "step": 5,
+                "tool": "monitor_proposal_status",
+                "description": "Track the proposal until it reaches the `Executed` state, indicating the schedule has been added."
+            },
+            {
+                "step": 6,
+                "tool": "query_cron_show_schedule",
+                "description": "Query the Cron module for \"daily_rewards\" to confirm the schedule now exists with the correct parameters."
+            }
+        ],
+        "outcome_checks": [
+            "The DAO proposal status is `Executed`.",
+            "\"daily_rewards\" appears in `neutrond query cron show-schedule daily_rewards` with period 7200 and stage END_BLOCKER."
+        ]
+    },
+    {
+        "intent": "Remove the cron schedule named \"daily_rewards\"",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "construct_msg_remove_schedule",
+                "description": "Create a MsgRemoveSchedule with fields: authority=<DAO address>, name=\"daily_rewards\"."
+            },
+            {
+                "step": 2,
+                "tool": "wrap_in_dao_proposal",
+                "description": "Place the MsgRemoveSchedule into a DAO proposal for approval."
+            },
+            {
+                "step": 3,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Submit the proposal through the Main DAO contract and broadcast the transaction."
+            },
+            {
+                "step": 4,
+                "tool": "monitor_proposal_status",
+                "description": "Wait for the proposal to pass and execute, indicating the schedule removal was processed."
+            },
+            {
+                "step": 5,
+                "tool": "query_cron_show_schedule",
+                "description": "Attempt to query \"daily_rewards\" to ensure it no longer exists (expect a not-found error)."
+            }
+        ],
+        "outcome_checks": [
+            "The DAO proposal status is `Executed`.",
+            "`neutrond query cron show-schedule daily_rewards` returns `schedule not found`."
+        ]
+    },
+    {
+        "intent": "List all existing cron schedules",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_cron_list_schedules",
+                "description": "Execute `neutrond query cron list-schedules` (or the REST `/neutron/cron/schedules` endpoint) to retrieve the full schedule registry."
+            }
+        ],
+        "outcome_checks": [
+            "The command returns a JSON array of schedule objects with their names, periods, and next_execution heights."
+        ]
+    },
+    {
+        "intent": "Show details for the cron schedule \"protocol_update\"",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_cron_show_schedule",
+                "description": "Run `neutrond query cron show-schedule protocol_update` to fetch the schedule's full metadata."
+            }
+        ],
+        "outcome_checks": [
+            "The returned object contains the fields name=\"protocol_update\", period, next_execution_height, execution_stage, and embedded Msgs."
+        ]
+    },
+    {
+        "intent": "Update the Cron module limit parameter to 30 schedules per block",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "construct_msg_update_params",
+                "description": "Build a MsgUpdateParams with fields: authority=<DAO address>, params={\"schedules_per_block\":30}."
+            },
+            {
+                "step": 2,
+                "tool": "wrap_in_dao_proposal",
+                "description": "Insert the MsgUpdateParams into a DAO proposal for network approval."
+            },
+            {
+                "step": 3,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Submit the proposal transaction via the Main DAO contract."
+            },
+            {
+                "step": 4,
+                "tool": "monitor_proposal_status",
+                "description": "Track the proposal until it is executed, applying the new parameter."
+            },
+            {
+                "step": 5,
+                "tool": "query_cron_params",
+                "description": "Query the Cron module parameters (`neutrond query cron params`) to confirm `schedules_per_block` is now 30."
+            }
+        ],
+        "outcome_checks": [
+            "The DAO proposal status is `Executed`.",
+            "`schedules_per_block` in `neutrond query cron params` equals `30`."
+        ]
+    }
+]
