@@ -11,15 +11,19 @@ from mcp.client.stdio import stdio_client
 from lib.query_w_tools import create_graph
 from langchain.globals import set_verbose
 
-intents = [("Query Specific Balance","neutrond query bank balance <address> --node <grpc_node>"),
+intents = [("Query Specific Balance", "neutrond query bank balance <address> --node <grpc_node>"),
            ("Query All User Balances", "neutrond query bank balances <address> --node <grpc_node>"),
            ("Send Tokens", "neutrond tx bank send <from> <to> <amount> --node <grpc_node> <signing info> <gas>"),
            # "Build Smart Contract", "Test Contract",
            ("Upload Contract", "neutrond tx wasm store <wasm-file> --node <grpc_node> <signing info> <gas>"),
-           ("Instantiate Contract", "neutrond tx wasm instantiate <code_id> <init-msg> --node <grpc_node> <signing info> <gas>"),
-           ("Execute Contract", "neutrond tx wasm execute <contract-address> <exec-msg> --node <grpc_node> <signing info> <gas>"),
-           ("Migrate Contract", "neutrond tx wasm execute <contract-address> <exec-msg> --node <grpc_node> <signing info> <gas>"),
-           ("Query Contract State", "neutrond query wasm contract-state smart <contract-address> <query-msg> --node <grpc_node>")]
+           ("Instantiate Contract",
+            "neutrond tx wasm instantiate <code_id> <init-msg> --node <grpc_node> <signing info> <gas>"),
+           ("Execute Contract",
+            "neutrond tx wasm execute <contract-address> <exec-msg> --node <grpc_node> <signing info> <gas>"),
+           ("Migrate Contract",
+            "neutrond tx wasm execute <contract-address> <exec-msg> --node <grpc_node> <signing info> <gas>"),
+           ("Query Contract State",
+            "neutrond query wasm contract-state smart <contract-address> <query-msg> --node <grpc_node>")]
 
 onliners = {
     "Query All User Balances": "data/intents_oneliner/Query All User Balances",
@@ -33,7 +37,7 @@ onliners = {
 
 pages = {
     # "NeutronTemplate":"data/pages/NeutronTemplate",
-    "Cron":"data/pages/Cron",
+    "Cron": "data/pages/Cron",
 }
 
 synthesize_ners = open("prompts/synthesize_ners").read()
@@ -43,12 +47,12 @@ synthesize_recipes = open("prompts/synthesize_recipes").read()
 synthesize_cosmwasm = open("prompts/synthesize_cosmwasm").read()
 synthesize_picking_functions = open("prompts/synthesize_picking_functions").read()
 
-
 server_params = StdioServerParameters(
     command="node",
     args=["/root/neutron/docs/mcp/mcp-server.js"],
     env=None,
 )
+
 
 def create_ner_dataset(filepaths, num):
     """Loads data from all provided CLI files and creates a unified NER dataset."""
@@ -68,9 +72,9 @@ def create_ner_dataset(filepaths, num):
             text = intent
             command = details.get("command", "")
 
-            batches.append({"label":key, "query":text, "command":command})
+            batches.append({"label": key, "query": text, "command": command})
 
-            if len(batches) > num-1:
+            if len(batches) > num - 1:
                 processed_data.append(batches.copy())
                 batches.clear()
 
@@ -95,9 +99,9 @@ def create_batch(filepaths, num):
         #     continue
 
         for intent in data.keys():
-            batches.append({"label":key, "query":intent})
+            batches.append({"label": key, "query": intent})
 
-            if len(batches) > num-1:
+            if len(batches) > num - 1:
                 processed_data.append(batches.copy())
                 batches.clear()
 
@@ -105,6 +109,7 @@ def create_batch(filepaths, num):
             processed_data.append(batches)
 
     return processed_data
+
 
 async def create_intents(session, config):
     for intent, filepath in pages.items():
@@ -127,6 +132,7 @@ async def create_intents(session, config):
                 json.dump(serializable_state, f, indent=4)
             with open('data/intents/' + intent, 'w') as f:
                 json.dump({intent: json.loads(response["messages"][-1].content)}, f, indent=4)
+
 
 async def create_oneliner(session, config):
     for intent in intents:
@@ -174,12 +180,11 @@ async def create_pre_recipe(session, config):
         count += 1
 
 
-
 async def create_ner(session, config):
     count = 1
 
     for batch in create_ner_dataset(onliners, 5):
-        if not os.path.exists('data/rephrases/'+str(count)+'result.txt'):
+        if not os.path.exists('data/rephrases/' + str(count) + 'result.txt'):
             agent = await create_graph(session, synthesize_ners)
             set_verbose(True)
             response = await agent.ainvoke({"messages": json.dumps(batch)}, config=config)
@@ -192,9 +197,9 @@ async def create_ner(session, config):
                 else:
                     serializable_state[key] = value
 
-            with open('data/rephrases/'+str(count)+'result.txt', 'w') as f:
+            with open('data/rephrases/' + str(count) + 'result.txt', 'w') as f:
                 json.dump(serializable_state, f, indent=4)
-            with open('data/rephrases/'+str(count), 'w') as f:
+            with open('data/rephrases/' + str(count), 'w') as f:
                 json.dump(json.loads(response["messages"][-1].content), f, indent=4)
                 # print("Response: " + json.dumps(json.loads(response["messages"][-1].content), indent=4))
         count += 1
@@ -212,15 +217,15 @@ async def create_actions(session, config):
 
                     for key in items:
                         # if action == key['intent']:
-                            workflow = key['workflow']
+                        workflow = key['workflow']
 
-                            if workflow and not os.path.exists('recipes/actions/' + key['intent']):
-                                agent = await create_graph(session, synthesize_cosmwasm)
-                                response = await agent.ainvoke({"messages": json.dumps(workflow)}, config=config)
-                                print(response["messages"][-1].content)
+                        if workflow and not os.path.exists('recipes/actions/' + key['intent']):
+                            agent = await create_graph(session, synthesize_cosmwasm)
+                            response = await agent.ainvoke({"messages": json.dumps(workflow)}, config=config)
+                            print(response["messages"][-1].content)
 
-                                with open('recipes/actions/' + key['intent'], 'w') as f:
-                                    json.dump(json.loads(response["messages"][-1].content), f, indent=4)
+                            with open('recipes/actions/' + key['intent'], 'w') as f:
+                                json.dump(json.loads(response["messages"][-1].content), f, indent=4)
 
 
 async def pick_tools(session, config):
@@ -228,24 +233,29 @@ async def pick_tools(session, config):
         for entry in entries:
             if entry.is_file():  # Check if it's a file
                 if not entry.path.endswith("result.txt") and "Cron" in entry.path:
-                    with open(entry.path, 'r') as f: 
+                    with open(entry.path, 'r') as f:
                         items = json.load(f)
 
                     for key in items:
                         if not os.path.exists('recipes/tools/' + key['intent']) \
                                 and key['intent'] != "Connect a user’s wallet to the dApp" \
-                                and key['intent'] != "Query the connected wallet’s NTRN balance": #action == key['intent'] and
+                                and key[
+                            'intent'] != "Query the connected wallet’s NTRN balance":  #action == key['intent'] and
                             with open("/root/neutron/IAMY/recipes/frontend.jsx", "r") as f:
-                                frontend = f.read()
+                                frontend_tools = f.read()
 
                             with open("/root/neutron/IAMY/recipes/backend.py", "r") as f:
-                                backend = f.read()
+                                backend_tools = f.read()
 
                             agent = await create_graph(session, synthesize_picking_functions
-                               .replace("*#*INPUT_JSON*#*", json.dumps(key['workflow'])).replace("{", "{{").replace("}", "}}")
-                               .replace("*#*INTENT*#*", key['intent']))
-                            response = await agent.ainvoke({"messages": "FILE: frontend.jsx Content: "+frontend+"\n\n\n FILE: backend.py Content: "+backend},
-                                                           config=config)
+                                                       .replace("*#*INPUT_JSON*#*",
+                                                                json.dumps(key['workflow'])).replace("{", "{{").replace(
+                                "}", "}}")
+                                                       .replace("*#*INTENT*#*", key['intent']))
+                            response = await agent.ainvoke({
+                                "messages": "FILE: frontend.jsx Content: " + frontend_tools + "\n\n\n FILE: backend.py Content: " + backend_tools},
+                                config=config)
+
                             frontend = []
                             backend = []
                             for l in json.loads(response["messages"][-1].content)['workflow']:
@@ -253,13 +263,16 @@ async def pick_tools(session, config):
                                     if t['step'] == l['step']:
                                         d = t.copy()
                                 if l['label'] == 'frontend':
-                                    frontend.append(l['usage']+"//step: "+str(d['step'])+" Tool: "+d['tool']+" Desciption: "+d['description'])
+                                    frontend.append(l['usage'] + "//step: " + str(d['step']) + " Tool: " + d[
+                                        'tool'] + " Desciption: " + d['description'])
                                 elif l['label'] == 'backend':
-                                    backend.append(l['usage']+"#step: "+str(l['step'])+" Tool: "+d['tool']+" Desciption: "+d['description'])
+                                    backend.append(l['usage'] + "#step: " + str(l['step']) + " Tool: " + d[
+                                        'tool'] + " Desciption: " + d['description'])
 
-                            res = {"tools": json.loads(response["messages"][-1].content)['workflow'], "frontend": frontend, "backend": backend,
-                                   "intent": key['intent'], "workflow": key['workflow'], "outcome_checks": key['outcome_checks']}
-
+                            res = {"tools": json.loads(response["messages"][-1].content)['workflow'],
+                                   "frontend": frontend, "backend": backend,
+                                   "intent": key['intent'], "workflow": key['workflow'],
+                                   "outcome_checks": key['outcome_checks']}
 
                             with open('recipes/tools/' + key['intent'], 'w') as f:
                                 json.dump(res, f, indent=4)
@@ -275,14 +288,19 @@ async def main(flag):
             # parser.add_argument("intent", type=str, help="User intent")
             if flag == "oneliner":
                 await create_oneliner(session, config)
-            elif flag == "pre_recipe":
-                await create_pre_recipe(session, config)
             elif flag == "ner":
                 await create_ner(session, config)
+            ##-------------------------------------------##
+            # I
             elif flag == "intent":
                 await create_intents(session, config)
+            # II
+            elif flag == "pre_recipe":
+                await create_pre_recipe(session, config)
+            # III
             elif flag == "recipe":
                 await create_actions(session, config)
+            # IV
             elif flag == "pick_tools":
                 await pick_tools(session, config)
 
