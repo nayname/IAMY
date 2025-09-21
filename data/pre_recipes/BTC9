@@ -1,0 +1,162 @@
+[
+    {
+        "intent": "Execute an emergency withdrawal for the user\u2019s Amber trading position",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_wallet_address",
+                "description": "Retrieve the wallet address that owns the Amber position."
+            },
+            {
+                "step": 2,
+                "tool": "query_amber_contract_positions",
+                "description": "Fetch all active Amber positions for the wallet to obtain the specific position_id to withdraw."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_amber_emergency_withdraw",
+                "description": "Build the emergency_withdraw transaction message with the selected position_id."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the emergency withdrawal transaction and broadcast it to the network."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm the transaction was included in a block and emitted an `EmergencyWithdrawal` event from the Amber contract.",
+            "Verify the position_id no longer appears in the wallet\u2019s list of active Amber positions and the withdrawn tokens are returned to the user\u2019s balance."
+        ]
+    },
+    {
+        "intent": "Cancel (unlock) the user\u2019s NTRN stake lock once the vesting period has ended",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_wallet_address",
+                "description": "Identify the wallet that holds the locked NTRN stake."
+            },
+            {
+                "step": 2,
+                "tool": "query_stake_lock_status",
+                "description": "Check the lock record to ensure the vesting period has completed and the lock is eligible for cancellation."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_unlock_stake",
+                "description": "Create the unlock or cancel_lock transaction for the specific lock_id."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the unlock transaction."
+            }
+        ],
+        "outcome_checks": [
+            "The unlock transaction is successfully committed in a block.",
+            "The previously locked NTRN tokens are now freely transferable in the user\u2019s wallet balance."
+        ]
+    },
+    {
+        "intent": "Increase the user\u2019s deposit in the WBTC/USDC Supervault by 0.2 WBTC and 12 000 USDC",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_wallet_address",
+                "description": "Determine which wallet will fund the additional deposit."
+            },
+            {
+                "step": 2,
+                "tool": "validate_token_balances",
+                "description": "Ensure the wallet has at least 0.2 WBTC and 12 000 USDC available."
+            },
+            {
+                "step": 3,
+                "tool": "get_supervault_contract_address",
+                "description": "Look up the contract address for the WBTC/USDC Supervault."
+            },
+            {
+                "step": 4,
+                "tool": "construct_tx_supervault_deposit",
+                "description": "Create the deposit message specifying 0.2 WBTC and 12 000 USDC as the amounts."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the deposit transaction."
+            }
+        ],
+        "outcome_checks": [
+            "A `Deposit` event from the Supervault contract shows the correct asset amounts.",
+            "The user\u2019s Supervault share balance increased proportionally while wallet balances decreased by 0.2 WBTC and 12 000 USDC."
+        ]
+    },
+    {
+        "intent": "Withdraw 10 % of the user\u2019s shares from the maxBTC/solvBTC Supervault",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_wallet_address",
+                "description": "Identify the wallet holding the vault shares."
+            },
+            {
+                "step": 2,
+                "tool": "query_supervault_share_balance",
+                "description": "Retrieve the total number of shares the user currently owns in the maxBTC/solvBTC Supervault."
+            },
+            {
+                "step": 3,
+                "tool": "calculate_shares_to_withdraw",
+                "description": "Compute 10 % of the retrieved share balance to determine shares_to_withdraw."
+            },
+            {
+                "step": 4,
+                "tool": "construct_tx_supervault_withdraw",
+                "description": "Create the withdraw transaction using shares_to_withdraw as the parameter."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the withdrawal transaction."
+            }
+        ],
+        "outcome_checks": [
+            "A `Withdraw` event from the Supervault contract confirms the shares redeemed and the corresponding maxBTC/solvBTC tokens returned.",
+            "The user\u2019s vault share balance is reduced by ~10 %, and the wallet balance for maxBTC and solvBTC increases accordingly."
+        ]
+    },
+    {
+        "intent": "Provide new liquidity to the WBTC/LBTC Supervault with 1 WBTC and 1 LBTC",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_wallet_address",
+                "description": "Determine the funding wallet for the deposit."
+            },
+            {
+                "step": 2,
+                "tool": "validate_token_balances",
+                "description": "Confirm the wallet holds at least 1 WBTC and 1 LBTC."
+            },
+            {
+                "step": 3,
+                "tool": "get_supervault_contract_address",
+                "description": "Fetch the contract address for the WBTC/LBTC Supervault."
+            },
+            {
+                "step": 4,
+                "tool": "construct_tx_supervault_deposit",
+                "description": "Build the deposit message specifying 1 WBTC and 1 LBTC."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the deposit transaction."
+            }
+        ],
+        "outcome_checks": [
+            "Verify a `Deposit` event from the WBTC/LBTC Supervault shows 1 WBTC and 1 LBTC received.",
+            "Confirm the user\u2019s Supervault share balance increased and the wallet balances for WBTC and LBTC decreased by exactly 1 token each."
+        ]
+    }
+]

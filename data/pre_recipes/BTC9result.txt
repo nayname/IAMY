@@ -1,0 +1,781 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"BTC\", \"query\": \"Set an emergency withdrawal for my Amber position\"}, {\"label\": \"BTC\", \"query\": \"Cancel my NTRN stake lock after vesting period\"}, {\"label\": \"BTC\", \"query\": \"Increase my WBTC/USDC Supervault deposit by 0.2 WBTC and 12,000 USDC\"}, {\"label\": \"BTC\", \"query\": \"Decrease my deposit in the maxBTC/solvBTC Supervault by 10 percent\"}, {\"label\": \"BTC\", \"query\": \"Provide liquidity to the WBTC/LBTC Supervault using 1 WBTC and 1 LBTC\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "45df0020-152e-4777-a405-41aca4e17dbe",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_3LjysqgzsujA80w6HRI1h5UQ",
+                        "function": {
+                            "arguments": "{\"query\": \"Supervault\", \"section\": \"defi\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 678,
+                    "prompt_tokens": 750,
+                    "total_tokens": 1428,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 640,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8ktN0skxtilx7yRrYRbawNkjObU",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--78064161-13ca-4fe6-8f78-e2211b704cbc-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "Supervault",
+                        "section": "defi",
+                        "max_results": 10
+                    },
+                    "id": "call_3LjysqgzsujA80w6HRI1h5UQ",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 750,
+                "output_tokens": 678,
+                "total_tokens": 1428,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 640
+                }
+            }
+        },
+        {
+            "content": "Found 3 result(s) for \"Supervault\":\n\n## 1. Supervaults\n**File:** /root/neutron/docs/defi/supervaults.mdx\n**Section:** defi\n**Relevance Score:** 22\n\n**Matching lines:**\n- Line 2: title: \"Supervaults\"\n- Line 7: <Note> Supervaults <a href=\"https://app.neutron.org/supervaults\" target=\"_blank\" className=\"text-primary hover:underline font-bold\">are now live</a>! Start earning optimized yields with automated liquidity management. Ready to get started? Check out the <a href=\"#how-to-deposit-into-supervaults\" className=\"text-primary hover:underline\">how-to deposit section</a> below for step-by-step instructions. Please review [Supervaults Terms](/legal/terms-and-conditions/supervaults) before participating.</Note>\n- Line 12: Supervaults democratize market making profits to beat the competition on pricing and attract liquidity at scale. They achieve two key strategic goals:\n- Line 19: ## What are Supervaults?\n- Line 21: Supervaults (mmvault contracts) are CosmWasm contracts that leverage price feeds from Neutron's enshrined [Slinky oracle](/operators/oracle-setup) and native automation via the [Cron module](/developers/modules/cron) to provide liquidity with tight spreads on the [Duality orderbook](/defi/duality).\n\n**Content Preview:**\n```\n---\ntitle: \"Supervaults\"\ndescription: \"Next-generation liquidity management vaults with automated rebalancing and capital-efficient yield strategies\"\n\n---\n\n\n<Note> Supervaults <a href=\"https://app.neutron.org/supervaults\" target=\"_blank\" className=\"text-primary hover:underline font-bold\">are now live</a>! Start earning optimized yields with automated liquidity management. Ready to get started? Check out the <a href=\"#how-to-deposit-into-supervaults\" className=\"text-primary hover:underline\">how-to deposit section</a> below for step-by-step instructions. Please review [Supervaults Terms](/legal/terms-and-conditions/supervaults) before participating.</Note>\n\n\n---\n\n\nSupervaults democratize market making profits to beat the competition on pricing and attract liquidity at scale. They achieve two key strategic goals:\n\n```\n\n---\n\n## 2. Drop Protocol\n**File:** /root/neutron/docs/defi/drop.mdx\n**Section:** defi\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 25: **Supervaults Integration**: Allows dAssets to be deployed in Supervaults for additional yield on top of staking rewards, enhancing capital efficiency.\n\n**Content Preview:**\n```\n\n**Supervaults Integration**: Allows dAssets to be deployed in Supervaults for additional yield on top of staking rewards, enhancing capital efficiency.\n\n```\n\n---\n\n## 3. Duality Orderbook\n**File:** /root/neutron/docs/defi/duality.mdx\n**Section:** defi\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 47: <li><strong>Drop:</strong> Collaborating with Margined and Supervaults to develop profitable market-making strategy vaults for dAsset markets.</li>\n\n**Content Preview:**\n```\n    <li><strong>Margined:</strong> Enables off-chain market-making strategy vaults for Duality markets.</li>\n    <li><strong>Drop:</strong> Collaborating with Margined and Supervaults to develop profitable market-making strategy vaults for dAsset markets.</li>\n    <li><strong>Eclipse Fi:</strong> Coordinating with Margined to release arbitrage vaults for Duality pairs.</li>\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "bbd5e73d-5af4-48e7-9f8d-279e7faf8577",
+            "tool_call_id": "call_3LjysqgzsujA80w6HRI1h5UQ",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_dIO3LoJie9Teh0MVQPUx9ytN",
+                        "function": {
+                            "arguments": "{\"query\": \"Amber position emergency withdrawal\", \"section\": \"defi\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 232,
+                    "prompt_tokens": 2070,
+                    "total_tokens": 2302,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 192,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8l3DoM5ZcWmAqF96tp8I7Y6E5B2",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--6ad6dea0-d373-4be7-a6c2-b706ba526215-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "Amber position emergency withdrawal",
+                        "section": "defi",
+                        "max_results": 10
+                    },
+                    "id": "call_dIO3LoJie9Teh0MVQPUx9ytN",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 2070,
+                "output_tokens": 232,
+                "total_tokens": 2302,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 192
+                }
+            }
+        },
+        {
+            "content": "Found 4 result(s) for \"Amber position emergency withdrawal\":\n\n## 1. Supervaults\n**File:** /root/neutron/docs/defi/supervaults.mdx\n**Section:** defi\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 27: - Reduce impermanent loss through dynamic position management and rebalancing\n- Line 154: Gets current token prices from Slinky oracle for precise positioning calculations.\n- Line 196: <Card title=\"Withdrawal Process\" icon=\"money-bill-transfer\" iconType=\"duotone\">\n- Line 197: Users redeem LP shares to withdraw their proportional share of vault assets. The vault handles complex DEX position management automatically during withdrawals.\n- Line 205: 1. **dex_withdrawal()**: Withdraw all active DEX positions owned by the vault\n\n**Content Preview:**\n```\n- Maximize fees earned by liquidity providers across multiple fee tiers  \n- Reduce impermanent loss through dynamic position management and rebalancing\n- Bootstrap supply capacity for lending and perpetual protocols\n\n---\n\n  <Step title=\"Price Discovery\">\n    Gets current token prices from Slinky oracle for precise positioning calculations.\n  </Step>\n\n---\n\n  \n  <Card title=\"Withdrawal Process\" icon=\"money-bill-transfer\" iconType=\"duotone\">\n    Users redeem LP shares to withdraw their proportional share of vault assets. The vault handles complex DEX position management automatically during withdrawals.\n```\n\n---\n\n## 2. Bull vs. Bear\n**File:** /root/neutron/docs/defi/bull-vs-bear.mdx\n**Section:** defi\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 20: Bull vs. Bear is Neutron's innovative trading platform that enables users to create and execute sophisticated long-short strategies through narrative-based Clusters. It provides a powerful way to gain targeted exposure to specific market narratives without managing multiple individual positions.\n- Line 25: Clusters are strategic groupings of multiple long and short positions packaged into a single tradable unit. This allows traders to express directional views on broader market narratives or trends, rather than individual assets.\n- Line 30: **Narrative-Based Trading**: Express views on market narratives like \"BTC Dominance,\" \"Ethereum L2 Growth,\" or \"AI Tokens\" through unified positions.\n- Line 40: Clusters allow you to express complex market views through unified positions:\n- Line 44: B --> C[Long Positions]\n\n**Content Preview:**\n```\n\nBull vs. Bear is Neutron's innovative trading platform that enables users to create and execute sophisticated long-short strategies through narrative-based Clusters. It provides a powerful way to gain targeted exposure to specific market narratives without managing multiple individual positions.\n\n\n---\n\n<div className=\"p-4 border-l-4 border-primary bg-primary/5 rounded my-6\">\n  Clusters are strategic groupings of multiple long and short positions packaged into a single tradable unit. This allows traders to express directional views on broader market narratives or trends, rather than individual assets.\n</div>\n\n---\n\n\n**Narrative-Based Trading**: Express views on market narratives like \"BTC Dominance,\" \"Ethereum L2 Growth,\" or \"AI Tokens\" through unified positions.\n\n```\n\n---\n\n## 3. Duality Orderbook\n**File:** /root/neutron/docs/defi/duality.mdx\n**Section:** defi\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 44: <li><strong>Mars:</strong> Efficiently routes liquidations and onramping to positions through Duality to safely offer higher lending deposit caps and borrowing capacity.</li>\n\n**Content Preview:**\n```\n  <ul className=\"mt-2\">\n    <li><strong>Mars:</strong> Efficiently routes liquidations and onramping to positions through Duality to safely offer higher lending deposit caps and borrowing capacity.</li>\n    <li><strong>Astroport:</strong> Increases LP rewards by enabling <a href=\"https://docs.astroport.fi/docs/learn/astro-pools/passive-concentrated-liquidity-pools/passive-concentrated-liquidity-pools-intro\">PCL pools</a> to provide liquidity on Duality.</li>\n```\n\n---\n\n## 4. DeFi on Neutron\n**File:** /root/neutron/docs/defi/overview.mdx\n**Section:** defi\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 81: Cryptocurrencies are often driven by narratives. Clusters make it easy to long and short narratives by combining multiple long and short positions into one.\n\n**Content Preview:**\n```\n  <p>\n    Cryptocurrencies are often driven by narratives. Clusters make it easy to long and short narratives by combining multiple long and short positions into one.\n  </p>\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "7c680a3b-56a0-43dc-8202-d99f898bd66b",
+            "tool_call_id": "call_dIO3LoJie9Teh0MVQPUx9ytN",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_GjBD4V26y7e0QZ6nFn9Eikfr",
+                        "function": {
+                            "arguments": "{\"query\": \"Amber position\", \"section\": \"defi\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 358,
+                    "prompt_tokens": 3634,
+                    "total_tokens": 3992,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 320,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 2048
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8lGX0pjJmAfWf1OyMLksNdNdFgR",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--e0df4a61-bc60-40d6-a39d-e4db2961220a-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "Amber position",
+                        "section": "defi",
+                        "max_results": 10
+                    },
+                    "id": "call_GjBD4V26y7e0QZ6nFn9Eikfr",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 3634,
+                "output_tokens": 358,
+                "total_tokens": 3992,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 2048
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 320
+                }
+            }
+        },
+        {
+            "content": "Found 4 result(s) for \"Amber position\":\n\n## 1. Bull vs. Bear\n**File:** /root/neutron/docs/defi/bull-vs-bear.mdx\n**Section:** defi\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 20: Bull vs. Bear is Neutron's innovative trading platform that enables users to create and execute sophisticated long-short strategies through narrative-based Clusters. It provides a powerful way to gain targeted exposure to specific market narratives without managing multiple individual positions.\n- Line 25: Clusters are strategic groupings of multiple long and short positions packaged into a single tradable unit. This allows traders to express directional views on broader market narratives or trends, rather than individual assets.\n- Line 30: **Narrative-Based Trading**: Express views on market narratives like \"BTC Dominance,\" \"Ethereum L2 Growth,\" or \"AI Tokens\" through unified positions.\n- Line 40: Clusters allow you to express complex market views through unified positions:\n- Line 44: B --> C[Long Positions]\n\n**Content Preview:**\n```\n\nBull vs. Bear is Neutron's innovative trading platform that enables users to create and execute sophisticated long-short strategies through narrative-based Clusters. It provides a powerful way to gain targeted exposure to specific market narratives without managing multiple individual positions.\n\n\n---\n\n<div className=\"p-4 border-l-4 border-primary bg-primary/5 rounded my-6\">\n  Clusters are strategic groupings of multiple long and short positions packaged into a single tradable unit. This allows traders to express directional views on broader market narratives or trends, rather than individual assets.\n</div>\n\n---\n\n\n**Narrative-Based Trading**: Express views on market narratives like \"BTC Dominance,\" \"Ethereum L2 Growth,\" or \"AI Tokens\" through unified positions.\n\n```\n\n---\n\n## 2. Supervaults\n**File:** /root/neutron/docs/defi/supervaults.mdx\n**Section:** defi\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 27: - Reduce impermanent loss through dynamic position management and rebalancing\n- Line 154: Gets current token prices from Slinky oracle for precise positioning calculations.\n- Line 197: Users redeem LP shares to withdraw their proportional share of vault assets. The vault handles complex DEX position management automatically during withdrawals.\n- Line 205: 1. **dex_withdrawal()**: Withdraw all active DEX positions owned by the vault\n- Line 207: 3. **Strategic Positioning**: Deploy liquidity across multiple price ranges based on fee tier allocation, token imbalance, and configured parameters\n\n**Content Preview:**\n```\n- Maximize fees earned by liquidity providers across multiple fee tiers  \n- Reduce impermanent loss through dynamic position management and rebalancing\n- Bootstrap supply capacity for lending and perpetual protocols\n\n---\n\n  <Step title=\"Price Discovery\">\n    Gets current token prices from Slinky oracle for precise positioning calculations.\n  </Step>\n\n---\n\n  <Card title=\"Withdrawal Process\" icon=\"money-bill-transfer\" iconType=\"duotone\">\n    Users redeem LP shares to withdraw their proportional share of vault assets. The vault handles complex DEX position management automatically during withdrawals.\n  </Card>\n```\n\n---\n\n## 3. Duality Orderbook\n**File:** /root/neutron/docs/defi/duality.mdx\n**Section:** defi\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 44: <li><strong>Mars:</strong> Efficiently routes liquidations and onramping to positions through Duality to safely offer higher lending deposit caps and borrowing capacity.</li>\n\n**Content Preview:**\n```\n  <ul className=\"mt-2\">\n    <li><strong>Mars:</strong> Efficiently routes liquidations and onramping to positions through Duality to safely offer higher lending deposit caps and borrowing capacity.</li>\n    <li><strong>Astroport:</strong> Increases LP rewards by enabling <a href=\"https://docs.astroport.fi/docs/learn/astro-pools/passive-concentrated-liquidity-pools/passive-concentrated-liquidity-pools-intro\">PCL pools</a> to provide liquidity on Duality.</li>\n```\n\n---\n\n## 4. DeFi on Neutron\n**File:** /root/neutron/docs/defi/overview.mdx\n**Section:** defi\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 81: Cryptocurrencies are often driven by narratives. Clusters make it easy to long and short narratives by combining multiple long and short positions into one.\n\n**Content Preview:**\n```\n  <p>\n    Cryptocurrencies are often driven by narratives. Clusters make it easy to long and short narratives by combining multiple long and short positions into one.\n  </p>\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "ceaebe55-27e7-4856-b77b-5f2b58bd0721",
+            "tool_call_id": "call_GjBD4V26y7e0QZ6nFn9Eikfr",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_W0o97lVrgGd6vBERjgidZwHC",
+                        "function": {
+                            "arguments": "{\"query\": \"how to deposit into supervaults\", \"section\": \"defi\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 491,
+                    "prompt_tokens": 5205,
+                    "total_tokens": 5696,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 448,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8lQD3s8LnO2xohOwfpcIJ6em214",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--f193d173-261d-4231-ae3c-3d0b85649739-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "how to deposit into supervaults",
+                        "section": "defi",
+                        "max_results": 10
+                    },
+                    "id": "call_W0o97lVrgGd6vBERjgidZwHC",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 5205,
+                "output_tokens": 491,
+                "total_tokens": 5696,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 448
+                }
+            }
+        },
+        {
+            "content": "Found 5 result(s) for \"how to deposit into supervaults\":\n\n## 1. Supervaults\n**File:** /root/neutron/docs/defi/supervaults.mdx\n**Section:** defi\n**Relevance Score:** 23\n\n**Matching lines:**\n- Line 2: title: \"Supervaults\"\n- Line 7: <Note> Supervaults <a href=\"https://app.neutron.org/supervaults\" target=\"_blank\" className=\"text-primary hover:underline font-bold\">are now live</a>! Start earning optimized yields with automated liquidity management. Ready to get started? Check out the <a href=\"#how-to-deposit-into-supervaults\" className=\"text-primary hover:underline\">how-to deposit section</a> below for step-by-step instructions. Please review [Supervaults Terms](/legal/terms-and-conditions/supervaults) before participating.</Note>\n- Line 12: Supervaults democratize market making profits to beat the competition on pricing and attract liquidity at scale. They achieve two key strategic goals:\n- Line 19: ## What are Supervaults?\n- Line 21: Supervaults (mmvault contracts) are CosmWasm contracts that leverage price feeds from Neutron's enshrined [Slinky oracle](/operators/oracle-setup) and native automation via the [Cron module](/developers/modules/cron) to provide liquidity with tight spreads on the [Duality orderbook](/defi/duality).\n\n**Content Preview:**\n```\n---\ntitle: \"Supervaults\"\ndescription: \"Next-generation liquidity management vaults with automated rebalancing and capital-efficient yield strategies\"\n\n---\n\n\n<Note> Supervaults <a href=\"https://app.neutron.org/supervaults\" target=\"_blank\" className=\"text-primary hover:underline font-bold\">are now live</a>! Start earning optimized yields with automated liquidity management. Ready to get started? Check out the <a href=\"#how-to-deposit-into-supervaults\" className=\"text-primary hover:underline\">how-to deposit section</a> below for step-by-step instructions. Please review [Supervaults Terms](/legal/terms-and-conditions/supervaults) before participating.</Note>\n\n\n---\n\n\nSupervaults democratize market making profits to beat the competition on pricing and attract liquidity at scale. They achieve two key strategic goals:\n\n```\n\n---\n\n## 2. Duality Orderbook\n**File:** /root/neutron/docs/defi/duality.mdx\n**Section:** defi\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 3: description: \"High-performance orderbook combining the advantages of orderbooks and AMMs into a single capital-efficient trading venue\"\n- Line 7: Duality is a protocol-native orderbook integrated directly into Neutron's core infrastructure that merges the strengths of orderbooks and AMMs into a unified, capital-efficient design. Unlike traditional orderbooks implemented as smart contracts, Duality is built at the protocol level, giving it significant performance advantages and deeper integration with other Neutron features.\n- Line 23: Duality is built directly into Neutron's core infrastructure as a native protocol module, making it highly capital-efficient and integrated with other Neutron applications. It **maintains a full limit orderbook** for precise price discovery and execution while supporting diverse order types. **Open composability** ensures the fully open-source design allows other applications to build on top, enhancing overall ecosystem liquidity.\n- Line 44: <li><strong>Mars:</strong> Efficiently routes liquidations and onramping to positions through Duality to safely offer higher lending deposit caps and borrowing capacity.</li>\n- Line 47: <li><strong>Drop:</strong> Collaborating with Margined and Supervaults to develop profitable market-making strategy vaults for dAsset markets.</li>\n\n**Content Preview:**\n```\ntitle: \"Duality Orderbook\"\ndescription: \"High-performance orderbook combining the advantages of orderbooks and AMMs into a single capital-efficient trading venue\"\nicon: \"arrows-rotate\"\n\n---\n\n\nDuality is a protocol-native orderbook integrated directly into Neutron's core infrastructure that merges the strengths of orderbooks and AMMs into a unified, capital-efficient design. Unlike traditional orderbooks implemented as smart contracts, Duality is built at the protocol level, giving it significant performance advantages and deeper integration with other Neutron features.\n\n\n---\n\n\nDuality is built directly into Neutron's core infrastructure as a native protocol module, making it highly capital-efficient and integrated with other Neutron applications. It **maintains a full limit orderbook** for precise price discovery and execution while supporting diverse order types. **Open composability** ensures the fully open-source design allows other applications to build on top, enhancing overall ecosystem liquidity.\n\n```\n\n---\n\n## 3. DeFi on Neutron\n**File:** /root/neutron/docs/defi/overview.mdx\n**Section:** defi\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 42: Neutron's architectural advantage comes from how its core modules work together to create a unified DeFi experience:\n- Line 81: Cryptocurrencies are often driven by narratives. Clusters make it easy to long and short narratives by combining multiple long and short positions into one.\n- Line 101: Learn how to build and integrate with Neutron's modules\n\n**Content Preview:**\n```\n\nNeutron's architectural advantage comes from how its core modules work together to create a unified DeFi experience:\n\n\n---\n\n  <p>\n    Cryptocurrencies are often driven by narratives. Clusters make it easy to long and short narratives by combining multiple long and short positions into one.\n  </p>\n\n---\n\n  <Card title=\"Developer Docs\" icon=\"code\" iconType=\"duotone\" href=\"/developers/modules\">\n    Learn how to build and integrate with Neutron's modules\n  </Card>\n```\n\n---\n\n## 4. Bull vs. Bear\n**File:** /root/neutron/docs/defi/bull-vs-bear.mdx\n**Section:** defi\n**Relevance Score:** 6\n\n**Matching lines:**\n- Line 25: Clusters are strategic groupings of multiple long and short positions packaged into a single tradable unit. This allows traders to express directional views on broader market narratives or trends, rather than individual assets.\n- Line 38: ## How Clusters Work\n\n**Content Preview:**\n```\n<div className=\"p-4 border-l-4 border-primary bg-primary/5 rounded my-6\">\n  Clusters are strategic groupings of multiple long and short positions packaged into a single tradable unit. This allows traders to express directional views on broader market narratives or trends, rather than individual assets.\n</div>\n\n---\n\n\n## How Clusters Work\n\n```\n\n---\n\n## 5. Drop Protocol\n**File:** /root/neutron/docs/defi/drop.mdx\n**Section:** defi\n**Relevance Score:** 6\n\n**Matching lines:**\n- Line 17: Drop Protocol showcases the power of Neutron's integrated architecture by utilizing several core modules:\n- Line 25: **Supervaults Integration**: Allows dAssets to be deployed in Supervaults for additional yield on top of staking rewards, enhancing capital efficiency.\n\n**Content Preview:**\n```\n\nDrop Protocol showcases the power of Neutron's integrated architecture by utilizing several core modules:\n\n\n---\n\n\n**Supervaults Integration**: Allows dAssets to be deployed in Supervaults for additional yield on top of staking rewards, enhancing capital efficiency.\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "d98a1bc7-696f-4a45-86d0-9ad49f5799ec",
+            "tool_call_id": "call_W0o97lVrgGd6vBERjgidZwHC",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_DFEQUrHcEdi9iJh6ciEPFZyA",
+                        "function": {
+                            "arguments": "{\"query\": \"stake lock\", \"section\": \"defi\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 358,
+                    "prompt_tokens": 7391,
+                    "total_tokens": 7749,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 320,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8lacyjb7TShcP5iRbsfjxDK9J48",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--1cabefaf-0166-40f8-b575-7035e4381079-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "stake lock",
+                        "section": "defi",
+                        "max_results": 10
+                    },
+                    "id": "call_DFEQUrHcEdi9iJh6ciEPFZyA",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 7391,
+                "output_tokens": 358,
+                "total_tokens": 7749,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 320
+                }
+            }
+        },
+        {
+            "content": "Found 5 result(s) for \"stake lock\":\n\n## 1. Supervaults\n**File:** /root/neutron/docs/defi/supervaults.mdx\n**Section:** defi\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 15: 2. **Maximize supply capacity** for non-USDC assets as collateral for lending/borrowing and perpetuals to unlock new trades\n- Line 35: - **[Slinky](/operators/oracle-setup)**: Neutron's enshrined, high-performance oracle operated by validators as part of consensus, guaranteeing up-to-date prices at every block for any CEX asset.\n- Line 36: - **[Cron Module](/developers/modules/cron)**: Neutron module enabling guaranteed scheduled smart-contract execution at the start or end of each block.\n- Line 77: <Card title=\"Automated Cron Execution\" icon=\"clock\" iconType=\"duotone\">\n- Line 82: Begin and end block execution enables high-value, order-sensitive transactions to avoid front-running while giving Supervaults priority access to arbitrage opportunities.\n\n**Content Preview:**\n```\n1. **Offer the tightest spreads (best prices)** for on-chain spot markets in a sustainable way\n2. **Maximize supply capacity** for non-USDC assets as collateral for lending/borrowing and perpetuals to unlock new trades\n\n\n---\n\n- **[Duality](/defi/duality)**: Neutron's enshrined orderbook with advanced order types designed to minimize risks and costs for market makers. Features impossible to build outside an app-specific chain.\n- **[Slinky](/operators/oracle-setup)**: Neutron's enshrined, high-performance oracle operated by validators as part of consensus, guaranteeing up-to-date prices at every block for any CEX asset.\n- **[Cron Module](/developers/modules/cron)**: Neutron module enabling guaranteed scheduled smart-contract execution at the start or end of each block.\n\n---\n\n- **[Slinky](/operators/oracle-setup)**: Neutron's enshrined, high-performance oracle operated by validators as part of consensus, guaranteeing up-to-date prices at every block for any CEX asset.\n- **[Cron Module](/developers/modules/cron)**: Neutron module enabling guaranteed scheduled smart-contract execution at the start or end of each block.\n- **Spread**: Price gap between highest buy order and lowest sell order. Smaller spreads mean better prices for traders. Market makers profit by buying slightly lower and selling slightly higher.\n```\n\n---\n\n## 2. Drop Protocol\n**File:** /root/neutron/docs/defi/drop.mdx\n**Section:** defi\n**Relevance Score:** 6\n\n**Matching lines:**\n- Line 32: <li>Stake assets across multiple chains from a single interface</li>\n- Line 33: <li>Deploy liquid staked assets (dAssets) in Neutron DeFi applications for additional yield</li>\n- Line 35: <li>Maintain eligibility for airdrops while putting your staked assets to work</li>\n- Line 43: **Stake Assets**: Start earning staking rewards while maintaining liquidity on the [Neutron app](https://app.neutron.org)\n\n**Content Preview:**\n```\n  <ul className=\"mt-2\">\n    <li>Stake assets across multiple chains from a single interface</li>\n    <li>Deploy liquid staked assets (dAssets) in Neutron DeFi applications for additional yield</li>\n\n---\n\n    <li>Stake assets across multiple chains from a single interface</li>\n    <li>Deploy liquid staked assets (dAssets) in Neutron DeFi applications for additional yield</li>\n    <li>Access deep liquidity for dAssets through Duality and partner protocols</li>\n\n---\n\n    <li>Access deep liquidity for dAssets through Duality and partner protocols</li>\n    <li>Maintain eligibility for airdrops while putting your staked assets to work</li>\n  </ul>\n```\n\n---\n\n## 3. DeFi on Neutron\n**File:** /root/neutron/docs/defi/overview.mdx\n**Section:** defi\n**Relevance Score:** 5\n\n**Matching lines:**\n- Line 16: Per-block price updates with hardware and consensus stability improvements ensure real-time, trustworthy data for DeFi applications.\n- Line 18: <Card title=\"Automated Execution\" icon=\"clock\" iconType=\"duotone\">\n- Line 22: Native interchain queries (ICQ) and transactions (ICTX) allow DeFi applications to interact with other blockchains trustlessly, expanding liquidity and use cases. Learn more about [ICQ](/developers/modules/interchain-queries/overview) and [ICTX](/developers/modules/interchaintxs/overview).\n\n**Content Preview:**\n```\n  <Card title=\"High-Frequency Oracle\" icon=\"chart-line\" iconType=\"duotone\">\n    Per-block price updates with hardware and consensus stability improvements ensure real-time, trustworthy data for DeFi applications.\n  </Card>\n\n---\n\n  </Card>\n  <Card title=\"Automated Execution\" icon=\"clock\" iconType=\"duotone\">\n    The Cron module enables scheduled, conditional, and gasless contract execution without relying on external keepers or bots, ensuring reliable automation.\n\n---\n\n  <Card title=\"Interchain Capabilities\" icon=\"link\" iconType=\"duotone\">\n    Native interchain queries (ICQ) and transactions (ICTX) allow DeFi applications to interact with other blockchains trustlessly, expanding liquidity and use cases. Learn more about [ICQ](/developers/modules/interchain-queries/overview) and [ICTX](/developers/modules/interchaintxs/overview).\n  </Card>\n```\n\n---\n\n## 4. Bull vs. Bear\n**File:** /root/neutron/docs/defi/bull-vs-bear.mdx\n**Section:** defi\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 8: className=\"block dark:hidden\"\n- Line 13: className=\"hidden dark:block\"\n\n**Content Preview:**\n```\n<img\n  className=\"block dark:hidden\"\n  src=\"/images/bullbear.png\"\n\n---\n\n<img\n  className=\"hidden dark:block\"\n  src=\"/images/bullbear.png\"\n```\n\n---\n\n## 5. Duality Orderbook\n**File:** /root/neutron/docs/defi/duality.mdx\n**Section:** defi\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 62: <li>Just-In-Time: Good-Til-Time limit order that expires after exactly 1 block</li>\n\n**Content Preview:**\n```\n      <li>Good-Til-Time: Maker order with an expiration time</li>\n      <li>Just-In-Time: Good-Til-Time limit order that expires after exactly 1 block</li>\n    </ul>\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "a9720cc3-c031-4384-b6d7-c942bd0e3668",
+            "tool_call_id": "call_DFEQUrHcEdi9iJh6ciEPFZyA",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_nqqpv2PdcY5rJms0isVjeHW6",
+                        "function": {
+                            "arguments": "{\"query\": \"Amber\", \"section\": \"defi\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 485,
+                    "prompt_tokens": 9427,
+                    "total_tokens": 9912,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 448,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8lk4OlSHG8rgT0GfWaNz7QbnVOR",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--e17745ba-fd8e-4d98-b234-5f26cffb3534-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "Amber",
+                        "section": "defi",
+                        "max_results": 10
+                    },
+                    "id": "call_nqqpv2PdcY5rJms0isVjeHW6",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 9427,
+                "output_tokens": 485,
+                "total_tokens": 9912,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 448
+                }
+            }
+        },
+        {
+            "content": "No results found for \"Amber\". Try different keywords or search terms.",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "4a2fedcd-655b-43c4-b94e-eaa29da30a1a",
+            "tool_call_id": "call_nqqpv2PdcY5rJms0isVjeHW6",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_byXZFONhUcIKDEDp2UCJ5R3I",
+                        "function": {
+                            "arguments": "{\"query\": \"deposit into supervaults how-to deposit\", \"section\": \"defi\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 556,
+                    "prompt_tokens": 9889,
+                    "total_tokens": 10445,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 512,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 3584
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8lw5tzuRZrMQUWmc2k2oj0JWTqN",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--b1d7de93-7139-4402-994f-fc438d9d2fa2-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "deposit into supervaults how-to deposit",
+                        "section": "defi",
+                        "max_results": 10
+                    },
+                    "id": "call_byXZFONhUcIKDEDp2UCJ5R3I",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 9889,
+                "output_tokens": 556,
+                "total_tokens": 10445,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 3584
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 512
+                }
+            }
+        },
+        {
+            "content": "Found 5 result(s) for \"deposit into supervaults how-to deposit\":\n\n## 1. Supervaults\n**File:** /root/neutron/docs/defi/supervaults.mdx\n**Section:** defi\n**Relevance Score:** 23\n\n**Matching lines:**\n- Line 2: title: \"Supervaults\"\n- Line 7: <Note> Supervaults <a href=\"https://app.neutron.org/supervaults\" target=\"_blank\" className=\"text-primary hover:underline font-bold\">are now live</a>! Start earning optimized yields with automated liquidity management. Ready to get started? Check out the <a href=\"#how-to-deposit-into-supervaults\" className=\"text-primary hover:underline\">how-to deposit section</a> below for step-by-step instructions. Please review [Supervaults Terms](/legal/terms-and-conditions/supervaults) before participating.</Note>\n- Line 12: Supervaults democratize market making profits to beat the competition on pricing and attract liquidity at scale. They achieve two key strategic goals:\n- Line 19: ## What are Supervaults?\n- Line 21: Supervaults (mmvault contracts) are CosmWasm contracts that leverage price feeds from Neutron's enshrined [Slinky oracle](/operators/oracle-setup) and native automation via the [Cron module](/developers/modules/cron) to provide liquidity with tight spreads on the [Duality orderbook](/defi/duality).\n\n**Content Preview:**\n```\n---\ntitle: \"Supervaults\"\ndescription: \"Next-generation liquidity management vaults with automated rebalancing and capital-efficient yield strategies\"\n\n---\n\n\n<Note> Supervaults <a href=\"https://app.neutron.org/supervaults\" target=\"_blank\" className=\"text-primary hover:underline font-bold\">are now live</a>! Start earning optimized yields with automated liquidity management. Ready to get started? Check out the <a href=\"#how-to-deposit-into-supervaults\" className=\"text-primary hover:underline\">how-to deposit section</a> below for step-by-step instructions. Please review [Supervaults Terms](/legal/terms-and-conditions/supervaults) before participating.</Note>\n\n\n---\n\n\nSupervaults democratize market making profits to beat the competition on pricing and attract liquidity at scale. They achieve two key strategic goals:\n\n```\n\n---\n\n## 2. Duality Orderbook\n**File:** /root/neutron/docs/defi/duality.mdx\n**Section:** defi\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 3: description: \"High-performance orderbook combining the advantages of orderbooks and AMMs into a single capital-efficient trading venue\"\n- Line 7: Duality is a protocol-native orderbook integrated directly into Neutron's core infrastructure that merges the strengths of orderbooks and AMMs into a unified, capital-efficient design. Unlike traditional orderbooks implemented as smart contracts, Duality is built at the protocol level, giving it significant performance advantages and deeper integration with other Neutron features.\n- Line 23: Duality is built directly into Neutron's core infrastructure as a native protocol module, making it highly capital-efficient and integrated with other Neutron applications. It **maintains a full limit orderbook** for precise price discovery and execution while supporting diverse order types. **Open composability** ensures the fully open-source design allows other applications to build on top, enhancing overall ecosystem liquidity.\n- Line 44: <li><strong>Mars:</strong> Efficiently routes liquidations and onramping to positions through Duality to safely offer higher lending deposit caps and borrowing capacity.</li>\n- Line 47: <li><strong>Drop:</strong> Collaborating with Margined and Supervaults to develop profitable market-making strategy vaults for dAsset markets.</li>\n\n**Content Preview:**\n```\ntitle: \"Duality Orderbook\"\ndescription: \"High-performance orderbook combining the advantages of orderbooks and AMMs into a single capital-efficient trading venue\"\nicon: \"arrows-rotate\"\n\n---\n\n\nDuality is a protocol-native orderbook integrated directly into Neutron's core infrastructure that merges the strengths of orderbooks and AMMs into a unified, capital-efficient design. Unlike traditional orderbooks implemented as smart contracts, Duality is built at the protocol level, giving it significant performance advantages and deeper integration with other Neutron features.\n\n\n---\n\n\nDuality is built directly into Neutron's core infrastructure as a native protocol module, making it highly capital-efficient and integrated with other Neutron applications. It **maintains a full limit orderbook** for precise price discovery and execution while supporting diverse order types. **Open composability** ensures the fully open-source design allows other applications to build on top, enhancing overall ecosystem liquidity.\n\n```\n\n---\n\n## 3. Bull vs. Bear\n**File:** /root/neutron/docs/defi/bull-vs-bear.mdx\n**Section:** defi\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 25: Clusters are strategic groupings of multiple long and short positions packaged into a single tradable unit. This allows traders to express directional views on broader market narratives or trends, rather than individual assets.\n\n**Content Preview:**\n```\n<div className=\"p-4 border-l-4 border-primary bg-primary/5 rounded my-6\">\n  Clusters are strategic groupings of multiple long and short positions packaged into a single tradable unit. This allows traders to express directional views on broader market narratives or trends, rather than individual assets.\n</div>\n```\n\n---\n\n## 4. Drop Protocol\n**File:** /root/neutron/docs/defi/drop.mdx\n**Section:** defi\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 25: **Supervaults Integration**: Allows dAssets to be deployed in Supervaults for additional yield on top of staking rewards, enhancing capital efficiency.\n\n**Content Preview:**\n```\n\n**Supervaults Integration**: Allows dAssets to be deployed in Supervaults for additional yield on top of staking rewards, enhancing capital efficiency.\n\n```\n\n---\n\n## 5. DeFi on Neutron\n**File:** /root/neutron/docs/defi/overview.mdx\n**Section:** defi\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 81: Cryptocurrencies are often driven by narratives. Clusters make it easy to long and short narratives by combining multiple long and short positions into one.\n\n**Content Preview:**\n```\n  <p>\n    Cryptocurrencies are often driven by narratives. Clusters make it easy to long and short narratives by combining multiple long and short positions into one.\n  </p>\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "4f39d119-4882-464b-aba6-975eeca8d548",
+            "tool_call_id": "call_byXZFONhUcIKDEDp2UCJ5R3I",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_hj0zzEI5x1z70KBeTBLheKck",
+                        "function": {
+                            "arguments": "{\"query\": \"how-to deposit into supervaults Step\", \"section\": \"defi\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 812,
+                    "prompt_tokens": 11881,
+                    "total_tokens": 12693,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 768,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 9856
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8mGlh7ReXMR20wSQsg9TalQPGyX",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--347a4306-5279-4df7-907d-f3b02fd25d34-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "how-to deposit into supervaults Step",
+                        "section": "defi",
+                        "max_results": 10
+                    },
+                    "id": "call_hj0zzEI5x1z70KBeTBLheKck",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 11881,
+                "output_tokens": 812,
+                "total_tokens": 12693,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9856
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 768
+                }
+            }
+        },
+        {
+            "content": "Found 5 result(s) for \"how-to deposit into supervaults Step\":\n\n## 1. Supervaults\n**File:** /root/neutron/docs/defi/supervaults.mdx\n**Section:** defi\n**Relevance Score:** 25\n\n**Matching lines:**\n- Line 2: title: \"Supervaults\"\n- Line 7: <Note> Supervaults <a href=\"https://app.neutron.org/supervaults\" target=\"_blank\" className=\"text-primary hover:underline font-bold\">are now live</a>! Start earning optimized yields with automated liquidity management. Ready to get started? Check out the <a href=\"#how-to-deposit-into-supervaults\" className=\"text-primary hover:underline\">how-to deposit section</a> below for step-by-step instructions. Please review [Supervaults Terms](/legal/terms-and-conditions/supervaults) before participating.</Note>\n- Line 12: Supervaults democratize market making profits to beat the competition on pricing and attract liquidity at scale. They achieve two key strategic goals:\n- Line 19: ## What are Supervaults?\n- Line 21: Supervaults (mmvault contracts) are CosmWasm contracts that leverage price feeds from Neutron's enshrined [Slinky oracle](/operators/oracle-setup) and native automation via the [Cron module](/developers/modules/cron) to provide liquidity with tight spreads on the [Duality orderbook](/defi/duality).\n\n**Content Preview:**\n```\n---\ntitle: \"Supervaults\"\ndescription: \"Next-generation liquidity management vaults with automated rebalancing and capital-efficient yield strategies\"\n\n---\n\n\n<Note> Supervaults <a href=\"https://app.neutron.org/supervaults\" target=\"_blank\" className=\"text-primary hover:underline font-bold\">are now live</a>! Start earning optimized yields with automated liquidity management. Ready to get started? Check out the <a href=\"#how-to-deposit-into-supervaults\" className=\"text-primary hover:underline\">how-to deposit section</a> below for step-by-step instructions. Please review [Supervaults Terms](/legal/terms-and-conditions/supervaults) before participating.</Note>\n\n\n---\n\n\nSupervaults democratize market making profits to beat the competition on pricing and attract liquidity at scale. They achieve two key strategic goals:\n\n```\n\n---\n\n## 2. Duality Orderbook\n**File:** /root/neutron/docs/defi/duality.mdx\n**Section:** defi\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 3: description: \"High-performance orderbook combining the advantages of orderbooks and AMMs into a single capital-efficient trading venue\"\n- Line 7: Duality is a protocol-native orderbook integrated directly into Neutron's core infrastructure that merges the strengths of orderbooks and AMMs into a unified, capital-efficient design. Unlike traditional orderbooks implemented as smart contracts, Duality is built at the protocol level, giving it significant performance advantages and deeper integration with other Neutron features.\n- Line 23: Duality is built directly into Neutron's core infrastructure as a native protocol module, making it highly capital-efficient and integrated with other Neutron applications. It **maintains a full limit orderbook** for precise price discovery and execution while supporting diverse order types. **Open composability** ensures the fully open-source design allows other applications to build on top, enhancing overall ecosystem liquidity.\n- Line 44: <li><strong>Mars:</strong> Efficiently routes liquidations and onramping to positions through Duality to safely offer higher lending deposit caps and borrowing capacity.</li>\n- Line 47: <li><strong>Drop:</strong> Collaborating with Margined and Supervaults to develop profitable market-making strategy vaults for dAsset markets.</li>\n\n**Content Preview:**\n```\ntitle: \"Duality Orderbook\"\ndescription: \"High-performance orderbook combining the advantages of orderbooks and AMMs into a single capital-efficient trading venue\"\nicon: \"arrows-rotate\"\n\n---\n\n\nDuality is a protocol-native orderbook integrated directly into Neutron's core infrastructure that merges the strengths of orderbooks and AMMs into a unified, capital-efficient design. Unlike traditional orderbooks implemented as smart contracts, Duality is built at the protocol level, giving it significant performance advantages and deeper integration with other Neutron features.\n\n\n---\n\n\nDuality is built directly into Neutron's core infrastructure as a native protocol module, making it highly capital-efficient and integrated with other Neutron applications. It **maintains a full limit orderbook** for precise price discovery and execution while supporting diverse order types. **Open composability** ensures the fully open-source design allows other applications to build on top, enhancing overall ecosystem liquidity.\n\n```\n\n---\n\n## 3. Bull vs. Bear\n**File:** /root/neutron/docs/defi/bull-vs-bear.mdx\n**Section:** defi\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 25: Clusters are strategic groupings of multiple long and short positions packaged into a single tradable unit. This allows traders to express directional views on broader market narratives or trends, rather than individual assets.\n\n**Content Preview:**\n```\n<div className=\"p-4 border-l-4 border-primary bg-primary/5 rounded my-6\">\n  Clusters are strategic groupings of multiple long and short positions packaged into a single tradable unit. This allows traders to express directional views on broader market narratives or trends, rather than individual assets.\n</div>\n```\n\n---\n\n## 4. Drop Protocol\n**File:** /root/neutron/docs/defi/drop.mdx\n**Section:** defi\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 25: **Supervaults Integration**: Allows dAssets to be deployed in Supervaults for additional yield on top of staking rewards, enhancing capital efficiency.\n\n**Content Preview:**\n```\n\n**Supervaults Integration**: Allows dAssets to be deployed in Supervaults for additional yield on top of staking rewards, enhancing capital efficiency.\n\n```\n\n---\n\n## 5. DeFi on Neutron\n**File:** /root/neutron/docs/defi/overview.mdx\n**Section:** defi\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 81: Cryptocurrencies are often driven by narratives. Clusters make it easy to long and short narratives by combining multiple long and short positions into one.\n\n**Content Preview:**\n```\n  <p>\n    Cryptocurrencies are often driven by narratives. Clusters make it easy to long and short narratives by combining multiple long and short positions into one.\n  </p>\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "fd48c465-c599-47b5-873c-57c1e8ada50a",
+            "tool_call_id": "call_hj0zzEI5x1z70KBeTBLheKck",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_otGetNOLiUY9MNMta6MuNT3a",
+                        "function": {
+                            "arguments": "{\"query\": \"How to deposit into supervaults\", \"section\": \"defi\", \"max_results\": 20}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 427,
+                    "prompt_tokens": 13873,
+                    "total_tokens": 14300,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 384,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 5120
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8mY0FLTaBLZzdN0QVvjYlaDsbLR",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--1a33eb2d-a9c2-4385-9f39-3bbea070694d-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "How to deposit into supervaults",
+                        "section": "defi",
+                        "max_results": 20
+                    },
+                    "id": "call_otGetNOLiUY9MNMta6MuNT3a",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 13873,
+                "output_tokens": 427,
+                "total_tokens": 14300,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 5120
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 384
+                }
+            }
+        },
+        {
+            "content": "Found 5 result(s) for \"How to deposit into supervaults\":\n\n## 1. Supervaults\n**File:** /root/neutron/docs/defi/supervaults.mdx\n**Section:** defi\n**Relevance Score:** 23\n\n**Matching lines:**\n- Line 2: title: \"Supervaults\"\n- Line 7: <Note> Supervaults <a href=\"https://app.neutron.org/supervaults\" target=\"_blank\" className=\"text-primary hover:underline font-bold\">are now live</a>! Start earning optimized yields with automated liquidity management. Ready to get started? Check out the <a href=\"#how-to-deposit-into-supervaults\" className=\"text-primary hover:underline\">how-to deposit section</a> below for step-by-step instructions. Please review [Supervaults Terms](/legal/terms-and-conditions/supervaults) before participating.</Note>\n- Line 12: Supervaults democratize market making profits to beat the competition on pricing and attract liquidity at scale. They achieve two key strategic goals:\n- Line 19: ## What are Supervaults?\n- Line 21: Supervaults (mmvault contracts) are CosmWasm contracts that leverage price feeds from Neutron's enshrined [Slinky oracle](/operators/oracle-setup) and native automation via the [Cron module](/developers/modules/cron) to provide liquidity with tight spreads on the [Duality orderbook](/defi/duality).\n\n**Content Preview:**\n```\n---\ntitle: \"Supervaults\"\ndescription: \"Next-generation liquidity management vaults with automated rebalancing and capital-efficient yield strategies\"\n\n---\n\n\n<Note> Supervaults <a href=\"https://app.neutron.org/supervaults\" target=\"_blank\" className=\"text-primary hover:underline font-bold\">are now live</a>! Start earning optimized yields with automated liquidity management. Ready to get started? Check out the <a href=\"#how-to-deposit-into-supervaults\" className=\"text-primary hover:underline\">how-to deposit section</a> below for step-by-step instructions. Please review [Supervaults Terms](/legal/terms-and-conditions/supervaults) before participating.</Note>\n\n\n---\n\n\nSupervaults democratize market making profits to beat the competition on pricing and attract liquidity at scale. They achieve two key strategic goals:\n\n```\n\n---\n\n## 2. Duality Orderbook\n**File:** /root/neutron/docs/defi/duality.mdx\n**Section:** defi\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 3: description: \"High-performance orderbook combining the advantages of orderbooks and AMMs into a single capital-efficient trading venue\"\n- Line 7: Duality is a protocol-native orderbook integrated directly into Neutron's core infrastructure that merges the strengths of orderbooks and AMMs into a unified, capital-efficient design. Unlike traditional orderbooks implemented as smart contracts, Duality is built at the protocol level, giving it significant performance advantages and deeper integration with other Neutron features.\n- Line 23: Duality is built directly into Neutron's core infrastructure as a native protocol module, making it highly capital-efficient and integrated with other Neutron applications. It **maintains a full limit orderbook** for precise price discovery and execution while supporting diverse order types. **Open composability** ensures the fully open-source design allows other applications to build on top, enhancing overall ecosystem liquidity.\n- Line 44: <li><strong>Mars:</strong> Efficiently routes liquidations and onramping to positions through Duality to safely offer higher lending deposit caps and borrowing capacity.</li>\n- Line 47: <li><strong>Drop:</strong> Collaborating with Margined and Supervaults to develop profitable market-making strategy vaults for dAsset markets.</li>\n\n**Content Preview:**\n```\ntitle: \"Duality Orderbook\"\ndescription: \"High-performance orderbook combining the advantages of orderbooks and AMMs into a single capital-efficient trading venue\"\nicon: \"arrows-rotate\"\n\n---\n\n\nDuality is a protocol-native orderbook integrated directly into Neutron's core infrastructure that merges the strengths of orderbooks and AMMs into a unified, capital-efficient design. Unlike traditional orderbooks implemented as smart contracts, Duality is built at the protocol level, giving it significant performance advantages and deeper integration with other Neutron features.\n\n\n---\n\n\nDuality is built directly into Neutron's core infrastructure as a native protocol module, making it highly capital-efficient and integrated with other Neutron applications. It **maintains a full limit orderbook** for precise price discovery and execution while supporting diverse order types. **Open composability** ensures the fully open-source design allows other applications to build on top, enhancing overall ecosystem liquidity.\n\n```\n\n---\n\n## 3. DeFi on Neutron\n**File:** /root/neutron/docs/defi/overview.mdx\n**Section:** defi\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 42: Neutron's architectural advantage comes from how its core modules work together to create a unified DeFi experience:\n- Line 81: Cryptocurrencies are often driven by narratives. Clusters make it easy to long and short narratives by combining multiple long and short positions into one.\n- Line 101: Learn how to build and integrate with Neutron's modules\n\n**Content Preview:**\n```\n\nNeutron's architectural advantage comes from how its core modules work together to create a unified DeFi experience:\n\n\n---\n\n  <p>\n    Cryptocurrencies are often driven by narratives. Clusters make it easy to long and short narratives by combining multiple long and short positions into one.\n  </p>\n\n---\n\n  <Card title=\"Developer Docs\" icon=\"code\" iconType=\"duotone\" href=\"/developers/modules\">\n    Learn how to build and integrate with Neutron's modules\n  </Card>\n```\n\n---\n\n## 4. Bull vs. Bear\n**File:** /root/neutron/docs/defi/bull-vs-bear.mdx\n**Section:** defi\n**Relevance Score:** 6\n\n**Matching lines:**\n- Line 25: Clusters are strategic groupings of multiple long and short positions packaged into a single tradable unit. This allows traders to express directional views on broader market narratives or trends, rather than individual assets.\n- Line 38: ## How Clusters Work\n\n**Content Preview:**\n```\n<div className=\"p-4 border-l-4 border-primary bg-primary/5 rounded my-6\">\n  Clusters are strategic groupings of multiple long and short positions packaged into a single tradable unit. This allows traders to express directional views on broader market narratives or trends, rather than individual assets.\n</div>\n\n---\n\n\n## How Clusters Work\n\n```\n\n---\n\n## 5. Drop Protocol\n**File:** /root/neutron/docs/defi/drop.mdx\n**Section:** defi\n**Relevance Score:** 6\n\n**Matching lines:**\n- Line 17: Drop Protocol showcases the power of Neutron's integrated architecture by utilizing several core modules:\n- Line 25: **Supervaults Integration**: Allows dAssets to be deployed in Supervaults for additional yield on top of staking rewards, enhancing capital efficiency.\n\n**Content Preview:**\n```\n\nDrop Protocol showcases the power of Neutron's integrated architecture by utilizing several core modules:\n\n\n---\n\n\n**Supervaults Integration**: Allows dAssets to be deployed in Supervaults for additional yield on top of staking rewards, enhancing capital efficiency.\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "6b23ca4b-55fa-4814-9e8e-c5ee5522066b",
+            "tool_call_id": "call_otGetNOLiUY9MNMta6MuNT3a",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Execute an emergency withdrawal for the user\u2019s Amber trading position\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_wallet_address\",\n        \"description\": \"Retrieve the wallet address that owns the Amber position.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_amber_contract_positions\",\n        \"description\": \"Fetch all active Amber positions for the wallet to obtain the specific position_id to withdraw.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_amber_emergency_withdraw\",\n        \"description\": \"Build the emergency_withdraw transaction message with the selected position_id.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the emergency withdrawal transaction and broadcast it to the network.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Confirm the transaction was included in a block and emitted an `EmergencyWithdrawal` event from the Amber contract.\",\n      \"Verify the position_id no longer appears in the wallet\u2019s list of active Amber positions and the withdrawn tokens are returned to the user\u2019s balance.\"\n    ]\n  },\n  {\n    \"intent\": \"Cancel (unlock) the user\u2019s NTRN stake lock once the vesting period has ended\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_wallet_address\",\n        \"description\": \"Identify the wallet that holds the locked NTRN stake.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_stake_lock_status\",\n        \"description\": \"Check the lock record to ensure the vesting period has completed and the lock is eligible for cancellation.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_unlock_stake\",\n        \"description\": \"Create the unlock or cancel_lock transaction for the specific lock_id.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast the unlock transaction.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The unlock transaction is successfully committed in a block.\",\n      \"The previously locked NTRN tokens are now freely transferable in the user\u2019s wallet balance.\"\n    ]\n  },\n  {\n    \"intent\": \"Increase the user\u2019s deposit in the WBTC/USDC Supervault by 0.2 WBTC and 12 000 USDC\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_wallet_address\",\n        \"description\": \"Determine which wallet will fund the additional deposit.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"validate_token_balances\",\n        \"description\": \"Ensure the wallet has at least 0.2 WBTC and 12 000 USDC available.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"get_supervault_contract_address\",\n        \"description\": \"Look up the contract address for the WBTC/USDC Supervault.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"construct_tx_supervault_deposit\",\n        \"description\": \"Create the deposit message specifying 0.2 WBTC and 12 000 USDC as the amounts.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast the deposit transaction.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"A `Deposit` event from the Supervault contract shows the correct asset amounts.\",\n      \"The user\u2019s Supervault share balance increased proportionally while wallet balances decreased by 0.2 WBTC and 12 000 USDC.\"\n    ]\n  },\n  {\n    \"intent\": \"Withdraw 10 % of the user\u2019s shares from the maxBTC/solvBTC Supervault\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_wallet_address\",\n        \"description\": \"Identify the wallet holding the vault shares.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_supervault_share_balance\",\n        \"description\": \"Retrieve the total number of shares the user currently owns in the maxBTC/solvBTC Supervault.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"calculate_shares_to_withdraw\",\n        \"description\": \"Compute 10 % of the retrieved share balance to determine shares_to_withdraw.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"construct_tx_supervault_withdraw\",\n        \"description\": \"Create the withdraw transaction using shares_to_withdraw as the parameter.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast the withdrawal transaction.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"A `Withdraw` event from the Supervault contract confirms the shares redeemed and the corresponding maxBTC/solvBTC tokens returned.\",\n      \"The user\u2019s vault share balance is reduced by ~10 %, and the wallet balance for maxBTC and solvBTC increases accordingly.\"\n    ]\n  },\n  {\n    \"intent\": \"Provide new liquidity to the WBTC/LBTC Supervault with 1 WBTC and 1 LBTC\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_wallet_address\",\n        \"description\": \"Determine the funding wallet for the deposit.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"validate_token_balances\",\n        \"description\": \"Confirm the wallet holds at least 1 WBTC and 1 LBTC.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"get_supervault_contract_address\",\n        \"description\": \"Fetch the contract address for the WBTC/LBTC Supervault.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"construct_tx_supervault_deposit\",\n        \"description\": \"Build the deposit message specifying 1 WBTC and 1 LBTC.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast the deposit transaction.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Verify a `Deposit` event from the WBTC/LBTC Supervault shows 1 WBTC and 1 LBTC received.\",\n      \"Confirm the user\u2019s Supervault share balance increased and the wallet balances for WBTC and LBTC decreased by exactly 1 token each.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2845,
+                    "prompt_tokens": 16059,
+                    "total_tokens": 18904,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1408,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8miGGaA0srqnIUCUG9FGeKX2RDb",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--6678ff6a-d9e3-4d03-9c9a-8a07d7a0f73e-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 16059,
+                "output_tokens": 2845,
+                "total_tokens": 18904,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1408
+                }
+            }
+        }
+    ]
+}

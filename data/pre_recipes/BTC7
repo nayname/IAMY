@@ -1,0 +1,172 @@
+[
+    {
+        "intent": "Redeem LP shares from the maxBTC/eBTC Supervault",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_address",
+                "description": "Identify the wallet address that holds the Supervault shares."
+            },
+            {
+                "step": 2,
+                "tool": "query_contract_state",
+                "description": "Fetch the user\u2019s current share balance and the Supervault contract address (e.g., `supervault_maxBTC_eBTC`) to determine the maximum redeemable amount."
+            },
+            {
+                "step": 3,
+                "tool": "validate_redeem_amount",
+                "description": "Confirm the user has enough LP shares to cover the requested redemption."
+            },
+            {
+                "step": 4,
+                "tool": "construct_wasm_execute_msg",
+                "description": "Build a `withdraw` execute message for the Supervault contract with `{ \"amount\": <shares_to_redeem> }`."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the transaction with the user\u2019s key and broadcast it to the Neutron network."
+            }
+        ],
+        "outcome_checks": [
+            "Verify the transaction hash was included in a block without error codes.",
+            "Confirm the user\u2019s maxBTC and eBTC balances increased while their Supervault share balance decreased by the redeemed amount."
+        ]
+    },
+    {
+        "intent": "Swap 1 eBTC for uniBTC on Neutron DEX",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_address",
+                "description": "Obtain the wallet address that will perform the swap."
+            },
+            {
+                "step": 2,
+                "tool": "validate_token_balance",
+                "description": "Ensure the address has at least 1 eBTC plus network fees."
+            },
+            {
+                "step": 3,
+                "tool": "query_dex_pool",
+                "description": "Retrieve pool data (liquidity, price, slippage) for the `eBTC/uniBTC` pair or optimal multi-hop route."
+            },
+            {
+                "step": 4,
+                "tool": "construct_swap_msg",
+                "description": "Create the DEX `swap` execute message specifying `offer_asset: 1 eBTC`, `ask_asset: uniBTC`, and a reasonable `max_slippage`."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and submit the swap transaction."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm the transaction was finalized in a block.",
+            "Check that the eBTC balance decreased by ~1 eBTC (plus fees) and the uniBTC balance increased by the expected amount."
+        ]
+    },
+    {
+        "intent": "Open a 5\u00d7 leveraged loop position with 1 maxBTC on Amber",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_address",
+                "description": "Determine the wallet initiating the leveraged position."
+            },
+            {
+                "step": 2,
+                "tool": "validate_token_balance",
+                "description": "Verify the user holds at least 1 maxBTC (plus gas fees)."
+            },
+            {
+                "step": 3,
+                "tool": "query_amber_market_parameters",
+                "description": "Fetch Amber Finance parameters (maximum leverage allowed, collateral factors, interest rate) to ensure 5\u00d7 leverage is within limits."
+            },
+            {
+                "step": 4,
+                "tool": "construct_open_leverage_msg",
+                "description": "Generate an Amber `open_position` execute message with `{ \"collateral\": 1 maxBTC, \"leverage\": \"5x\" }`."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the open-position transaction."
+            },
+            {
+                "step": 6,
+                "tool": "query_position_status",
+                "description": "Poll the Amber contract for the new position ID, borrowed amount, and health factor."
+            }
+        ],
+        "outcome_checks": [
+            "Ensure the transaction succeeded and a position ID was returned.",
+            "Validate that the position\u2019s health factor is above the liquidation threshold and leverage approximates 5\u00d7."
+        ]
+    },
+    {
+        "intent": "Close my leveraged loop position on Amber",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_address",
+                "description": "Identify the wallet that owns the Amber position."
+            },
+            {
+                "step": 2,
+                "tool": "query_position_status",
+                "description": "Retrieve the active position ID, outstanding debt, and collateral details."
+            },
+            {
+                "step": 3,
+                "tool": "construct_close_position_msg",
+                "description": "Build an Amber `close_position` execute message (or `repay_and_withdraw`) targeting the retrieved position ID."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the close-position transaction and broadcast it."
+            },
+            {
+                "step": 5,
+                "tool": "query_position_status",
+                "description": "Re-query Amber to confirm the position no longer exists (or shows zero debt)."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction finalized without errors.",
+            "User\u2019s collateral (maxBTC) returned minus any fees, and the Amber position list shows no open positions."
+        ]
+    },
+    {
+        "intent": "Check my health factor on Amber Finance",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_address",
+                "description": "Determine the wallet whose health factor is requested."
+            },
+            {
+                "step": 2,
+                "tool": "query_amber_position",
+                "description": "Fetch all active positions for the address from the Amber contract."
+            },
+            {
+                "step": 3,
+                "tool": "calculate_health_factor",
+                "description": "Compute or read the health factor metric returned by Amber for each position."
+            },
+            {
+                "step": 4,
+                "tool": "present_results",
+                "description": "Return a formatted summary: position ID \u2192 health factor, collateral, debt."
+            }
+        ],
+        "outcome_checks": [
+            "Health factor values are non-null and within expected numeric ranges.",
+            "Output clearly associates each position ID with its health factor."
+        ]
+    }
+]

@@ -1,0 +1,173 @@
+[
+    {
+        "intent": "Deposit 1 WBTC into the WBTC/USDC Supervault",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_wallet_address",
+                "description": "Retrieve the sender\u2019s Neutron wallet address."
+            },
+            {
+                "step": 2,
+                "tool": "validate_asset_balance",
+                "description": "Ensure the wallet holds \u2265 1 WBTC (ICS-20 or CW20) and enough NTRN for fees."
+            },
+            {
+                "step": 3,
+                "tool": "get_supervault_contract",
+                "description": "Fetch the contract address for the WBTC/USDC Supervault from the on-chain registry or Supervaults docs."
+            },
+            {
+                "step": 4,
+                "tool": "construct_wasm_execute_deposit",
+                "description": "Build a wasm-execute message `{ \"deposit\": {} }` with `funds: 1 WBTC` to the Supervault contract."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the transaction with the wallet\u2019s key and broadcast it to the Neutron network."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm the Tx hash is included in a finalized block.",
+            "Query the Supervault contract: `shares(user) > 0` and reflects ~1 WBTC deposited."
+        ]
+    },
+    {
+        "intent": "Lend 1 WBTC on Amber Finance",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_wallet_address",
+                "description": "Identify the sender\u2019s Neutron address."
+            },
+            {
+                "step": 2,
+                "tool": "validate_asset_balance",
+                "description": "Verify the wallet has at least 1 WBTC available for lending."
+            },
+            {
+                "step": 3,
+                "tool": "get_amber_lending_pool_contract",
+                "description": "Lookup the Amber Finance lending pool (cToken) contract that accepts WBTC."
+            },
+            {
+                "step": 4,
+                "tool": "construct_wasm_execute_supply",
+                "description": "Create a wasm execute message `{ \"supply\": { \"amount\": \"1\", \"denom\": \"WBTC\" } }` (or CW20 send) to supply liquidity."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the supply transaction."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction included in a block with success code 0.",
+            "Query Amber Finance: supplied balance for user shows +1 WBTC and interest index initialized."
+        ]
+    },
+    {
+        "intent": "Stake 1000 NTRN for 48 months to maximize my boost",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_wallet_address",
+                "description": "Fetch the user\u2019s Neutron address that will lock NTRN."
+            },
+            {
+                "step": 2,
+                "tool": "validate_asset_balance",
+                "description": "Confirm the wallet holds \u2265 1000 NTRN plus gas fees."
+            },
+            {
+                "step": 3,
+                "tool": "get_ntrn_boost_lock_contract",
+                "description": "Obtain the address of the NTRN Boost/Lock contract (used for rewards multipliers)."
+            },
+            {
+                "step": 4,
+                "tool": "construct_wasm_execute_lock",
+                "description": "Build `{ \"lock\": { \"amount\": \"1000000000\", \"duration_months\": 48 } }` (amount in 6-decimals uNTRN) to lock tokens."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the lock transaction and broadcast it."
+            }
+        ],
+        "outcome_checks": [
+            "Tx succeeds and appears in a block.",
+            "Query lock contract: entry shows 1 000 NTRN locked, 48-month expiry, and boost multiplier updated."
+        ]
+    },
+    {
+        "intent": "Link my Neutron wallet to my Ethereum address for boosting",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_wallet_address",
+                "description": "Capture the user\u2019s Neutron address to be linked."
+            },
+            {
+                "step": 2,
+                "tool": "get_user_ethereum_address",
+                "description": "Capture the user\u2019s Ethereum address (MetaMask or other EOA)."
+            },
+            {
+                "step": 3,
+                "tool": "generate_eth_signature",
+                "description": "Have the user sign the message `\"Link:<NeutronAddr>\"` with their Ethereum private key (EIP-191) to prove ownership."
+            },
+            {
+                "step": 4,
+                "tool": "construct_wasm_execute_link_address",
+                "description": "Create `{ \"link\": { \"eth_address\": \"<0x\u2026>\", \"signature\": \"<sig>\" } }` for the BTC-Summer address-linking contract."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign with the Neutron wallet and broadcast the linking transaction."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction committed successfully.",
+            "Query the linking contract: `linked(NeutronAddr) == EthereumAddr` and status `verified = true`."
+        ]
+    },
+    {
+        "intent": "Claim my NTRN rewards with standard vesting",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_wallet_address",
+                "description": "Determine the claimant\u2019s Neutron address."
+            },
+            {
+                "step": 2,
+                "tool": "query_pending_rewards",
+                "description": "Fetch the amount of unclaimed NTRN rewards and confirm they are > 0."
+            },
+            {
+                "step": 3,
+                "tool": "construct_wasm_execute_claim",
+                "description": "Build `{ \"claim\": { \"vesting\": \"standard\" } }` to route rewards into the default vesting schedule."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the claim transaction."
+            },
+            {
+                "step": 5,
+                "tool": "query_vesting_schedule",
+                "description": "Retrieve the updated vesting schedule to verify the rewards were added."
+            }
+        ],
+        "outcome_checks": [
+            "Claim transaction finalized with success code 0.",
+            "Vesting contract shows a new entry with the claimed NTRN amount, correct cliff and unlock schedule.",
+            "Wallet reflects any immediately unlocked portion, if applicable."
+        ]
+    }
+]

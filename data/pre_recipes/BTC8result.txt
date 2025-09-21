@@ -1,0 +1,221 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"BTC\", \"query\": \"View available Supervault positions eligible for Bitcoin Summer\"}, {\"label\": \"BTC\", \"query\": \"List current Amber lending markets and APYs\"}, {\"label\": \"BTC\", \"query\": \"Enable USDC gas payments for my next transaction\"}, {\"label\": \"BTC\", \"query\": \"Opt in to partner airdrops for my vault deposits\"}, {\"label\": \"BTC\", \"query\": \"Confirm forfeitable reward structure for my current vault\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "61483775-b883-4e89-9966-41f73fc27b8f",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_xrGoWqIYeKcgG3tqHp4tlSnb",
+                        "function": {
+                            "arguments": "{\"query\": \"USDC gas payments neutron\", \"section\": \"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 552,
+                    "prompt_tokens": 717,
+                    "total_tokens": 1269,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 512,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8iuOSrWw9lcdpsFp8QRVvDepvf5",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--4323af2c-dbb9-4aed-8718-d39deb80e03d-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "USDC gas payments neutron",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_xrGoWqIYeKcgG3tqHp4tlSnb",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 717,
+                "output_tokens": 552,
+                "total_tokens": 1269,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 512
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"USDC gas payments neutron\":\n\n## 1. Neutron Modules\n**File:** /root/neutron/docs/developers/modules/overview.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Neutron Modules\"\n- Line 5: Neutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n- Line 79: Network-wide minimum gas prices\n- Line 85: Most Neutron modules follow consistent patterns when used in CosmWasm smart contracts:\n- Line 89: use neutron_sdk::interchain_queries::...; // for ICQ\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Modules\"\n---\n\n---\n\n\nNeutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n\n\n---\n\n  <Card title=\"Global Fee\" icon=\"globe\" href=\"/developers/modules/globalfee/overview\">\n    Network-wide minimum gas prices\n  </Card>\n```\n\n---\n\n## 2. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"NeutronTemplate\"\n- Line 3: description: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n- Line 7: NeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n- Line 10: <strong>Live Demo:</strong> <a href=\"https://neutrontemplate.deploydon.com\" target=\"_blank\" className=\"text-primary hover:underline\">https://NeutronTemplate.Deploydon.com</a>\n- Line 65: git clone https://github.com/Deploydon/NeutronTemplate.git\n\n**Content Preview:**\n```\n---\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n\n---\n\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\nicon: \"code\"\n\n---\n\n\nNeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n\n```\n\n---\n\n## 3. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n- Line 23: ## Getting Started with SubQuery for Neutron\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 4. How-to\n**File:** /root/neutron/docs/developers/modules/dynamicfees/how-to.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 12: The Dynamic Fees module enables multi-asset fee payments by maintaining NTRN-denominated prices for supported assets. It works in conjunction with the fee market module to convert between different denominations.\n- Line 32: \"@type\": \"/neutron.dynamicfees.v1.MsgUpdateParams\",\n- Line 33: \"authority\": \"neutron10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn\", // governance authority\n- Line 60: neutrond tx gov submit-proposal proposal.json \\\n- Line 62: --gas auto \\\n\n**Content Preview:**\n```\n\nThe Dynamic Fees module enables multi-asset fee payments by maintaining NTRN-denominated prices for supported assets. It works in conjunction with the fee market module to convert between different denominations.\n\n\n---\n\n    {\n      \"@type\": \"/neutron.dynamicfees.v1.MsgUpdateParams\",\n      \"authority\": \"neutron10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn\", // governance authority\n\n---\n\n      \"@type\": \"/neutron.dynamicfees.v1.MsgUpdateParams\",\n      \"authority\": \"neutron10d07y265gmmuvt4z0w9aw880jnsr700j6zn9kn\", // governance authority\n      \"params\": {\n```\n\n---\n\n## 5. Overview\n**File:** /root/neutron/docs/developers/modules/dynamicfees/overview.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 17: - **Price Conversion**: Provides data source for converting gas prices from the fee market's base denomination (untrn) into various assets\n- Line 29: 3. **Price Conversion**: Enables conversion of gas prices from the base denomination (untrn) into other supported assets\n- Line 43: // ntrn_prices is a data source to convert gas_price from feemarket's base_denom (untrn)\n- Line 55: The Dynamic Fees module is designed to work alongside Neutron's fee market implementation:\n- Line 59: - **Multi-Asset Support**: Enables fee payments in various supported assets\n\n**Content Preview:**\n```\n\n- **Price Conversion**: Provides data source for converting gas prices from the fee market's base denomination (untrn) into various assets\n\n\n---\n\n\n3. **Price Conversion**: Enables conversion of gas prices from the base denomination (untrn) into other supported assets\n\n\n---\n\n  // it's used in cooperation with feemarket module\n  // ntrn_prices is a data source to convert gas_price from feemarket's base_denom (untrn)\n  // into a given asset\n```\n\n---\n\n## 6. Interchain Transactions Module\n**File:** /root/neutron/docs/developers/modules/interchaintxs/overview.mdx\n**Section:** developers\n**Relevance Score:** 12\n\n**Matching lines:**\n- Line 5: The Interchain Transactions module enables **CosmWasm smart contracts** to interact with other blockchains in the IBC ecosystem by managing interchain accounts and executing transactions on remote zones. This module provides a critical bridge between smart contracts on Neutron and functionality on connected IBC-enabled chains.\n- Line 30: - **Cross-Chain DeFi**: Enabling a Neutron-based protocol to participate in DeFi activities on other chains\n- Line 31: - **Governance Participation**: Allowing Neutron contracts to vote in governance proposals on remote chains\n- Line 41: - **Fee Refunder Module**: For handling packet fee payments and refunds\n- Line 42: - **Contract Manager Module**: For managing gas limits and error handling during contract callbacks\n\n**Content Preview:**\n```\n\nThe Interchain Transactions module enables **CosmWasm smart contracts** to interact with other blockchains in the IBC ecosystem by managing interchain accounts and executing transactions on remote zones. This module provides a critical bridge between smart contracts on Neutron and functionality on connected IBC-enabled chains.\n\n\n---\n\n\n- **Cross-Chain DeFi**: Enabling a Neutron-based protocol to participate in DeFi activities on other chains\n- **Governance Participation**: Allowing Neutron contracts to vote in governance proposals on remote chains\n\n---\n\n- **Cross-Chain DeFi**: Enabling a Neutron-based protocol to participate in DeFi activities on other chains\n- **Governance Participation**: Allowing Neutron contracts to vote in governance proposals on remote chains\n- **Asset Management**: Managing tokens and NFTs held on connected chains through secure IBC channels\n```\n\n---\n\n## 7. Technical Details\n**File:** /root/neutron/docs/developers/modules/dynamicfees/explanation.mdx\n**Section:** developers\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 5: This document provides an in-depth technical explanation of how the Dynamic Fees module works within the Neutron network's fee market system.\n- Line 9: The Dynamic Fees module serves as a **DenomResolver** for the fee market module, providing asset price conversion capabilities to enable multi-asset fee payments. It maintains a registry of NTRN-denominated prices for supported assets.\n- Line 122: 1. **User Transaction**: User submits transaction with gas price in any supported asset\n- Line 259: The Dynamic Fees module provides a simple but effective foundation for multi-asset fee payments while maintaining security through governance control and precision through decimal arithmetic.\n\n**Content Preview:**\n```\n\nThis document provides an in-depth technical explanation of how the Dynamic Fees module works within the Neutron network's fee market system.\n\n\n---\n\n\nThe Dynamic Fees module serves as a **DenomResolver** for the fee market module, providing asset price conversion capabilities to enable multi-asset fee payments. It maintains a registry of NTRN-denominated prices for supported assets.\n\n\n---\n\n\n1. **User Transaction**: User submits transaction with gas price in any supported asset\n2. **Fee Market Query**: Fee market module queries Dynamic Fees for conversion\n```\n\n---\n\n## 8. How-to\n**File:** /root/neutron/docs/developers/modules/contractmanager/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 9: When developing contracts that use IBC functionality on Neutron, you need to properly handle acknowledgments:\n- Line 30: 1. **Keep Sudo Handlers Light**: Due to gas limitations, sudo handlers should only store data without complex processing\n- Line 42: neutrond query contractmanager failures [contract-address]\n- Line 50: \"address\": \"neutron1...\",\n- Line 69: let request = NeutronQuery::ContractManagerFailures {\n\n**Content Preview:**\n```\n\nWhen developing contracts that use IBC functionality on Neutron, you need to properly handle acknowledgments:\n\n\n---\n\n\n1. **Keep Sudo Handlers Light**: Due to gas limitations, sudo handlers should only store data without complex processing\n2. **Separate Processing Logic**: Use separate execute messages to process the stored data\n\n---\n\n```bash\nneutrond query contractmanager failures [contract-address]\n```\n```\n\n---\n\n## 9. Reference\n**File:** /root/neutron/docs/developers/modules/contractmanager/reference.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 12: | `sudo_call_gas_limit` | uint64 | Maximum gas that can be used during a sudo call to a contract |\n- Line 21: neutrond query contractmanager params\n- Line 26: /neutron/contractmanager/params\n- Line 33: \"sudo_call_gas_limit\": \"2000000\"\n- Line 44: neutrond query contractmanager failures\n\n**Content Preview:**\n```\n| --- | --- | --- |\n| `sudo_call_gas_limit` | uint64 | Maximum gas that can be used during a sudo call to a contract |\n\n\n---\n\n```bash\nneutrond query contractmanager params\n```\n\n---\n\n```\n/neutron/contractmanager/params\n```\n```\n\n---\n\n## 10. How-To Guide\n**File:** /root/neutron/docs/developers/modules/globalfee/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 18: neutrond tx gov submit-proposal proposal.json \\\n- Line 20: --chain-id neutron-1 \\\n- Line 21: --gas auto \\\n- Line 22: --gas-adjustment 1.5 \\\n- Line 31: \"description\": \"Adjust minimum gas prices and bypass message types\",\n\n**Content Preview:**\n```\n```bash\nneutrond tx gov submit-proposal proposal.json \\\n  --from validator \\\n\n---\n\n  --from validator \\\n  --chain-id neutron-1 \\\n  --gas auto \\\n\n---\n\n  --chain-id neutron-1 \\\n  --gas auto \\\n  --gas-adjustment 1.5 \\\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "76282d3d-a4be-497b-a4bc-6d4f0969c94e",
+            "tool_call_id": "call_xrGoWqIYeKcgG3tqHp4tlSnb",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_GlcfOegXhWhxOfw9gSq1c6Gw",
+                        "function": {
+                            "arguments": "{\"query\": \"dynamic fees fee market multi asset gas payments\", \"section\": \"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 1003,
+                    "prompt_tokens": 4286,
+                    "total_tokens": 5289,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 960,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8j1kRTYbsrgzAzq5nEOJFjqoIbN",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--43041382-4f12-4449-af58-d19ab2a3b734-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "dynamic fees fee market multi asset gas payments",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_GlcfOegXhWhxOfw9gSq1c6Gw",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 4286,
+                "output_tokens": 1003,
+                "total_tokens": 5289,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 960
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"dynamic fees fee market multi asset gas payments\":\n\n## 1. Fees\n**File:** /root/neutron/docs/developers/modules/dex/concepts/fees.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 2: title: \"Fees\"\n- Line 5: _Disclaimer: Liquidity providing into all AMMs is risky and requires due dilligence. While we explain how fees can hypothetically be used to make money, we reccommend that you do your own research before making decisions on how to choose fees and whether to liquidity provide._\n- Line 7: Fees are used by liquidity providers to make money from trades using their liquidity. Every time a trade is made, the fee charges traders a slight premium for using the liquidity.\n- Line 9: The best strategy for liquidity providers will not always be to charge traders the highest fee. This is because higher fees also means higher prices, which can be undercut by liquidity being deposited at lower fees or prices. Thus, liquidity providers should be thoughtful in their selection of fees.\n- Line 11: A rule of thumb on choosing fees is that liquidity providers typically choose higher fees on pairs with more volatility.\n\n**Content Preview:**\n```\n---\ntitle: \"Fees\"\n---\n\n---\n\n\n_Disclaimer: Liquidity providing into all AMMs is risky and requires due dilligence. While we explain how fees can hypothetically be used to make money, we reccommend that you do your own research before making decisions on how to choose fees and whether to liquidity provide._\n\n\n---\n\n\nFees are used by liquidity providers to make money from trades using their liquidity. Every time a trade is made, the fee charges traders a slight premium for using the liquidity.\n\n```\n\n---\n\n## 2. Technical Details\n**File:** /root/neutron/docs/developers/modules/dynamicfees/explanation.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 5: This document provides an in-depth technical explanation of how the Dynamic Fees module works within the Neutron network's fee market system.\n- Line 9: The Dynamic Fees module serves as a **DenomResolver** for the fee market module, providing asset price conversion capabilities to enable multi-asset fee payments. It maintains a registry of NTRN-denominated prices for supported assets.\n- Line 12: Fee Market Module \u2190 DenomResolver Interface \u2190 Dynamic Fees Module\n- Line 21: The module implements the `feemarkettypes.DenomResolver` interface with two key methods:\n- Line 44: 1. **NTRN \u2192 Other Asset**: Divide NTRN amount by the asset's NTRN price\n\n**Content Preview:**\n```\n\nThis document provides an in-depth technical explanation of how the Dynamic Fees module works within the Neutron network's fee market system.\n\n\n---\n\n\nThe Dynamic Fees module serves as a **DenomResolver** for the fee market module, providing asset price conversion capabilities to enable multi-asset fee payments. It maintains a registry of NTRN-denominated prices for supported assets.\n\n\n---\n\n```\nFee Market Module \u2190 DenomResolver Interface \u2190 Dynamic Fees Module\n                                           \u2193\n```\n\n---\n\n## 3. How-to\n**File:** /root/neutron/docs/developers/modules/dynamicfees/how-to.mdx\n**Section:** developers\n**Relevance Score:** 20\n\n**Matching lines:**\n- Line 3: description: \"Step-by-step instructions for using the Dynamic Fees module\"\n- Line 8: This guide provides practical instructions for working with the Dynamic Fees module, including governance operations and integration patterns.\n- Line 12: The Dynamic Fees module enables multi-asset fee payments by maintaining NTRN-denominated prices for supported assets. It works in conjunction with the fee market module to convert between different denominations.\n- Line 17: **Governance-Only Access**: All parameter updates in the Dynamic Fees module require governance approval. Individual users cannot directly modify asset prices.\n- Line 20: ### Updating Asset Prices\n\n**Content Preview:**\n```\ntitle: \"How-to\"\ndescription: \"Step-by-step instructions for using the Dynamic Fees module\"\n---\n\n---\n\n\nThis guide provides practical instructions for working with the Dynamic Fees module, including governance operations and integration patterns.\n\n\n---\n\n\nThe Dynamic Fees module enables multi-asset fee payments by maintaining NTRN-denominated prices for supported assets. It works in conjunction with the fee market module to convert between different denominations.\n\n```\n\n---\n\n## 4. Overview\n**File:** /root/neutron/docs/developers/modules/dynamicfees/overview.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 5: The Dynamic Fees module provides asset price management functionality that works in cooperation with the fee market module. It maintains a list of asset prices denominated in NTRN tokens to enable dynamic fee calculations and conversions.\n- Line 8: **Governance-Controlled Parameters**: The Dynamic Fees module's parameters (asset prices) can only be updated through governance proposals. Individual users cannot directly modify module settings.\n- Line 13: - **Asset Price Management**: Maintains a registry of asset prices denominated in NTRN tokens\n- Line 15: - **Fee Market Integration**: Works cooperatively with the fee market module to enable dynamic fee calculations\n- Line 17: - **Price Conversion**: Provides data source for converting gas prices from the fee market's base denomination (untrn) into various assets\n\n**Content Preview:**\n```\n\nThe Dynamic Fees module provides asset price management functionality that works in cooperation with the fee market module. It maintains a list of asset prices denominated in NTRN tokens to enable dynamic fee calculations and conversions.\n\n\n---\n\n<Info>\n**Governance-Controlled Parameters**: The Dynamic Fees module's parameters (asset prices) can only be updated through governance proposals. Individual users cannot directly modify module settings.\n</Info>\n\n---\n\n\n- **Asset Price Management**: Maintains a registry of asset prices denominated in NTRN tokens\n\n```\n\n---\n\n## 5. Overview\n**File:** /root/neutron/docs/developers/modules/dex/overview.mdx\n**Section:** developers\n**Relevance Score:** 16\n\n**Matching lines:**\n- Line 17: - Enables zero or near-zero slippage trades for stablecoins and highly correlated assets\n- Line 23: Neutron DEX supports multiple trading mechanisms:\n- Line 25: - **Market Orders**: Swap tokens at the current market price via multi-hop routing\n- Line 27: - **Liquidity Provision**: Add liquidity to pools and earn trading fees\n- Line 41: 1. **Pool Management**: Create and manage liquidity pools with specific price points and fee levels\n\n**Content Preview:**\n```\n\n- Enables zero or near-zero slippage trades for stablecoins and highly correlated assets\n- Allows liquidity providers to precisely target their capital to specific price ranges\n\n---\n\n\nNeutron DEX supports multiple trading mechanisms:\n\n\n---\n\n\n- **Market Orders**: Swap tokens at the current market price via multi-hop routing\n- **Limit Orders**: Place orders to buy or sell tokens at a specified price\n```\n\n---\n\n## 6. Reference\n**File:** /root/neutron/docs/developers/modules/dynamicfees/reference.mdx\n**Section:** developers\n**Relevance Score:** 16\n\n**Matching lines:**\n- Line 3: description: \"Basic reference for the Dynamic Fees module\"\n- Line 6: The Dynamic Fees module provides asset price conversion capabilities for the fee market by maintaining NTRN-denominated prices for supported assets.\n- Line 12: | `ntrn_prices` | DecCoin[] | Array of asset prices denominated in NTRN |\n- Line 16: - `denom`: Asset denomination (e.g., \"uatom\", \"uosmo\")\n- Line 22: Retrieve the current asset price registry.\n\n**Content Preview:**\n```\ntitle: \"Reference\"\ndescription: \"Basic reference for the Dynamic Fees module\"\n---\n\n---\n\n\nThe Dynamic Fees module provides asset price conversion capabilities for the fee market by maintaining NTRN-denominated prices for supported assets.\n\n\n---\n\n| --- | --- | --- |\n| `ntrn_prices` | DecCoin[] | Array of asset prices denominated in NTRN |\n\n```\n\n---\n\n## 7. AMMs and Orderbooks\n**File:** /root/neutron/docs/developers/modules/dex/concepts/amms-and-orderbooks.mdx\n**Section:** developers\n**Relevance Score:** 14\n\n**Matching lines:**\n- Line 7: AMMs were the first time that capital markets were created on-chain, in a computationally efficient manner. This was a transformative innovation. However, these AMMs were extremely capital inefficient, meaning that a significant amount of the liquidity deposited in them was not used. This led to extremely high price impact (aka slippage) for traders.\n- Line 14: Orderbooks are the dominant trading mechanism of traditional finance, and involve a set of limit orders that can be filled by other traders and market makers. They are extremely capital efficient: limit orders, by definition, have zero price impact for traders. While they offer a familiar UX and capital efficient trading experience, they are extremely computationally inefficient to implement on-chain, and don't offer the same liveness and composability properties that make AMMs a core DeFi primitive.\n- Line 27: **A Quick Note on Fees and Value Accrual**\n- Line 29: Concentrated liquidity and orderbooks differ slightly in how liquidity providers accrue value. On concentrated liquidity AMMs, liquidity providers accrue value through a [fee](/developers/modules/dex/concepts/fees) that they choose when placing the liquidity. The fee is a predetermined premium that traders pay when using the liquidity to swap between two assets.\n- Line 31: Orderbook liquidity providers accrue value through maintaining a bid-ask spread, which entails them offering to sell assets slightly above the current price and buy them slightly below the current price. It turns out that these two mechanism are actually very similar in that they describe the difference in prices between the best sell and buy prices.\n\n**Content Preview:**\n```\n\nAMMs were the first time that capital markets were created on-chain, in a computationally efficient manner. This was a transformative innovation. However, these AMMs were extremely capital inefficient, meaning that a significant amount of the liquidity deposited in them was not used. This led to extremely high price impact (aka slippage) for traders.\n\n\n---\n\n\nOrderbooks are the dominant trading mechanism of traditional finance, and involve a set of limit orders that can be filled by other traders and market makers. They are extremely capital efficient: limit orders, by definition, have zero price impact for traders. While they offer a familiar UX and capital efficient trading experience, they are extremely computationally inefficient to implement on-chain, and don't offer the same liveness and composability properties that make AMMs a core DeFi primitive.\n\n\n---\n\n\n**A Quick Note on Fees and Value Accrual**\n\n```\n\n---\n\n## 8. How-to\n**File:** /root/neutron/docs/developers/modules/dex/how-to.mdx\n**Section:** developers\n**Relevance Score:** 14\n\n**Matching lines:**\n- Line 21: - **Recent Trades**: Live trade feed with transaction links\n- Line 22: - **Order Form**: Interface for placing limit and market orders\n- Line 32: - **Market Orders**: Execute immediately with slippage protection\n- Line 80: 7. `fees` - Comma-separated fee tiers (e.g., \"3000,3000,3000\")\n- Line 84: #### Multi-Tick Liquidity Strategy\n\n**Content Preview:**\n```\n- **Order Book Table**: Real-time liquidity depth and price levels\n- **Recent Trades**: Live trade feed with transaction links\n- **Order Form**: Interface for placing limit and market orders\n\n---\n\n- **Recent Trades**: Live trade feed with transaction links\n- **Order Form**: Interface for placing limit and market orders\n- **Order History**: Track your active and completed orders\n\n---\n\n- **Limit Orders**: Specify exact price and expiration (optional)\n- **Market Orders**: Execute immediately with slippage protection\n- **Order Types**: Choose from GTC, GTT, FOK, IOC based on your strategy\n```\n\n---\n\n## 9. Overview\n**File:** /root/neutron/docs/developers/modules/globalfee/overview.mdx\n**Section:** developers\n**Relevance Score:** 14\n\n**Matching lines:**\n- Line 5: The Global Fee module enforces minimum gas prices across the entire Neutron network and provides mechanisms for fee exemptions on specific message types. This module is essential for network security and economic sustainability.\n- Line 8: **Governance-Controlled Parameters**: The Global Fee module's parameters (minimum gas prices, bypass message types) can only be updated through governance proposals. Individual users cannot directly modify module settings.\n- Line 13: - **Minimum Gas Price Enforcement**: Sets network-wide minimum gas prices that all transactions must meet\n- Line 15: - **Multi-Asset Support**: Supports minimum gas prices in multiple denominations with alternative acceptance\n- Line 17: - **Message Type Bypass**: Allows specific message types to bypass minimum fee requirements\n\n**Content Preview:**\n```\n\nThe Global Fee module enforces minimum gas prices across the entire Neutron network and provides mechanisms for fee exemptions on specific message types. This module is essential for network security and economic sustainability.\n\n\n---\n\n<Info>\n**Governance-Controlled Parameters**: The Global Fee module's parameters (minimum gas prices, bypass message types) can only be updated through governance proposals. Individual users cannot directly modify module settings.\n</Info>\n\n---\n\n\n- **Minimum Gas Price Enforcement**: Sets network-wide minimum gas prices that all transactions must meet\n\n```\n\n---\n\n## 10. Neutron Modules\n**File:** /root/neutron/docs/developers/modules/overview.mdx\n**Section:** developers\n**Relevance Score:** 14\n\n**Matching lines:**\n- Line 62: <Card title=\"Fee Burner\" icon=\"fire\" href=\"/developers/modules/feeburner/overview\">\n- Line 66: <Card title=\"Fee Refunder\" icon=\"money-bill-transfer\" href=\"/developers/modules/feerefunder/overview\">\n- Line 74: <Card title=\"Dynamic Fees\" icon=\"coins\" href=\"/developers/modules/dynamicfees/overview\">\n- Line 75: Asset price management for fee calculations\n- Line 78: <Card title=\"Global Fee\" icon=\"globe\" href=\"/developers/modules/globalfee/overview\">\n\n**Content Preview:**\n```\n  \n  <Card title=\"Fee Burner\" icon=\"fire\" href=\"/developers/modules/feeburner/overview\">\n    NTRN burning & treasury management\n\n---\n\n  \n  <Card title=\"Fee Refunder\" icon=\"money-bill-transfer\" href=\"/developers/modules/feerefunder/overview\">\n    IBC relayer incentives\n\n---\n\n  \n  <Card title=\"Dynamic Fees\" icon=\"coins\" href=\"/developers/modules/dynamicfees/overview\">\n    Asset price management for fee calculations\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "45c4db46-38f9-4ac8-857d-359af098b68b",
+            "tool_call_id": "call_GlcfOegXhWhxOfw9gSq1c6Gw",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"View available Supervault positions eligible for Bitcoin Summer\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_address\",\n        \"description\": \"Retrieve the connected wallet address that owns Supervault positions.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"get_contract_address\",\n        \"description\": \"Look up the Supervault contract address (from on-chain registry or hard-coded dApp constant).\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"query_wasm_contract\",\n        \"description\": \"Call the Supervault contract with `{ positions_by_user: { address: <USER_ADDR> } }` to fetch all positions.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"filter_results_by_campaign\",\n        \"description\": \"Filter the returned position objects where `eligible_campaigns` (or similar field) contains \\\"Bitcoin Summer.\\\"\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"display_positions\",\n        \"description\": \"Present the filtered list (position ID, deposit amount, rewards status) to the user.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The contract query returns without error (non-empty JSON result).\",\n      \"All displayed positions include the string \\\"Bitcoin Summer\\\" in their eligibility metadata.\"\n    ]\n  },\n  {\n    \"intent\": \"List current Amber lending markets and APYs\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_contract_address\",\n        \"description\": \"Fetch the Amber protocol \\\"controller\\\" or \\\"lens\\\" contract address that exposes market data.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_wasm_contract\",\n        \"description\": \"Invoke `{ markets: {} }` (or equivalent) to obtain the full list of lending markets.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"query_wasm_contract\",\n        \"description\": \"For each returned market, call `{ market_state: { market_id: <ID> } }` to fetch supply and borrow rate data.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"calculate_apy\",\n        \"description\": \"Convert per-block/per-second rates into annual percentage yield (APY) figures for both supply and borrow sides.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"display_markets\",\n        \"description\": \"Render a table containing market symbol, collateral factor, supply APY, and borrow APY.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Every market row shows a numeric APY value > 0 or explicitly 0%.\",\n      \"The number of displayed markets matches the length of the `markets` array from Step 2.\"\n    ]\n  },\n  {\n    \"intent\": \"Enable USDC gas payments for my next transaction\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"query_dynamic_fees_supported_assets\",\n        \"description\": \"Call `/neutron/dynamicfees/params` to confirm that \\\"uusdc\\\" (USDC-denom) is in `ntrn_prices` and thus fee-eligible.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_global_fee_minimum\",\n        \"description\": \"Query `/neutron/globalfee/min_gas_prices` to fetch the minimum gas price required for the \\\"uusdc\\\" denom.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"set_wallet_default_fee_denom\",\n        \"description\": \"Configure the local wallet/CLI to default to \\\"uusdc\\\" fees (e.g., `export NEUTRON_FEE_DENOM=uusdc`).\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"construct_and_sign_next_tx\",\n        \"description\": \"When building the user\u2019s next transaction, set `--fees <amount>uusdc` where `<amount>` \u2265 Step 2\u2019s minimum threshold, then sign.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"broadcast_tx\",\n        \"description\": \"Broadcast the signed transaction to Neutron and await inclusion in a block.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The transaction hash appears on-chain with a `fee.denom` of \\\"uusdc.\\\"\",\n      \"`gaiad query tx <hash>` (or equivalent) returns a successful code 0 result.\"\n    ]\n  },\n  {\n    \"intent\": \"Opt in to partner airdrops for my vault deposits\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_address\",\n        \"description\": \"Identify the wallet address that controls the vault deposit.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"get_contract_address\",\n        \"description\": \"Retrieve the specific vault contract address involved.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_execute_msg\",\n        \"description\": \"Build an execute message `{ opt_in_airdrops: { partner_id: \\\"all\\\" } }` (or protocol-specific field) for the vault contract.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the execute message with the user\u2019s key and broadcast it.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"query_contract_state\",\n        \"description\": \"After confirmation, query `{ airdrop_status: { address: <USER_ADDR> } }` to verify opt-in flag is true.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The execute transaction returns code 0.\",\n      \"`airdrop_status` query shows `is_opted_in = true` for the user address.\"\n    ]\n  },\n  {\n    \"intent\": \"Confirm forfeitable reward structure for my current vault\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_contract_address\",\n        \"description\": \"Determine the vault contract address associated with the user\u2019s deposit.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_contract_state\",\n        \"description\": \"Invoke `{ config: {} }` (or similar) on the vault contract to retrieve reward policy settings.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"parse_reward_policy\",\n        \"description\": \"Read the `forfeitable_rewards` or `early_exit_penalty` field from the config JSON.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"display_result\",\n        \"description\": \"Show the user whether rewards are forfeited on early withdrawal and, if applicable, the penalty schedule.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The config query returns without error and includes a recognizable reward policy field.\",\n      \"Displayed information matches the raw values returned by the contract (no parsing errors).\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 3111,
+                    "prompt_tokens": 8237,
+                    "total_tokens": 11348,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1600,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8jMVnVUEnkR8nnEiCaJ3EqxDRmW",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--40e56f7a-d7c3-4306-adfb-6e65742e80fc-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 8237,
+                "output_tokens": 3111,
+                "total_tokens": 11348,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1600
+                }
+            }
+        }
+    ]
+}

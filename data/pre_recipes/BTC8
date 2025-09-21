@@ -1,0 +1,167 @@
+[
+    {
+        "intent": "View available Supervault positions eligible for Bitcoin Summer",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_address",
+                "description": "Retrieve the connected wallet address that owns Supervault positions."
+            },
+            {
+                "step": 2,
+                "tool": "get_contract_address",
+                "description": "Look up the Supervault contract address (from on-chain registry or hard-coded dApp constant)."
+            },
+            {
+                "step": 3,
+                "tool": "query_wasm_contract",
+                "description": "Call the Supervault contract with `{ positions_by_user: { address: <USER_ADDR> } }` to fetch all positions."
+            },
+            {
+                "step": 4,
+                "tool": "filter_results_by_campaign",
+                "description": "Filter the returned position objects where `eligible_campaigns` (or similar field) contains \"Bitcoin Summer.\""
+            },
+            {
+                "step": 5,
+                "tool": "display_positions",
+                "description": "Present the filtered list (position ID, deposit amount, rewards status) to the user."
+            }
+        ],
+        "outcome_checks": [
+            "The contract query returns without error (non-empty JSON result).",
+            "All displayed positions include the string \"Bitcoin Summer\" in their eligibility metadata."
+        ]
+    },
+    {
+        "intent": "List current Amber lending markets and APYs",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_contract_address",
+                "description": "Fetch the Amber protocol \"controller\" or \"lens\" contract address that exposes market data."
+            },
+            {
+                "step": 2,
+                "tool": "query_wasm_contract",
+                "description": "Invoke `{ markets: {} }` (or equivalent) to obtain the full list of lending markets."
+            },
+            {
+                "step": 3,
+                "tool": "query_wasm_contract",
+                "description": "For each returned market, call `{ market_state: { market_id: <ID> } }` to fetch supply and borrow rate data."
+            },
+            {
+                "step": 4,
+                "tool": "calculate_apy",
+                "description": "Convert per-block/per-second rates into annual percentage yield (APY) figures for both supply and borrow sides."
+            },
+            {
+                "step": 5,
+                "tool": "display_markets",
+                "description": "Render a table containing market symbol, collateral factor, supply APY, and borrow APY."
+            }
+        ],
+        "outcome_checks": [
+            "Every market row shows a numeric APY value > 0 or explicitly 0%.",
+            "The number of displayed markets matches the length of the `markets` array from Step 2."
+        ]
+    },
+    {
+        "intent": "Enable USDC gas payments for my next transaction",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_dynamic_fees_supported_assets",
+                "description": "Call `/neutron/dynamicfees/params` to confirm that \"uusdc\" (USDC-denom) is in `ntrn_prices` and thus fee-eligible."
+            },
+            {
+                "step": 2,
+                "tool": "query_global_fee_minimum",
+                "description": "Query `/neutron/globalfee/min_gas_prices` to fetch the minimum gas price required for the \"uusdc\" denom."
+            },
+            {
+                "step": 3,
+                "tool": "set_wallet_default_fee_denom",
+                "description": "Configure the local wallet/CLI to default to \"uusdc\" fees (e.g., `export NEUTRON_FEE_DENOM=uusdc`)."
+            },
+            {
+                "step": 4,
+                "tool": "construct_and_sign_next_tx",
+                "description": "When building the user\u2019s next transaction, set `--fees <amount>uusdc` where `<amount>` \u2265 Step 2\u2019s minimum threshold, then sign."
+            },
+            {
+                "step": 5,
+                "tool": "broadcast_tx",
+                "description": "Broadcast the signed transaction to Neutron and await inclusion in a block."
+            }
+        ],
+        "outcome_checks": [
+            "The transaction hash appears on-chain with a `fee.denom` of \"uusdc.\"",
+            "`gaiad query tx <hash>` (or equivalent) returns a successful code 0 result."
+        ]
+    },
+    {
+        "intent": "Opt in to partner airdrops for my vault deposits",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_address",
+                "description": "Identify the wallet address that controls the vault deposit."
+            },
+            {
+                "step": 2,
+                "tool": "get_contract_address",
+                "description": "Retrieve the specific vault contract address involved."
+            },
+            {
+                "step": 3,
+                "tool": "construct_execute_msg",
+                "description": "Build an execute message `{ opt_in_airdrops: { partner_id: \"all\" } }` (or protocol-specific field) for the vault contract."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the execute message with the user\u2019s key and broadcast it."
+            },
+            {
+                "step": 5,
+                "tool": "query_contract_state",
+                "description": "After confirmation, query `{ airdrop_status: { address: <USER_ADDR> } }` to verify opt-in flag is true."
+            }
+        ],
+        "outcome_checks": [
+            "The execute transaction returns code 0.",
+            "`airdrop_status` query shows `is_opted_in = true` for the user address."
+        ]
+    },
+    {
+        "intent": "Confirm forfeitable reward structure for my current vault",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_contract_address",
+                "description": "Determine the vault contract address associated with the user\u2019s deposit."
+            },
+            {
+                "step": 2,
+                "tool": "query_contract_state",
+                "description": "Invoke `{ config: {} }` (or similar) on the vault contract to retrieve reward policy settings."
+            },
+            {
+                "step": 3,
+                "tool": "parse_reward_policy",
+                "description": "Read the `forfeitable_rewards` or `early_exit_penalty` field from the config JSON."
+            },
+            {
+                "step": 4,
+                "tool": "display_result",
+                "description": "Show the user whether rewards are forfeited on early withdrawal and, if applicable, the penalty schedule."
+            }
+        ],
+        "outcome_checks": [
+            "The config query returns without error and includes a recognizable reward policy field.",
+            "Displayed information matches the raw values returned by the contract (no parsing errors)."
+        ]
+    }
+]

@@ -1,0 +1,141 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"BTC\", \"query\": \"Instantly claim 50% of my NTRN rewards\"}, {\"label\": \"BTC\", \"query\": \"Provide single-sided liquidity of 2 WBTC to the maxBTC/USDC Supervault\"}, {\"label\": \"BTC\", \"query\": \"Withdraw all assets from the WBTC/USDC Supervault\"}, {\"label\": \"BTC\", \"query\": \"Withdraw 50% of my WBTC lending position on Amber\"}, {\"label\": \"BTC\", \"query\": \"Check my current Bitcoin Summer boost multiplier\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "b1647c2e-3423-4e29-97ca-06770ee4c1bf",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_Ot81kr2191tXrc9h1TufYZiy",
+                        "function": {
+                            "arguments": "{\"query\": \"withdraw delegator reward neutron\", \"section\": \"developers\", \"max_results\": 10}",
+                            "name": "search"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 552,
+                    "prompt_tokens": 735,
+                    "total_tokens": 1287,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 512,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8alxmyqrwcK4yFfvPzYTa5I5g3P",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--20aade2a-cee8-42b3-b275-3711e41f0a14-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "withdraw delegator reward neutron",
+                        "section": "developers",
+                        "max_results": 10
+                    },
+                    "id": "call_Ot81kr2191tXrc9h1TufYZiy",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 735,
+                "output_tokens": 552,
+                "total_tokens": 1287,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 512
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"withdraw delegator reward neutron\":\n\n## 1. Neutron Modules\n**File:** /root/neutron/docs/developers/modules/overview.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"Neutron Modules\"\n- Line 5: Neutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n- Line 85: Most Neutron modules follow consistent patterns when used in CosmWasm smart contracts:\n- Line 89: use neutron_sdk::interchain_queries::...; // for ICQ\n- Line 90: use neutron_sdk::bindings::...; // for other modules\n\n**Content Preview:**\n```\n---\ntitle: \"Neutron Modules\"\n---\n\n---\n\n\nNeutron offers several specialized modules that provide unique functionality for developers building on the platform. Each module is designed to solve specific problems commonly encountered in DeFi applications.\n\n\n---\n\n\nMost Neutron modules follow consistent patterns when used in CosmWasm smart contracts:\n\n```\n\n---\n\n## 2. NeutronTemplate\n**File:** /root/neutron/docs/developers/sdk/neutron-template.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"NeutronTemplate\"\n- Line 3: description: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n- Line 7: NeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n- Line 10: <strong>Live Demo:</strong> <a href=\"https://neutrontemplate.deploydon.com\" target=\"_blank\" className=\"text-primary hover:underline\">https://NeutronTemplate.Deploydon.com</a>\n- Line 65: git clone https://github.com/Deploydon/NeutronTemplate.git\n\n**Content Preview:**\n```\n---\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\n\n---\n\ntitle: \"NeutronTemplate\"\ndescription: \"Complete NextJS + CosmWasm template for building Neutron dApps\"\nicon: \"code\"\n\n---\n\n\nNeutronTemplate is a comprehensive starting point for building NextJS applications that interact with Neutron. It includes everything needed to create a modern, full-stack dApp with wallet integration, smart contract interaction, and a polished UI.\n\n```\n\n---\n\n## 3. SubQuery for Neutron\n**File:** /root/neutron/docs/developers/tutorials/indexers/subquery.mdx\n**Section:** developers\n**Relevance Score:** 18\n\n**Matching lines:**\n- Line 2: title: \"SubQuery for Neutron\"\n- Line 3: description: \"Learn how to set up and use SubQuery to index Neutron data\"\n- Line 6: SubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n- Line 10: SubQuery offers several competitive advantages that make it ideal for building Neutron indexers:\n- Line 23: ## Getting Started with SubQuery for Neutron\n\n**Content Preview:**\n```\n---\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n\n---\n\ntitle: \"SubQuery for Neutron\"\ndescription: \"Learn how to set up and use SubQuery to index Neutron data\"\n---\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides fast, flexible APIs for web3 projects. It offers multi-chain aggregation, superior performance, a GraphQL API, and an excellent developer experience with support for 100+ ecosystems including Neutron.\n\n```\n\n---\n\n## 4. How-to\n**File:** /root/neutron/docs/developers/modules/cron/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 10: - Understanding of Neutron governance processes\n- Line 29: Neutron uses a [modular governance system](/concepts/modular-governance) with specialized subDAOs that handle different aspects of network management. The Security SubDAO can remove schedules in emergency situations, providing a safety mechanism for the network.\n- Line 40: \"title\": \"Add Daily Reward Distribution Schedule\",\n- Line 41: \"description\": \"Creates a schedule to distribute rewards every 7200 blocks (approximately daily)\",\n- Line 44: \"@type\": \"/neutron.cron.MsgAddSchedule\",\n\n**Content Preview:**\n```\n\n- Understanding of Neutron governance processes\n- Familiarity with CosmWasm contract development\n\n---\n\n<Note>\nNeutron uses a [modular governance system](/concepts/modular-governance) with specialized subDAOs that handle different aspects of network management. The Security SubDAO can remove schedules in emergency situations, providing a safety mechanism for the network.\n</Note>\n\n---\n\n{\n  \"title\": \"Add Daily Reward Distribution Schedule\",\n  \"description\": \"Creates a schedule to distribute rewards every 7200 blocks (approximately daily)\",\n```\n\n---\n\n## 5. DEX Reference\n**File:** /root/neutron/docs/developers/modules/dex/reference.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 8: The `neutrond` command-line interface allows users to interact with the Dex module using **positional arguments**.\n- Line 17: neutrond tx dex deposit [receiver] [token-a] [token-b] [list of amount-0] [list of amount-1] [list of tick-index] [list of fees] [disable_autoswap], [fail_tx_on_BEL] [flags]\n- Line 38: neutrond tx dex deposit alice tokenA tokenB 100 0 [-10] 1 false false --from alice\n- Line 43: neutrond tx dex deposit alice tokenA tokenB 100,0 0,50 [-10,5] 1,1 false,false false,false --from alice\n- Line 46: #### Withdrawal\n\n**Content Preview:**\n```\n\nThe `neutrond` command-line interface allows users to interact with the Dex module using **positional arguments**.\n\n\n---\n\n```bash\nneutrond tx dex deposit [receiver] [token-a] [token-b] [list of amount-0] [list of amount-1] [list of tick-index] [list of fees] [disable_autoswap], [fail_tx_on_BEL] [flags]\n```\n\n---\n\n```bash\nneutrond tx dex deposit alice tokenA tokenB 100 0 [-10] 1 false false --from alice\n```\n```\n\n---\n\n## 6. How-to\n**File:** /root/neutron/docs/developers/modules/harpoon/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 262: .add_attribute(\"delegator\", del_addr)\n- Line 276: .add_attribute(\"delegator\", del_addr)\n- Line 314: .add_attribute(\"delegator\", del_addr)\n- Line 322: .add_attribute(\"delegator\", del_addr)\n- Line 340: When deploying on Neutron mainnet or testnet, you need to go through the standard governance process:\n\n**Content Preview:**\n```\n        .add_attribute(\"action\", \"delegation_removed_processed\")\n        .add_attribute(\"delegator\", del_addr)\n        .add_attribute(\"validator\", val_addr))\n\n---\n\n        .add_attribute(\"action\", \"delegation_modified_processed\")\n        .add_attribute(\"delegator\", del_addr)\n        .add_attribute(\"validator\", val_addr))\n\n---\n\n                .add_attribute(\"action\", \"delegation_shares_modified_processed\")\n                .add_attribute(\"delegator\", del_addr)\n                .add_attribute(\"validator\", val_addr))\n```\n\n---\n\n## 7. Explanation\n**File:** /root/neutron/docs/developers/modules/interchain-queries/explanation.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 130: - [Neutron implementation of an Interchain Query relayer](/relaying/icq-relayer)\n- Line 135: KV Interchain Queries rely heavily on the storage layout of the remote chain, including the paths to IAVL leaf nodes and the data models used to represent the stored information. The accuracy and functionality of KV Interchain Queries depend entirely on the correctness of the paths and the consistency of the data models. This tight coupling introduces several considerations and potential challenges for dApp developers. The [neutron-sdk interchain queries related package](https://docs.rs/neutron-sdk/0.11.0/neutron_sdk/interchain_queries/index.html#) includes target chain version separation precisely for this reasoning.\n- Line 172: In essence, query owners are expected to remove their queries once they are no longer needed. If a query is not used within the `query_submit_timeout` period and the owner does not remove it, any network user is allowed to clean up the chain by removing the unused query. As a reward, the deposited assets are transferred to the user who performs the cleanup.\n- Line 187: If the query is within its active **query service period** (recently registered or continuously updated), it is considered valuable to its owner, and only the owner can remove it and reclaim the deposit. If the query has not been updated or used for a long time (beyond the **query service period**), it is likely abandoned. In this case, anyone can remove it and claim the deposit as a reward for cleaning up the chain's state.\n- Line 208: Anyone can remove the query and claim the deposit as a reward. A query is beyond the service period if the following condition is true:\n\n**Content Preview:**\n```\n**Might be interesting:**\n- [Neutron implementation of an Interchain Query relayer](/relaying/icq-relayer)\n- [Limited gas for sudo calls](#limited-gas-for-sudo-calls)\n\n---\n\n\nKV Interchain Queries rely heavily on the storage layout of the remote chain, including the paths to IAVL leaf nodes and the data models used to represent the stored information. The accuracy and functionality of KV Interchain Queries depend entirely on the correctness of the paths and the consistency of the data models. This tight coupling introduces several considerations and potential challenges for dApp developers. The [neutron-sdk interchain queries related package](https://docs.rs/neutron-sdk/0.11.0/neutron_sdk/interchain_queries/index.html#) includes target chain version separation precisely for this reasoning.\n\n\n---\n\n\nIn essence, query owners are expected to remove their queries once they are no longer needed. If a query is not used within the `query_submit_timeout` period and the owner does not remove it, any network user is allowed to clean up the chain by removing the unused query. As a reward, the deposited assets are transferred to the user who performs the cleanup.\n\n```\n\n---\n\n## 8. How-to\n**File:** /root/neutron/docs/developers/modules/revenue/how-to.mdx\n**Section:** developers\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 9: You can query a validator's current performance metrics to understand their reward eligibility status.\n- Line 14: neutron query revenue validator-stats [val-oper-addr]\n- Line 20: GET /neutron/revenue/validator_stats?val_oper_address=neutronvaloper1...\n- Line 28: \"val_oper_address\": \"neutronvaloper1...\",\n- Line 45: CosmWasm contracts can query validator performance through the Neutron bindings:\n\n**Content Preview:**\n```\n\nYou can query a validator's current performance metrics to understand their reward eligibility status.\n\n\n---\n\n```bash\nneutron query revenue validator-stats [val-oper-addr]\n```\n\n---\n\n```\nGET /neutron/revenue/validator_stats?val_oper_address=neutronvaloper1...\n```\n```\n\n---\n\n## 9. CosmWasm Learning Resources\n**File:** /root/neutron/docs/developers/cosmwasm-learning.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 7: CosmWasm is the smart contract platform that powers Neutron and the broader Cosmos ecosystem. This page provides a curated collection of learning resources to help you master CosmWasm development, from beginner concepts to advanced techniques.\n- Line 12: <Card title=\"Neutron Quickstart\" icon=\"rocket\" href=\"/developers/quickstart\">\n- Line 13: Get up and running with your first CosmWasm contract on Neutron in minutes\n- Line 39: ### Deploying Smart Contracts on Neutron\n- Line 44: title=\"Deploying a Smart Contract on Neutron\"\n\n**Content Preview:**\n```\n\nCosmWasm is the smart contract platform that powers Neutron and the broader Cosmos ecosystem. This page provides a curated collection of learning resources to help you master CosmWasm development, from beginner concepts to advanced techniques.\n\n\n---\n\n<CardGroup cols={2}>\n  <Card title=\"Neutron Quickstart\" icon=\"rocket\" href=\"/developers/quickstart\">\n    Get up and running with your first CosmWasm contract on Neutron in minutes\n\n---\n\n  <Card title=\"Neutron Quickstart\" icon=\"rocket\" href=\"/developers/quickstart\">\n    Get up and running with your first CosmWasm contract on Neutron in minutes\n  </Card>\n```\n\n---\n\n## 10. Frequently Asked Questions\n**File:** /root/neutron/docs/developers/faq.mdx\n**Section:** developers\n**Relevance Score:** 8\n\n**Matching lines:**\n- Line 3: description: \"Answers to common technical questions about Neutron development\"\n- Line 12: <li><a href=\"https://t.me/+Q6C_kb0xLaoxYzE1\" target=\"_blank\" className=\"text-primary hover:underline\">Neutron Builders Announcements</a></li>\n- Line 13: <li><a href=\"https://t.me/+b9f8m8iybLdhYjE9\" target=\"_blank\" className=\"text-primary hover:underline\">Neutron Builders Chat</a></li>\n- Line 21: <Card title=\"Bug Bounty\" icon=\"bug\" iconType=\"duotone\" href=\"https://immunefi.com/bug-bounty/neutron\" target=\"_blank\">\n- Line 30: Check out our bug bounty program on <a href=\"https://immunefi.com/bug-bounty/neutron\" target=\"_blank\" className=\"text-primary hover:underline\">Immunefi</a>.\n\n**Content Preview:**\n```\ntitle: \"Frequently Asked Questions\"\ndescription: \"Answers to common technical questions about Neutron development\"\nicon: \"circle-question\"\n\n---\n\n    <ul className=\"mt-2 space-y-1\">\n      <li><a href=\"https://t.me/+Q6C_kb0xLaoxYzE1\" target=\"_blank\" className=\"text-primary hover:underline\">Neutron Builders Announcements</a></li>\n      <li><a href=\"https://t.me/+b9f8m8iybLdhYjE9\" target=\"_blank\" className=\"text-primary hover:underline\">Neutron Builders Chat</a></li>\n\n---\n\n      <li><a href=\"https://t.me/+Q6C_kb0xLaoxYzE1\" target=\"_blank\" className=\"text-primary hover:underline\">Neutron Builders Announcements</a></li>\n      <li><a href=\"https://t.me/+b9f8m8iybLdhYjE9\" target=\"_blank\" className=\"text-primary hover:underline\">Neutron Builders Chat</a></li>\n    </ul>\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "f16ae77d-eed7-4795-b01c-9841f184266b",
+            "tool_call_id": "call_Ot81kr2191tXrc9h1TufYZiy",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Instantly claim 50% of my NTRN staking rewards\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_delegator_address\",\n        \"description\": \"Identify the user\u2019s delegator address tied to their Neutron wallet.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_pending_staking_rewards\",\n        \"description\": \"Fetch the total unclaimed NTRN rewards for the delegator.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"calculate_partial_amount\",\n        \"description\": \"Compute 50 % of the pending reward amount.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"construct_tx_distribution_withdraw_rewards\",\n        \"description\": \"Build a MsgWithdrawDelegatorReward transaction with the calculated 50 % amount, adding split-withdraw logic if multiple validators are involved.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the reward-withdrawal transaction with the user\u2019s wallet and broadcast it to Neutron.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Confirm the transaction hash is included in a block.\",\n      \"Verify the delegator\u2019s NTRN balance has increased by roughly 50 % of previously pending rewards (minus gas).\",\n      \"Validate that the remaining ~50 % of rewards are still queryable as pending.\"\n    ]\n  },\n  {\n    \"intent\": \"Provide single-sided liquidity of 2 WBTC to the maxBTC/USDC Supervault\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_wallet_address\",\n        \"description\": \"Determine the wallet address from which WBTC will be supplied.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"validate_token_balance\",\n        \"description\": \"Check that the user holds at least 2 WBTC in the wallet on Neutron.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_contract_execute\",\n        \"description\": \"Craft an ExecuteMsg to the maxBTC/USDC Supervault contract calling its \u201cdeposit_single_side\u201d (or equivalent) method with { asset: \\\"WBTC\\\", amount: \\\"2\\\" }.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the execute message and broadcast it to the network.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"query_contract_receipt\",\n        \"description\": \"Query the Supervault contract for the resulting vault-share tokens or position ID returned in the execute response.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Verify the wallet\u2019s WBTC balance decreased by exactly 2 WBTC.\",\n      \"Confirm receipt of Supervault LP tokens or position shares representing the deposited WBTC.\",\n      \"Ensure the transaction events include \u201caction=deposit_single_side\u201d and list the correct amount.\"\n    ]\n  },\n  {\n    \"intent\": \"Withdraw all assets from the WBTC/USDC Supervault\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_wallet_address\",\n        \"description\": \"Obtain the wallet address that owns the Supervault position.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_vault_balance\",\n        \"description\": \"Fetch the user\u2019s current Supervault share balance or position ID to determine the full amount eligible for withdrawal.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_contract_execute\",\n        \"description\": \"Build an ExecuteMsg to the Supervault contract invoking \u201cwithdraw_all\u201d (or a full-share withdrawal) with the user\u2019s entire share amount.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast the withdrawal transaction.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"query_bank_balances\",\n        \"description\": \"After confirmation, query the wallet\u2019s balances to ensure both WBTC and USDC proceeds were received.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Supervault share balance should drop to zero.\",\n      \"Wallet WBTC and USDC balances should increase by the vault\u2019s payout amounts.\",\n      \"Transaction logs should contain \u201caction=withdraw_all\u201d with correct token outputs.\"\n    ]\n  },\n  {\n    \"intent\": \"Withdraw 50 % of my WBTC lending position on Amber\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_wallet_address\",\n        \"description\": \"Identify the wallet address that opened the lending position.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_lending_position\",\n        \"description\": \"Call Amber\u2019s lending contract to retrieve the current supplied WBTC amount.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"calculate_partial_amount\",\n        \"description\": \"Compute 50 % of the supplied WBTC to determine the withdrawal amount.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"construct_tx_contract_execute\",\n        \"description\": \"Create an ExecuteMsg to Amber\u2019s lending contract using its \u201cwithdraw\u201d (or similar) entry point with the calculated amount.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the lending-withdrawal transaction and broadcast it.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Amber contract should emit an event showing the exact WBTC amount removed.\",\n      \"Wallet\u2019s WBTC balance should increase by the withdrawn amount (minus any protocol fees).\",\n      \"Remaining supplied balance in Amber should equal approximately the original amount \u00d7 0.5.\"\n    ]\n  },\n  {\n    \"intent\": \"Check my current Bitcoin Summer boost multiplier\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_wallet_address\",\n        \"description\": \"Capture the wallet address whose boost multiplier should be queried.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_contract_state\",\n        \"description\": \"Call the Bitcoin Summer boost contract\u2019s \u201cget_multiplier\u201d (or analogous) query endpoint with the user\u2019s address.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"parse_json_response\",\n        \"description\": \"Parse the contract\u2019s JSON response to extract the multiplier value (e.g., 1.25\u00d7).\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Return the multiplier as a numeric value (e.g., 1.25).\",\n      \"Ensure the contract query succeeded with no errors and returned the latest block-height-indexed data.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2253,
+                    "prompt_tokens": 4921,
+                    "total_tokens": 7174,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 768,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8asAe0AbxcgNAFC8PhoOGPIIrN1",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--b2b10dc2-28e1-4440-8145-263676419b64-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 4921,
+                "output_tokens": 2253,
+                "total_tokens": 7174,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 768
+                }
+            }
+        }
+    ]
+}

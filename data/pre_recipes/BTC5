@@ -1,0 +1,168 @@
+[
+    {
+        "intent": "Lend 4 LBTC on Amber Finance",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_wallet_address",
+                "description": "Identify the connected Neutron wallet that will provide the LBTC."
+            },
+            {
+                "step": 2,
+                "tool": "query_cw20_balance",
+                "description": "Check that the wallet holds at least 4 LBTC (including decimals) to cover the lend amount."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_cw20_increase_allowance",
+                "description": "Grant the Amber Finance lending contract an allowance of 4 LBTC so it can pull the tokens."
+            },
+            {
+                "step": 4,
+                "tool": "construct_tx_contract_execute",
+                "description": "Build the smart-contract call to Amber Finance (e.g., `{ lend: { asset: { token: <LBTC_contract>, amount: \"4000000\" } } }`, assuming 6-decimals) that deposits the 4 LBTC."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign both the allowance and lend messages and broadcast them to the Neutron network."
+            }
+        ],
+        "outcome_checks": [
+            "Verify the transaction succeeded and was included in a block.",
+            "Query Amber Finance to confirm the wallet\u2019s supplied balance increased by 4 LBTC."
+        ]
+    },
+    {
+        "intent": "Deposit 0.5 maxBTC into the maxBTC/USDC Supervault",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_wallet_address",
+                "description": "Determine which wallet will provide the maxBTC deposit."
+            },
+            {
+                "step": 2,
+                "tool": "query_cw20_balance",
+                "description": "Confirm the wallet has at least 0.5 maxBTC available."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_cw20_increase_allowance",
+                "description": "Approve the Supervault contract to spend 0.5 maxBTC on the user\u2019s behalf."
+            },
+            {
+                "step": 4,
+                "tool": "construct_tx_contract_execute",
+                "description": "Create the `deposit` execute message for the Supervault (e.g., `{ deposit: { amount: \"500000\" } }` if 6-decimals)."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the allowance and deposit transactions."
+            }
+        ],
+        "outcome_checks": [
+            "Ensure the transaction is successfully committed on-chain.",
+            "Query the Supervault to verify the wallet\u2019s vault shares reflect the 0.5 maxBTC deposit."
+        ]
+    },
+    {
+        "intent": "Hold maxBTC in my wallet for base 1x rewards",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_wallet_address",
+                "description": "Identify the wallet that should hold the maxBTC."
+            },
+            {
+                "step": 2,
+                "tool": "query_cw20_balance",
+                "description": "Verify the wallet balance contains the desired amount of maxBTC."
+            },
+            {
+                "step": 3,
+                "tool": "validate_balance",
+                "description": "Confirm that the balance is greater than zero so the user qualifies for 1\u00d7 holding rewards; no further action is required."
+            }
+        ],
+        "outcome_checks": [
+            "Wallet address shows a non-zero maxBTC balance when queried on-chain.",
+            "No staking or locking contracts list the user\u2019s maxBTC (tokens remain in the wallet)."
+        ]
+    },
+    {
+        "intent": "Boost my rewards to 3x by locking additional NTRN equal to my TVL",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_user_wallet_address",
+                "description": "Detect the wallet whose TVL and boost will be adjusted."
+            },
+            {
+                "step": 2,
+                "tool": "query_user_tvl",
+                "description": "Aggregate the wallet\u2019s total value locked (TVL) across Amber Finance, Supervaults, and other supported venues."
+            },
+            {
+                "step": 3,
+                "tool": "calculate_required_amount",
+                "description": "Compute the exact NTRN amount needed (1 NTRN per 1 unit TVL) to reach a 3\u00d7 boost."
+            },
+            {
+                "step": 4,
+                "tool": "query_cw20_balance",
+                "description": "Ensure the wallet\u2019s NTRN balance is at least the required amount."
+            },
+            {
+                "step": 5,
+                "tool": "construct_tx_cw20_increase_allowance",
+                "description": "Approve the veNTRN (locking) contract to pull the calculated NTRN."
+            },
+            {
+                "step": 6,
+                "tool": "construct_tx_contract_execute",
+                "description": "Execute the lock call on the veNTRN contract (e.g., `{ lock: { amount: <required>, duration: 2419200 } }` for a 4-week lock)."
+            },
+            {
+                "step": 7,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast both the allowance and lock transactions."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm the lock transaction is in a finalized block.",
+            "Query the veNTRN contract to ensure the locked NTRN matches the required amount.",
+            "Verify the boost multiplier returned by the rewards gauge now equals 3\u00d7."
+        ]
+    },
+    {
+        "intent": "Update my boost to point at my connected Neutron wallet",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_current_boost_delegate",
+                "description": "Retrieve the wallet currently receiving the boost delegation."
+            },
+            {
+                "step": 2,
+                "tool": "get_user_wallet_address",
+                "description": "Determine the connected Neutron wallet that should receive the boost."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_contract_execute",
+                "description": "Build an `update_delegate` (or equivalent) message on the veNTRN contract to redirect boost emissions to the connected wallet."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the delegate-update transaction."
+            }
+        ],
+        "outcome_checks": [
+            "Verify the delegate-update transaction was executed successfully.",
+            "Query the veNTRN contract to confirm the new delegate address equals the connected wallet."
+        ]
+    }
+]

@@ -1,0 +1,182 @@
+[
+    {
+        "intent": "Provide paired liquidity of 1 WBTC and 60,000 USDC to the WBTC/USDC Supervault",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Determine which wallet the user wants to use as the liquidity provider."
+            },
+            {
+                "step": 2,
+                "tool": "check_token_balance",
+                "description": "Verify the wallet holds at least 1 WBTC and 60,000 USDC on Neutron. If balances are insufficient, prompt the user to bridge or swap for the required tokens first."
+            },
+            {
+                "step": 3,
+                "tool": "query_supervault_details",
+                "description": "Fetch the contract address (or vault ID) and required token denominations for the WBTC/USDC Supervault to ensure the tokens match the vault\u2019s configuration."
+            },
+            {
+                "step": 4,
+                "tool": "construct_supervault_deposit_tx",
+                "description": "Build the deposit transaction containing (1 WBTC, 60,000 USDC) as a dual-asset liquidity add, referencing the Supervault contract from step 3."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the deposit transaction with the user\u2019s wallet and broadcast it to the Neutron network."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm the transaction hash was included in a finalized block.",
+            "Query the Supervault to verify that new LP shares were minted to the sender\u2019s address and correspond to the supplied amounts."
+        ]
+    },
+    {
+        "intent": "Deposit 3 eBTC into the maxBTC/eBTC Supervault",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Select the wallet that will perform the eBTC deposit."
+            },
+            {
+                "step": 2,
+                "tool": "check_token_balance",
+                "description": "Ensure the wallet has at least 3 eBTC available on Neutron."
+            },
+            {
+                "step": 3,
+                "tool": "query_supervault_details",
+                "description": "Look up the maxBTC/eBTC Supervault contract address and confirm single-sided deposits with eBTC are permissible."
+            },
+            {
+                "step": 4,
+                "tool": "construct_supervault_deposit_tx",
+                "description": "Build a deposit message specifying 3 eBTC as the amount and the vault address from step 3."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the deposit transaction."
+            }
+        ],
+        "outcome_checks": [
+            "Verify the transaction succeeded on-chain.",
+            "Query the user\u2019s share balance in the maxBTC/eBTC Supervault to confirm receipt of new vault shares."
+        ]
+    },
+    {
+        "intent": "Provide liquidity to the maxBTC/uniBTC Supervault using 1 maxBTC and 1 uniBTC",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Identify the wallet providing liquidity."
+            },
+            {
+                "step": 2,
+                "tool": "check_token_balance",
+                "description": "Confirm the wallet holds at least 1 maxBTC and 1 uniBTC on Neutron."
+            },
+            {
+                "step": 3,
+                "tool": "query_supervault_details",
+                "description": "Retrieve the contract address and token denominations for the maxBTC/uniBTC Supervault."
+            },
+            {
+                "step": 4,
+                "tool": "construct_supervault_deposit_tx",
+                "description": "Compose a dual-asset deposit (1 maxBTC, 1 uniBTC) targeting the Supervault from step 3."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the transaction with the user\u2019s wallet and broadcast it."
+            }
+        ],
+        "outcome_checks": [
+            "Ensure the transaction is included in a block without errors.",
+            "Confirm via vault query that the user\u2019s LP share balance increased proportionally to the supplied liquidity."
+        ]
+    },
+    {
+        "intent": "Lend 2 uniBTC on Amber Finance",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Select the wallet that will supply uniBTC to Amber Finance."
+            },
+            {
+                "step": 2,
+                "tool": "check_token_balance",
+                "description": "Verify the wallet holds at least 2 uniBTC on Neutron."
+            },
+            {
+                "step": 3,
+                "tool": "construct_cw20_approve",
+                "description": "Create an approval message allowing the Amber Finance lending contract to spend 2 uniBTC on behalf of the user."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the approval transaction, then wait for confirmation."
+            },
+            {
+                "step": 5,
+                "tool": "construct_amber_lend_tx",
+                "description": "Build the lending (supply) transaction for 2 uniBTC referencing Amber Finance\u2019s lending pool contract."
+            },
+            {
+                "step": 6,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the lending transaction."
+            }
+        ],
+        "outcome_checks": [
+            "Check that the lend transaction is finalized successfully.",
+            "Query Amber Finance to confirm the user\u2019s supplied balance now includes an additional 2 uniBTC and that receipt (interest-bearing) tokens were minted."
+        ]
+    },
+    {
+        "intent": "Lend 3 solvBTC on Amber Finance",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Choose the wallet that will lend solvBTC."
+            },
+            {
+                "step": 2,
+                "tool": "check_token_balance",
+                "description": "Ensure the wallet possesses at least 3 solvBTC on Neutron."
+            },
+            {
+                "step": 3,
+                "tool": "construct_cw20_approve",
+                "description": "Generate an approval for Amber Finance\u2019s lending contract to transfer 3 solvBTC from the user\u2019s wallet."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and send the approval transaction, waiting for a success confirmation."
+            },
+            {
+                "step": 5,
+                "tool": "construct_amber_lend_tx",
+                "description": "Compose the lend (supply) transaction for 3 solvBTC referencing the appropriate Amber Finance market contract."
+            },
+            {
+                "step": 6,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the lending transaction to the Neutron network."
+            }
+        ],
+        "outcome_checks": [
+            "Validate the transaction hash is confirmed on-chain.",
+            "Query Amber Finance lending pool to confirm 3 solvBTC is now supplied under the user\u2019s address and associated cTokens (or equivalent) are credited."
+        ]
+    }
+]

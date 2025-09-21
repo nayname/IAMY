@@ -1,0 +1,170 @@
+[
+    {
+        "intent": "Claim rewards through the Boost & Earn program",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Retrieve the caller\u2019s wallet address that will claim the rewards."
+            },
+            {
+                "step": 2,
+                "tool": "query_contract",
+                "description": "Call the Boost & Earn contract (CONTRACT_ADDRESS_BOOST_EARN) with `{ \"pending_rewards\": { \"address\": <sender> } }` to fetch the exact amount currently claimable."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_execute_contract",
+                "description": "Build an execute\u2010contract message for CONTRACT_ADDRESS_BOOST_EARN using `{ \"claim_rewards\": {} }` and attach no funds."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the transaction with the user\u2019s key and broadcast it to Neutron."
+            },
+            {
+                "step": 5,
+                "tool": "query_contract",
+                "description": "Re-query `{ \"pending_rewards\": { \"address\": <sender> } }` to confirm it now returns `0`."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction hash is included in a finalized block with a `wasm` event showing `claim_rewards`.",
+            "User\u2019s balance of the reward token(s) has increased by the claimed amount.",
+            "Boost & Earn contract now reports zero pending rewards for the user."
+        ]
+    },
+    {
+        "intent": "Check how much time is left in the current Bitcoin Summer phase",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_contract",
+                "description": "Call the Bitcoin Summer campaign contract (CONTRACT_ADDRESS_BITCOIN_SUMMER) with `{ \"current_phase\": {} }` to obtain `{ \"phase\": <id>, \"end_time\": <unix_timestamp> }`."
+            },
+            {
+                "step": 2,
+                "tool": "get_current_block_time",
+                "description": "Fetch the current chain time (block timestamp) for accurate comparison."
+            },
+            {
+                "step": 3,
+                "tool": "calculate_time_difference",
+                "description": "Subtract current time from `end_time` to compute the remaining duration."
+            },
+            {
+                "step": 4,
+                "tool": "format_time_output",
+                "description": "Convert the raw seconds into a human-readable string (e.g., days-hours-minutes)."
+            }
+        ],
+        "outcome_checks": [
+            "Output shows a non-negative duration (or clearly states the phase has ended).",
+            "The `phase` ID in the response is consistent with documentation for the current campaign period."
+        ]
+    },
+    {
+        "intent": "View accrued DeFi yields in the WBTC/USDC Supervault",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Identify the wallet address whose yield is being queried."
+            },
+            {
+                "step": 2,
+                "tool": "query_contract",
+                "description": "Call the WBTC/USDC Supervault contract (CONTRACT_ADDRESS_SUPERVAULT) with `{ \"pending_yield\": { \"address\": <sender> } }` to return tokens and amounts accrued."
+            },
+            {
+                "step": 3,
+                "tool": "format_amounts",
+                "description": "Convert raw micro-denominated amounts into display units (e.g., WBTC, USDC) and aggregate if multiple denominations are returned."
+            }
+        ],
+        "outcome_checks": [
+            "The displayed yield matches the raw contract response.",
+            "Amounts are shown in user-friendly denominations (e.g., 0.0034 WBTC, 12.5 USDC)."
+        ]
+    },
+    {
+        "intent": "Harvest and automatically compound market-making fees",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Determine which liquidity-provider address is harvesting fees."
+            },
+            {
+                "step": 2,
+                "tool": "query_contract",
+                "description": "Call the DEX position or fee collector contract (CONTRACT_ADDRESS_MM_FEES) with `{ \"pending_fees\": { \"address\": <sender> } }` to learn the exact amounts available."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_multi_execute",
+                "description": "Prepare a multi-message transaction:\n  a) Execute on CONTRACT_ADDRESS_MM_FEES with `{ \"collect_fees\": {} }`.\n  b) Immediately execute on the liquidity-position contract (CONTRACT_ADDRESS_LP) with `{ \"add_liquidity\": { \"auto_from_balance\": true } }` so the freshly harvested tokens are redeposited."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the batched transaction and broadcast it atomically."
+            },
+            {
+                "step": 5,
+                "tool": "query_contract",
+                "description": "Re-query `{ \"pending_fees\": { \"address\": <sender> } }` to ensure the pending amount is now zero."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction succeeds with events for both `collect_fees` and `add_liquidity`.",
+            "User\u2019s LP token balance has increased, reflecting compounding.",
+            "Pending fees query shows 0 for the user."
+        ]
+    },
+    {
+        "intent": "Transfer a Boost receipt NFT to another address",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Pull the wallet address that currently owns the NFT."
+            },
+            {
+                "step": 2,
+                "tool": "input_parameters",
+                "description": "Prompt the user for `token_id` of the receipt NFT and the `recipient_address`."
+            },
+            {
+                "step": 3,
+                "tool": "validate_recipient_address",
+                "description": "Ensure the provided recipient address is Bech32-formatted and on the correct prefix for Neutron."
+            },
+            {
+                "step": 4,
+                "tool": "query_contract",
+                "description": "Call the Boost Receipt CW721 contract (CONTRACT_ADDRESS_RECEIPT_NFT) with `{ \"owner_of\": { \"token_id\": <token_id> } }` to confirm the sender actually owns the NFT."
+            },
+            {
+                "step": 5,
+                "tool": "construct_tx_execute_contract",
+                "description": "Create an execute message on CONTRACT_ADDRESS_RECEIPT_NFT using `{ \"transfer_nft\": { \"recipient\": <recipient_address>, \"token_id\": <token_id> } }`."
+            },
+            {
+                "step": 6,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the transfer transaction and broadcast it."
+            },
+            {
+                "step": 7,
+                "tool": "query_contract",
+                "description": "Invoke `{ \"owner_of\": { \"token_id\": <token_id> } }` again to verify the new owner is the recipient."
+            }
+        ],
+        "outcome_checks": [
+            "The transfer transaction appears in a confirmed block with a `wasm` event `transfer_nft`.",
+            "Post-transfer query shows the `owner` field equals the intended recipient address.",
+            "Sender\u2019s NFT inventory no longer lists the transferred `token_id`."
+        ]
+    }
+]

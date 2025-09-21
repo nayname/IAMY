@@ -1,0 +1,192 @@
+[
+    {
+        "intent": "Show my total Bitcoin Summer points earned in the current phase",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_neutron_address",
+                "description": "Identify the user\u2019s Neutron wallet address."
+            },
+            {
+                "step": 2,
+                "tool": "fetch_current_campaign_phase",
+                "description": "Query the BTC Summer Campaign contract to discover the active phase ID."
+            },
+            {
+                "step": 3,
+                "tool": "query_points_contract",
+                "description": "Call `get_phase_points { address, phase_id }` on the Points contract to retrieve the user\u2019s point balance for the active phase."
+            },
+            {
+                "step": 4,
+                "tool": "present_result",
+                "description": "Display the returned point total to the user in a readable format."
+            }
+        ],
+        "outcome_checks": [
+            "The contract query returns a non-error JSON response.",
+            "The `points` field is a non-negative integer.",
+            "The phase ID in the response matches the active phase ID fetched in Step 2."
+        ]
+    },
+    {
+        "intent": "Lock an additional 500 NTRN for 24 months (boost)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_neutron_address",
+                "description": "Identify the user\u2019s Neutron wallet address."
+            },
+            {
+                "step": 2,
+                "tool": "bank_query_balance",
+                "description": "Verify the wallet holds at least 500 NTRN (500000000 untrn)."
+            },
+            {
+                "step": 3,
+                "tool": "construct_boost_lock_msg",
+                "description": "Build a `lock` message for the Boost contract with parameters `{ amount: 500000000untrn, duration: 24_months }`."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the lock transaction and broadcast it to Neutron."
+            },
+            {
+                "step": 5,
+                "tool": "wait_for_tx_commit",
+                "description": "Monitor the transaction until it is included in a block."
+            },
+            {
+                "step": 6,
+                "tool": "query_boost_position",
+                "description": "Fetch the user\u2019s boost position to confirm the new 500 NTRN lock has been added."
+            }
+        ],
+        "outcome_checks": [
+            "The lock transaction is confirmed with `code == 0`.",
+            "`query_boost_position` shows the locked amount increased by exactly 500 NTRN.",
+            "Lock expiration height corresponds to ~24 months from the current block."
+        ]
+    },
+    {
+        "intent": "Set my boost target to my Ethereum address",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_neutron_address",
+                "description": "Identify the user\u2019s Neutron wallet address that owns the boost."
+            },
+            {
+                "step": 2,
+                "tool": "get_user_input",
+                "description": "Collect the user\u2019s Ethereum (EVM) address to be used as the boost target."
+            },
+            {
+                "step": 3,
+                "tool": "validate_ethereum_address",
+                "description": "Ensure the provided string is a valid checksummed EVM address."
+            },
+            {
+                "step": 4,
+                "tool": "construct_set_target_msg",
+                "description": "Create a `set_target` message for the Boost contract with parameter `{ evm_address }`."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the transaction to update the boost target."
+            },
+            {
+                "step": 6,
+                "tool": "query_boost_target",
+                "description": "Query the Boost contract to confirm the target address now equals the supplied Ethereum address."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction included with `code == 0`.",
+            "`query_boost_target` returns the new Ethereum address.",
+            "No pending governance or admin veto flags exist for the address update."
+        ]
+    },
+    {
+        "intent": "Bridge 1 WBTC from Ethereum to Neutron",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "connect_eth_wallet",
+                "description": "Prompt the user to connect MetaMask (or compatible) with at least 1 WBTC + gas on Ethereum mainnet."
+            },
+            {
+                "step": 2,
+                "tool": "approve_erc20_spend",
+                "description": "Call WBTC `approve()` allowing the Bridge contract to transfer 1 WBTC."
+            },
+            {
+                "step": 3,
+                "tool": "call_ethereum_bridge_deposit",
+                "description": "Invoke the Bridge contract\u2019s `deposit` or `lock` method for 1 WBTC, specifying the destination Neutron address in the payload."
+            },
+            {
+                "step": 4,
+                "tool": "monitor_eth_tx_confirmation",
+                "description": "Wait for the Ethereum transaction to reach the required confirmation depth."
+            },
+            {
+                "step": 5,
+                "tool": "listen_bridge_relay",
+                "description": "Track the bridge relayer or IBC relay status until a corresponding IBC packet is observed on Neutron."
+            },
+            {
+                "step": 6,
+                "tool": "query_neutron_bank_balance",
+                "description": "Poll the user\u2019s Neutron address for the IBC-denominated WBTC balance (`ibc/\u2026wbtc`)."
+            }
+        ],
+        "outcome_checks": [
+            "Ethereum transaction succeeded and reached finality.",
+            "An IBC packet acknowledgement is logged on Neutron.",
+            "Neutron bank balance increased by exactly 1 WBTC (IBC denom)."
+        ]
+    },
+    {
+        "intent": "Mint a boost-receipt NFT by staking 250 NTRN for 12 months",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_neutron_address",
+                "description": "Identify the user\u2019s Neutron wallet address."
+            },
+            {
+                "step": 2,
+                "tool": "bank_query_balance",
+                "description": "Ensure at least 250 NTRN (250000000 untrn) is available."
+            },
+            {
+                "step": 3,
+                "tool": "construct_boost_nft_stake_msg",
+                "description": "Build a `stake_and_mint_nft` message to the Boost contract with `{ amount: 250000000untrn, duration: 12_months }`."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign and broadcast the transaction to stake and mint the NFT."
+            },
+            {
+                "step": 5,
+                "tool": "wait_for_tx_commit",
+                "description": "Monitor inclusion of the transaction in a block."
+            },
+            {
+                "step": 6,
+                "tool": "query_nft_contract",
+                "description": "Query the NFT contract\u2019s `tokens { owner }` endpoint to confirm a new token ID has been minted to the user."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction success with `code == 0`.",
+            "NFT contract lists a new token ID owned by the user.",
+            "`token_metadata.lock_amount` equals 250 NTRN and `lock_duration` equals 12 months."
+        ]
+    }
+]

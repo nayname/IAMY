@@ -1,0 +1,61 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"BTC\", \"query\": \"Claim my rewards using the Boost & Earn option\"}, {\"label\": \"BTC\", \"query\": \"Check the time remaining in the current Bitcoin Summer phase\"}, {\"label\": \"BTC\", \"query\": \"View my accrued DeFi yields in the WBTC/USDC Supervault\"}, {\"label\": \"BTC\", \"query\": \"Harvest and compound my market making fees\"}, {\"label\": \"BTC\", \"query\": \"Transfer my boost receipt NFT to another address\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "23394e44-cc00-45e5-809a-f07eccb6eb99",
+            "example": false
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Claim rewards through the Boost & Earn program\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_sender_address\",\n        \"description\": \"Retrieve the caller\u2019s wallet address that will claim the rewards.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_contract\",\n        \"description\": \"Call the Boost & Earn contract (CONTRACT_ADDRESS_BOOST_EARN) with `{ \\\"pending_rewards\\\": { \\\"address\\\": <sender> } }` to fetch the exact amount currently claimable.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_execute_contract\",\n        \"description\": \"Build an execute\u2010contract message for CONTRACT_ADDRESS_BOOST_EARN using `{ \\\"claim_rewards\\\": {} }` and attach no funds.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the transaction with the user\u2019s key and broadcast it to Neutron.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"query_contract\",\n        \"description\": \"Re-query `{ \\\"pending_rewards\\\": { \\\"address\\\": <sender> } }` to confirm it now returns `0`.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Transaction hash is included in a finalized block with a `wasm` event showing `claim_rewards`.\",\n      \"User\u2019s balance of the reward token(s) has increased by the claimed amount.\",\n      \"Boost & Earn contract now reports zero pending rewards for the user.\"\n    ]\n  },\n  {\n    \"intent\": \"Check how much time is left in the current Bitcoin Summer phase\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"query_contract\",\n        \"description\": \"Call the Bitcoin Summer campaign contract (CONTRACT_ADDRESS_BITCOIN_SUMMER) with `{ \\\"current_phase\\\": {} }` to obtain `{ \\\"phase\\\": <id>, \\\"end_time\\\": <unix_timestamp> }`.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"get_current_block_time\",\n        \"description\": \"Fetch the current chain time (block timestamp) for accurate comparison.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"calculate_time_difference\",\n        \"description\": \"Subtract current time from `end_time` to compute the remaining duration.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"format_time_output\",\n        \"description\": \"Convert the raw seconds into a human-readable string (e.g., days-hours-minutes).\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Output shows a non-negative duration (or clearly states the phase has ended).\",\n      \"The `phase` ID in the response is consistent with documentation for the current campaign period.\"\n    ]\n  },\n  {\n    \"intent\": \"View accrued DeFi yields in the WBTC/USDC Supervault\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_sender_address\",\n        \"description\": \"Identify the wallet address whose yield is being queried.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_contract\",\n        \"description\": \"Call the WBTC/USDC Supervault contract (CONTRACT_ADDRESS_SUPERVAULT) with `{ \\\"pending_yield\\\": { \\\"address\\\": <sender> } }` to return tokens and amounts accrued.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"format_amounts\",\n        \"description\": \"Convert raw micro-denominated amounts into display units (e.g., WBTC, USDC) and aggregate if multiple denominations are returned.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The displayed yield matches the raw contract response.\",\n      \"Amounts are shown in user-friendly denominations (e.g., 0.0034 WBTC, 12.5 USDC).\"\n    ]\n  },\n  {\n    \"intent\": \"Harvest and automatically compound market-making fees\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_sender_address\",\n        \"description\": \"Determine which liquidity-provider address is harvesting fees.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_contract\",\n        \"description\": \"Call the DEX position or fee collector contract (CONTRACT_ADDRESS_MM_FEES) with `{ \\\"pending_fees\\\": { \\\"address\\\": <sender> } }` to learn the exact amounts available.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_multi_execute\",\n        \"description\": \"Prepare a multi-message transaction:\\n  a) Execute on CONTRACT_ADDRESS_MM_FEES with `{ \\\"collect_fees\\\": {} }`.\\n  b) Immediately execute on the liquidity-position contract (CONTRACT_ADDRESS_LP) with `{ \\\"add_liquidity\\\": { \\\"auto_from_balance\\\": true } }` so the freshly harvested tokens are redeposited.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the batched transaction and broadcast it atomically.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"query_contract\",\n        \"description\": \"Re-query `{ \\\"pending_fees\\\": { \\\"address\\\": <sender> } }` to ensure the pending amount is now zero.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Transaction succeeds with events for both `collect_fees` and `add_liquidity`.\",\n      \"User\u2019s LP token balance has increased, reflecting compounding.\",\n      \"Pending fees query shows 0 for the user.\"\n    ]\n  },\n  {\n    \"intent\": \"Transfer a Boost receipt NFT to another address\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_sender_address\",\n        \"description\": \"Pull the wallet address that currently owns the NFT.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"input_parameters\",\n        \"description\": \"Prompt the user for `token_id` of the receipt NFT and the `recipient_address`.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"validate_recipient_address\",\n        \"description\": \"Ensure the provided recipient address is Bech32-formatted and on the correct prefix for Neutron.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"query_contract\",\n        \"description\": \"Call the Boost Receipt CW721 contract (CONTRACT_ADDRESS_RECEIPT_NFT) with `{ \\\"owner_of\\\": { \\\"token_id\\\": <token_id> } }` to confirm the sender actually owns the NFT.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"construct_tx_execute_contract\",\n        \"description\": \"Create an execute message on CONTRACT_ADDRESS_RECEIPT_NFT using `{ \\\"transfer_nft\\\": { \\\"recipient\\\": <recipient_address>, \\\"token_id\\\": <token_id> } }`.\"\n      },\n      {\n        \"step\": 6,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the transfer transaction and broadcast it.\"\n      },\n      {\n        \"step\": 7,\n        \"tool\": \"query_contract\",\n        \"description\": \"Invoke `{ \\\"owner_of\\\": { \\\"token_id\\\": <token_id> } }` again to verify the new owner is the recipient.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The transfer transaction appears in a confirmed block with a `wasm` event `transfer_nft`.\",\n      \"Post-transfer query shows the `owner` field equals the intended recipient address.\",\n      \"Sender\u2019s NFT inventory no longer lists the transferred `token_id`.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 3338,
+                    "prompt_tokens": 720,
+                    "total_tokens": 4058,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1664,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8hXSfGrAwUqSFY8rj6F2GOAinoV",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--23206c1d-a0d7-4a7d-85e8-31258e1e53ec-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 720,
+                "output_tokens": 3338,
+                "total_tokens": 4058,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1664
+                }
+            }
+        }
+    ]
+}

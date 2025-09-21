@@ -1,0 +1,61 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"BTC\", \"query\": \"Redeem my LP shares from the maxBTC/eBTC Supervault\"}, {\"label\": \"BTC\", \"query\": \"Swap 1 eBTC for uniBTC on Neutron DEX\"}, {\"label\": \"BTC\", \"query\": \"Open a 5x leveraged loop position with 1 maxBTC on Amber\"}, {\"label\": \"BTC\", \"query\": \"Close my leveraged loop position on Amber\"}, {\"label\": \"BTC\", \"query\": \"Check my health factor on Amber Finance\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "13a0680b-26aa-4a1c-ba47-aebd1a0e5e09",
+            "example": false
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Redeem LP shares from the maxBTC/eBTC Supervault\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_address\",\n        \"description\": \"Identify the wallet address that holds the Supervault shares.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_contract_state\",\n        \"description\": \"Fetch the user\u2019s current share balance and the Supervault contract address (e.g., `supervault_maxBTC_eBTC`) to determine the maximum redeemable amount.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"validate_redeem_amount\",\n        \"description\": \"Confirm the user has enough LP shares to cover the requested redemption.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"construct_wasm_execute_msg\",\n        \"description\": \"Build a `withdraw` execute message for the Supervault contract with `{ \\\"amount\\\": <shares_to_redeem> }`.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the transaction with the user\u2019s key and broadcast it to the Neutron network.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Verify the transaction hash was included in a block without error codes.\",\n      \"Confirm the user\u2019s maxBTC and eBTC balances increased while their Supervault share balance decreased by the redeemed amount.\"\n    ]\n  },\n  {\n    \"intent\": \"Swap 1 eBTC for uniBTC on Neutron DEX\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_address\",\n        \"description\": \"Obtain the wallet address that will perform the swap.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"validate_token_balance\",\n        \"description\": \"Ensure the address has at least 1 eBTC plus network fees.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"query_dex_pool\",\n        \"description\": \"Retrieve pool data (liquidity, price, slippage) for the `eBTC/uniBTC` pair or optimal multi-hop route.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"construct_swap_msg\",\n        \"description\": \"Create the DEX `swap` execute message specifying `offer_asset: 1 eBTC`, `ask_asset: uniBTC`, and a reasonable `max_slippage`.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and submit the swap transaction.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Confirm the transaction was finalized in a block.\",\n      \"Check that the eBTC balance decreased by ~1 eBTC (plus fees) and the uniBTC balance increased by the expected amount.\"\n    ]\n  },\n  {\n    \"intent\": \"Open a 5\u00d7 leveraged loop position with 1 maxBTC on Amber\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_address\",\n        \"description\": \"Determine the wallet initiating the leveraged position.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"validate_token_balance\",\n        \"description\": \"Verify the user holds at least 1 maxBTC (plus gas fees).\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"query_amber_market_parameters\",\n        \"description\": \"Fetch Amber Finance parameters (maximum leverage allowed, collateral factors, interest rate) to ensure 5\u00d7 leverage is within limits.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"construct_open_leverage_msg\",\n        \"description\": \"Generate an Amber `open_position` execute message with `{ \\\"collateral\\\": 1 maxBTC, \\\"leverage\\\": \\\"5x\\\" }`.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast the open-position transaction.\"\n      },\n      {\n        \"step\": 6,\n        \"tool\": \"query_position_status\",\n        \"description\": \"Poll the Amber contract for the new position ID, borrowed amount, and health factor.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Ensure the transaction succeeded and a position ID was returned.\",\n      \"Validate that the position\u2019s health factor is above the liquidation threshold and leverage approximates 5\u00d7.\"\n    ]\n  },\n  {\n    \"intent\": \"Close my leveraged loop position on Amber\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_address\",\n        \"description\": \"Identify the wallet that owns the Amber position.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_position_status\",\n        \"description\": \"Retrieve the active position ID, outstanding debt, and collateral details.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_close_position_msg\",\n        \"description\": \"Build an Amber `close_position` execute message (or `repay_and_withdraw`) targeting the retrieved position ID.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the close-position transaction and broadcast it.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"query_position_status\",\n        \"description\": \"Re-query Amber to confirm the position no longer exists (or shows zero debt).\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Transaction finalized without errors.\",\n      \"User\u2019s collateral (maxBTC) returned minus any fees, and the Amber position list shows no open positions.\"\n    ]\n  },\n  {\n    \"intent\": \"Check my health factor on Amber Finance\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_address\",\n        \"description\": \"Determine the wallet whose health factor is requested.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_amber_position\",\n        \"description\": \"Fetch all active positions for the address from the Amber contract.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"calculate_health_factor\",\n        \"description\": \"Compute or read the health factor metric returned by Amber for each position.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"present_results\",\n        \"description\": \"Return a formatted summary: position ID \u2192 health factor, collateral, debt.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Health factor values are non-null and within expected numeric ranges.\",\n      \"Output clearly associates each position ID with its health factor.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2734,
+                    "prompt_tokens": 730,
+                    "total_tokens": 3464,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1280,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8iJI3JHYLAnS4LdXmfPC2opfjxK",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--7f0bf1c8-d17f-4023-a404-712a76346cfb-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 730,
+                "output_tokens": 2734,
+                "total_tokens": 3464,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1280
+                }
+            }
+        }
+    ]
+}

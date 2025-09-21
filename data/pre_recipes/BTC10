@@ -1,0 +1,203 @@
+[
+    {
+        "intent": "Lock 2000 NTRN for 3 months to obtain a 1.2\u00d7 BTC Summer boost",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_wallet_address",
+                "description": "Retrieve the user\u2019s Neutron bech32 address that will perform the lock."
+            },
+            {
+                "step": 2,
+                "tool": "query_cw20_balance",
+                "description": "Check the wallet\u2019s spendable NTRN balance to confirm \u2265 2000 NTRN is available."
+            },
+            {
+                "step": 3,
+                "tool": "validate_amount",
+                "description": "Abort if balance is insufficient or if 2000 NTRN points to a vested/locked position."
+            },
+            {
+                "step": 4,
+                "tool": "calculate_unlock_timestamp",
+                "description": "Add 90 days (\u2248 7 776 000 s) to the current block time to derive the lock\u2019s end timestamp."
+            },
+            {
+                "step": 5,
+                "tool": "construct_execute_msg",
+                "description": "Create an ExecuteMsg to the NTRN Lock contract (neutron14lnmj4k0tqsfn3x8kmnmacg64ct2utyz0aaxtm5g3uwwp8kk4f6shcgrtt) locking 2 000 000 000 untrn for duration_seconds = 7776000."
+            },
+            {
+                "step": 6,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign with the user\u2019s wallet and broadcast the lock transaction to Neutron main-net."
+            },
+            {
+                "step": 7,
+                "tool": "query_boost_pointer",
+                "description": "Read the Boost Pointer contract to verify the multiplier is now \u2265 1.2\u00d7 for this wallet."
+            }
+        ],
+        "outcome_checks": [
+            "The NTRN Lock contract records a new lock of exactly 2000 NTRN with the correct unlock timestamp.",
+            "Boost Pointer returns a multiplier of 1.2\u00d7 (or higher if other boosts apply).",
+            "The wallet\u2019s spendable NTRN balance decreased by 2000 NTRN."
+        ]
+    },
+    {
+        "intent": "Retrieve projected NTRN rewards based on current point total",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_wallet_address",
+                "description": "Determine which address (Neutron or linked Ethereum) should be queried."
+            },
+            {
+                "step": 2,
+                "tool": "query_points_contract",
+                "description": "Call the Points contract (neutron1yu55umrtnna36vyjvhexp6q2ktljunukzxp9vptsfnylequg7gvqrcqf42) to fetch the user\u2019s current point total."
+            },
+            {
+                "step": 3,
+                "tool": "fetch_phase_reward_params",
+                "description": "Read on-chain or hard-coded campaign parameters to get total NTRN allocated, phase length, and per-point emission formula."
+            },
+            {
+                "step": 4,
+                "tool": "calculate_projected_rewards",
+                "description": "Multiply point_total \u00d7 per_point_rate \u00d7 active multipliers to predict end-of-phase NTRN rewards."
+            },
+            {
+                "step": 5,
+                "tool": "display_projection",
+                "description": "Return the projected NTRN amount with explanation of all assumptions."
+            }
+        ],
+        "outcome_checks": [
+            "Successfully retrieved a non-zero point total from the contract or returned an explicit zero.",
+            "Displayed a numeric reward estimate along with the formula and current phase parameters.",
+            "Highlighted that final rewards depend on phase completion and global participation levels."
+        ]
+    },
+    {
+        "intent": "Initiate standard vesting for any unclaimed NTRN rewards",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_wallet_address",
+                "description": "Identify the Neutron address that holds the unclaimed rewards."
+            },
+            {
+                "step": 2,
+                "tool": "query_vesting_contract",
+                "description": "Call the Vesting contract (neutron1dz57hjkdytdshl2uyde0nqvkwdww0ckx7qfe05raz4df6m3khfyqfnj0nr) for `claimable_rewards(address)`."
+            },
+            {
+                "step": 3,
+                "tool": "validate_claimable_amount",
+                "description": "Abort if the claimable amount is zero; otherwise continue."
+            },
+            {
+                "step": 4,
+                "tool": "construct_execute_msg",
+                "description": "Create an ExecuteMsg `{ start_standard_vesting: {} }` on the Vesting contract."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the vesting start transaction and broadcast it to Neutron."
+            },
+            {
+                "step": 6,
+                "tool": "query_vesting_schedule",
+                "description": "Fetch the new vesting schedule to confirm start and end times."
+            }
+        ],
+        "outcome_checks": [
+            "The claimable amount in the contract is reduced to zero immediately after execution.",
+            "A new vesting schedule entry exists with the claimed amount and correct vesting cliff/period.",
+            "Transaction hash is included in a finalized block."
+        ]
+    },
+    {
+        "intent": "Set boost lock duration preference to 48 months",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "capture_slider_input",
+                "description": "Read the UI slider value (48) expressed in months."
+            },
+            {
+                "step": 2,
+                "tool": "calculate_boost_multiplier",
+                "description": "Apply the front-end formula to map 48 months to its expected NTRN boost multiplier (e.g., 2.0\u00d7)."
+            },
+            {
+                "step": 3,
+                "tool": "update_user_preference",
+                "description": "Persist the 48-month preference (e.g., to localStorage or user profile cache) for future lock transactions."
+            },
+            {
+                "step": 4,
+                "tool": "display_preview",
+                "description": "Render the projected multiplier and required minimum lock amounts so the user knows what to expect before submitting any on-chain action."
+            }
+        ],
+        "outcome_checks": [
+            "Slider visually remains at the 48-month position.",
+            "UI shows correct multiplier and explanatory text.",
+            "No blockchain transaction is sent until the user explicitly confirms a lock."
+        ]
+    },
+    {
+        "intent": "Convert 1 BTC into solvBTC and bridge it to Neutron for deposit",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_btc_wallet_address",
+                "description": "Determine the source Bitcoin address that will provide the 1 BTC."
+            },
+            {
+                "step": 2,
+                "tool": "generate_solvbtc_deposit_address",
+                "description": "Request a unique SolvBTC gateway deposit address that links to the user\u2019s EVM destination."
+            },
+            {
+                "step": 3,
+                "tool": "construct_btc_tx",
+                "description": "Create and sign a Bitcoin transaction sending exactly 1 BTC to the generated deposit address."
+            },
+            {
+                "step": 4,
+                "tool": "broadcast_btc_tx",
+                "description": "Publish the transaction to the Bitcoin network and record its TXID."
+            },
+            {
+                "step": 5,
+                "tool": "wait_for_confirmations",
+                "description": "Poll until the BTC transaction reaches the Solv-required confirmation threshold (e.g., 6 blocks)."
+            },
+            {
+                "step": 6,
+                "tool": "attest_and_mint_solvbtc",
+                "description": "Submit the proof of the confirmed BTC deposit to Solv\u2019s minting contract on Ethereum; receive 1 solvBTC ERC-20."
+            },
+            {
+                "step": 7,
+                "tool": "bridge_asset_to_neutron",
+                "description": "Use the supported bridge (e.g., Axelar or Wormhole) to transfer 1 solvBTC from Ethereum to Neutron, generating an IBC voucher representing solvBTC on Neutron."
+            },
+            {
+                "step": 8,
+                "tool": "query_balance_neutron",
+                "description": "Confirm the receipt of 1 solvBTC voucher in the user\u2019s Neutron wallet."
+            }
+        ],
+        "outcome_checks": [
+            "Bitcoin transaction confirmed with 1 BTC exactly.",
+            "Ethereum transaction shows 1 solvBTC minted to the user\u2019s EVM address.",
+            "Bridge transaction finalized with 1 solvBTC voucher credited to the Neutron address.",
+            "solvBTC balance on Neutron matches 1 token (minus bridge fees, if any)."
+        ]
+    }
+]

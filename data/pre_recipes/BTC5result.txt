@@ -1,0 +1,61 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"BTC\", \"query\": \"Lend 4 LBTC on Amber Finance\"}, {\"label\": \"BTC\", \"query\": \"Deposit 0.5 maxBTC into the maxBTC/USDC Supervault\"}, {\"label\": \"BTC\", \"query\": \"Hold maxBTC in my wallet for base 1x rewards\"}, {\"label\": \"BTC\", \"query\": \"Boost my rewards to 3x by locking additional NTRN equal to my TVL\"}, {\"label\": \"BTC\", \"query\": \"Update my boost to point at my connected Neutron wallet\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "15276826-757b-43e1-999e-587e16ccad3b",
+            "example": false
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Lend 4 LBTC on Amber Finance\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_wallet_address\",\n        \"description\": \"Identify the connected Neutron wallet that will provide the LBTC.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_cw20_balance\",\n        \"description\": \"Check that the wallet holds at least 4 LBTC (including decimals) to cover the lend amount.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_cw20_increase_allowance\",\n        \"description\": \"Grant the Amber Finance lending contract an allowance of 4 LBTC so it can pull the tokens.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"construct_tx_contract_execute\",\n        \"description\": \"Build the smart-contract call to Amber Finance (e.g., `{ lend: { asset: { token: <LBTC_contract>, amount: \\\"4000000\\\" } } }`, assuming 6-decimals) that deposits the 4 LBTC.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign both the allowance and lend messages and broadcast them to the Neutron network.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Verify the transaction succeeded and was included in a block.\",\n      \"Query Amber Finance to confirm the wallet\u2019s supplied balance increased by 4 LBTC.\"\n    ]\n  },\n  {\n    \"intent\": \"Deposit 0.5 maxBTC into the maxBTC/USDC Supervault\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_wallet_address\",\n        \"description\": \"Determine which wallet will provide the maxBTC deposit.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_cw20_balance\",\n        \"description\": \"Confirm the wallet has at least 0.5 maxBTC available.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_cw20_increase_allowance\",\n        \"description\": \"Approve the Supervault contract to spend 0.5 maxBTC on the user\u2019s behalf.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"construct_tx_contract_execute\",\n        \"description\": \"Create the `deposit` execute message for the Supervault (e.g., `{ deposit: { amount: \\\"500000\\\" } }` if 6-decimals).\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast the allowance and deposit transactions.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Ensure the transaction is successfully committed on-chain.\",\n      \"Query the Supervault to verify the wallet\u2019s vault shares reflect the 0.5 maxBTC deposit.\"\n    ]\n  },\n  {\n    \"intent\": \"Hold maxBTC in my wallet for base 1x rewards\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_wallet_address\",\n        \"description\": \"Identify the wallet that should hold the maxBTC.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_cw20_balance\",\n        \"description\": \"Verify the wallet balance contains the desired amount of maxBTC.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"validate_balance\",\n        \"description\": \"Confirm that the balance is greater than zero so the user qualifies for 1\u00d7 holding rewards; no further action is required.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Wallet address shows a non-zero maxBTC balance when queried on-chain.\",\n      \"No staking or locking contracts list the user\u2019s maxBTC (tokens remain in the wallet).\"\n    ]\n  },\n  {\n    \"intent\": \"Boost my rewards to 3x by locking additional NTRN equal to my TVL\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_user_wallet_address\",\n        \"description\": \"Detect the wallet whose TVL and boost will be adjusted.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_user_tvl\",\n        \"description\": \"Aggregate the wallet\u2019s total value locked (TVL) across Amber Finance, Supervaults, and other supported venues.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"calculate_required_amount\",\n        \"description\": \"Compute the exact NTRN amount needed (1 NTRN per 1 unit TVL) to reach a 3\u00d7 boost.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"query_cw20_balance\",\n        \"description\": \"Ensure the wallet\u2019s NTRN balance is at least the required amount.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"construct_tx_cw20_increase_allowance\",\n        \"description\": \"Approve the veNTRN (locking) contract to pull the calculated NTRN.\"\n      },\n      {\n        \"step\": 6,\n        \"tool\": \"construct_tx_contract_execute\",\n        \"description\": \"Execute the lock call on the veNTRN contract (e.g., `{ lock: { amount: <required>, duration: 2419200 } }` for a 4-week lock).\"\n      },\n      {\n        \"step\": 7,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast both the allowance and lock transactions.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Confirm the lock transaction is in a finalized block.\",\n      \"Query the veNTRN contract to ensure the locked NTRN matches the required amount.\",\n      \"Verify the boost multiplier returned by the rewards gauge now equals 3\u00d7.\"\n    ]\n  },\n  {\n    \"intent\": \"Update my boost to point at my connected Neutron wallet\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_current_boost_delegate\",\n        \"description\": \"Retrieve the wallet currently receiving the boost delegation.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"get_user_wallet_address\",\n        \"description\": \"Determine the connected Neutron wallet that should receive the boost.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_contract_execute\",\n        \"description\": \"Build an `update_delegate` (or equivalent) message on the veNTRN contract to redirect boost emissions to the connected wallet.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign and broadcast the delegate-update transaction.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Verify the delegate-update transaction was executed successfully.\",\n      \"Query the veNTRN contract to confirm the new delegate address equals the connected wallet.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 4082,
+                    "prompt_tokens": 737,
+                    "total_tokens": 4819,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 2560,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CH8gLkiuoxPICPYkpraUgk85Cq2An",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--bc23be86-a63e-43bd-b1a8-b6afe9821c27-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 737,
+                "output_tokens": 4082,
+                "total_tokens": 4819,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 2560
+                }
+            }
+        }
+    ]
+}
