@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects to the user\u2019s Neutron wallet extension and returns both the signer and Bech32 address for subsequent transactions.",
+            "function": "getOfflineSignerAndAddress(chainId = 'neutron-1')",
+            "usage": "const { address, signer } = await getOfflineSignerAndAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries on-chain balances to confirm the address holds at least 1 maxBTC and 1 uniBTC.",
+            "function": "check_balance(address)",
+            "usage": "const balanceInfo = await check_balance(userAddress);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Fetches the maxBTC/uniBTC Supervault contract address and its associated token contracts.",
+            "function": "get_supervault_details()",
+            "usage": "const details = await get_supervault_details();"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Builds an unsigned transaction that deposits exactly 1 maxBTC and 1 uniBTC into the Supervault.",
+            "function": "build_deposit({ sender, amount_maxbtc, amount_unibtc })",
+            "usage": "const txDraft = await build_deposit({ sender: address, amount_maxbtc: 1, amount_unibtc: 1 });"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Signs the prepared deposit transaction with the user\u2019s wallet and broadcasts it to the Neutron network.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo)",
+            "usage": "const txHash = await signAndBroadcast(signer, address, [depositMessage], 'auto');"
+        }
+    ],
+    "frontend": [
+        "const { address, signer } = await getOfflineSignerAndAddress();//step: 1 Tool: get_sender_address Desciption: Identify the wallet providing liquidity.",
+        "const txHash = await signAndBroadcast(signer, address, [depositMessage], 'auto');//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign the transaction with the user\u2019s wallet and broadcast it."
+    ],
+    "backend": [
+        "const balanceInfo = await check_balance(userAddress);#step: 2 Tool: check_token_balance Desciption: Confirm the wallet holds at least 1 maxBTC and 1 uniBTC on Neutron.",
+        "const details = await get_supervault_details();#step: 3 Tool: query_supervault_details Desciption: Retrieve the contract address and token denominations for the maxBTC/uniBTC Supervault.",
+        "const txDraft = await build_deposit({ sender: address, amount_maxbtc: 1, amount_unibtc: 1 });#step: 4 Tool: construct_supervault_deposit_tx Desciption: Compose a dual-asset deposit (1 maxBTC, 1 uniBTC) targeting the Supervault from step 3."
+    ],
+    "intent": "Provide liquidity to the maxBTC/uniBTC Supervault using 1 maxBTC and 1 uniBTC",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_address",
+            "description": "Identify the wallet providing liquidity."
+        },
+        {
+            "step": 2,
+            "tool": "check_token_balance",
+            "description": "Confirm the wallet holds at least 1 maxBTC and 1 uniBTC on Neutron."
+        },
+        {
+            "step": 3,
+            "tool": "query_supervault_details",
+            "description": "Retrieve the contract address and token denominations for the maxBTC/uniBTC Supervault."
+        },
+        {
+            "step": 4,
+            "tool": "construct_supervault_deposit_tx",
+            "description": "Compose a dual-asset deposit (1 maxBTC, 1 uniBTC) targeting the Supervault from step 3."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the transaction with the user\u2019s wallet and broadcast it."
+        }
+    ],
+    "outcome_checks": [
+        "Ensure the transaction is included in a block without errors.",
+        "Confirm via vault query that the user\u2019s LP share balance increased proportionally to the supplied liquidity."
+    ]
+}

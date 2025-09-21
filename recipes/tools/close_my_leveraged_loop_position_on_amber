@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "getUserAddress connects to the Keplr (or Leap) wallet, enables the Neutron chain, and returns the user\u2019s address (and signer).",
+            "function": "getUserAddress(chainId = 'neutron-1')",
+            "usage": "const { address } = await getUserAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "query_position_status queries Amber\u2019s smart-contract for the caller\u2019s current position data (ID, collateral, debt, etc.).",
+            "function": "query_position_status(address: str)",
+            "usage": "position_info = await query_position_status(user_address)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "close_position_sign_doc builds a close-position MsgExecuteContract and returns a base-64 encoded SignDoc ready for wallet signing.",
+            "function": "close_position_sign_doc(req)",
+            "usage": "sign_doc_payload = await close_position_sign_doc({ address: user_address, position_id: pos.id, gas_limit: 250000, fee_amount: '5000', fee_denom: 'untrn', chain_id: 'neutron-1' });"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "signAndBroadcastClosePosition gets the SignDoc signed by Keplr and relays the signed bytes to the backend for broadcasting.",
+            "function": "signAndBroadcastClosePosition({ chainId, signDocBase64, backendBroadcastUrl })",
+            "usage": "const txResult = await signAndBroadcastClosePosition({ chainId: 'neutron-1', signDocBase64: sign_doc_payload.sign_doc });"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "query_position_status is called again to verify that the position is now closed (zero debt / no active position).",
+            "function": "query_position_status(address: str)",
+            "usage": "const confirmation = await query_position_status(user_address);"
+        }
+    ],
+    "frontend": [
+        "const { address } = await getUserAddress();//step: 1 Tool: get_user_address Desciption: Identify the wallet that owns the Amber position.",
+        "const txResult = await signAndBroadcastClosePosition({ chainId: 'neutron-1', signDocBase64: sign_doc_payload.sign_doc });//step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the close-position transaction and broadcast it."
+    ],
+    "backend": [
+        "position_info = await query_position_status(user_address)#step: 2 Tool: query_position_status Desciption: Retrieve the active position ID, outstanding debt, and collateral details.",
+        "sign_doc_payload = await close_position_sign_doc({ address: user_address, position_id: pos.id, gas_limit: 250000, fee_amount: '5000', fee_denom: 'untrn', chain_id: 'neutron-1' });#step: 3 Tool: construct_close_position_msg Desciption: Build an Amber `close_position` execute message (or `repay_and_withdraw`) targeting the retrieved position ID.",
+        "const confirmation = await query_position_status(user_address);#step: 5 Tool: query_position_status Desciption: Re-query Amber to confirm the position no longer exists (or shows zero debt)."
+    ],
+    "intent": "Close my leveraged loop position on Amber",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_address",
+            "description": "Identify the wallet that owns the Amber position."
+        },
+        {
+            "step": 2,
+            "tool": "query_position_status",
+            "description": "Retrieve the active position ID, outstanding debt, and collateral details."
+        },
+        {
+            "step": 3,
+            "tool": "construct_close_position_msg",
+            "description": "Build an Amber `close_position` execute message (or `repay_and_withdraw`) targeting the retrieved position ID."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the close-position transaction and broadcast it."
+        },
+        {
+            "step": 5,
+            "tool": "query_position_status",
+            "description": "Re-query Amber to confirm the position no longer exists (or shows zero debt)."
+        }
+    ],
+    "outcome_checks": [
+        "Transaction finalized without errors.",
+        "User\u2019s collateral (maxBTC) returned minus any fees, and the Amber position list shows no open positions."
+    ]
+}

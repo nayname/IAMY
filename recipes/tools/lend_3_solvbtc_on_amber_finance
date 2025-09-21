@@ -1,0 +1,92 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Fetches the configured backend wallet and returns the address that will supply solvBTC.",
+            "function": "get_sender_address(wallet_alias='lender')",
+            "usage": "lender_info = get_sender_address()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the solvBTC CW20 contract to read the lender\u2019s current token balance.",
+            "function": "cw20_balance(contract, addr)",
+            "usage": "balance = cw20_balance(SOLVBTC_CONTRACT, lender_info['address'])"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Constructs a CW20 approve message allowing Amber Finance to move 3 solvBTC from the wallet.",
+            "function": "construct_cw20_approve(spender, amount_micro)",
+            "usage": "approve_msg = construct_cw20_approve(AMBER_MARKET_CONTRACT, 300000000)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the approval transaction and broadcasts it to the Neutron chain.",
+            "function": "sign_and_broadcast_approval()",
+            "usage": "tx_hash = sign_and_broadcast_approval()"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Creates the lend-execute message for supplying 3 solvBTC to Amber Finance.",
+            "function": "construct_amber_lend_tx(amount_micro)",
+            "usage": "lend_msg = construct_amber_lend_tx(300000000)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Signs the lend transaction and broadcasts it, awaiting confirmation.",
+            "function": "sign_and_broadcast_lend()",
+            "usage": "tx_hash = sign_and_broadcast_lend()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "lender_info = get_sender_address()#step: 1 Tool: get_sender_address Desciption: Choose the wallet that will lend solvBTC.",
+        "balance = cw20_balance(SOLVBTC_CONTRACT, lender_info['address'])#step: 2 Tool: check_token_balance Desciption: Ensure the wallet possesses at least 3 solvBTC on Neutron.",
+        "approve_msg = construct_cw20_approve(AMBER_MARKET_CONTRACT, 300000000)#step: 3 Tool: construct_cw20_approve Desciption: Generate an approval for Amber Finance\u2019s lending contract to transfer 3 solvBTC from the user\u2019s wallet.",
+        "tx_hash = sign_and_broadcast_approval()#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign and send the approval transaction, waiting for a success confirmation.",
+        "lend_msg = construct_amber_lend_tx(300000000)#step: 5 Tool: construct_amber_lend_tx Desciption: Compose the lend (supply) transaction for 3 solvBTC referencing the appropriate Amber Finance market contract.",
+        "tx_hash = sign_and_broadcast_lend()#step: 6 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the lending transaction to the Neutron network."
+    ],
+    "intent": "Lend 3 solvBTC on Amber Finance",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_address",
+            "description": "Choose the wallet that will lend solvBTC."
+        },
+        {
+            "step": 2,
+            "tool": "check_token_balance",
+            "description": "Ensure the wallet possesses at least 3 solvBTC on Neutron."
+        },
+        {
+            "step": 3,
+            "tool": "construct_cw20_approve",
+            "description": "Generate an approval for Amber Finance\u2019s lending contract to transfer 3 solvBTC from the user\u2019s wallet."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and send the approval transaction, waiting for a success confirmation."
+        },
+        {
+            "step": 5,
+            "tool": "construct_amber_lend_tx",
+            "description": "Compose the lend (supply) transaction for 3 solvBTC referencing the appropriate Amber Finance market contract."
+        },
+        {
+            "step": 6,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the lending transaction to the Neutron network."
+        }
+    ],
+    "outcome_checks": [
+        "Validate the transaction hash is confirmed on-chain.",
+        "Query Amber Finance lending pool to confirm 3 solvBTC is now supplied under the user\u2019s address and associated cTokens (or equivalent) are credited."
+    ]
+}

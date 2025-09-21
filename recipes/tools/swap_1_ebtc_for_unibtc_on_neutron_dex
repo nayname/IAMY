@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects to the user\u2019s Keplr wallet on Neutron and returns both the signer and bech32 address that will be used for the swap.",
+            "function": "getUserAddress(chainId = 'neutron-1')",
+            "usage": "const { address, signer } = await getUserAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Checks the specified address on-chain and confirms it holds at least 1 eBTC and enough untrn for fees.",
+            "function": "validate_token_balance(address, min_offer = 1_000_000, min_fee = 50_000)",
+            "usage": "const balanceCheck = validate_token_balance(address);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Queries the on-chain DEX contract for current liquidity, price and slippage data of the eBTC / uniBTC pool.",
+            "function": "query_dex_pool(offer_denom = 'eBTC', ask_denom = 'uniBTC')",
+            "usage": "const poolInfo = query_dex_pool();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Builds a CosmWasm MsgExecuteContract that swaps exactly 1 eBTC for uniBTC with a 0.5 % max-slippage setting.",
+            "function": "constructSwapMsg({ sender, contractAddress, offerDenom = 'eBTC', offerAmount = '1000000', askDenom = 'uniBTC', maxSlippage = '0.005' })",
+            "usage": "const swapMsg = constructSwapMsg({ sender: address, contractAddress: DEX_PAIR_ADDR });"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Signs the prepared swap message with the backend wallet and broadcasts it to the Neutron network, returning the resulting transaction hash.",
+            "function": "sign_and_broadcast_tx__(execute_msg, gas = 350_000)",
+            "usage": "const { tx_hash } = sign_and_broadcast_tx__(swapMsg);"
+        }
+    ],
+    "frontend": [
+        "const { address, signer } = await getUserAddress();//step: 1 Tool: get_user_address Desciption: Obtain the wallet address that will perform the swap.",
+        "const swapMsg = constructSwapMsg({ sender: address, contractAddress: DEX_PAIR_ADDR });//step: 4 Tool: construct_swap_msg Desciption: Create the DEX `swap` execute message specifying `offer_asset: 1 eBTC`, `ask_asset: uniBTC`, and a reasonable `max_slippage`."
+    ],
+    "backend": [
+        "const balanceCheck = validate_token_balance(address);#step: 2 Tool: validate_token_balance Desciption: Ensure the address has at least 1 eBTC plus network fees.",
+        "const poolInfo = query_dex_pool();#step: 3 Tool: query_dex_pool Desciption: Retrieve pool data (liquidity, price, slippage) for the `eBTC/uniBTC` pair or optimal multi-hop route.",
+        "const { tx_hash } = sign_and_broadcast_tx__(swapMsg);#step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and submit the swap transaction."
+    ],
+    "intent": "Swap 1 eBTC for uniBTC on Neutron DEX",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_address",
+            "description": "Obtain the wallet address that will perform the swap."
+        },
+        {
+            "step": 2,
+            "tool": "validate_token_balance",
+            "description": "Ensure the address has at least 1 eBTC plus network fees."
+        },
+        {
+            "step": 3,
+            "tool": "query_dex_pool",
+            "description": "Retrieve pool data (liquidity, price, slippage) for the `eBTC/uniBTC` pair or optimal multi-hop route."
+        },
+        {
+            "step": 4,
+            "tool": "construct_swap_msg",
+            "description": "Create the DEX `swap` execute message specifying `offer_asset: 1 eBTC`, `ask_asset: uniBTC`, and a reasonable `max_slippage`."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and submit the swap transaction."
+        }
+    ],
+    "outcome_checks": [
+        "Confirm the transaction was finalized in a block.",
+        "Check that the eBTC balance decreased by ~1 eBTC (plus fees) and the uniBTC balance increased by the expected amount."
+    ]
+}

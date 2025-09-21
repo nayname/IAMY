@@ -1,0 +1,40 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Fetch the connected user\u2019s Neutron address from Keplr (or any IBC-enabled wallet injected in the browser).",
+            "code": "export const getWalletAddress = async (chainId = 'neutron-1') => {\n  // Ensure the wallet extension is available\n  if (!window.keplr) {\n    throw new Error('Keplr wallet extension is not installed.');\n  }\n\n  // Request access to the given chain from the wallet\n  await window.keplr.enable(chainId);\n\n  // Obtain the signer & the user\u2019s accounts\n  const offlineSigner = window.getOfflineSigner(chainId);\n  const accounts = await offlineSigner.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No account found in the connected wallet.');\n  }\n\n  // Return the first address (most wallets only expose one)\n  return accounts[0].address;\n};",
+            "usage": "const address = await getWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Expose a FastAPI endpoint that queries the on-chain Points smart-contract for the user\u2019s current point total.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\n\napp = FastAPI()\n\n# Network configuration (replace the RPC URL with your preferred endpoint)\nNETWORK = NetworkConfig(\n    chain_id='neutron-1',\n    url='https://rpc-kralum.neutron.org:443',\n    fee_minimum_gas_price=0,\n    fee_denomination='untrn',\n    staking_denomination='untrn',\n)\n\n# Deployed Points contract address\nCONTRACT_ADDRESS = 'neutron1yu55umrtnna36vyjvhexp6q2ktljunukzxp9vptsfnylequg7gvqrcqf42'\n\ndef _get_client():\n    \"\"\"Instantiate a LedgerClient for each request.\"\"\"\n    return LedgerClient(NETWORK)\n\n@app.get('/api/points')\nasync def get_user_points(address: str):\n    \"\"\"Return the caller's current point total from the Points contract.\"\"\"\n    try:\n        client = _get_client()\n        query_msg = {'points': {'address': address}}\n        response = client.query_contract_smart(CONTRACT_ADDRESS, query_msg)\n        # Expected shape: {'points': '12345'}\n        points = int(response.get('points', 0))\n        return {'address': address, 'points': points}\n    except Exception as err:\n        raise HTTPException(status_code=500, detail=str(err))",
+            "usage": "GET /api/points?address=${address}"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Serve campaign parameters (total allocation, phase length, per-point rate) required for reward projection. These can be hard-coded, env-driven, or queried on-chain.",
+            "code": "# This snippet lives in the same FastAPI app defined in Step 2.\nfrom fastapi import HTTPException\n\n# Campaign parameters (micro-denominated values)\nREWARD_PARAMS = {\n    'ntrn_total_allocation': 100_000_000_000,  # 100,000 NTRN (in untrn)\n    'phase_length_seconds': 60 * 60 * 24 * 14,  # 14 days\n    'per_point_rate': 1_000_000  # 1 NTRN (1e6 untrn) per point\n}\n\n@app.get('/api/reward_params')\nasync def get_reward_params():\n    \"\"\"Return constants used for reward calculations.\"\"\"\n    try:\n        return REWARD_PARAMS\n    except Exception as err:\n        raise HTTPException(status_code=500, detail=str(err))",
+            "usage": "GET /api/reward_params"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Combine the user\u2019s point total with campaign parameters to calculate a projected end-of-phase NTRN reward.",
+            "code": "# Endpoint added to the same FastAPI application\nfrom fastapi import HTTPException\n\n@app.get('/api/projection')\nasync def projected_rewards(address: str):\n    \"\"\"Compute and return projected NTRN rewards for the supplied address.\"\"\"\n    try:\n        # 1. Query the user\u2019s point total (reuse logic from Step 2)\n        client = _get_client()\n        query_msg = {'points': {'address': address}}\n        points_response = client.query_contract_smart(CONTRACT_ADDRESS, query_msg)\n        points = int(points_response.get('points', 0))\n\n        # 2. Fetch campaign parameters (from Step 3 constant)\n        per_point_rate = REWARD_PARAMS['per_point_rate']  # micro-NTRN per point\n\n        # 3. Apply multipliers (if any). For now, multiplier = 1.\n        multiplier = 1\n        projected_untrn = points * per_point_rate * multiplier\n        projected_ntrn = projected_untrn / 1_000_000  # convert micro-denom \u2192 denom\n\n        return {\n            'address': address,\n            'points': points,\n            'projected_reward_untrn': projected_untrn,\n            'projected_reward_ntrn': projected_ntrn,\n            'assumptions': {\n                **REWARD_PARAMS,\n                'multiplier': multiplier\n            }\n        }\n    except Exception as err:\n        raise HTTPException(status_code=500, detail=str(err))",
+            "usage": "GET /api/projection?address=${address}"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Call the backend projection endpoint and render a readable summary for the end-user.",
+            "code": "export const fetchProjectionAndDisplay = async (address) => {\n  try {\n    const res = await fetch(`/api/projection?address=${address}`);\n    if (!res.ok) {\n      throw new Error(`Backend responded with status ${res.status}`);\n    }\n\n    const data = await res.json();\n    const { points, projected_reward_ntrn, assumptions } = data;\n\n    const message = `With ${points} points and a per-point rate of ${assumptions.per_point_rate / 1_000_000} NTRN, you are projected to earn \u2248 ${projected_reward_ntrn} NTRN this phase.`;\n\n    // Display the message however your UI prefers. Here we log to console.\n    console.log(message);\n    return message;\n  } catch (error) {\n    console.error('Failed to fetch projection:', error);\n    return 'Unable to compute projection at this time.';\n  }\n};",
+            "usage": "const projectionMsg = await fetchProjectionAndDisplay(address);"
+        }
+    ]
+}

@@ -1,0 +1,47 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Obtains the user\u2019s Neutron address from the injected Keplr wallet. It prompts the wallet connection, pulls the first account and returns its bech32 address.",
+            "code": "export const getNeutronAddress = async () => {\n  const chainId = 'neutron-1'; // main-net chain ID\n  try {\n    if (!window?.keplr) {\n      throw new Error('Keplr wallet is not installed.');\n    }\n\n    // Request wallet connection for the chain\n    await window.keplr.enable(chainId);\n\n    // Retrieve the signer and the account list\n    const signer = window.getOfflineSigner(chainId);\n    const accounts = await signer.getAccounts();\n\n    if (!accounts.length) {\n      throw new Error('No account found inside Keplr.');\n    }\n\n    return accounts[0].address;\n  } catch (err) {\n    console.error(err);\n    throw err;\n  }\n};",
+            "usage": "const neutronAddress = await getNeutronAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Collects the Ethereum address the user wants to set as the new boost target. Implemented with a simple `prompt()` for brevity.",
+            "code": "export const getUserEvmAddressInput = () => {\n  const input = prompt('Enter the destination Ethereum (EVM) address (0x\u2026)');\n  if (!input) {\n    throw new Error('No Ethereum address supplied by user.');\n  }\n  return input.trim();\n};",
+            "usage": "const evmAddress = getUserEvmAddressInput();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Performs a basic format check to make sure the supplied string looks like a valid Ethereum address.",
+            "code": "export const validateEthereumAddress = (evmAddress) => {\n  const regex = /^0x[a-fA-F0-9]{40}$/;\n  if (!regex.test(evmAddress)) {\n    throw new Error('Invalid Ethereum address format.');\n  }\n  return true;\n};",
+            "usage": "validateEthereumAddress(evmAddress);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Constructs a `MsgExecuteContract` object that calls the Boost contract\u2019s `set_target` method with the chosen EVM address. The message is returned in canonical protobuf-ready form so it can be signed/broadcasted later.",
+            "code": "export const constructSetTargetMsg = ({\n  contractAddress,\n  senderAddress,\n  evmAddress,\n}) => {\n  // Contract-level JSON payload\n  const payload = { set_target: { evm_address: evmAddress } };\n\n  // CosmWasm execute envelope\n  return {\n    typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',\n    value: {\n      sender: senderAddress,\n      contract: contractAddress,\n      msg: Array.from(\n        new TextEncoder().encode(JSON.stringify(payload))\n      ),\n      funds: [],\n    },\n  };\n};",
+            "usage": "const message = constructSetTargetMsg({\n  contractAddress: BOOST_CONTRACT,\n  senderAddress: neutronAddress,\n  evmAddress,\n});"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Python FastAPI route that receives the message from the frontend, signs it with a server-side wallet (configured through `DEPLOYER_MNEMONIC`) via `cosmpy`, broadcasts it to Neutron and returns the resulting transaction hash.",
+            "code": "import os\nfrom typing import List\n\nfrom fastapi import APIRouter, HTTPException\nfrom pydantic import BaseModel, validator\n\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.aerial.wallet import LocalWallet\nfrom cosmpy.aerial.contract import MsgExecuteContract\nfrom cosmpy.crypto.address import Address\n\nrouter = APIRouter()\n\nRPC = os.getenv('NEUTRON_LCD_URL', 'https://rest-kralum.neutron.org')\nCHAIN_ID = os.getenv('NEUTRON_CHAIN_ID', 'neutron-1')\nGAS_PRICE = float(os.getenv('GAS_PRICE', '0.025'))  # in untrn\n\n\nclass MsgValue(BaseModel):\n    sender: str\n    contract: str\n    msg: List[int]  # UTF-8 bytes array sent by the frontend\n    funds: List[str] = []\n\n\nclass ExecutePayload(BaseModel):\n    typeUrl: str\n    value: MsgValue\n\n    @validator('typeUrl')\n    def ensure_msg_execute(cls, v):\n        if v != '/cosmwasm.wasm.v1.MsgExecuteContract':\n            raise ValueError('Only MsgExecuteContract is supported by this endpoint.')\n        return v\n\n\n@router.post('/api/set_target')\nasync def set_target(payload: ExecutePayload):\n    \"\"\"Signs and broadcasts a MsgExecuteContract built on the frontend\"\"\"\n    try:\n        # Prepare LCD/RPC client\n        config = NetworkConfig(\n            chain_id=CHAIN_ID,\n            url=RPC,\n            fee_minimum_gas_price=GAS_PRICE,\n            fee_denom='untrn',\n        )\n        client = LedgerClient(config)\n\n        # Load server wallet\n        mnemonic = os.getenv('DEPLOYER_MNEMONIC')\n        if not mnemonic:\n            raise HTTPException(500, 'DEPLOYER_MNEMONIC environment variable not set.')\n        wallet = LocalWallet.from_mnemonic(mnemonic)\n\n        # Re-create the message\n        msg_execute = MsgExecuteContract(\n            sender=Address(payload.value.sender),\n            contract=Address(payload.value.contract),\n            msg=bytes(payload.value.msg),\n            funds=[],\n        )\n\n        # Build and sign the tx\n        tx = (\n            Transaction()\n            .with_messages(msg_execute)\n            .with_chain_id(CHAIN_ID)\n            .with_sender(wallet)\n            .with_fee(gas_limit=200_000, fee_amount=5000, fee_denom='untrn')\n            .with_memo('Update boost target')\n        )\n        signed_tx = tx.sign(wallet)\n\n        # Broadcast\n        tx_response = client.broadcast_tx(signed_tx)\n        if tx_response.is_err():\n            raise HTTPException(500, f'Broadcast failed: {tx_response.tx_response.raw_log}')\n\n        return {'tx_hash': tx_response.tx_hash}\n\n    except HTTPException:\n        raise\n    except Exception as exc:\n        raise HTTPException(500, str(exc))",
+            "usage": "const res = await fetch('/api/set_target', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify(message),\n});\nconst { tx_hash } = await res.json();"
+        },
+        {
+            "step": 6,
+            "label": "frontend",
+            "introduction": "Queries the Boost contract via Neutron\u2019s public REST endpoint to verify that the `target` field now matches the supplied Ethereum address.",
+            "code": "export const queryBoostTarget = async (contractAddress) => {\n  try {\n    const queryMsg = { target: {} };\n    const encoded = btoa(JSON.stringify(queryMsg)); // base64-encode the query JSON\n\n    const endpoint = `https://rest-kralum.neutron.org/cosmwasm/wasm/v1/contract/${contractAddress}/smart/${encoded}`;\n    const resp = await fetch(endpoint);\n\n    if (!resp.ok) {\n      throw new Error(`Query failed with ${resp.status}: ${resp.statusText}`);\n    }\n\n    const result = await resp.json();\n    return result; // Expected shape: { data: { evm_address: '0x...' } }\n  } catch (err) {\n    console.error(err);\n    throw err;\n  }\n};",
+            "usage": "const targetInfo = await queryBoostTarget(BOOST_CONTRACT);\nconsole.log('Current boost target:', targetInfo);"
+        }
+    ]
+}

@@ -1,0 +1,92 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Fetches the user\u2019s bech32 address (and offline signer) from the connected Keplr / Leap wallet so we know which wallet will open the Amber position.",
+            "function": "getOfflineSignerAndAddress(chainId = 'neutron-1')",
+            "usage": "const { address, signer } = await getOfflineSignerAndAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Calls the Neutron LCD to be sure the wallet holds at least 1 maxBTC (plus a small NTRN fee balance) before proceeding.",
+            "function": "validateTokenBalance(address, options?)",
+            "usage": "await validateTokenBalance(address);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Queries Amber\u2019s smart-contract for current market parameters such as max-leverage, collateral factors and interest rates.",
+            "function": "queryAmberMarketParameters({ contract, restEndpoint } = {})",
+            "usage": "const market = await queryAmberMarketParameters();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Builds a MsgExecuteContract that tells Amber to open a 5\u00d7-leveraged position using exactly 1 maxBTC as collateral.",
+            "function": "constructOpenLeverageMsg({ sender, collateralAmount, collateralDenom, leverage, contract })",
+            "usage": "const execMsg = constructOpenLeverageMsg({ sender: address });"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Uses the signer to sign the execute message and forwards the signed bytes to the backend relayer, returning the transaction hash once broadcast.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo = '')",
+            "usage": "const txHash = await signAndBroadcast(signer, address, [execMsg], 'auto');"
+        },
+        {
+            "step": 6,
+            "label": "frontend",
+            "introduction": "Polls Amber Finance until the newly created position appears and returns its ID, borrowed amount and health-factor.",
+            "function": "queryPositionStatus({ owner, contract, restEndpoint, retries, delayMs })",
+            "usage": "const position = await queryPositionStatus({ owner: address });"
+        }
+    ],
+    "frontend": [
+        "const { address, signer } = await getOfflineSignerAndAddress();//step: 1 Tool: get_user_address Desciption: Determine the wallet initiating the leveraged position.",
+        "await validateTokenBalance(address);//step: 2 Tool: validate_token_balance Desciption: Verify the user holds at least 1 maxBTC (plus gas fees).",
+        "const market = await queryAmberMarketParameters();//step: 3 Tool: query_amber_market_parameters Desciption: Fetch Amber Finance parameters (maximum leverage allowed, collateral factors, interest rate) to ensure 5\u00d7 leverage is within limits.",
+        "const execMsg = constructOpenLeverageMsg({ sender: address });//step: 4 Tool: construct_open_leverage_msg Desciption: Generate an Amber `open_position` execute message with `{ \"collateral\": 1 maxBTC, \"leverage\": \"5x\" }`.",
+        "const txHash = await signAndBroadcast(signer, address, [execMsg], 'auto');//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the open-position transaction.",
+        "const position = await queryPositionStatus({ owner: address });//step: 6 Tool: query_position_status Desciption: Poll the Amber contract for the new position ID, borrowed amount, and health factor."
+    ],
+    "backend": [],
+    "intent": "Open a 5\u00d7 leveraged loop position with 1 maxBTC on Amber",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_address",
+            "description": "Determine the wallet initiating the leveraged position."
+        },
+        {
+            "step": 2,
+            "tool": "validate_token_balance",
+            "description": "Verify the user holds at least 1 maxBTC (plus gas fees)."
+        },
+        {
+            "step": 3,
+            "tool": "query_amber_market_parameters",
+            "description": "Fetch Amber Finance parameters (maximum leverage allowed, collateral factors, interest rate) to ensure 5\u00d7 leverage is within limits."
+        },
+        {
+            "step": 4,
+            "tool": "construct_open_leverage_msg",
+            "description": "Generate an Amber `open_position` execute message with `{ \"collateral\": 1 maxBTC, \"leverage\": \"5x\" }`."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the open-position transaction."
+        },
+        {
+            "step": 6,
+            "tool": "query_position_status",
+            "description": "Poll the Amber contract for the new position ID, borrowed amount, and health factor."
+        }
+    ],
+    "outcome_checks": [
+        "Ensure the transaction succeeded and a position ID was returned.",
+        "Validate that the position\u2019s health factor is above the liquidation threshold and leverage approximates 5\u00d7."
+    ]
+}

@@ -1,0 +1,87 @@
+{
+    "tools": [
+		{
+			"step": 0,
+			"label": "frontend",
+			"introduction": "ensureWalletConnected connects to the user’s browser wallet (Keplr/Leap) and returns an OfflineSigner, confirming the wallet is ready.",
+			"function": "ensureWalletConnected()",
+			"usage": "const signer = await ensureWalletConnected();"
+		},
+		{
+			"step": 1,
+			"label": "frontend",
+			"introduction": "getWalletAddress obtains the sender’s bech32 Neutron address from the OfflineSigner.",
+			"function": "getWalletAddress(signer)",
+			"usage": "const sender = await getWalletAddress(signer);"
+		},
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Queries the Neutron LCD to confirm the chosen address holds at least 3 eBTC.",
+            "function": "checkEbtcBalance(address, minAmountMicro = '3000000')",
+            "usage": "await checkEbtcBalance(senderAddress, '3000000')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Returns the maxBTC/eBTC Supervault contract address together with its accepted token list.",
+            "function": "query_supervault_details()",
+            "usage": "details = await query_supervault_details()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Builds an unsigned transaction that deposits exactly 3 eBTC into the Supervault obtained in step 3.",
+            "function": "construct_supervault_deposit_tx(req)",
+            "usage": "unsigned_tx = construct_supervault_deposit_tx({ 'address': sender_info['address'], 'ebtc_amount': 3000000 })"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Signs the prepared deposit transaction and broadcasts it to Neutron, returning the resulting hash.",
+            "function": "sign_and_broadcast_tx_(req)",
+            "usage": "tx_hash = await sign_and_broadcast_tx_(unsigned_tx)"
+        }
+    ],
+    "frontend": [
+        "await checkEbtcBalance(senderAddress, '3000000')//step: 2 Tool: check_token_balance Desciption: Ensure the wallet has at least 3 eBTC available on Neutron."
+    ],
+    "backend": [
+        "sender_info = get_sender_address()#step: 1 Tool: get_sender_address Desciption: Select the wallet that will perform the eBTC deposit.",
+        "details = await query_supervault_details()#step: 3 Tool: query_supervault_details Desciption: Look up the maxBTC/eBTC Supervault contract address and confirm single-sided deposits with eBTC are permissible.",
+        "unsigned_tx = construct_supervault_deposit_tx({ 'address': sender_info['address'], 'ebtc_amount': 3000000 })#step: 4 Tool: construct_supervault_deposit_tx Desciption: Build a deposit message specifying 3 eBTC as the amount and the vault address from step 3.",
+        "tx_hash = await sign_and_broadcast_tx_(unsigned_tx)#step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the deposit transaction."
+    ],
+    "intent": "Deposit 3 eBTC into the maxBTC/eBTC Supervault",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_address",
+            "description": "Select the wallet that will perform the eBTC deposit."
+        },
+        {
+            "step": 2,
+            "tool": "check_token_balance",
+            "description": "Ensure the wallet has at least 3 eBTC available on Neutron."
+        },
+        {
+            "step": 3,
+            "tool": "query_supervault_details",
+            "description": "Look up the maxBTC/eBTC Supervault contract address and confirm single-sided deposits with eBTC are permissible."
+        },
+        {
+            "step": 4,
+            "tool": "construct_supervault_deposit_tx",
+            "description": "Build a deposit message specifying 3 eBTC as the amount and the vault address from step 3."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the deposit transaction."
+        }
+    ],
+    "outcome_checks": [
+        "Verify the transaction succeeded on-chain.",
+        "Query the user\u2019s share balance in the maxBTC/eBTC Supervault to confirm receipt of new vault shares."
+    ]
+}

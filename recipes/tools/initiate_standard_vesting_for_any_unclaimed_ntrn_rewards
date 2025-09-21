@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Retrieves the connected wallet\u2019s Neutron bech32 address from the supplied OfflineSigner.",
+            "function": "getWalletAddress(signer)",
+            "usage": "const address = await getWalletAddress(signer);"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Calls the vesting contract\u2019s claimable_rewards query for the given address.",
+            "function": "query_vesting_contract(address)",
+            "usage": "const { claimable } = await query_vesting_contract(address);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Validates that the claimable reward amount is greater than zero, throwing an error otherwise.",
+            "function": "validate_claimable_amount(amount)",
+            "usage": "validate_claimable_amount(claimable);"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Builds the ExecuteMsg payload `{ start_standard_vesting: {} }` required to start vesting.",
+            "function": "construct_execute_msg()",
+            "usage": "const execMsg = construct_execute_msg();"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Signs the MsgExecuteContract with the execute message and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx___(sender_addr, execute_msg)",
+            "usage": "const result = sign_and_broadcast_tx___(address, execMsg);"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Fetches the updated vesting schedule for the address to confirm the vesting has started.",
+            "function": "query_vesting_schedule(address)",
+            "usage": "const schedule = await query_vesting_schedule(address);"
+        }
+    ],
+    "frontend": [
+        "const address = await getWalletAddress(signer);//step: 1 Tool: get_wallet_address Desciption: Identify the Neutron address that holds the unclaimed rewards."
+    ],
+    "backend": [
+        "const { claimable } = await query_vesting_contract(address);#step: 2 Tool: query_vesting_contract Desciption: Call the Vesting contract (neutron1dz57hjkdytdshl2uyde0nqvkwdww0ckx7qfe05raz4df6m3khfyqfnj0nr) for `claimable_rewards(address)`.",
+        "validate_claimable_amount(claimable);#step: 3 Tool: validate_claimable_amount Desciption: Abort if the claimable amount is zero; otherwise continue.",
+        "const execMsg = construct_execute_msg();#step: 4 Tool: construct_execute_msg Desciption: Create an ExecuteMsg `{ start_standard_vesting: {} }` on the Vesting contract.",
+        "const result = sign_and_broadcast_tx___(address, execMsg);#step: 5 Tool: sign_and_broadcast_tx Desciption: Sign the vesting start transaction and broadcast it to Neutron.",
+        "const schedule = await query_vesting_schedule(address);#step: 6 Tool: query_vesting_schedule Desciption: Fetch the new vesting schedule to confirm start and end times."
+    ],
+    "intent": "Initiate standard vesting for any unclaimed NTRN rewards",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_wallet_address",
+            "description": "Identify the Neutron address that holds the unclaimed rewards."
+        },
+        {
+            "step": 2,
+            "tool": "query_vesting_contract",
+            "description": "Call the Vesting contract (neutron1dz57hjkdytdshl2uyde0nqvkwdww0ckx7qfe05raz4df6m3khfyqfnj0nr) for `claimable_rewards(address)`."
+        },
+        {
+            "step": 3,
+            "tool": "validate_claimable_amount",
+            "description": "Abort if the claimable amount is zero; otherwise continue."
+        },
+        {
+            "step": 4,
+            "tool": "construct_execute_msg",
+            "description": "Create an ExecuteMsg `{ start_standard_vesting: {} }` on the Vesting contract."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the vesting start transaction and broadcast it to Neutron."
+        },
+        {
+            "step": 6,
+            "tool": "query_vesting_schedule",
+            "description": "Fetch the new vesting schedule to confirm start and end times."
+        }
+    ],
+    "outcome_checks": [
+        "The claimable amount in the contract is reduced to zero immediately after execution.",
+        "A new vesting schedule entry exists with the claimed amount and correct vesting cliff/period.",
+        "Transaction hash is included in a finalized block."
+    ]
+}

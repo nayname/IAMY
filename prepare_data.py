@@ -37,7 +37,8 @@ onliners = {
 
 pages = {
     # "NeutronTemplate":"data/pages/NeutronTemplate",
-    "Cron": "data/pages/Cron",
+    # "Cron": "data/pages/Cron",
+    "BTC": "data/pages/BTC",
 }
 
 synthesize_ners = open("prompts/synthesize_ners").read()
@@ -205,77 +206,90 @@ async def create_ner(session, config):
         count += 1
 
 
-async def create_actions(session, config):
-    workflow = None
+def escape(param):
+    return param.lower().replace(" ", "_").replace("'", "_").replace('"', '_').replace("\n", "_")\
+            .replace("\t", "_").replace("\r", "_").replace("/", "_").replace("\\", "_")
 
+
+async def create_actions(session, config):
     with os.scandir("data/pre_recipes") as entries:
         for entry in entries:
             if entry.is_file():  # Check if it's a file
-                if not entry.path.endswith("result.txt") and "Cron" in entry.path:
-                    with open(entry.path, 'r') as f:
-                        items = json.load(f)
+                if not entry.path.endswith("result.txt"):
+                    found = False
+                    for key in pages.keys():
+                        if key in entry.path:
+                            found = True
+                            break
 
-                    for key in items:
-                        # if action == key['intent']:
-                        workflow = key['workflow']
+                    if found:
+                        with open(entry.path, 'r') as f:
+                            items = json.load(f)
 
-                        if workflow and not os.path.exists('recipes/actions/' + key['intent']):
-                            agent = await create_graph(session, synthesize_cosmwasm)
-                            response = await agent.ainvoke({"messages": json.dumps(workflow)}, config=config)
-                            print(response["messages"][-1].content)
+                        for key in items:
+                            # if action == key['intent']:
+                            workflow = key['workflow']
 
-                            with open('recipes/actions/' + key['intent'], 'w') as f:
-                                json.dump(json.loads(response["messages"][-1].content), f, indent=4)
+                            if workflow and not os.path.exists('recipes/actions/' + escape(key['intent'])):
+                                agent = await create_graph(session, synthesize_cosmwasm)
+                                response = await agent.ainvoke({"messages": json.dumps(workflow)}, config=config)
+                                print(response["messages"][-1].content)
+
+                                with open('recipes/actions/' + escape(key['intent']), 'w') as f:
+                                    json.dump(json.loads(response["messages"][-1].content), f, indent=4)
 
 
 async def pick_tools(session, config):
     with os.scandir("data/pre_recipes") as entries:
         for entry in entries:
             if entry.is_file():  # Check if it's a file
-                if not entry.path.endswith("result.txt") and "Cron" in entry.path:
-                    with open(entry.path, 'r') as f:
-                        items = json.load(f)
+                if not entry.path.endswith("result.txt"):
+                    found = False
 
-                    for key in items:
-                        if not os.path.exists('recipes/tools/' + key['intent']) \
-                                and key['intent'] != "Connect a user’s wallet to the dApp" \
-                                and key[
-                            'intent'] != "Query the connected wallet’s NTRN balance":  #action == key['intent'] and
-                            with open("/root/neutron/IAMY/recipes/frontend.jsx", "r") as f:
-                                frontend_tools = f.read()
+                    for key in pages.keys():
+                        if key in entry.path:
+                            found = True
+                            break
 
-                            with open("/root/neutron/IAMY/recipes/backend.py", "r") as f:
-                                backend_tools = f.read()
+                    if found:
+                        with open(entry.path, 'r') as f:
+                            items = json.load(f)
 
-                            agent = await create_graph(session, synthesize_picking_functions
-                                                       .replace("*#*INPUT_JSON*#*",
-                                                                json.dumps(key['workflow'])).replace("{", "{{").replace(
-                                "}", "}}")
-                                                       .replace("*#*INTENT*#*", key['intent']))
-                            response = await agent.ainvoke({
-                                "messages": "FILE: frontend.jsx Content: " + frontend_tools + "\n\n\n FILE: backend.py Content: " + backend_tools},
-                                config=config)
+                        for key in items:
+                            if not os.path.exists('recipes/tools/' + escape(key['intent'])):  #action == key['intent'] and
+                                with open("/root/neutron/IAMY/recipes/frontend.jsx", "r") as f:
+                                    frontend_tools = f.read()
 
-                            frontend = []
-                            backend = []
-                            for l in json.loads(response["messages"][-1].content)['workflow']:
-                                for t in key['workflow']:
-                                    if t['step'] == l['step']:
-                                        d = t.copy()
-                                if l['label'] == 'frontend':
-                                    frontend.append(l['usage'] + "//step: " + str(d['step']) + " Tool: " + d[
-                                        'tool'] + " Desciption: " + d['description'])
-                                elif l['label'] == 'backend':
-                                    backend.append(l['usage'] + "#step: " + str(l['step']) + " Tool: " + d[
-                                        'tool'] + " Desciption: " + d['description'])
+                                with open("/root/neutron/IAMY/recipes/backend.py", "r") as f:
+                                    backend_tools = f.read()
 
-                            res = {"tools": json.loads(response["messages"][-1].content)['workflow'],
-                                   "frontend": frontend, "backend": backend,
-                                   "intent": key['intent'], "workflow": key['workflow'],
-                                   "outcome_checks": key['outcome_checks']}
+                                agent = await create_graph(session, synthesize_picking_functions
+                                       .replace("*#*INPUT_JSON*#*", json.dumps(key['workflow'])).replace("{", "{{")
+                                       .replace("}", "}}").replace("*#*INTENT*#*", key['intent']))
+                                response = await agent.ainvoke({
+                                    "messages": "FILE: frontend.jsx Content: " + frontend_tools + "\n\n\n FILE: backend.py Content: " + backend_tools},
+                                    config=config)
 
-                            with open('recipes/tools/' + key['intent'], 'w') as f:
-                                json.dump(res, f, indent=4)
+                                frontend = []
+                                backend = []
+                                for l in json.loads(response["messages"][-1].content)['workflow']:
+                                    for t in key['workflow']:
+                                        if t['step'] == l['step']:
+                                            d = t.copy()
+                                    if l['label'] == 'frontend':
+                                        frontend.append(l['usage'] + "//step: " + str(d['step']) + " Tool: " + d[
+                                            'tool'] + " Desciption: " + d['description'])
+                                    elif l['label'] == 'backend':
+                                        backend.append(l['usage'] + "#step: " + str(l['step']) + " Tool: " + d[
+                                            'tool'] + " Desciption: " + d['description'])
+
+                                res = {"tools": json.loads(response["messages"][-1].content)['workflow'],
+                                       "frontend": frontend, "backend": backend,
+                                       "intent": key['intent'], "workflow": key['workflow'],
+                                       "outcome_checks": key['outcome_checks']}
+
+                                with open('recipes/tools/' + escape(key['intent']), 'w') as f:
+                                    json.dump(res, f, indent=4)
 
 
 async def main(flag):

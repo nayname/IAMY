@@ -1,0 +1,40 @@
+{
+    "label": "send",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Query the Dynamic Fees module to confirm that the `uusdc` denomination is fee-eligible.",
+            "code": "/*\n * utils/fees.js\n * Checks whether a denom is present in `ntrn_prices` via the `/neutron/dynamicfees/params` REST endpoint.\n */\nexport const REST_ENDPOINT = \"https://rest-kralum.neutron-1.neutron.org\"; // Replace with your preferred REST endpoint\n\nexport const isFeeDenomEligible = async (denom = \"uusdc\", restEndpoint = REST_ENDPOINT) => {\n  try {\n    const res = await fetch(`${restEndpoint}/neutron/dynamicfees/params`);\n    if (!res.ok) throw new Error(`HTTP ${res.status}`);\n\n    const json = await res.json();\n    const prices = json?.params?.ntrn_prices ?? [];\n    const eligible = prices.some((d) => d.denom === denom);\n\n    if (!eligible) {\n      throw new Error(`${denom} is not found in ntrn_prices \u2011 it cannot be used to pay fees.`);\n    }\n\n    return {\n      eligible: true,\n      raw: json\n    };\n  } catch (err) {\n    console.error(\"Dynamic-fees query failed\", err);\n    throw err;\n  }\n};",
+            "usage": "await isFeeDenomEligible(); // throws if `uusdc` is NOT supported"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Fetch the minimum gas-price the chain requires for `uusdc` through the Global Fee module.",
+            "code": "/*\n * utils/fees.js (continued)\n * Returns the min-gas-price (as a string) for a given denom.\n */\nexport const getMinGasPrice = async (denom = \"uusdc\", restEndpoint = REST_ENDPOINT) => {\n  try {\n    const res = await fetch(`${restEndpoint}/neutron/globalfee/min_gas_prices`);\n    if (!res.ok) throw new Error(`HTTP ${res.status}`);\n\n    const json = await res.json(); // [{ denom: \"untrn\", amount: \"0.015\" }, ...]\n    const entry = (json || []).find((e) => e.denom === denom);\n    if (!entry) throw new Error(`No gas-price entry for denom ${denom}`);\n\n    return entry.amount; // string, e.g. \"0.07\"\n  } catch (err) {\n    console.error(\"Global-fee query failed\", err);\n    throw err;\n  }\n};",
+            "usage": "const minGasPrice = await getMinGasPrice(); // e.g. \"0.07\" (uusdc per gas)"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Persist the preferred fee denom (`uusdc`) in local storage so your UI or CLI wrappers can read it later.",
+            "code": "/*\n * utils/fees.js (continued)\n * Stores the chosen fee denom in `localStorage`. The UI can read this value when constructing txs.\n */\nexport const setDefaultFeeDenom = (denom = \"uusdc\") => {\n  try {\n    localStorage.setItem(\"NEUTRON_FEE_DENOM\", denom);\n  } catch (err) {\n    console.warn(\"Unable to write NEUTRON_FEE_DENOM to localStorage\", err);\n  }\n};",
+            "usage": "setDefaultFeeDenom();"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Construct and sign the next transaction with `uusdc` fees via a small FastAPI endpoint that uses `cosmpy`. The signer\u2019s private key is supplied in the request body (never expose this from the browser in production!).",
+            "code": "### backend/tx_service.py\n\"\"\"FastAPI micro-service that constructs & signs a MsgSend with `uusdc` fees.\"\"\"\n\nimport os\nfrom typing import Optional\n\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\n\nfrom cosmpy.aio.client import LedgerClient\nfrom cosmpy.crypto.keypairs import PrivateKey\nfrom cosmpy.aio.tx import Transaction\nfrom cosmpy.protos.cosmos.bank.v1beta1 import tx_pb2 as bank_tx\n\nRPC_ENDPOINT = os.getenv(\"NEUTRON_RPC\", \"https://rpc.neutron.org:443\")\nCHAIN_ID = os.getenv(\"NEUTRON_CHAIN_ID\", \"neutron-1\")\n\napp = FastAPI(title=\"Neutron Tx Service\")\n\nclass ConstructTxRequest(BaseModel):\n    sender_privkey_hex: str      # hex-encoded secp256k1 private key\n    recipient: str              # Bech32 address\n    amount: int                 # in micro-denom (e.g., 1_000_000 = 1 UNTRN)\n    amount_denom: str = \"untrn\"  # asset you are sending\n    fee_amount: int             # must be >= Step-2 minGasPrice * gasLimit\n    fee_denom: str = \"uusdc\"\n    gas_limit: int = 200000\n\nclass ConstructTxResponse(BaseModel):\n    signed_tx_hex: str\n\n@app.post(\"/tx/construct-sign\", response_model=ConstructTxResponse)\nasync def construct_and_sign(req: ConstructTxRequest):\n    try:\n        # Restore private key & derive sender address\n        pk = PrivateKey(bytes.fromhex(req.sender_privkey_hex))\n        sender_addr = pk.public_key().address()\n\n        client = LedgerClient(RPC_ENDPOINT)\n        onchain_account = await client.query_account(sender_addr)\n\n        # ----- Build bank MsgSend -----\n        send_msg = bank_tx.MsgSend(\n            from_address=sender_addr,\n            to_address=req.recipient,\n            amount=[{\"denom\": req.amount_denom, \"amount\": str(req.amount)}],\n        )\n\n        # ----- Create Tx wrapper -----\n        tx = Transaction()\n        tx.add_message(send_msg)\n        tx.with_sequence(onchain_account.sequence)\n        tx.with_account_num(onchain_account.account_number)\n        tx.with_chain_id(CHAIN_ID)\n        tx.with_gas(req.gas_limit)\n        tx.with_fee(req.fee_amount, req.fee_denom)\n\n        signed_tx = tx.get_tx_data(pk)\n        return {\"signed_tx_hex\": signed_tx.hex()}\n\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "POST /tx/construct-sign with JSON:\n{\n  \"sender_privkey_hex\": \"<hex-key>\",\n  \"recipient\": \"neutron1...\",\n  \"amount\": 1000000,\n  \"fee_amount\": 14000\n}\n// Response => { \"signed_tx_hex\": \"abcd...\" }"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Broadcast the previously signed transaction and wait for inclusion in a block.",
+            "code": "### backend/tx_service.py (continued)\nfrom cosmpy.aio.client import TxCommitError\n\nclass BroadcastRequest(BaseModel):\n    signed_tx_hex: str\n\nclass BroadcastResponse(BaseModel):\n    tx_hash: str\n    height: Optional[int] = None\n\n@app.post(\"/tx/broadcast\", response_model=BroadcastResponse)\nasync def broadcast_signed_tx(req: BroadcastRequest):\n    try:\n        client = LedgerClient(RPC_ENDPOINT)\n        tx_bytes = bytes.fromhex(req.signed_tx_hex)\n        res = await client.broadcast_tx_sync(tx_bytes)\n\n        if res.code != 0:\n            raise TxCommitError(f\"Tx failed: code={res.code} log={res.raw_log}\")\n\n        return {\"tx_hash\": res.txhash, \"height\": res.height}\n\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "POST /tx/broadcast with JSON: { \"signed_tx_hex\": \"abcd...\" }\n// Response => { \"tx_hash\": \"0xF00...\", \"height\": 123456 }"
+        }
+    ]
+}

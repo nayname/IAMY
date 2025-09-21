@@ -1,0 +1,40 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects the user\u2019s Keplr wallet to Neutron and returns the bech32 address that will initiate the swap.",
+            "code": "export const getUserAddress = async () => {\n  const chainId = 'neutron-1'; // change to testnet ID if needed\n\n  // 1. Make sure Keplr is available\n  if (!window.keplr) {\n    throw new Error('Keplr wallet extension is not installed.');\n  }\n\n  // 2. Ask Keplr to enable the requested chain\n  await window.keplr.enable(chainId);\n\n  // 3. Obtain the offline signer\n  const offlineSigner = window.keplr.getOfflineSigner(chainId);\n  const accounts = await offlineSigner.getAccounts();\n\n  // 4. Basic safety check\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No account detected in Keplr.');\n  }\n\n  // 5. Return the first available address\n  return accounts[0].address; // e.g. neutron1...\n};",
+            "usage": "const myAddress = await getUserAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the Bank module to make sure the address holds at least 1 eBTC and enough NTRN to pay fees.",
+            "code": "import os\nimport requests\n\nREST_ENDPOINT = os.getenv('NEUTRON_REST', 'https://rest.neutron.org')\n\n\ndef validate_token_balance(address: str, min_offer: int = 1_000_000, min_fee: int = 50_000) -> dict:\n    \"\"\"Verify that `address` owns\n    \u00b7 `min_offer` micro-eBTC (1 eBTC = 1_000_000 micro-eBTC)\n    \u00b7 `min_fee`  micro-NTRN for network fees.\n    Returns `{valid: True}` on success or `{valid: False, error: '...'}` otherwise.\n    \"\"\"\n    offer_denom = 'eBTC'\n    fee_denom = 'untrn'\n    try:\n        url = f\"{REST_ENDPOINT}/cosmos/bank/v1beta1/balances/{address}\"\n        resp = requests.get(url, timeout=10)\n        resp.raise_for_status()\n        balances = resp.json().get('balances', [])\n\n        def amount_of(denom: str) -> int:\n            for coin in balances:\n                if coin.get('denom') == denom:\n                    return int(coin.get('amount', '0'))\n            return 0\n\n        if amount_of(offer_denom) < min_offer:\n            raise ValueError('Insufficient eBTC balance.')\n        if amount_of(fee_denom) < min_fee:\n            raise ValueError('Insufficient untrn balance for fees.')\n\n        return {\"valid\": True}\n    except Exception as err:\n        return {\"valid\": False, \"error\": str(err)}",
+            "usage": "GET /api/validate_balance?address=<MY_ADDRESS>  \u279c  returns { valid: true } or an error payload"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Fetches pool information (liquidity, current price, etc.) for the eBTC/uniBTC pair from the DEX pair contract.",
+            "code": "import os\nimport json\nimport base64\nimport requests\n\nREST_ENDPOINT = os.getenv('NEUTRON_REST', 'https://rest.neutron.org')\nPAIR_CONTRACT = os.getenv('PAIR_CONTRACT', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')  # <-- replace with real pair address\n\n\ndef query_dex_pool(offer_denom: str = 'eBTC', ask_denom: str = 'uniBTC') -> dict:\n    \"\"\"Returns raw pool data for the requested trading pair.\"\"\"\n    query_msg = {\n        \"pool\": {\n            \"pair\": {\n                \"asset_infos\": [\n                    {\"native_token\": {\"denom\": offer_denom}},\n                    {\"native_token\": {\"denom\": ask_denom}}\n                ]\n            }\n        }\n    }\n\n    try:\n        b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()\n        url = f\"{REST_ENDPOINT}/cosmwasm/wasm/v1/contract/{PAIR_CONTRACT}/smart/{b64}\"\n        resp = requests.get(url, timeout=10)\n        resp.raise_for_status()\n        return resp.json()  # contains liquidity, price, etc.\n    except Exception as err:\n        return {\"error\": str(err)}",
+            "usage": "GET /api/pool_data?offer=eBTC&ask=uniBTC  \u279c  JSON pool metrics"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Creates the MsgExecuteContract payload for the swap (1 eBTC \u2192 uniBTC) including a configurable maximum slippage.",
+            "code": "export const constructSwapMsg = ({\n  sender,\n  contractAddress,\n  offerDenom = 'eBTC',\n  offerAmount = '1000000', // 1 eBTC in micro-units\n  askDenom = 'uniBTC',\n  maxSlippage = '0.005' // 0.5%\n}) => {\n  // Astroport-style swap execute message\n  const execMsg = {\n    swap: {\n      offer_asset: {\n        info: { native_token: { denom: offerDenom } },\n        amount: offerAmount\n      },\n      max_slippage: maxSlippage\n    }\n  };\n\n  // Construct the protobuf-ready envelope that cosmpy will later consume\n  return {\n    typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',\n    value: {\n      sender,\n      contract: contractAddress,\n      msg: btoa(JSON.stringify(execMsg)), // base64-encoded JSON for CosmWasm\n      funds: [\n        { denom: offerDenom, amount: offerAmount }\n      ]\n    }\n  };\n};",
+            "usage": "const swapMsg = constructSwapMsg({ sender: myAddress, contractAddress: PAIR_CONTRACT });"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Signs the MsgExecuteContract with a server-side key (MNEMONIC env-var) and broadcasts the swap transaction.",
+            "code": "import os\nimport json\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import LocalWallet\nfrom cosmpy.aerial.tx import Transaction\n\nRPC_ENDPOINT = os.getenv('NEUTRON_RPC', 'https://rpc.neutron.org')\nCHAIN_ID = os.getenv('CHAIN_ID', 'neutron-1')\nFEE_DENOM = 'untrn'\n\n\ndef sign_and_broadcast_tx(execute_msg: dict, gas: int = 350_000) -> dict:\n    \"\"\"Takes the `execute_msg` produced in Step 4, signs it, broadcasts it, and returns the tx hash.\"\"\"\n\n    # 1. Load the server wallet\n    mnemonic = os.getenv('MNEMONIC')\n    if not mnemonic:\n        raise EnvironmentError('MNEMONIC environment variable is missing.')\n    wallet = LocalWallet(mnemonic)\n\n    # 2. Create a network client\n    cfg = NetworkConfig(\n        chain_id=CHAIN_ID,\n        url=RPC_ENDPOINT,\n        fee_denomination=FEE_DENOM,\n        gas_prices=0.025,\n        gas_multiplier=1.2,\n    )\n    client = LedgerClient(cfg)\n\n    # 3. Build the transaction\n    tx = (\n        Transaction()\n        .with_messages(execute_msg)\n        .with_sequence(client.get_sequence(wallet.address()))\n        .with_account_num(client.get_number(wallet.address()))\n        .with_chain_id(cfg.chain_id)\n        .with_gas(gas)\n        .with_fee(gas_price=cfg.gas_prices, denom=FEE_DENOM)\n    )\n\n    # 4. Sign and broadcast\n    signed_tx = wallet.sign_transaction(tx)\n    tx_bytes = signed_tx.serialize()\n    result = client.broadcast_tx(tx_bytes)\n\n    # 5. Return tx hash and raw log for convenience\n    return {\n        'tx_hash': result.tx_hash if hasattr(result, 'tx_hash') else result,\n        'raw_log': getattr(result, 'raw_log', '')\n    }",
+            "usage": "POST /api/execute_swap  with JSON body `{ \"execute_msg\": swapMsg }`  \u279c  receives `{ tx_hash: '...', raw_log: '...' }`"
+        }
+    ]
+}

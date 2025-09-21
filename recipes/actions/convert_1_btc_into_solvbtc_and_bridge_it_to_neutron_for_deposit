@@ -1,0 +1,61 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Acquire the Bitcoin source address from the user. First we try to connect to a browser wallet (e.g. Unisat); if that fails we fall back to a manual prompt.",
+            "code": "export const getBTCWalletAddress = async () => {\n  // Attempt to connect to Unisat (or any extension that injects `window.unisat`)\n  if (window.unisat && typeof window.unisat.requestAccounts === 'function') {\n    try {\n      const accounts = await window.unisat.requestAccounts();\n      if (accounts && accounts.length > 0) {\n        return accounts[0];\n      }\n    } catch (err) {\n      console.error('Failed to fetch address from Unisat:', err);\n    }\n  }\n\n  // Fallback: ask user to type it in\n  const address = prompt('Please enter the Bitcoin address that will fund 1 BTC:');\n  if (!address || address.trim() === '') {\n    throw new Error('A valid Bitcoin address is required.');\n  }\n  return address.trim();\n};",
+            "usage": "const btcAddress = await getBTCWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Request a unique SolvBTC gateway deposit address that is linked to the user\u2019s EVM wallet. Implemented as a FastAPI route that proxies Solv\u2019s public API.",
+            "code": "# backend/routes/solvbtc.py\nfrom fastapi import APIRouter, HTTPException\nimport httpx\nimport os\n\nrouter = APIRouter()\nSOLV_GATEWAY_URL = os.getenv('SOLV_GATEWAY_URL', 'https://api.solv.finance/solvbtc')\n\n@router.post('/api/solvbtc/deposit-address')\nasync def generate_deposit_address(payload: dict):\n    \"\"\"\n    Obtain a unique solvBTC deposit address bound to the user\u2019s EVM address.\n    \"\"\"\n    evm_address = payload.get('evm_address')\n    if not evm_address:\n        raise HTTPException(status_code=400, detail='`evm_address` field is required.')\n\n    async with httpx.AsyncClient() as client:\n        try:\n            resp = await client.post(f'{SOLV_GATEWAY_URL}/deposit-address', json={'evm_address': evm_address})\n            resp.raise_for_status()\n            data = resp.json()\n            return {'deposit_address': data['deposit_address']}\n        except httpx.HTTPError as exc:\n            raise HTTPException(status_code=502, detail=f'SolvBTC gateway error: {exc}')",
+            "usage": "const { deposit_address } = await fetch('/api/solvbtc/deposit-address', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ evm_address }),\n}).then(res => res.json());"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Build and sign a raw Bitcoin transaction that sends exactly 1 BTC to the SolvBTC deposit address. Uses the `bit` Python library and expects a WIF key (handle securely!).",
+            "code": "# backend/routes/btc_tx.py\nfrom fastapi import APIRouter, HTTPException\nfrom pydantic import BaseModel, validator\nfrom decimal import Decimal\nfrom bit import PrivateKey\n\nrouter = APIRouter()\n\nclass ConstructTxPayload(BaseModel):\n    wif: str\n    destination: str\n    fee_sat_per_byte: int = 10\n\n    @validator('fee_sat_per_byte')\n    def fee_positive(cls, v):\n        if v <= 0:\n            raise ValueError('fee_sat_per_byte must be positive')\n        return v\n\n@router.post('/api/btc/construct-tx')\ndef construct_and_sign_btc_tx(payload: ConstructTxPayload):\n    \"\"\"\n    Build & sign a Bitcoin transaction for 1 BTC (100 000 000 sats). Returns raw hex.\n    WARNING: The WIF is sensitive; keep this endpoint protected.\n    \"\"\"\n    try:\n        pk = PrivateKey(payload.wif)\n        outputs = [(payload.destination, Decimal('1'), 'btc')]  # 1 BTC exactly\n        raw_tx_hex = pk.create_transaction(outputs, fee=payload.fee_sat_per_byte)\n        return {'raw_tx_hex': raw_tx_hex}\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "const { raw_tx_hex } = await fetch('/api/btc/construct-tx', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ wif, destination: deposit_address }),\n}).then(res => res.json());"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Broadcast the previously signed raw transaction to the Bitcoin network via Blockstream\u2019s public REST API and return its TXID.",
+            "code": "# backend/routes/btc_broadcast.py\nfrom fastapi import APIRouter, HTTPException\nimport httpx\n\nrouter = APIRouter()\n\n@router.post('/api/btc/broadcast')\nasync def broadcast_btc_tx(payload: dict):\n    \"\"\"Broadcast raw BTC TX and return the resulting txid.\"\"\"\n    raw_tx_hex = payload.get('raw_tx_hex')\n    if not raw_tx_hex:\n        raise HTTPException(status_code=400, detail='raw_tx_hex is required.')\n\n    try:\n        async with httpx.AsyncClient() as client:\n            resp = await client.post('https://blockstream.info/api/tx', content=raw_tx_hex)\n            resp.raise_for_status()\n            txid = resp.text.strip()\n            return {'txid': txid}\n    except httpx.HTTPError as exc:\n        raise HTTPException(status_code=502, detail=f'Broadcast error: {exc}')",
+            "usage": "const { txid } = await fetch('/api/btc/broadcast', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ raw_tx_hex }),\n}).then(res => res.json());"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Poll the Bitcoin network until the transaction achieves the Solv-required confirmation threshold (default 6).",
+            "code": "# backend/routes/btc_confirm.py\nimport asyncio\nimport httpx\nfrom fastapi import APIRouter, HTTPException\n\nrouter = APIRouter()\n\n@router.get('/api/btc/confirmations/{txid}')\nasync def wait_for_confirmations(txid: str, required: int = 6, poll_seconds: int = 60):\n    \"\"\"Wait until `required` confirmations are reached.\"\"\"\n    url = f'https://blockstream.info/api/tx/{txid}'\n    async with httpx.AsyncClient() as client:\n        while True:\n            try:\n                resp = await client.get(url)\n                resp.raise_for_status()\n                data = resp.json()\n                confirmations = data.get('status', {}).get('confirmations', 0)\n                if confirmations >= required:\n                    return {'txid': txid, 'confirmations': confirmations, 'status': 'confirmed'}\n                await asyncio.sleep(poll_seconds)\n            except httpx.HTTPError as exc:\n                raise HTTPException(status_code=502, detail=f'Explorer error: {exc}')",
+            "usage": "const confirmationInfo = await fetch(`/api/btc/confirmations/${txid}?required=6`).then(r => r.json());"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "After 6 confirmations, submit a proof to Solv\u2019s Ethereum contract to mint 1 solvBTC ERC-20.",
+            "code": "# backend/routes/solvbtc_mint.py\nfrom fastapi import APIRouter, HTTPException\nfrom web3 import Web3\nimport json, os\n\nrouter = APIRouter()\n\nETH_RPC_URL = os.getenv('ETH_RPC_URL')\nMINT_CONTRACT_ADDRESS = os.getenv('SOLV_MINT_CONTRACT_ADDRESS')\nBACKEND_PRIVATE_KEY = os.getenv('ETH_PRIVATE_KEY')\n\n# Load minimal ABI containing the `mint` function\nwith open('SolvBTCMintABI.json') as f:\n    MINT_ABI = json.load(f)\n\n@router.post('/api/solvbtc/mint')\ndef attest_and_mint(payload: dict):\n    btc_txid = payload.get('btc_txid')\n    btc_destination = payload.get('btc_destination')\n    evm_address = payload.get('evm_address')\n    if not all([btc_txid, btc_destination, evm_address]):\n        raise HTTPException(status_code=400, detail='btc_txid, btc_destination, and evm_address are required.')\n\n    try:\n        w3 = Web3(Web3.HTTPProvider(ETH_RPC_URL))\n        acct = w3.eth.account.from_key(BACKEND_PRIVATE_KEY)\n        contract = w3.eth.contract(address=Web3.to_checksum_address(MINT_CONTRACT_ADDRESS), abi=MINT_ABI)\n        tx = contract.functions.mint(btc_txid, btc_destination, evm_address).build_transaction({\n            'from': acct.address,\n            'nonce': w3.eth.get_transaction_count(acct.address),\n            'gas': 500000,\n            'gasPrice': w3.to_wei('30', 'gwei'),\n        })\n        signed_tx = acct.sign_transaction(tx)\n        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)\n        return {'eth_tx_hash': tx_hash.hex()}\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "const { eth_tx_hash } = await fetch('/api/solvbtc/mint', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ btc_txid: txid, btc_destination: deposit_address, evm_address }),\n}).then(res => res.json());"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Initiate a bridge transfer of 1 solvBTC from Ethereum to Neutron via Axelar Gateway. Returns the cross-chain transaction hash.",
+            "code": "# backend/routes/bridge.py\nfrom fastapi import APIRouter, HTTPException\nimport httpx\n\nrouter = APIRouter()\nAXELAR_GATEWAY_URL = 'https://axelar-api.ping.pub'  # Example public REST endpoint\n\n@router.post('/api/bridge/solvbtc')\nasync def bridge_to_neutron(payload: dict):\n    evm_tx_hash = payload.get('eth_tx_hash')\n    neutron_address = payload.get('neutron_address')\n    amount_wei = payload.get('amount_wei', '1000000000000000000')  # 1 solvBTC (18 decimals)\n    if not all([evm_tx_hash, neutron_address]):\n        raise HTTPException(status_code=400, detail='eth_tx_hash and neutron_address are required.')\n\n    request_body = {\n        'source_chain': 'Ethereum',\n        'destination_chain': 'Neutron',\n        'asset': 'solvBTC',\n        'amount': amount_wei,\n        'destination_address': neutron_address,\n        'deposit_tx_hash': evm_tx_hash,\n    }\n\n    async with httpx.AsyncClient() as client:\n        try:\n            resp = await client.post(f'{AXELAR_GATEWAY_URL}/transfer', json=request_body)\n            resp.raise_for_status()\n            data = resp.json()\n            return {'axelar_tx_hash': data['tx_hash']}\n        except httpx.HTTPError as exc:\n            raise HTTPException(status_code=502, detail=f'Axelar error: {exc}')",
+            "usage": "const { axelar_tx_hash } = await fetch('/api/bridge/solvbtc', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ eth_tx_hash, neutron_address, amount_wei: '1000000000000000000' }),\n}).then(res => res.json());"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Query the user\u2019s Neutron wallet to confirm the receipt of the solvBTC IBC voucher.",
+            "code": "# backend/routes/neutron_balance.py\nfrom fastapi import APIRouter, HTTPException\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nimport os\n\nrouter = APIRouter()\nNEUTRON_RPC = os.getenv('NEUTRON_RPC', 'https://rpc-palvus.neutron.org')\nIBC_DENOM_SOLVBTC = os.getenv('IBC_DENOM_SOLVBTC', 'ibc/xxxxxxxxxxxxxxxxxxxxxxxx')\n\nnetwork_cfg = NetworkConfig(\n    chain_id='neutron-1',\n    url=NEUTRON_RPC,\n    fee_denomination='untrn',\n    staking_denomination='untrn',\n    fee_minimum_gas_price=0,\n)\n\n@router.get('/api/neutron/balance/{address}')\ndef query_balance(address: str):\n    \"\"\"Return solvBTC voucher balance on Neutron.\"\"\"\n    try:\n        client = LedgerClient(network_cfg)\n        balance = client.query_bank_balance(address, denom=IBC_DENOM_SOLVBTC)\n        return {'address': address, 'solvbtc_balance': str(balance.amount)}\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "const balance = await fetch(`/api/neutron/balance/${neutron_address}`).then(r => r.json());"
+        }
+    ]
+}

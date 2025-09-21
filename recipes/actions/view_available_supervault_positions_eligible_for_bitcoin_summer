@@ -1,0 +1,40 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 connects to the user\u2019s Keplr wallet (or any compatible browser wallet) and returns the Neutron address that owns Supervault positions.",
+            "code": "export const getUserAddress = async () => {\n  const chainId = 'neutron-1';\n\n  // Ensure a wallet is injected\n  if (!window.keplr) {\n    throw new Error('Keplr wallet is not installed.');\n  }\n\n  // Ask the wallet to enable the Neutron chain (prompts user if needed)\n  await window.keplr.enable(chainId);\n\n  // Retrieve an OfflineSigner for read-only or signing purposes\n  const signer = window.getOfflineSigner(chainId);\n  const accounts = await signer.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No account found in the connected wallet.');\n  }\n\n  // Return the Bech32 Neutron address\n  return accounts[0].address;\n};",
+            "usage": "const userAddress = await getUserAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 retrieves the Supervault contract address. In most dApps this is a constant, but you could extend this to query an on-chain registry.",
+            "code": "export const getSupervaultContractAddress = () => {\n  // TODO: Replace the placeholder with the real Supervault address\n  const CONTRACT_ADDRESS = 'neutron1supervaultcontractaddressxxx';\n\n  if (!CONTRACT_ADDRESS || !CONTRACT_ADDRESS.startsWith('neutron')) {\n    throw new Error('Invalid or missing Supervault contract address configuration.');\n  }\n\n  return CONTRACT_ADDRESS;\n};",
+            "usage": "const contractAddress = getSupervaultContractAddress();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 defines a FastAPI endpoint that queries the Supervault smart contract for all positions owned by the supplied user address. It relies on cosmpy, keeping heavy SDK logic off the frontend.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\n\napp = FastAPI()\n\nclass PositionsRequest(BaseModel):\n    user_address: str\n    contract_address: str\n\n@app.post('/api/supervault/positions')\nasync def supervault_positions(req: PositionsRequest):\n    \"\"\"Query Supervault for user positions via WASM smart-contract call.\"\"\"\n    try:\n        # Public Neutron main-net endpoints (no secrets required)\n        cfg = NetworkConfig(\n            chain_id='neutron-1',\n            lcd_url='https://rest-kralum.neutron-1.neutron.org',\n            grpc_url='grpc://grpc-kralum.neutron-1.neutron.org:443'\n        )\n\n        client = LedgerClient(cfg)\n\n        query_msg = {\n            'positions_by_user': {\n                'address': req.user_address\n            }\n        }\n\n        # Perform the query against Supervault\n        positions = client.query_contract(\n            contract_address=req.contract_address,\n            query=query_msg\n        )\n\n        return {'positions': positions}\n\n    except Exception as e:\n        # Always wrap low-level errors so the frontend gets a clean message\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "const res = await fetch('/api/supervault/positions', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({\n    user_address: userAddress,\n    contract_address: contractAddress\n  })\n});\nconst { positions } = await res.json();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 filters the raw position list so that only positions eligible for the \u201cBitcoin Summer\u201d campaign are kept.",
+            "code": "export const filterPositionsByCampaign = (positions, campaignName = 'Bitcoin Summer') => {\n  if (!Array.isArray(positions)) {\n    throw new Error('Expected positions to be an array.');\n  }\n\n  return positions.filter((position) => {\n    const campaigns = position.eligible_campaigns || [];\n    return campaigns.includes(campaignName);\n  });\n};",
+            "usage": "const bitcoinSummerPositions = filterPositionsByCampaign(positions);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Step 5 renders the filtered positions in a simple React component so the user can see their position ID, deposit amount, and rewards status.",
+            "code": "import React from 'react';\n\nexport const PositionsTable = ({ positions }) => {\n  if (!positions || positions.length === 0) {\n    return <p>No Bitcoin Summer positions found.</p>;\n  }\n\n  return (\n    <table style={{ width: '100%', borderCollapse: 'collapse' }}>\n      <thead>\n        <tr>\n          <th style={{ borderBottom: '1px solid #ccc' }}>Position ID</th>\n          <th style={{ borderBottom: '1px solid #ccc' }}>Deposit Amount</th>\n          <th style={{ borderBottom: '1px solid #ccc' }}>Rewards Status</th>\n        </tr>\n      </thead>\n      <tbody>\n        {positions.map((p) => (\n          <tr key={p.position_id}>\n            <td style={{ padding: '4px 8px' }}>{p.position_id}</td>\n            <td style={{ padding: '4px 8px' }}>{p.deposit_amount}</td>\n            <td style={{ padding: '4px 8px' }}>{p.rewards_status}</td>\n          </tr>\n        ))}\n      </tbody>\n    </table>\n  );\n};",
+            "usage": "<PositionsTable positions={bitcoinSummerPositions} />"
+        }
+    ]
+}

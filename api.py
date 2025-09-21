@@ -28,13 +28,15 @@ from sympy.strategies.core import switch
 
 from create import generate_code, glue
 from ner.inference import NERExtractor
+from prepare_data import escape
 from recipes.backend import extract_code_id_from_tx, select_data_provider, build_history_query, execute_query_request, \
     normalize_tx_results, open_celatone_explorer, search_contract_address, navigate_to_metadata_tab, \
     download_metadata_json, query_contract_info, query_code_info, extract_code_hash, query_bank_balance, \
     connect_rpc_endpoint, neutrond_status, extract_block_height, build_msg_delete_schedule, query_cron_schedule, \
     query_all_cron_schedules, query_cron_params, build_msg_add_schedule, build_dao_proposal, construct_update_admin_tx, \
-    get_admin_wallet, get_contract_address, construct_tx_execute_contract, query_contracts_by_creator, \
-    fetch_all_contracts_by_creator
+    get_admin_wallet, get_contract_address, query_contracts_by_creator, \
+    extract_last_execution_height, amber_positions, query_supervault_details, construct_supervault_deposit_tx, \
+    sign_and_broadcast_tx_
 
 
 # --- Placeholder for your generation logic ---
@@ -303,7 +305,7 @@ async def handle_generate(request_data: GenerateRequest):
 
     ensure_cosmopark_installed()
 
-    return JSONResponse(content=response_data)
+    return JSONResponse(content=state)
     # return templates.TemplateResponse("table.html", {"request": request, "table": map})
 
 
@@ -334,10 +336,10 @@ def fill_queries():
         for entry in entries:
             if entry.is_file():  # Check if it's a file
                 # if entry.name == "Withdraw 50 NTRN from the smart contract":
-                    res[entry.name] = {}
                     with open(entry, "r") as f:
                         data = json.load(f)
-                    res[entry.name]["workflow"] = []
+                    res[data['intent']] = {"workflow":[]}
+
                     for tool in data['tools']:
                         code = ""
                         # print("def "+tool["function"][:tool["function"].find("(")]+"(", "export const "+tool["function"][:tool["function"].find("(")])
@@ -345,7 +347,7 @@ def fill_queries():
                             if (tool["function"] in key or key in tool["function"]) and ("def "+tool["function"][:tool["function"].find("(")]+"(" in value
                                                             or "export const "+tool["function"][:tool["function"].find("(")] in value):
                                     code = value
-                        res[entry.name]["workflow"].append({"type": tool["label"].title(), "tool": tool["function"][:tool["function"].find("(")],
+                        res[data['intent']]["workflow"].append({"type": tool["label"].title(), "tool": tool["function"][:tool["function"].find("(")],
                                                             "description": tool["introduction"], "code": code})
 
                     with os.scandir("recipes/actions") as entries1:
@@ -353,7 +355,7 @@ def fill_queries():
                             if entry1.name == entry.name:
                                 with open(entry1, "r") as f:
                                     data1 = json.load(f)
-                                res[entry.name]["label"] = data1["label"].title()
+                                res[data['intent']]["label"] = data1["label"].title()
 
 
 
@@ -370,15 +372,15 @@ async def generate_reponse(request_data: Request):
     queries = fill_queries()
 
     if input_text in queries:
-        print( {
-            "label": queries[input_text]["label"],
-            "params": glue(ner_),
-            "workflow": queries[input_text]["workflow"]
-        })
         return {
             "label": queries[input_text]["label"],
-            "params": glue(ner_),
+            # "params": glue(ner_),
             "workflow": queries[input_text]["workflow"]
+        }
+    elif escape(input_text) in queries:
+        return {
+            "label": queries[escape(input_text)]["label"],
+            "workflow": queries[escape(input_text)]["workflow"]
         }
     else:
         return {"label": "Others", "params": glue(ner_), "workflow": "undef"}
@@ -410,6 +412,15 @@ async def handle_generate(request_data: Request):
         case "List all existing cron schedules":
             metadata = query_all_cron_schedules()  # step: 1 Tool: query_cron_show_schedule Desciption: Run `neutrond query cron show-schedule protocol_update` to fetch the schedule's full metadata.
             return JSONResponse(content=metadata)
+        case "Query the cron schedule named \"dasset-updator\"":
+            res = []
+            schedule = query_cron_schedule("dasset-updator")#step: 1 Tool: query_cron_schedule Desciption: Invoke `neutrond query cron schedule daily_maintenance` (or REST `/neutron/cron/schedule/daily_maintenance`).",
+            res.append("Schedule: " + json.dumps(schedule))
+
+            last_height = extract_last_execution_height(schedule)#step: 2 Tool: parse_json_response Desciption: Parse the returned schedule details: `name`, `period`, `msgs`, `last_execution_height`."
+            res.append("Last execution height: " + str(last_height))
+
+            return JSONResponse(content=res)
         case "Remove the existing schedule named protocol_update":
             res = []
             authority_addr = query_cron_params()["security_address"]#step: 1 Tool: get_dao_authority_address Desciption: Fetch the Main DAO authority address (required to delete schedules).",
@@ -453,8 +464,24 @@ async def handle_generate(request_data: Request):
             res.append("latest_height: " + str(latest_height))
 
             return JSONResponse(content=res)
+        case "Check my health factor on Amber Finance":
+            positions = await amber_positions(req["address"])  # step: 6 Tool: query_bank_balance Desciption: After confirmation, re-query the user\u2019s bank balance to reflect the incoming 50 NTRN."
+            return JSONResponse(content=positions)
+        case "Deposit 3 eBTC into the maxBTC/eBTC Supervault":
+            res = []
+            details = await query_supervault_details()  # step: 3 Tool: query_supervault_details Desciption: Look up the maxBTC/eBTC Supervault contract address and confirm single-sided deposits with eBTC are permissible.",
+            res.append("Supervault details: " + json.dumps(details))
 
-    # case _:
+            unsigned_tx = construct_supervault_deposit_tx({'address': req['address'], 'wbtc_amount': 3000000, 'usdc_amount': 0})  # step: 4 Tool: construct_supervault_deposit_tx Desciption: Build a deposit message specifying 3 eBTC as the amount and the vault address from step 3.",
+            res.append("Unsigned_tx: " + json.dumps(unsigned_tx))
+
+            tx_hash = await sign_and_broadcast_tx_(unsigned_tx)  # step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the deposit transaction."
+            res.append("Tx_hash: " + json.dumps(tx_hash))
+
+            return JSONResponse(content=res)
+
+
+# case _:
         #     # Default case (optional), executed if no other pattern matches
         # Call your generation logic
     # response_data = generate_code(input_text)

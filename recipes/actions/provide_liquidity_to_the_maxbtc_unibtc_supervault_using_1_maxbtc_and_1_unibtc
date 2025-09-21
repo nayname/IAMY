@@ -1,0 +1,40 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 makes sure the user\u2019s Keplr wallet is connected to the Neutron network and returns the active signer and address.",
+            "code": "export const connectWalletAndGetAddress = async () => {\n  const chainId = 'neutron-1';\n  const keplr = window.keplr;\n\n  if (!keplr) {\n    throw new Error('Keplr wallet is not installed.');\n  }\n\n  // Request wallet connection if it has not yet been approved\n  await keplr.enable(chainId);\n\n  // Get the offline-signer injected by Keplr\n  const signer = window.getOfflineSigner(chainId);\n  const accounts = await signer.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No account found in the wallet.');\n  }\n\n  return { signer, address: accounts[0].address };\n};",
+            "usage": "const { address } = await connectWalletAndGetAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 provides a FastAPI route that verifies the caller holds at least 1 maxBTC and 1 uniBTC by querying both CW-20 token contracts.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport os\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\n# ----------  Chain / network configuration  ----------\nNEUTRON_LCD = os.getenv('NEUTRON_LCD', 'https://lcd-kralum.neutron.org')\nNETWORK = NetworkConfig(\n    chain_id='neutron-1',\n    url=NEUTRON_LCD,\n    fee_minimum_gas_price=0.025,\n    fee_denomination='untrn',\n)\nclient = LedgerClient(NETWORK)\n\n# ----------  CW-20 contract addresses (replace with real ones)  ----------\nCW20_MAXBTC = os.getenv('CW20_MAXBTC', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')\nCW20_UNIBTC = os.getenv('CW20_UNIBTC', 'neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy')\nREQUIRED_AMOUNT = 1  # whole-token requirement\n\nclass BalanceResponse(BaseModel):\n    maxbtc: int\n    unibtc: int\n    eligible: bool\n\n@app.get('/api/check-balance/{address}', response_model=BalanceResponse)\nasync def check_balance(address: str):\n    \"\"\"Return each balance and whether both are \u2265 1.\"\"\"\n    try:\n        payload = { 'balance': { 'address': address } }\n\n        maxbtc = int(client.wasm_contract_query(CW20_MAXBTC, payload)['balance'])\n        unibtc = int(client.wasm_contract_query(CW20_UNIBTC, payload)['balance'])\n        ok = maxbtc >= REQUIRED_AMOUNT and unibtc >= REQUIRED_AMOUNT\n\n        return BalanceResponse(maxbtc=maxbtc, unibtc=unibtc, eligible=ok)\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=f'Balance query failed: {e}')",
+            "usage": "GET /api/check-balance/<walletAddress> \u2192 { \"maxbtc\": \"...\", \"unibtc\": \"...\", \"eligible\": true }"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 returns the static (or cached) details for the maxBTC/uniBTC Supervault contract so the frontend knows where to deposit.",
+            "code": "import os\nfrom fastapi import HTTPException\n\n# Add to the same FastAPI instance defined earlier\n@app.get('/api/supervault/details')\nasync def get_supervault_details():\n    try:\n        details = {\n            'supervault_address': os.getenv('MAXUNI_SUPERVAULT', 'neutron1supervaultxxxxxxxxxxxxxxxxxxxx'),\n            'assets': [\n                { 'symbol': 'maxBTC', 'cw20': os.getenv('CW20_MAXBTC', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx') },\n                { 'symbol': 'uniBTC', 'cw20': os.getenv('CW20_UNIBTC', 'neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy') }\n            ]\n        }\n        return details\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "GET /api/supervault/details \u2192 { \"supervault_address\": \"...\", \"assets\": [...] }"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 builds an unsigned MsgExecuteContract that performs a dual-asset deposit of exactly 1 maxBTC and 1 uniBTC into the Supervault, then returns the raw tx bytes (hex-encoded) so they can be signed.",
+            "code": "from cosmpy.aerial.tx import Transaction\nfrom cosmpy.aerial.contract import MsgExecuteContract\nfrom pydantic import BaseModel\n\nclass BuildDepositRequest(BaseModel):\n    sender: str  # user wallet address\n    amount_maxbtc: int = 1\n    amount_unibtc: int = 1\n\nclass BuildDepositResponse(BaseModel):\n    tx_bytes: str  # hex-encoded, unsigned\n    body: dict     # human-readable body for inspection/debug\n\n@app.post('/api/supervault/build-deposit', response_model=BuildDepositResponse)\nasync def build_deposit(req: BuildDepositRequest):\n    try:\n        supervault = os.getenv('MAXUNI_SUPERVAULT', 'neutron1supervaultxxxxxxxxxxxxxxxxxxxx')\n\n        # ExecuteMsg expected by the Supervault contract\n        exec_msg = {\n            'deposit': {\n                'assets': [\n                    { 'token': os.getenv('CW20_MAXBTC', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'), 'amount': str(req.amount_maxbtc) },\n                    { 'token': os.getenv('CW20_UNIBTC', 'neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy'), 'amount': str(req.amount_unibtc) }\n                ]\n            }\n        }\n\n        tx = Transaction()\n        tx.add_message(\n            MsgExecuteContract(\n                sender = req.sender,\n                contract = supervault,\n                msg = exec_msg,\n                funds = []  # CW20 -> no native funds\n            )\n        )\n        # Fee/memo left empty so they can be set at signing time\n        unsigned_bytes = tx.get_tx_bytes(sign=False)  # Do **not** sign here!\n        return BuildDepositResponse(tx_bytes=unsigned_bytes.hex(), body=tx.get_tx_json(sign=False))\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=f'Failed to build deposit tx: {e}')",
+            "usage": "POST /api/supervault/build-deposit with body { \"sender\": \"ntrn1...\" } \u2192 { \"tx_bytes\": \"AB12...\" }"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 signs the unsigned transaction (using a server-side key loaded from SERVER_MNEMONIC for demonstration purposes) and broadcasts it to Neutron, finally returning the transaction hash and block height.",
+            "code": "from cosmpy.aerial.wallet import PrivateKey\nfrom cosmpy.aerial.tx import Transaction\nfrom pydantic import BaseModel\n\nclass BroadcastRequest(BaseModel):\n    tx_bytes: str  # hex-encoded unsigned tx\n\nclass BroadcastResponse(BaseModel):\n    tx_hash: str\n    height: int\n\n@app.post('/api/supervault/broadcast', response_model=BroadcastResponse)\nasync def broadcast(req: BroadcastRequest):\n    try:\n        # ------------  Recover server key (DO NOT USE IN PRODUCTION)  ------------\n        mnemonic = os.getenv('SERVER_MNEMONIC')\n        if not mnemonic:\n            raise ValueError('SERVER_MNEMONIC is not set in the environment.')\n        wallet = PrivateKey.from_mnemonic(mnemonic)\n\n        # ------------  Re-hydrate tx and sign  ------------\n        tx = Transaction(tx_bytes=bytes.fromhex(req.tx_bytes))\n        tx.sign(wallet)\n        signed_bytes = tx.get_tx_bytes()\n\n        # ------------  Broadcast  ------------\n        result = client.broadcast_tx_block(signed_bytes)\n        return BroadcastResponse(tx_hash=result.tx_hash, height=result.height)\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=f'Broadcast failed: {e}')",
+            "usage": "POST /api/supervault/broadcast with { \"tx_bytes\": \"AB12...\" } \u2192 { \"tx_hash\": \"0x...\", \"height\": 123456 }"
+        }
+    ]
+}

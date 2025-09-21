@@ -1,0 +1,47 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "This helper connects to the user\u2019s Keplr wallet (or compatible browser wallet) and returns their Neutron address.",
+            "code": "export const getNeutronAddress = async () => {\n  const chainId = 'neutron-1';\n  const { keplr } = window;\n\n  if (!keplr) {\n    throw new Error('Keplr wallet not found. Please install or unlock Keplr.');\n  }\n\n  // Ask the wallet to enable the chain and expose an OfflineSigner\n  await keplr.enable(chainId);\n  const signer = window.getOfflineSigner(chainId);\n\n  const accounts = await signer.getAccounts();\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No account detected in the wallet.');\n  }\n\n  return accounts[0].address; // Neutron bech32 address\n};",
+            "usage": "const address = await getNeutronAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Queries the LCD for the user\u2019s balance and confirms it is at least 500 NTRN (500 000 000 untrn).",
+            "code": "export const hasMinBalance = async (address, minAmount = 500000000) => {\n  const REST_ENDPOINT = 'https://rest-kralum.neutron.org';\n  const url = `${REST_ENDPOINT}/cosmos/bank/v1beta1/balances/${address}`;\n\n  const response = await fetch(url);\n  if (!response.ok) {\n    throw new Error(`LCD error: ${response.status} ${response.statusText}`);\n  }\n\n  const data = await response.json();\n  const balanceEntry = data.balances?.find((b) => b.denom === 'untrn');\n  const balance = balanceEntry ? parseInt(balanceEntry.amount, 10) : 0;\n  return balance >= minAmount;\n};",
+            "usage": "if (!(await hasMinBalance(address))) {\n  alert('You need at least 500 NTRN to perform this lock.');\n  return;\n}"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Creates the Boost contract `lock` message in the exact JSON shape expected by the contract and Base64-encodes it so it can be sent to the backend or directly to an LCD endpoint.",
+            "code": "export const constructBoostLockMsg = (amount = '500000000', durationMonths = 24) => {\n  const msg = {\n    lock: {\n      amount,\n      duration: `${durationMonths}_months`,\n    },\n  };\n  return msg;\n};\n\nexport const encodeMsgForContract = (msg) => window.btoa(JSON.stringify(msg));",
+            "usage": "const lockMsg = constructBoostLockMsg();\nconst encodedLockMsg = encodeMsgForContract(lockMsg); // Useful for LCD queries or backend payloads"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "A FastAPI endpoint that builds, signs and broadcasts the `MsgExecuteContract` using cosmpy. The backend keeps a signer mnemonic in an environment variable (`NEUTRON_MNEMONIC`). In production, you can replace this with more secure key-management.",
+            "code": "from fastapi import FastAPI, HTTPException, Body\nimport os, json\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import PrivateKey\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgExecuteContract\n\napp = FastAPI()\n\nCHAIN_ID = 'neutron-1'\nRPC_ENDPOINT = os.getenv('NEUTRON_RPC', 'https://rpc-kralum.neutron.org:443')\nBOOST_CONTRACT_ADDRESS = os.getenv('BOOST_CONTRACT_ADDR', 'neutron1boostcontractaddress\u2026')  # TODO: set real address\n\n\ndef _build_execute_msg(sender: str, amount: str) -> MsgExecuteContract:\n    return MsgExecuteContract(\n        sender=sender,\n        contract=BOOST_CONTRACT_ADDRESS,\n        msg=json.dumps({\n            'lock': {\n                'amount': amount,\n                'duration': '24_months'\n            }\n        }).encode(),\n        funds=[{'amount': amount, 'denom': 'untrn'}]\n    )\n\n\n@app.post('/api/boost/lock')\nasync def sign_and_broadcast(payload: dict = Body(...)):\n    \"\"\"Signs & broadcasts the Boost lock transaction and returns `tx_hash`.\"\"\"\n    sender = payload.get('sender')\n    amount = payload.get('amount', '500000000')\n\n    if not sender:\n        raise HTTPException(status_code=400, detail='sender field is required')\n\n    mnemonic = os.getenv('NEUTRON_MNEMONIC')\n    if not mnemonic:\n        raise HTTPException(status_code=500, detail='Server wallet not configured')\n\n    key = PrivateKey.from_mnemonic(mnemonic)\n    if key.address() != sender:\n        raise HTTPException(status_code=400, detail='Sender must match backend wallet address.')\n\n    client = LedgerClient(NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT))\n\n    # Compose transaction\n    tx = Transaction()\n    tx.add_message(_build_execute_msg(sender, amount))\n    tx.with_gas(300000)  # gas limit estimate \u2013 adjust as needed\n    tx.with_chain_id(CHAIN_ID)\n\n    try:\n        signed_tx = tx.build_and_sign(key)\n        tx_response = client.send_tx_block_mode(signed_tx)\n        return {'tx_hash': tx_response.tx_hash}\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "await fetch('/api/boost/lock', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ sender: address, amount: '500000000' })\n}).then(res => res.json()).then(({ tx_hash }) => console.log('Tx Hash:', tx_hash));"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Provides a lightweight polling endpoint so the frontend can wait until the transaction is included in a block.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom cosmpy.aerial.client import LedgerClient\n\napp = FastAPI()\n\n@app.get('/api/tx_status/{tx_hash}')\nasync def tx_status(tx_hash: str):\n    client = LedgerClient(NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT))\n    try:\n        tx_response = client.query_tx(tx_hash)\n        if not tx_response:\n            return { 'status': 'PENDING' }\n        return { 'status': 'COMMITTED', 'height': tx_response.height }\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "const poll = async (hash) => {\n  const res = await fetch(`/api/tx_status/${hash}`);\n  const data = await res.json();\n  if (data.status === 'COMMITTED') return data;\n  await new Promise(r => setTimeout(r, 2000));\n  return poll(hash);\n};"
+        },
+        {
+            "step": 6,
+            "label": "frontend",
+            "introduction": "Queries the Boost contract to confirm the new 500 NTRN lock is registered for the user.",
+            "code": "export const queryBoostPosition = async (address) => {\n  const BOOST_CONTRACT_ADDRESS = 'neutron1boostcontractaddress\u2026'; // TODO: replace\n  const REST_ENDPOINT = 'https://rest-kralum.neutron.org';\n\n  const queryMsg = { position: { address } };\n  const encoded = window.btoa(JSON.stringify(queryMsg));\n  const url = `${REST_ENDPOINT}/cosmwasm/wasm/v1/contract/${BOOST_CONTRACT_ADDRESS}/smart/${encoded}`;\n\n  const res = await fetch(url);\n  if (!res.ok) {\n    throw new Error(`Contract query failed: ${res.status}`);\n  }\n  const data = await res.json();\n  return data.data; // The exact schema depends on the contract implementation\n};",
+            "usage": "const position = await queryBoostPosition(address);\nconsole.log('Current Boost Position:', position);"
+        }
+    ]
+}

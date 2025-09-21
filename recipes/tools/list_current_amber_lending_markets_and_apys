@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Retrieves the Amber Finance controller (lens) contract address for a given network environment.",
+            "function": "get_controller_address(env=\"mainnet\")",
+            "usage": "controller = get_controller_address(\"mainnet\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Performs a CosmWasm smart-contract query to fetch the list of available lending markets.",
+            "function": "_query_wasm_smart(contract_addr, query_msg)",
+            "usage": "markets = await _query_wasm_smart(controller[\"controller_address\"], {\"markets\": {}})"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Queries each individual market to obtain its current supply and borrow rate information.",
+            "function": "_query_wasm_smart(contract_addr, query_msg)",
+            "usage": "state = await _query_wasm_smart(controller[\"controller_address\"], {\"market_state\": {\"market_id\": market_id}})"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Converts a per-second interest rate into an annual percentage yield (APY).",
+            "function": "rateToAPY(ratePerSecond)",
+            "usage": "apy = rateToAPY(state.supply_rate_per_second)"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Renders an HTML table showing each market\u2019s symbol, collateral factor, supply APY and borrow APY.",
+            "function": "MarketTable()",
+            "usage": "<MarketTable />"
+        }
+    ],
+    "frontend": [
+        "apy = rateToAPY(state.supply_rate_per_second)//step: 4 Tool: calculate_apy Desciption: Convert per-block/per-second rates into annual percentage yield (APY) figures for both supply and borrow sides.",
+        "<MarketTable />//step: 5 Tool: display_markets Desciption: Render a table containing market symbol, collateral factor, supply APY, and borrow APY."
+    ],
+    "backend": [
+        "controller = get_controller_address(\"mainnet\")#step: 1 Tool: get_contract_address Desciption: Fetch the Amber protocol \"controller\" or \"lens\" contract address that exposes market data.",
+        "markets = await _query_wasm_smart(controller[\"controller_address\"], {\"markets\": {}})#step: 2 Tool: query_wasm_contract Desciption: Invoke `{ markets: {} }` (or equivalent) to obtain the full list of lending markets.",
+        "state = await _query_wasm_smart(controller[\"controller_address\"], {\"market_state\": {\"market_id\": market_id}})#step: 3 Tool: query_wasm_contract Desciption: For each returned market, call `{ market_state: { market_id: <ID> } }` to fetch supply and borrow rate data."
+    ],
+    "intent": "List current Amber lending markets and APYs",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_contract_address",
+            "description": "Fetch the Amber protocol \"controller\" or \"lens\" contract address that exposes market data."
+        },
+        {
+            "step": 2,
+            "tool": "query_wasm_contract",
+            "description": "Invoke `{ markets: {} }` (or equivalent) to obtain the full list of lending markets."
+        },
+        {
+            "step": 3,
+            "tool": "query_wasm_contract",
+            "description": "For each returned market, call `{ market_state: { market_id: <ID> } }` to fetch supply and borrow rate data."
+        },
+        {
+            "step": 4,
+            "tool": "calculate_apy",
+            "description": "Convert per-block/per-second rates into annual percentage yield (APY) figures for both supply and borrow sides."
+        },
+        {
+            "step": 5,
+            "tool": "display_markets",
+            "description": "Render a table containing market symbol, collateral factor, supply APY, and borrow APY."
+        }
+    ],
+    "outcome_checks": [
+        "Every market row shows a numeric APY value > 0 or explicitly 0%.",
+        "The number of displayed markets matches the length of the `markets` array from Step 2."
+    ]
+}

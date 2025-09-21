@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects to the browser wallet, enabling Neutron and returning both the signer object and the provider\u2019s bech32 address.",
+            "function": "getOfflineSignerAndAddress(chainId = 'neutron-1')",
+            "usage": "const { address, signer } = await getOfflineSignerAndAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Checks that the chosen address holds at least 1 WBTC and 60 000 USDC on Neutron, returning a sufficiency report.",
+            "function": "check_token_balance(address, wbtc_needed = 1, usdc_needed = 60000)",
+            "usage": "const balanceCheck = await check_token_balance(address, 1, 60000);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Retrieves the WBTC/USDC Supervault contract address together with its accepted token denoms.",
+            "function": "query_supervault_details()",
+            "usage": "const vaultInfo = await query_supervault_details();"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Creates an unsigned CosmWasm deposit transaction for exactly 1 WBTC and 60 000 USDC targeting the Supervault contract.",
+            "function": "construct_supervault_deposit_tx(req)",
+            "usage": "const unsignedTx = construct_supervault_deposit_tx({ address, wbtc_amount: 100000000, usdc_amount: 60000000000 });"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Uses the user\u2019s wallet to sign the prepared transaction and broadcasts it to the Neutron network.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo = '')",
+            "usage": "const txHash = await signAndBroadcast(signer, address, [unsignedTx], 'auto');"
+        }
+    ],
+    "frontend": [
+        "const { address, signer } = await getOfflineSignerAndAddress();//step: 1 Tool: get_sender_address Desciption: Determine which wallet the user wants to use as the liquidity provider.",
+        "const txHash = await signAndBroadcast(signer, address, [unsignedTx], 'auto');//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign the deposit transaction with the user\u2019s wallet and broadcast it to the Neutron network."
+    ],
+    "backend": [
+        "const balanceCheck = await check_token_balance(address, 1, 60000);#step: 2 Tool: check_token_balance Desciption: Verify the wallet holds at least 1 WBTC and 60,000 USDC on Neutron. If balances are insufficient, prompt the user to bridge or swap for the required tokens first.",
+        "const vaultInfo = await query_supervault_details();#step: 3 Tool: query_supervault_details Desciption: Fetch the contract address (or vault ID) and required token denominations for the WBTC/USDC Supervault to ensure the tokens match the vault\u2019s configuration.",
+        "const unsignedTx = construct_supervault_deposit_tx({ address, wbtc_amount: 100000000, usdc_amount: 60000000000 });#step: 4 Tool: construct_supervault_deposit_tx Desciption: Build the deposit transaction containing (1 WBTC, 60,000 USDC) as a dual-asset liquidity add, referencing the Supervault contract from step 3."
+    ],
+    "intent": "Provide paired liquidity of 1 WBTC and 60,000 USDC to the WBTC/USDC Supervault",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_address",
+            "description": "Determine which wallet the user wants to use as the liquidity provider."
+        },
+        {
+            "step": 2,
+            "tool": "check_token_balance",
+            "description": "Verify the wallet holds at least 1 WBTC and 60,000 USDC on Neutron. If balances are insufficient, prompt the user to bridge or swap for the required tokens first."
+        },
+        {
+            "step": 3,
+            "tool": "query_supervault_details",
+            "description": "Fetch the contract address (or vault ID) and required token denominations for the WBTC/USDC Supervault to ensure the tokens match the vault\u2019s configuration."
+        },
+        {
+            "step": 4,
+            "tool": "construct_supervault_deposit_tx",
+            "description": "Build the deposit transaction containing (1 WBTC, 60,000 USDC) as a dual-asset liquidity add, referencing the Supervault contract from step 3."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the deposit transaction with the user\u2019s wallet and broadcast it to the Neutron network."
+        }
+    ],
+    "outcome_checks": [
+        "Confirm the transaction hash was included in a finalized block.",
+        "Query the Supervault to verify that new LP shares were minted to the sender\u2019s address and correspond to the supplied amounts."
+    ]
+}

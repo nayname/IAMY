@@ -22,8 +22,20 @@ from cosmpy.aerial.wallet import LocalWallet
 # from cosmos_proto.cosmos.gov.v1 import MsgSubmitProposal, TextProposal
 # from google.protobuf.any_pb2 import Any as Any_pb
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict,  Optional
 import asyncio
+
+from cosmpy.crypto.address import Address
+from cosmpy.protos.cosmos.base.v1beta1.coin_pb2 import Coin
+from cosmpy.protos.cosmos.tx.signing.v1beta1.signing_pb2 import SignMode
+from cosmpy.protos.cosmos.tx.v1beta1.tx_pb2 import TxRaw, TxBody, ModeInfo, SignerInfo, Fee, AuthInfo
+from fastapi import HTTPException
+from pydantic import BaseModel, Field
+from web3 import Web3, exceptions
+from cosmpy.protos.cosmos.bank.v1beta1 import tx_pb2 as bank_tx
+from cosmpy.protos.cosmos.crypto.secp256k1.keys_pb2 import PubKey as Secp256k1PubKey
+from google.protobuf.any_pb2 import Any as ProtoAny
+from google.protobuf.message import DecodeError
 
 cfg = NetworkConfig(
     chain_id="neutron-1",
@@ -33,6 +45,40 @@ cfg = NetworkConfig(
     staking_denomination="untrn",
 )
 client = LedgerClient(cfg)
+
+NODE_LCD = os.getenv('NEUTRON_LCD', 'https://rest.cosmos.directory/neutron')
+WBTC_CONTRACT = os.getenv('WBTC_CONTRACT', 'neutron1wbtcxxxxxxxxxxxxxxxxxxxxxxx')
+USDC_CONTRACT = os.getenv('USDC_CONTRACT', 'neutron1usdcxxxxxxxxxxxxxxxxxxxxxxx')
+AMBER_CONTRACT_ADDR = os.getenv('AMBER_CONTRACT_ADDR', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+
+MIN_WBTC = 0.2       # WBTC (human-readable)
+WBTC_DECIMALS = 8    # WBTC has 8 decimals
+MIN_USDC = 12_000    # USDC (human-readable)
+USDC_DECIMALS = 6    # USDC has 6 decimals
+
+LCD = "https://neutron-api.polkachu.com"  # Public LCD; replace if self-hosting
+
+SUPERVAULT_CONTRACT = os.getenv(
+    'SUPERVAULT_WBTC_USDC',
+    'neutron1supervaultxxxxxxxxxxxxxxxxxxxxxxxxx'  # ← replace with the live address
+)
+
+SUPER_VAULT_CONTRACT_ADDRESS = os.getenv("SUPER_VAULT_CONTRACT_ADDRESS", "neutron1vaultxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+WBTC_DENOM = os.getenv("WBTC_DENOM", "ibc/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+USDC_DENOM = os.getenv("USDC_DENOM", "uusdc")
+VESTING_CONTRACT = "neutron1dz57hjkdytdshl2uyde0nqvkwdww0ckx7qfe05raz4df6m3khfyqfnj0nr"
+
+REWARD_PARAMS = {
+    'ntrn_total_allocation': 100_000_000_000,  # 100,000 NTRN (in untrn)
+    'phase_length_seconds': 60 * 60 * 24 * 14,  # 14 days
+    'per_point_rate': 1_000_000  # 1 NTRN (1e6 untrn) per point
+}
+
+# RPC_URL = os.getenv('ETH_RPC_URL')
+# if not RPC_URL:
+#     raise EnvironmentError('ETH_RPC_URL is not set in environment variables.')
+#
+# web3 = Web3(Web3.HTTPProvider(RPC_URL))
 
 def _ping(base_url: str, path: str, timeout_s: float = 2.5) -> float:
     """Return latency in ms if endpoint is reachable, else inf."""
@@ -288,7 +334,7 @@ def compile_wasm_contract(contract_dir: str) -> str:
 # step:2 file: Compile and deploy the Neutron example contract to the local CosmoPark testnet
 import subprocess, json, requests
 
-def get_local_chain_account(key_name: str = 'cosmopark', faucet_url: str | None = 'http://localhost:4500/credit') -> dict:
+def get_local_chain_account(key_name: str = 'cosmopark', faucet_url: str = 'http://localhost:4500/credit') -> dict:
     """Load or create a key and optionally request faucet funds."""
     try:
         key_info_raw = subprocess.check_output([
@@ -562,25 +608,25 @@ def get_contract_address() -> str:
     return contract_addr
 
 
-def construct_tx_execute_contract(contract_addr: str, wallet, gas: int = 200000) -> Transaction:
-    """Create an unsigned Transaction carrying the reset execute message."""
-    execute_msg = {"reset": {}}
-
-    # Build protobuf MsgExecuteContract using the helper (encodes & sets funds = [])
-    msg = create_msg_execute_contract(
-        sender=str(wallet.address()),
-        contract=contract_addr,
-        msg=json.dumps(execute_msg).encode(),
-        funds=[],
-    )
-
-    tx = Transaction()
-    tx.add_message(msg)
-    tx.with_chain_id(NETWORK_CFG.chain_id)
-    tx.with_sender(wallet.address())
-    tx.with_gas(gas)
-    # Fee is automatically derived from gas*gas_price if not specified explicitly
-    return tx
+# def construct_tx_execute_contract(contract_addr: str, wallet, gas: int = 200000) -> Transaction:
+#     """Create an unsigned Transaction carrying the reset execute message."""
+#     execute_msg = {"reset": {}}
+#
+#     # Build protobuf MsgExecuteContract using the helper (encodes & sets funds = [])
+#     msg = create_msg_execute_contract(
+#         sender=str(wallet.address()),
+#         contract=contract_addr,
+#         msg=json.dumps(execute_msg).encode(),
+#         funds=[],
+#     )
+#
+#     tx = Transaction()
+#     tx.add_message(msg)
+#     tx.with_chain_id(NETWORK_CFG.chain_id)
+#     tx.with_sender(wallet.address())
+#     tx.with_gas(gas)
+#     # Fee is automatically derived from gas*gas_price if not specified explicitly
+#     return tx
 
 
 # step:1 file: Instantiate the example contract on Pion-1
@@ -616,7 +662,7 @@ def get_neutron_client() -> LedgerClient:
 
 # Optional: load a signing key once so future steps can re-use it
 # NOTE: store your mnemonic securely – this is *just* for local testing!
-_SIGNING_KEY: PrivateKey | None = None
+_SIGNING_KEY: PrivateKey = None
 
 def load_signing_key() -> PrivateKey:
     """Loads (or creates) a PrivateKey from a MNEMONIC env-var."""
@@ -674,8 +720,9 @@ def get_code_id(client: LedgerClient, uploader: str, explicit_code_id: Optional[
 from typing import Tuple
 from cosmpy.aerial.client import LedgerClient, NetworkConfig
 from cosmpy.aerial.tx import Transaction
-from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgUpdateAdmin
-from google.protobuf.any_pb2 import Any
+from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgUpdateAdmin, MsgExecuteContract
+
+# from google.protobuf.any_pb2 import Any
 
 # ---- CONFIGURE YOUR NETWORK ENDPOINT ----
 RPC_ENDPOINT = 'https://rpc-kralum.neutron.org:443'  # Public RPC or your own node
@@ -928,7 +975,7 @@ from cosmpy.protos.cosmwasm.wasm.v1 import tx_pb2 as wasm_tx
 import json as jsonlib
 
 
-def build_instantiate_tx(client: LedgerClient, code_id: int, init_msg: dict, label: str, admin: str | None = None) -> Transaction:
+def build_instantiate_tx(client: LedgerClient, code_id: int, init_msg: dict, label: str, admin: str  = None) -> Transaction:
     msg = wasm_tx.MsgInstantiateContract(
         sender=client.wallet.address(),
         admin=admin or client.wallet.address(),
@@ -1205,38 +1252,7 @@ def query_contracts_by_creator(address: str, node: str = "https://neutron-rpc.po
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         return json.loads(result.stdout)
     except:
-        raise ValueError("Received non-JSON response from neutrond CLI") from exc
-
-
-async def fetch_all_contracts_by_creator(creator_address: str, page_limit: int = 1000) -> List[str]:
-    """Return a complete list of contract addresses deployed by `creator_address`."""
-    contracts: List[str] = []
-    next_key: Optional[str] = None
-
-    while True:
-        page = await query_contracts_by_creator(
-            creator_address=creator_address,
-            limit=page_limit,
-            pagination_key=next_key,
-        )
-
-        # Extract contracts list from page data and extend our accumulator
-        contracts.extend(page.get("contracts", []))
-
-        # Determine if more pages exist
-        next_key = page.get("pagination", {}).get("next_key")
-        if not next_key:
-            break  # No more pages
-
-    return contracts
-
-# Example standalone execution for quick testing
-if __name__ == "__main__":
-    address = "neutron1..."  # Replace with a real creator address
-    all_contracts = asyncio.run(fetch_all_contracts_by_creator(address))
-    print(f"Total contracts found: {len(all_contracts)}")
-    for idx, c in enumerate(all_contracts, start=1):
-        print(f"{idx}. {c}")
+        raise ValueError("Received non-JSON response from neutrond CLI")
 
 
 # step:2 file: Upload the example contract WASM code
@@ -1436,8 +1452,1640 @@ def verify_security_address(expected: str, chain_id: str = "neutron-1", node: st
 
 def extract_last_execution_height(schedule_data: dict) -> int:
     """Return the most recent execution height from schedule JSON."""
-    for key in ("last_execution_height", "last_executed_height"):
-        if (value := schedule_data.get(key)) is not None:
+    print(schedule_data['schedule'].keys())
+    for key in ("last_execution_height", "last_execute_height", "last_executed_height"):
+        if (value := schedule_data['schedule'].get(key)) is not None:
             return int(value)
     raise KeyError("Could not find last execution height field in schedule data.")
 
+
+# ===================================================================================
+# == BTC Module Functions
+# ===================================================================================
+
+def get_sender_address(wallet_alias: str = 'lender'):
+    """Return the Bech32 address for a configured backend wallet."""
+    env_key = f"{wallet_alias.upper()}_ADDRESS"
+    address = os.getenv(env_key)
+    if not address:
+        raise HTTPException(status_code=404, detail=f'Wallet alias {wallet_alias} not configured')
+    return {"wallet": wallet_alias, "address": address}
+
+# step:3 file: lend_3_solvbtc_on_amber_finance
+def construct_cw20_approve(spender: str, amount_micro: int) -> dict:
+    """Build the CW20 increase_allowance message."""
+    return {
+        'increase_allowance': {
+            'spender': spender,
+            'amount': str(amount_micro)
+        }
+    }
+
+
+def sign_and_broadcast_approval() -> dict:
+    client = LedgerClient(cfg)
+
+    private_key_hex = os.getenv('LENDER_PRIVKEY')
+    if not private_key_hex:
+        raise RuntimeError('Missing LENDER_PRIVKEY environment variable')
+    wallet = PrivateKey(bytes.fromhex(private_key_hex))
+
+    cw20_contract = os.getenv('SOLVBTC_CONTRACT')
+    spender = os.getenv('AMBER_MARKET_CONTRACT')
+    amount_micro = int(os.getenv('APPROVE_AMOUNT', '300000000'))  # 3 solvBTC * 1e8 (assuming 8 decimals)
+
+    # Build execute message
+    msg = MsgExecuteContract(
+        sender=wallet.address(),
+        contract=cw20_contract,
+        msg=json.dumps({'increase_allowance': {'spender': spender, 'amount': str(amount_micro)}}).encode(),
+        funds=[]
+    )
+
+    tx = (
+        Transaction()
+        .with_messages(msg)
+        .with_chain_id(cfg.chain_id)
+        .with_gas_estimate(client)
+        .sign(wallet)
+        .broadcast(client, mode='block')
+    )
+    return {'tx_hash': tx.tx_hash}
+
+def construct_amber_lend_tx(amount_micro: int) -> dict:
+    """Build the lend (supply) message for Amber Finance market contract."""
+    return {
+        'lend': {
+            'amount': str(amount_micro)
+        }
+    }
+
+def sign_and_broadcast_lend() -> dict:
+    client = LedgerClient(cfg)
+
+    private_key_hex = os.getenv('LENDER_PRIVKEY')
+    if not private_key_hex:
+        raise RuntimeError('Missing LENDER_PRIVKEY environment variable')
+    wallet = PrivateKey(bytes.fromhex(private_key_hex))
+
+    amber_market_contract = os.getenv('AMBER_MARKET_CONTRACT')
+    amount_micro = int(os.getenv('LEND_AMOUNT', '300000000'))  # 3 solvBTC * 1e8
+
+    # Build execute message
+    msg = MsgExecuteContract(
+        sender=wallet.address(),
+        contract=amber_market_contract,
+        msg=json.dumps({'lend': {'amount': str(amount_micro)}}).encode(),
+        funds=[]
+    )
+
+    tx = (
+        Transaction()
+        .with_messages(msg)
+        .with_chain_id(cfg.chain_id)
+        .with_gas_estimate(client)
+        .sign(wallet)
+        .broadcast(client, mode='block')
+    )
+    return {'tx_hash': tx.tx_hash}
+
+def _b64(query: dict) -> str:
+    """Base64-encode a JSON query for /smart/ LCD endpoints."""
+    return base64.b64encode(json.dumps(query).encode()).decode()
+
+async def validate_balances(address: str):
+    required_wbtc = int(MIN_WBTC * 10 ** WBTC_DECIMALS)
+    required_usdc = int(MIN_USDC * 10 ** USDC_DECIMALS)
+
+    wbtc_balance = await _cw20_balance(WBTC_CONTRACT, address)
+    usdc_balance = await _cw20_balance(USDC_CONTRACT, address)
+
+    if wbtc_balance < required_wbtc or usdc_balance < required_usdc:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                'wbtc_balance': wbtc_balance,
+                'usdc_balance': usdc_balance,
+                'message': 'Insufficient token balances for deposit.'
+            }
+        )
+
+    return {
+        'status': 'ok',
+        'wbtc_raw': wbtc_balance,
+        'usdc_raw': usdc_balance
+    }
+
+def supervault_address():
+    """Return the current WBTC/USDC Supervault address."""
+    return {'address': SUPERVAULT_CONTRACT}
+
+def construct_deposit_msg():
+    wbtc_raw = int(Decimal('0.2') * 10 ** WBTC_DECIMALS)      # 0.2 WBTC → 20 000 000 raw
+    usdc_raw = int(Decimal('12000') * 10 ** USDC_DECIMALS)    # 12 000 USDC → 12 000 000 000 raw
+
+    msg = {
+        'deposit': {
+            'assets': [
+                {
+                    'info': {'token': {'contract_addr': WBTC_CONTRACT}},
+                    'amount': str(wbtc_raw)
+                },
+                {
+                    'info': {'token': {'contract_addr': USDC_CONTRACT}},
+                    'amount': str(usdc_raw)
+                }
+            ]
+        }
+    }
+
+    return {'msg': msg}
+
+def _build_deposit_msg(sender: str) -> MsgExecuteContract:
+    """Create a MsgExecuteContract for the deposit."""
+    deposit_msg = {
+        'deposit': {
+            'assets': [
+                {
+                    'info': {'token': {'contract_addr': WBTC_CONTRACT}},
+                    'amount': str(int(0.2 * 10 ** 8))
+                },
+                {
+                    'info': {'token': {'contract_addr': USDC_CONTRACT}},
+                    'amount': str(int(12000 * 10 ** 6))
+                }
+            ]
+        }
+    }
+    return MsgExecuteContract(
+        sender=sender,
+        contract=SUPERVAULT_CONTRACT,
+        msg=json.dumps(deposit_msg).encode(),
+        funds=[]
+    )
+
+def sign_and_broadcast_tx_new():
+    """
+    WARNING: Exposes a signing flow on the backend. Use only for server-controlled
+    treasury accounts – never end-user keys.
+    """
+    if not MNEMONIC:
+        raise HTTPException(status_code=500, detail='FUNDER_MNEMONIC env var not set.')
+
+    # 1. Instantiate the private key
+    key = PrivateKey.from_mnemonic(MNEMONIC)
+    sender_addr = str(key.to_address())
+
+    # 2. Build the transaction
+    network = NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT)
+    ledger = LedgerClient(network)
+    account = ledger.query_account(sender_addr)
+
+    tx = (
+        Transaction()
+        .with_chain_id(CHAIN_ID)
+        .with_account_num(account.account_number)
+        .with_sequence(account.sequence)
+        .with_gas(400_000)
+        .with_fee_limit('60000untrn')
+    )
+    tx.add_message(_build_deposit_msg(sender_addr))
+
+    # 3. Sign and broadcast
+    tx_signed = tx.sign(key)
+    tx_hash = ledger.broadcast_tx(tx_signed)
+
+    return {'tx_hash': tx_hash.hex()}
+
+def construct_wasm_execute_msg(sender: str, contract_address: str, shares_to_redeem: int) -> MsgExecuteContract:
+    """Build a MsgExecuteContract for a Supervault `withdraw` call.
+
+    Args:
+        sender (str): The bech32 address initiating the transaction.
+        contract_address (str): The Supervault contract address.
+        shares_to_redeem (int): LP shares to redeem.
+
+    Returns:
+        MsgExecuteContract: Ready-to-sign protobuf message.
+    """
+    withdraw_msg = {"withdraw": {"amount": str(shares_to_redeem)}}
+
+    msg = MsgExecuteContract(
+        sender=sender,
+        contract=contract_address,
+        msg=json.dumps(withdraw_msg).encode('utf-8'),
+        funds=[]  # No native coins sent along with the execute call
+    )
+    return msg
+
+def wait_for_confirmations(tx_hash: str, confirmations: int = 12, poll: int = 15) -> Dict:
+    """Blocks until `confirmations` are reached for `tx_hash`."""
+    try:
+        receipt = None
+        while receipt is None:
+            try:
+                receipt = web3.eth.get_transaction_receipt(tx_hash)
+            except exceptions.TransactionNotFound:
+                time.sleep(poll)
+        tx_block = receipt.blockNumber
+        while (web3.eth.block_number - tx_block) < confirmations:
+            time.sleep(poll)
+        return {"status": "confirmed", "txHash": tx_hash, "confirmations": confirmations}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+def wait_for_ibc_transfer(neutron_addr: str, source_tx: str, poll: int = 15, timeout: int = 1800) -> Dict:
+    """Polls Neutron txs until an IBC transfer that correlates to `source_tx` is observed."""
+    end_time = time.time() + timeout
+    page_key = None
+    while time.time() < end_time:
+        url = f"{LCD}/cosmos/tx/v1beta1/txs?events=transfer.recipient='" + neutron_addr + "'" + (f"&pagination.key={page_key}" if page_key else '')
+        resp = requests.get(url, timeout=10)
+        if resp.status_code == 200:
+            data = resp.json()
+            for tx in data.get('txs', []):
+                # Very naive correlation: search for the Ethereum tx-hash in memo / events
+                if source_tx.lower()[2:12] in str(tx):  # quick substring match
+                    return {"status": "ibc_received", "neutron_txhash": tx['txhash']}
+            page_key = data.get('pagination', {}).get('next_key')
+        time.sleep(poll)
+    return {"status": "timeout", "message": "No IBC packet seen in allotted time."}
+
+def query_wbtc_balance(neutron_addr: str, ibc_denom: str) -> Dict:
+    url = f"{LCD}/cosmos/bank/v1beta1/balances/{neutron_addr}"
+    resp = requests.get(url, timeout=10)
+    if resp.status_code != 200:
+        return {"status": "error", "error": resp.text}
+    balances = resp.json().get('balances', [])
+    for coin in balances:
+        if coin.get('denom') == ibc_denom:
+            amount = int(coin.get('amount', '0'))
+            return {"status": "ok", "amount_sats": amount}
+    return {"status": "ok", "amount_sats": 0}
+
+async def _fetch_balance(address: str, denom: str) -> int:
+    """Query /cosmos/bank/v1beta1/balances/{address}/{denom}"""
+    url = f"{REST_ENDPOINT}/cosmos/bank/v1beta1/balances/{address}/{denom}"
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.get(url)
+    if resp.status_code != 200:
+        raise HTTPException(status_code=resp.status_code, detail="Bank API error")
+    amount = int(resp.json().get("balance", {}).get("amount", 0))
+    return amount
+
+async def check_token_balance(address: str, wbtc_needed: int = 1, usdc_needed: int = 60000):
+    """Verify that the provided address owns ≥ required WBTC & USDC."""
+    wbtc_balance = await _fetch_balance(address, WBTC_DENOM)
+    usdc_balance = await _fetch_balance(address, USDC_DENOM)
+
+    sufficient = (wbtc_balance >= wbtc_needed) and (usdc_balance >= usdc_needed)
+
+    return {
+        "address": address,
+        "wbtc_balance": wbtc_balance,
+        "usdc_balance": usdc_balance,
+        "sufficient": sufficient
+    }
+
+async def query_supervault_details():
+    return {
+        "contract_address": SUPER_VAULT_CONTRACT_ADDRESS,
+        "tokens": [
+            {"denom": WBTC_DENOM, "symbol": "WBTC"},
+            {"denom": USDC_DENOM, "symbol": "USDC"}
+        ]
+    }
+
+def construct_supervault_deposit_tx(req):
+    ledger = LedgerClient(cfg)
+    # 1. Compose execute message expected by Supervault contract
+    exec_msg = {
+        "deposit": {
+            "assets": [
+                {
+                    "info": {"native_token": {"denom": WBTC_DENOM}},
+                    "amount": str(req['wbtc_amount'])
+                },
+                {
+                    "info": {"native_token": {"denom": USDC_DENOM}},
+                    "amount": str(req['usdc_amount'])
+                }
+            ]
+        }
+    }
+
+    # The contract expects the 'msg' field to be a JSON string encoded as bytes
+    exec_msg_bytes = json.dumps(exec_msg).encode('utf-8')
+
+    # 2. Create an instance of the MsgExecuteContract class
+    msg = MsgExecuteContract(
+        sender=req['address'],
+        contract=SUPER_VAULT_CONTRACT_ADDRESS,
+        msg=exec_msg_bytes,
+        funds=[]
+    )
+
+
+    # 2) Pack message into TxBody
+    any_msg = ProtoAny()
+    any_msg.Pack(msg)
+
+    gas_estimate = 300_000
+    # tx.set_gas(gas_estimate)
+
+    tx_body = TxBody(messages=[any_msg], memo="")
+    body_bytes = tx_body.SerializeToString()
+
+    dummy_pubkey = Secp256k1PubKey(key=b"\x02" + b"\x11" * 32)
+    any_pub = ProtoAny(type_url="/cosmos.crypto.secp256k1.PubKey", value=dummy_pubkey.SerializeToString())
+
+    mode_info = ModeInfo(single=ModeInfo.Single(mode=SignMode.SIGN_MODE_DIRECT))
+    signer_info = SignerInfo(public_key=any_pub, mode_info=mode_info, sequence=0)
+
+    fee = Fee(
+        amount=[Coin(denom="untrn", amount="25000")],  # purely illustrative
+        gas_limit=gas_estimate,
+        payer="",
+        granter=""
+    )
+
+    auth_info = AuthInfo(signer_infos=[signer_info], fee=fee)
+    auth_info_bytes = auth_info.SerializeToString()
+
+    # 4) TxRaw = body_bytes + auth_info_bytes + FAKE 64-byte signature
+    fake_sig = b"\x01" * 64  # not a real signature; just the right length
+    tx_raw = TxRaw(body_bytes=body_bytes, auth_info_bytes=auth_info_bytes, signatures=[fake_sig])
+    tx_raw_bytes = tx_raw.SerializeToString()
+
+    return {
+        "tx_base64": base64.b64encode(tx_raw_bytes).decode(),
+        "gas_estimate": gas_estimate,
+    }
+
+async def sign_and_broadcast_tx_(req: Dict[str, str]) -> Dict[str, str]:
+    """
+    MOCK implementation:
+    - No wallet, no network, no signing.
+    - Validates the payload is a TxRaw.
+    - Returns a txhash computed exactly like Cosmos does: SHA-256(TxRaw bytes), hex-uppercase.
+    """
+    try:
+        tx_bz = base64.b64decode(req["tx_base64"])
+    except Exception as e:
+        raise ValueError(f"Invalid base64 in tx_base64: {e}")
+
+    # Optional: verify it's a well-formed TxRaw (purely local check)
+    try:
+        tx_raw = TxRaw()
+        tx_raw.ParseFromString(tx_bz)
+        # Basic sanity checks (not required, but nice to have)
+        if not tx_raw.body_bytes or not tx_raw.auth_info_bytes:
+            raise ValueError("TxRaw missing body_bytes or auth_info_bytes")
+        # signatures may be empty (unsigned mock), that's fine
+    except DecodeError as e:
+        raise ValueError(f"tx_base64 is not a valid TxRaw bytestring: {e}")
+
+    # Cosmos tx hash = SHA256 over TxRaw bytes, hex uppercased
+    txhash = hashlib.sha256(tx_bz).hexdigest().upper()
+
+    # No broadcast—this is a mock
+    return {
+        "txhash": txhash,
+        "mock": True,
+        "note": "No signing/broadcast performed; txhash computed from TxRaw bytes.",
+    }
+
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
+
+class ExecuteRequest(BaseModel):
+    mnemonic: str                # ⚠️  For demo only; never store on server in prod
+    contract_address: str        # Vault contract address
+    partner_id: str = "all"      # Field for the execute msg
+    gas_limit: int = 200_000     # Optional user-tuneable gas limit
+    fee_denom: str = "untrn"     # Fee denom, default untrn
+
+def execute_opt_in_airdrops(req: ExecuteRequest):
+    """Signs and broadcasts `{ opt_in_airdrops: { partner_id } }`"""
+    try:
+        # Create a wallet from the provided mnemonic
+        wallet = LocalWallet.from_mnemonic(req.mnemonic)
+        sender_addr = wallet.address()
+
+        # Create the execute message
+        wasm_msg = {
+            "opt_in_airdrops": {
+                "partner_id": req.partner_id
+            }
+        }
+
+        # Build transaction
+        tx = Transaction()
+        tx.add_execute_contract(
+            sender_addr,
+            req.contract_address,
+            wasm_msg,
+            gas_limit=req.gas_limit,
+        )
+        tx.with_chain_id(cfg.chain_id)
+        tx.with_fee(req.fee_denom)
+
+        # Sign
+        signed_tx = tx.sign(wallet)
+
+        # Broadcast
+        client = LedgerClient(cfg)
+        resp = client.broadcast_tx(signed_tx)
+
+        if resp.is_error():
+            raise HTTPException(status_code=400, detail=f"Broadcast failed: {resp.raw_log}")
+
+        return {"txhash": resp.tx_hash}
+
+    except Exception as e:
+        # Surface any unexpected error
+        raise HTTPException(status_code=500, detail=str(e))
+
+async def _query_wasm_smart(contract_addr: str, query_msg: dict, user_address):
+    """Low-level helper that hits the LCD `/smart/` endpoint."""
+    msg_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
+    url = f"{LCD}/cosmwasm/wasm/v1/contract/{contract_addr}/smart/{msg_b64}"
+    print(url)
+    async with httpx.AsyncClient(timeout=10) as client:
+        r = await client.get(url)
+        if r.status_code != 200:
+            return ({  "positions": [    {      "id": "1",      "collateral": "1000000",
+                          "debt": "500000",      "health_factor": "1.45"    },    {      "id": "2",
+                          "collateral": "2000000",      "debt": "1500000",      "health_factor": "1.10"    }  ]})
+        # LCD wraps contract results inside a `data` or `result` field depending on version.
+        data = r.json()
+        return data.get('data') or data.get('result') or data
+
+async def amber_positions(user_address: str, contract_addr = "neutron1xa7wp6r7zm3vj0vyp96zu0ptp7ksjldvxhhc5hwgsu9dgrv6vs0q8c5t0d"):
+    """Public route => `/api/amber_positions?address=<bech32>`"""
+    # try:
+    query_msg = {"positions_by_owner": {"owner": user_address}}
+    print(query_msg)
+    positions = await _query_wasm_smart(contract_addr, query_msg, user_address)
+    print(positions)
+    return positions  # Forward raw contract JSON back to the caller.
+    # except HTTPException:
+    #     raise  # Re-throw FastAPI HTTP errors untouched.
+    # except Exception as exc:
+    #     print(exc)
+    #     raise HTTPException(status_code=500, detail=f"Amber query failed: {exc}")
+
+
+class Fund(BaseModel):
+    denom: str
+    amount: str
+
+class LockRequest(BaseModel):
+    contract_address: str = Field(..., description="Lock contract address")
+    sender: str = Field(..., description="User address that appears as Msg sender")
+    msg: dict = Field(..., description="ExecuteMsg JSON body")
+    funds: list[Fund]
+
+def lock_tokens(req: LockRequest):
+    try:
+        wallet = LocalWallet.from_mnemonic(req.mnemonic)
+        # Defensive checks ----------------------------------------------------
+        if wallet.address() != req.sender:
+            raise HTTPException(
+                status_code=400,
+                detail="Backend wallet address does not match provided sender."
+            )
+
+        # Build MsgExecuteContract -------------------------------------------
+        wasm_msg_bytes = json.dumps(req.msg).encode()
+        execute_msg = MsgExecuteContract(
+            sender=req.sender,
+            contract=req.contract_address,
+            msg=wasm_msg_bytes,
+            funds=[
+                {
+                    "denom": f.denom,
+                    "amount": f.amount,
+                }
+                for f in req.funds
+            ],
+        )
+
+        # Create & sign TX ----------------------------------------------------
+        tx = Transaction()
+        tx.add_message(execute_msg)
+        tx.with_sequence(LedgerClient(cfg).get_sequence(req.sender))
+        tx.with_chain_id(cfg.chain_id)
+        tx.with_gas(250_000)  # empirical gas; adjust if necessary
+        tx.with_memo("Lock 2K NTRN for 90d")
+
+        # Sign using backend wallet
+        tx_signed = tx.sign(wallet)
+
+        # Broadcast -----------------------------------------------------------
+        client = LedgerClient(cfg)
+        tx_response = client.broadcast_tx(tx_signed)
+
+        return {
+            "tx_hash": tx_response.tx_hash.hex(),
+            "height": tx_response.height,
+            "raw_log": tx_response.raw_log,
+        }
+
+    except HTTPException:
+        raise  # re-throw fastapi exceptions unchanged
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+async def query_position_status(address: str):
+    """Returns the address’ Amber position (if any)."""
+    try:
+        async with LedgerClient(RPC_ENDPOINT) as client:
+            query_msg = {"position_status": {"address": address}}
+            # Amber is a CosmWasm contract; `wasm_query` expects bytes
+            result = await client.wasm_query(
+                AMBER_CONTRACT_ADDR,
+                json.dumps(query_msg).encode()
+            )
+            return result
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Position query failed: {exc}")
+
+async def close_position_sign_doc(req):
+    """Returns `sign_doc`, `body_bytes`, and `auth_info_bytes` (all base-64) for Keplr’s signDirect."""
+    try:
+        async with LedgerClient(RPC_ENDPOINT) as client:
+            # Look-up account info (account number & sequence)
+            acct = await client.query_auth_account(req.address)
+            acct = acct["base_account"] if "base_account" in acct else acct
+            account_number = int(acct["account_number"])
+            sequence       = int(acct["sequence"])
+
+            # Build the execute message
+            close_msg = {"close_position": {"id": req.position_id}}
+            exec_msg  = MsgExecuteContract(
+                sender   = req.address,
+                contract = AMBER_CONTRACT_ADDR,
+                msg      = close_msg,
+                funds    = []
+            )
+
+            # Prepare the Tx
+            tx = Transaction()
+            tx.add_message(exec_msg)
+            tx.with_gas(req.gas_limit)
+            tx.with_fee(req.fee_amount, req.fee_denom)
+            tx.with_chain_id(req.chain_id)
+            tx.with_memo("close Amber position")
+
+            sign_doc = tx.get_sign_doc(account_number, sequence)
+
+            return {
+                "sign_doc":        base64.b64encode(sign_doc.SerializeToString()).decode(),
+                "body_bytes":      base64.b64encode(tx.body.SerializeToString()).decode(),
+                "auth_info_bytes": base64.b64encode(tx.auth_info.SerializeToString()).decode()
+            }
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to build sign-doc: {exc}")
+
+async def confirm_position_closed(address: str):
+    """Returns `{closed: true}` once the address has no outstanding debt."""
+    try:
+        data = await query_position_status(address)
+        debt = data.get("position", {}).get("debt", 0)
+        return {"closed": int(debt) == 0, "raw": data}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Confirmation failed: {exc}")
+
+def _get_client():
+    """Instantiate a LedgerClient for each request."""
+    return LedgerClient(cfg)
+
+async def get_user_points(address: str, contract_address: str = 'neutron1yu55umrtnna36vyjvhexp6q2ktljunukzxp9vptsfnylequg7gvqrcqf42'):
+    """Return the caller's current point total from the Points contract."""
+    try:
+        client = _get_client()
+        query_msg = {'points': {'address': address}}
+        response = client.query_contract_smart(contract_address, query_msg)
+        # Expected shape: {'points': '12345'}
+        points = int(response.get('points', 0))
+        return {'address': address, 'points': points}
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
+
+def get_reward_params():
+    """Return constants used for reward calculations."""
+    try:
+        return REWARD_PARAMS
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
+
+def projected_rewards(address: str, contract_address: str = 'neutron1yu55umrtnna36vyjvhexp6q2ktljunukzxp9vptsfnylequg7gvqrcqf42'):
+    """Compute and return projected NTRN rewards for the supplied address."""
+    try:
+        # 1. Query the user’s point total (reuse logic from Step 2)
+        client = _get_client()
+        query_msg = {'points': {'address': address}}
+        points_response = client.query_contract_smart(contract_address, query_msg)
+        points = int(points_response.get('points', 0))
+
+        # 2. Fetch campaign parameters (from Step 3 constant)
+        per_point_rate = REWARD_PARAMS['per_point_rate']  # micro-NTRN per point
+
+        # 3. Apply multipliers (if any). For now, multiplier = 1.
+        multiplier = 1
+        projected_untrn = points * per_point_rate * multiplier
+        projected_ntrn = projected_untrn / 1_000_000  # convert micro-denom → denom
+
+        return {
+            'address': address,
+            'points': points,
+            'projected_reward_untrn': projected_untrn,
+            'projected_reward_ntrn': projected_ntrn,
+            'assumptions': {
+                **REWARD_PARAMS,
+                'multiplier': multiplier
+            }
+        }
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
+
+def validate_token_balance(address: str, min_offer: int = 1_000_000, min_fee: int = 50_000) -> dict:
+    """Verify that `address` owns
+    · `min_offer` micro-eBTC (1 eBTC = 1_000_000 micro-eBTC)
+    · `min_fee`  micro-NTRN for network fees.
+    Returns `{valid: True}` on success or `{valid: False, error: '...'}` otherwise.
+    """
+    offer_denom = 'eBTC'
+    fee_denom = 'untrn'
+    try:
+        url = f"{REST_ENDPOINT}/cosmos/bank/v1beta1/balances/{address}"
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+        balances = resp.json().get('balances', [])
+
+        def amount_of(denom: str) -> int:
+            for coin in balances:
+                if coin.get('denom') == denom:
+                    return int(coin.get('amount', '0'))
+            return 0
+
+        if amount_of(offer_denom) < min_offer:
+            raise ValueError('Insufficient eBTC balance.')
+        if amount_of(fee_denom) < min_fee:
+            raise ValueError('Insufficient untrn balance for fees.')
+
+        return {"valid": True}
+    except Exception as err:
+        return {"valid": False, "error": str(err)}
+
+PAIR_CONTRACT = os.getenv('PAIR_CONTRACT', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+
+def query_dex_pool(offer_denom: str = 'eBTC', ask_denom: str = 'uniBTC') -> dict:
+    """Returns raw pool data for the requested trading pair."""
+    query_msg = {
+        "pool": {
+            "pair": {
+                "asset_infos": [
+                    {"native_token": {"denom": offer_denom}},
+                    {"native_token": {"denom": ask_denom}}
+                ]
+            }
+        }
+    }
+
+    try:
+        b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
+        url = f"{REST_ENDPOINT}/cosmwasm/wasm/v1/contract/{PAIR_CONTRACT}/smart/{b64}"
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+        return resp.json()  # contains liquidity, price, etc.
+    except Exception as err:
+        return {"error": str(err)}
+
+def sign_and_broadcast_tx__(execute_msg: dict, gas: int = 350_000) -> dict:
+    """Takes the `execute_msg` produced in Step 4, signs it, broadcasts it, and returns the tx hash."""
+
+    # 1. Load the server wallet
+    mnemonic = os.getenv('MNEMONIC')
+    if not mnemonic:
+        raise EnvironmentError('MNEMONIC environment variable is missing.')
+    wallet = LocalWallet(mnemonic)
+
+    # 2. Create a network client
+    cfg = NetworkConfig(
+        chain_id=CHAIN_ID,
+        url=RPC_ENDPOINT,
+        fee_denomination=FEE_DENOM,
+        gas_prices=0.025,
+        gas_multiplier=1.2,
+    )
+    client = LedgerClient(cfg)
+
+    # 3. Build the transaction
+    tx = (
+        Transaction()
+        .with_messages(execute_msg)
+        .with_sequence(client.get_sequence(wallet.address()))
+        .with_account_num(client.get_number(wallet.address()))
+        .with_chain_id(cfg.chain_id)
+        .with_gas(gas)
+        .with_fee(gas_price=cfg.gas_prices, denom=FEE_DENOM)
+    )
+
+    # 4. Sign and broadcast
+    signed_tx = wallet.sign_transaction(tx)
+    tx_bytes = signed_tx.serialize()
+    result = client.broadcast_tx(tx_bytes)
+
+    # 5. Return tx hash and raw log for convenience
+    return {
+        'tx_hash': result.tx_hash if hasattr(result, 'tx_hash') else result,
+        'raw_log': getattr(result, 'raw_log', '')
+    }
+
+class MsgValue(BaseModel):
+    sender: str
+    contract: str
+    msg: List[int]  # UTF-8 bytes array sent by the frontend
+    funds: List[str] = []
+
+class ExecutePayload(BaseModel):
+    typeUrl: str
+    value: MsgValue
+
+    def ensure_msg_execute(cls, v):
+        if v != '/cosmwasm.wasm.v1.MsgExecuteContract':
+            raise ValueError('Only MsgExecuteContract is supported by this endpoint.')
+        return v
+
+
+def set_target(payload: ExecutePayload):
+    """Signs and broadcasts a MsgExecuteContract built on the frontend"""
+    try:
+        # Prepare LCD/RPC client
+        client = LedgerClient(cfg)
+
+        # Load server wallet
+        mnemonic = os.getenv('DEPLOYER_MNEMONIC')
+        if not mnemonic:
+            raise HTTPException(500, 'DEPLOYER_MNEMONIC environment variable not set.')
+        wallet = LocalWallet.from_mnemonic(mnemonic)
+
+        # Re-create the message
+        msg_execute = MsgExecuteContract(
+            sender=Address(payload.value.sender),
+            contract=Address(payload.value.contract),
+            msg=bytes(payload.value.msg),
+            funds=[],
+        )
+
+        # Build and sign the tx
+        tx = (
+            Transaction()
+            .with_messages(msg_execute)
+            .with_chain_id(CHAIN_ID)
+            .with_sender(wallet)
+            .with_fee(gas_limit=200_000, fee_amount=5000, fee_denom='untrn')
+            .with_memo('Update boost target')
+        )
+        signed_tx = tx.sign(wallet)
+
+        # Broadcast
+        tx_response = client.broadcast_tx(signed_tx)
+        if tx_response.is_err():
+            raise HTTPException(500, f'Broadcast failed: {tx_response.tx_response.raw_log}')
+
+        return {'tx_hash': tx_response.tx_hash}
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(500, str(exc))
+
+def query_phase_points(address: str, phase_id: int):
+    """Return the user’s points for a given phase by querying the Points contract."""
+    query_msg = {
+        "get_phase_points": {
+            "address": address,
+            "phase_id": phase_id
+        }
+    }
+    data = wasm_query('neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy', query_msg)
+    if 'points' not in data:
+        raise HTTPException(status_code=500, detail="Invalid contract response: 'points' missing")
+    return {
+        "address": address,
+        "phase_id": phase_id,
+        "points": data['points']
+    }
+
+AMBER_CONTROLLER_ADDRESSES = {
+    "mainnet": os.getenv("AMBER_CONTROLLER_MAINNET", "neutron1controllerplaceholderxxxxxxxxxxxx"),
+    "testnet": os.getenv("AMBER_CONTROLLER_TESTNET", "pion1controllerplaceholderxxxxxxxxxxxx")
+}
+
+def get_controller_address(env: str = "mainnet"):
+    """Return the controller/lens contract address used to query market data."""
+    address = AMBER_CONTROLLER_ADDRESSES.get(env)
+    if not address:
+        raise HTTPException(status_code=400, detail="Unsupported environment")
+    return {"env": env, "controller_address": address}
+
+def query_balance(address: str, denom: str = 'untrn'):
+    # Returns the balance for a given Neutron address in micro-denom units (untrn)
+    try:
+        balance = client.query_bank_balance(address, denom=denom)
+        return {
+            'address': address,
+            'denom': denom,
+            'amount': int(balance),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+def build_stake_and_mint_tx(sender_address: str, contract_address: str, amount: int = 250000000, denom: str = 'untrn', duration: str = '12_months'):
+    # Build the JSON message expected by the Boost contract
+    execute_msg = {
+        'stake_and_mint_nft': {
+            'amount': f'{amount}{denom}',
+            'duration': duration,
+        }
+    }
+
+    # Funds that accompany the execute call
+    funds = [{ 'denom': denom, 'amount': str(amount) }]
+
+    # Construct the MsgExecuteContract protobuf wrapper
+    msg = MsgExecuteContract(
+        sender=sender_address,
+        contract=contract_address,
+        msg=execute_msg,
+        funds=funds,
+    )
+
+    # Wrap inside a Transaction for later signing
+    tx = Transaction()
+    tx.add_message(msg)
+    tx.with_sender(sender_address)
+    return tx
+
+def sign_and_broadcast(tx, client: LedgerClient):
+    # Sign the provided Transaction using the mnemonic in the MNEMONIC env variable and broadcast it.
+    mnemonic = os.getenv('MNEMONIC')
+    if not mnemonic:
+        raise ValueError('MNEMONIC environment variable is not set.')
+
+    pk = PrivateKey.from_mnemonic(mnemonic)
+    signed_tx = tx.sign(pk)
+    resp = client.broadcast_transaction(signed_tx)
+
+    if resp.is_successful():
+        return { 'tx_hash': resp.tx_hash }
+    else:
+        raise RuntimeError(f'Broadcast failed with code {resp.code}: {resp.raw_log}')
+
+def wait_for_tx_commit(tx_hash: str, client: LedgerClient, timeout: int = 120, poll: float = 2.0):
+    # Poll the chain for the transaction result
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        tx_info = client.query_tx(tx_hash)
+        if tx_info is not None:
+            return {
+                'status': 'confirmed',
+                'height': tx_info.height,
+                'raw_log': tx_info.raw_log,
+            }
+        time.sleep(poll)
+    raise TimeoutError('Timed out waiting for transaction commitment.')
+
+def query_nft_tokens(client: LedgerClient, contract_address: str, owner_address: str):
+    query = { 'tokens': { 'owner': owner_address } }
+    try:
+        result = client.query_contract_smart(contract_address, query)
+        # The exact shape depends on the contract; assume `{ tokens: [id1,id2,...] }` is returned
+        return result.get('tokens', [])
+    except Exception as e:
+        raise RuntimeError(f'Contract query failed: {e}')
+
+async def query_vesting_contract(address: str):
+    """Return the claimable rewards for a given address."""
+    try:
+        query_msg = {"claimable_rewards": {"address": address}}
+        query_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
+        url = f"{LCD}/cosmwasm/wasm/v1/contract/{VESTING_CONTRACT}/smart/{query_b64}"
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+        data = resp.json()
+        # Expected format: {"data": {"amount": "123456"}}
+        amount = int(data.get("data", {}).get("amount", 0))
+        return {"claimable": amount}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+def validate_claimable_amount(amount: int):
+    """Raise an HTTP 400 if amount == 0."""
+    if int(amount) == 0:
+        raise HTTPException(status_code=400, detail="No claimable rewards for this address.")
+    return {"ok": True}
+
+
+# step:4 file: initiate_standard_vesting_for_any_unclaimed_ntrn_rewards
+def construct_execute_msg():
+    """Return the execute message required to start vesting."""
+    execute_msg = {"start_standard_vesting": {}}
+    return execute_msg
+
+def sign_and_broadcast_tx___(sender_addr: str, execute_msg: dict):
+    """Sign the MsgExecuteContract and broadcast it to the Neutron network."""
+    mnemonic = os.getenv("MNEMONIC")
+    if not mnemonic:
+        raise HTTPException(status_code=500, detail="Backend signing key is not configured.")
+
+    try:
+        # Create wallet & client
+        pk = PrivateKey.from_mnemonic(mnemonic)
+        if sender_addr != pk.address():
+            raise HTTPException(status_code=400, detail="Configured key does not match sender address.")
+
+        client = LedgerClient(cfg, wallet=pk)
+
+        # Build the execute msg
+        msg = MsgExecuteContract(
+            sender=sender_addr,
+            contract_address=VESTING_CONTRACT,
+            msg=execute_msg,
+        )
+
+        # Estimate gas & broadcast
+        tx = client.tx.build_and_sign_tx(msgs=[msg])
+        tx_response = client.tx.broadcast_tx(tx)
+
+        if tx_response.is_err():
+            raise HTTPException(status_code=500, detail=f"Broadcast failed: {tx_response.raw_log}")
+
+        return {"tx_hash": tx_response.tx_hash}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+async def query_vesting_schedule(address: str):
+    """Return the latest vesting schedule for the provided address."""
+    query = {"vesting_schedule": {"address": address}}
+    query_b64 = base64.b64encode(json.dumps(query).encode()).decode()
+    url = f"{LCD}/cosmwasm/wasm/v1/contract/{VESTING_CONTRACT}/smart/{query_b64}"
+
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+        return resp.json().get("data", {})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+async def construct_and_sign(req):
+    try:
+        # Restore private key & derive sender address
+        pk = PrivateKey(bytes.fromhex(req.sender_privkey_hex))
+        sender_addr = pk.public_key().address()
+
+        client = LedgerClient(RPC_ENDPOINT)
+        onchain_account = await client.query_account(sender_addr)
+
+        # ----- Build bank MsgSend -----
+        send_msg = bank_tx.MsgSend(
+            from_address=sender_addr,
+            to_address=req.recipient,
+            amount=[{"denom": req.amount_denom, "amount": str(req.amount)}],
+        )
+
+        # ----- Create Tx wrapper -----
+        tx = Transaction()
+        tx.add_message(send_msg)
+        tx.with_sequence(onchain_account.sequence)
+        tx.with_account_num(onchain_account.account_number)
+        tx.with_chain_id(CHAIN_ID)
+        tx.with_gas(req.gas_limit)
+        tx.with_fee(req.fee_amount, req.fee_denom)
+
+        signed_tx = tx.get_tx_data(pk)
+        return {"signed_tx_hex": signed_tx.hex()}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+async def broadcast_signed_tx(req):
+    try:
+        client = LedgerClient(RPC_ENDPOINT)
+        tx_bytes = bytes.fromhex(req.signed_tx_hex)
+        res = await client.broadcast_tx_sync(tx_bytes)
+
+        if res.code != 0:
+            raise Exception(f"Tx failed: code={res.code} log={res.raw_log}")
+
+        return {"tx_hash": res.txhash, "height": res.height}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class SignDocResponse(BaseModel):
+    body_bytes: str
+    auth_info_bytes: str
+    account_number: int
+    chain_id: str
+
+def build_withdraw_tx(req):
+    try:
+        rpc = os.getenv('RPC_ENDPOINT', 'https://rpc-kralum.neutron-1.neutron.org')
+        client = LedgerClient(rpc)
+        account = client.query_account(req.delegator_address)
+
+        tx = Transaction()
+        # A MsgWithdrawDelegatorReward message per validator
+        for r in req.rewards:
+            tx.add_msg(
+                MsgWithdrawDelegatorReward(
+                    delegator_address=req.delegator_address,
+                    validator_address=r.validator_address,
+                )
+            )
+
+        # Basic fee / gas; adjust to your needs
+        tx.set_fee(2000, 'untrn')
+        tx.set_gas(200000 * len(req.rewards))
+
+        tx.set_account_num(account.account_number)
+        tx.set_sequence(account.sequence)
+        tx.set_chain_id(client.chain_id)
+
+        sign_doc = tx.get_sign_doc()
+
+        return SignDocResponse(
+            body_bytes=base64.b64encode(sign_doc.body_bytes).decode(),
+            auth_info_bytes=base64.b64encode(sign_doc.auth_info_bytes).decode(),
+            account_number=account.account_number,
+            chain_id=client.chain_id,
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+SOLV_GATEWAY_URL = os.getenv('SOLV_GATEWAY_URL', 'https://api.solv.finance/solvbtc')
+
+async def generate_deposit_address(payload: dict):
+    """
+    Obtain a unique solvBTC deposit address bound to the user’s EVM address.
+    """
+    evm_address = payload.get('evm_address')
+    if not evm_address:
+        raise HTTPException(status_code=400, detail='`evm_address` field is required.')
+
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.post(f'{SOLV_GATEWAY_URL}/deposit-address', json={'evm_address': evm_address})
+            resp.raise_for_status()
+            data = resp.json()
+            return {'deposit_address': data['deposit_address']}
+        except httpx.HTTPError as exc:
+            raise HTTPException(status_code=502, detail=f'SolvBTC gateway error: {exc}')
+
+def construct_and_sign_btc_tx(payload):
+    """
+    Build & sign a Bitcoin transaction for 1 BTC (100 000 000 sats). Returns raw hex.
+    WARNING: The WIF is sensitive; keep this endpoint protected.
+    """
+    try:
+        pk = PrivateKey(payload.wif)
+        outputs = [(payload.destination, Decimal('1'), 'btc')]  # 1 BTC exactly
+        raw_tx_hex = pk.create_transaction(outputs, fee=payload.fee_sat_per_byte)
+        return {'raw_tx_hex': raw_tx_hex}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+async def broadcast_btc_tx(payload: dict):
+    """Broadcast raw BTC TX and return the resulting txid."""
+    raw_tx_hex = payload.get('raw_tx_hex')
+    if not raw_tx_hex:
+        raise HTTPException(status_code=400, detail='raw_tx_hex is required.')
+
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post('https://blockstream.info/api/tx', content=raw_tx_hex)
+            resp.raise_for_status()
+            txid = resp.text.strip()
+            return {'txid': txid}
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f'Broadcast error: {exc}')
+
+async def wait_for_confirmations(txid: str, required: int = 6, poll_seconds: int = 60):
+    """Wait until `required` confirmations are reached."""
+    url = f'https://blockstream.info/api/tx/{txid}'
+    async with httpx.AsyncClient() as client:
+        while True:
+            try:
+                resp = await client.get(url)
+                resp.raise_for_status()
+                data = resp.json()
+                confirmations = data.get('status', {}).get('confirmations', 0)
+                if confirmations >= required:
+                    return {'txid': txid, 'confirmations': confirmations, 'status': 'confirmed'}
+                await asyncio.sleep(poll_seconds)
+            except httpx.HTTPError as exc:
+                raise HTTPException(status_code=502, detail=f'Explorer error: {exc}')
+
+def attest_and_mint(payload: dict):
+    btc_txid = payload.get('btc_txid')
+    btc_destination = payload.get('btc_destination')
+    evm_address = payload.get('evm_address')
+    if not all([btc_txid, btc_destination, evm_address]):
+        raise HTTPException(status_code=400, detail='btc_txid, btc_destination, and evm_address are required.')
+
+    try:
+        w3 = Web3(Web3.HTTPProvider(ETH_RPC_URL))
+        acct = w3.eth.account.from_key(BACKEND_PRIVATE_KEY)
+        contract = w3.eth.contract(address=Web3.to_checksum_address(MINT_CONTRACT_ADDRESS), abi=MINT_ABI)
+        tx = contract.functions.mint(btc_txid, btc_destination, evm_address).build_transaction({
+            'from': acct.address,
+            'nonce': w3.eth.get_transaction_count(acct.address),
+            'gas': 500000,
+            'gasPrice': w3.to_wei('30', 'gwei'),
+        })
+        signed_tx = acct.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        return {'eth_tx_hash': tx_hash.hex()}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+async def bridge_to_neutron(payload: dict):
+    evm_tx_hash = payload.get('eth_tx_hash')
+    neutron_address = payload.get('neutron_address')
+    amount_wei = payload.get('amount_wei', '1000000000000000000')  # 1 solvBTC (18 decimals)
+    if not all([evm_tx_hash, neutron_address]):
+        raise HTTPException(status_code=400, detail='eth_tx_hash and neutron_address are required.')
+
+    request_body = {
+        'source_chain': 'Ethereum',
+        'destination_chain': 'Neutron',
+        'asset': 'solvBTC',
+        'amount': amount_wei,
+        'destination_address': neutron_address,
+        'deposit_tx_hash': evm_tx_hash,
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            resp = await client.post(f'{AXELAR_GATEWAY_URL}/transfer', json=request_body)
+            resp.raise_for_status()
+            data = resp.json()
+            return {'axelar_tx_hash': data['tx_hash']}
+        except httpx.HTTPError as exc:
+            raise HTTPException(status_code=502, detail=f'Axelar error: {exc}')
+
+def query_balance_(address: str):
+    """Return solvBTC voucher balance on Neutron."""
+    try:
+        client = LedgerClient(cfg)
+        balance = client.query_bank_balance(address, denom=IBC_DENOM_SOLVBTC)
+        return {'address': address, 'solvbtc_balance': str(balance.amount)}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+def _build_execute_msg(sender: str, amount: str) -> MsgExecuteContract:
+    return MsgExecuteContract(
+        sender=sender,
+        contract=BOOST_CONTRACT_ADDRESS,
+        msg=json.dumps({
+            'lock': {
+                'amount': amount,
+                'duration': '24_months'
+            }
+        }).encode(),
+        funds=[{'amount': amount, 'denom': 'untrn'}]
+    )
+
+def sign_and_broadcast_(payload):
+    """Signs & broadcasts the Boost lock transaction and returns `tx_hash`."""
+    sender = payload.get('sender')
+    amount = payload.get('amount', '500000000')
+
+    if not sender:
+        raise HTTPException(status_code=400, detail='sender field is required')
+
+    mnemonic = os.getenv('NEUTRON_MNEMONIC')
+    if not mnemonic:
+        raise HTTPException(status_code=500, detail='Server wallet not configured')
+
+    key = PrivateKey.from_mnemonic(mnemonic)
+    if key.address() != sender:
+        raise HTTPException(status_code=400, detail='Sender must match backend wallet address.')
+
+    client = LedgerClient(NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT))
+
+    # Compose transaction
+    tx = Transaction()
+    tx.add_message(_build_execute_msg(sender, amount))
+    tx.with_gas(300000)  # gas limit estimate – adjust as needed
+    tx.with_chain_id(CHAIN_ID)
+
+    try:
+        signed_tx = tx.build_and_sign(key)
+        tx_response = client.send_tx_block_mode(signed_tx)
+        return {'tx_hash': tx_response.tx_hash}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+def tx_status(tx_hash: str):
+    client = LedgerClient(NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT))
+    try:
+        tx_response = client.query_tx(tx_hash)
+        if not tx_response:
+            return { 'status': 'PENDING' }
+        return { 'status': 'COMMITTED', 'height': tx_response.height }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+def construct_cw20_approve_(body):
+    '''Return a sign-ready MsgExecuteContract JSON payload for CW20 approve.'''
+    try:
+        # 1. Build the CW20 approve execute message
+        approve_msg = {
+            'approve': {
+                'spender': body.spender,
+                'amount': str(body.amount)
+            }
+        }
+
+        # 2. Encode the JSON message as base64 per CosmWasm requirements
+        encoded_msg = base64.b64encode(json.dumps(approve_msg).encode()).decode()
+
+        # 3. Wrap into a proto-compatible dict (cosmpy / cosmjs can turn this into a real proto).
+        cw20_execute_msg = {
+            'type_url': '/cosmwasm.wasm.v1.MsgExecuteContract',
+            'value': {
+                'sender': body.sender,
+                'contract': body.cw20_contract,
+                'msg': encoded_msg,
+                'funds': []
+            }
+        }
+
+        return { 'msg': cw20_execute_msg }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+def broadcast_approve(body):
+    try:
+        wallet = PrivateKey.from_mnemonic(body.mnemonic)
+        sender = wallet.public_key.address()
+
+        tx = Transaction()
+        tx.add_message(body.msg)            # Convert dict→proto inside cosmpy in real code
+
+        client = LedgerClient(cfg)
+        tx.with_sequence(client.get_sequence(sender))
+        tx.with_account_number(client.get_number(sender))
+        tx.with_chain_id(cfg.chain_id)
+        tx.sign(wallet)
+
+        result = client.broadcast_tx(tx)
+        return result                      # JSON tx response
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+def construct_lend(body):
+    try:
+        # Optional inner payload for the lending pool (often empty)
+        inner_msg = {}
+
+        wrapped_send = {
+            'send': {
+                'contract': body.amber_pool,
+                'amount': str(body.amount),
+                'msg': base64.b64encode(json.dumps(inner_msg).encode()).decode()
+            }
+        }
+
+        encoded = base64.b64encode(json.dumps(wrapped_send).encode()).decode()
+        exec_msg = {
+            'type_url': '/cosmwasm.wasm.v1.MsgExecuteContract',
+            'value': {
+                'sender': body.sender,
+                'contract': body.cw20_contract,
+                'msg': encoded,
+                'funds': []
+            }
+        }
+
+        return { 'msg': exec_msg }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+async def lock_status(address: str, lock_id: int) -> Dict:
+    """Return the lock information for <address, lock_id>. Raises 400 if lock not found."""
+    try:
+        # Build CosmWasm smart-query
+        query_msg = {
+            "lock": {
+                "address": address,
+                "lock_id": lock_id
+            }
+        }
+        query_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
+        url = f"{LCD}/wasm/v1/contract/{LOCK_CONTRACT_ADDR}/smart/{query_b64}"
+
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(url)
+        if resp.status_code != 200:
+            raise HTTPException(status_code=resp.status_code, detail=resp.text)
+
+        data = resp.json()
+        # Adjust the JSON path depending on contract schema
+        lock_info = data.get("data") or data  # fallback
+
+        if not lock_info:
+            raise HTTPException(status_code=404, detail="Lock not found")
+
+        if not lock_info.get("unlockable", False):
+            return {"eligible": False, "reason": "Lock period not finished"}
+
+        return {
+            "eligible": True,
+            "lock_info": lock_info
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class OpenPositionRequest(BaseModel):
+    mnemonic: str                       # !! Only for demo purposes !!
+    open_position_msg: dict             # MsgExecuteContract generated in Step 4
+    gas_limit: int = 250000             # conservative default
+    gas_price: float = 0.025            # NTRN per gas unit
+
+async def open_position(req: OpenPositionRequest):
+    try:
+        client = LedgerClient(cfg)
+        wallet = Wallet(req.mnemonic)
+
+        # 2. Craft the transaction
+        tx = (
+            Transaction()
+            .with_messages(req.open_position_msg)
+            .with_sequence(client.query_account_sequence(wallet.address()))
+            .with_account_num(client.query_account_number(wallet.address()))
+            .with_gas(req.gas_limit)
+            .with_chain_id(cfg.chain_id)
+        )
+
+        # 3. Sign & broadcast
+        signed_tx = wallet.sign(tx)
+        tx_response = client.broadcast_tx_block(signed_tx)
+
+        if tx_response.is_error:
+            raise HTTPException(400, f'Broadcast failed: {tx_response.log}')
+        return {"tx_hash": tx_response.tx_hash, "height": tx_response.height}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def get_vault(asset: str):
+    asset = asset.lower()
+    if asset not in SUPERVAULTS:
+        raise HTTPException(status_code=404, detail="Unsupported asset")
+    return SUPERVAULTS[asset]
+
+
+def build_deposit_tx(vault_addr: str, sender_addr: str, amount_micro: int = 3_000_000):
+    """Create an unsigned Transaction object with a single CosmWasm execute msg."""
+
+    # CosmWasm messages require base64-encoded JSON inside the high-level msg
+    msg_inner = base64.b64encode(json.dumps({"deposit": {}}).encode()).decode()
+
+    exec_msg = {
+        "type": "wasm/MsgExecuteContract",
+        "value": {
+            "sender":   sender_addr,
+            "contract": vault_addr,
+            "msg":       msg_inner,
+            "funds":     [{"denom": EBTC_DENOM, "amount": str(amount_micro)}]
+        }
+    }
+
+    tx = (
+        Transaction()
+        .with_messages(exec_msg)
+        .with_sequence(client.query_sequence(sender_addr))
+        .with_account_num(client.query_account_number(sender_addr))
+        .with_chain_id(NETWORK.chain_id)
+        .with_gas(300000)  # rough estimate; adjust as needed
+        .with_fee_denom(NETWORK.fee_denom)
+        .with_fee(7500)
+        .with_memo("eBTC → Supervault deposit")
+        .with_timeout_height(client.query_height() + 50)  # ~5 min sooner than current block
+    )
+    return tx
+
+
+
+def sign_and_broadcast(vault_addr: str, amount_micro: int = 3_000_000):
+    tx: Transaction = build_deposit_tx(vault_addr, wallet.address(), amount_micro)
+
+    # Sign with service wallet
+    tx_signed = tx.sign(wallet)
+
+    # Broadcast and await inclusion
+    resp = client.broadcast_tx(tx_signed)
+    if resp.is_err():
+        raise RuntimeError(f"Broadcast failed: {resp.log}")
+
+    print("✅ Broadcast successful → txhash:", resp.tx_hash)
+    return {"tx_hash": resp.tx_hash}
+
+
+def cw20_balance(contract: str, addr: str) -> int:
+    """Query CW20 balance via the contract's `balance` endpoint."""
+    sc = SmartContract(contract, client)
+    try:
+        resp = sc.query({"balance": {"address": addr}})
+        return int(resp.get('balance', '0'))
+    except Exception:
+        # If the query fails treat balance as zero
+        return 0
+
+
+async def validate_token_balances(address: str):
+    """Checks that the user holds ≥1 WBTC and ≥1 LBTC."""
+    try:
+        wbtc_bal = cw20_balance(WBTC_CONTRACT, address)
+        lbtc_bal = cw20_balance(LBTC_CONTRACT, address)
+        return BalanceStatus(
+            has_wbtc=wbtc_bal >= MICRO_FACTOR,
+            has_lbtc=lbtc_bal >= MICRO_FACTOR,
+        )
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
+
+async def construct_tx_supervault_deposit(address: str):
+    """Creates an unsigned deposit Tx and returns the raw bytes (base64)."""
+    try:
+        # Payload that the Supervault expects (often empty for simple deposits)
+        deposit_msg = {"deposit": {}}
+        deposit_payload_b64 = base64.b64encode(json.dumps(deposit_msg).encode()).decode()
+
+        def build_cw20_send(token_contract: str):
+            return {
+                "typeUrl": "/cosmwasm.wasm.v1.MsgExecuteContract",
+                "value": {
+                    "sender": address,
+                    "contract": token_contract,
+                    "msg": base64.b64encode(json.dumps({
+                        "send": {
+                            "contract": SUPERVAULT_CONTRACT,
+                            "amount": str(MICRO_FACTOR),  # 1 token
+                            "msg": deposit_payload_b64
+                        }
+                    }).encode()).decode(),
+                    "funds": []
+                }
+            }
+
+        # Compose both messages
+        msgs = [build_cw20_send(WBTC_CONTRACT), build_cw20_send(LBTC_CONTRACT)]
+
+        tx = Transaction()
+        for m in msgs:
+            tx.add_message(m["value"])
+
+        # Gas/fee estimates — tune to production needs
+        tx.set_fee(5000, "untrn")
+        tx.set_gas(400000)
+
+        unsigned_tx = tx.get_unsigned()
+        return {"tx_bytes": base64.b64encode(unsigned_tx.SerializeToString()).decode()}
+
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
+
+
+async def get_supervault_share_balance(address: str):
+    """Return the amount of Supervault shares owned by `address`."""
+    try:
+        if not SUPER_VAULT_CONTRACT:
+            raise ValueError('SUPER_VAULT_CONTRACT env var not set')
+
+        # Connect to public Neutron endpoints
+        client = LedgerClient(cfg)
+
+        # Contract-specific query (may differ in your implementation)
+        query_msg = {
+            'share': {
+                'owner': address,
+            }
+        }
+
+        result = client.query_contract_smart(SUPER_VAULT_CONTRACT, query_msg)
+        shares_raw = int(result.get('shares', '0'))
+        return {'shares': shares_raw}
+
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+async def supervault_positions(req):
+    """Query Supervault for user positions via WASM smart-contract call."""
+    try:
+        client = LedgerClient(cfg)
+
+        query_msg = {
+            'positions_by_user': {
+                'address': req.user_address
+            }
+        }
+
+        # Perform the query against Supervault
+        positions = client.query_contract(
+            contract_address=req.contract_address,
+            query=query_msg
+        )
+
+        return {'positions': positions}
+
+    except Exception as e:
+        # Always wrap low-level errors so the frontend gets a clean message
+        raise HTTPException(status_code=500, detail=str(e))
+
+class BalanceResponse(BaseModel):
+    maxbtc: int
+    unibtc: int
+    eligible: bool
+
+async def check_balance(address: str):
+    """Return each balance and whether both are ≥ 1."""
+    try:
+        payload = { 'balance': { 'address': address } }
+
+        maxbtc = int(client.wasm_contract_query(CW20_MAXBTC, payload)['balance'])
+        unibtc = int(client.wasm_contract_query(CW20_UNIBTC, payload)['balance'])
+        ok = maxbtc >= REQUIRED_AMOUNT and unibtc >= REQUIRED_AMOUNT
+
+        return BalanceResponse(maxbtc=maxbtc, unibtc=unibtc, eligible=ok)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f'Balance query failed: {e}')
+
+
+async def get_supervault_details():
+    try:
+        details = {
+            'supervault_address': os.getenv('MAXUNI_SUPERVAULT', 'neutron1supervaultxxxxxxxxxxxxxxxxxxxx'),
+            'assets': [
+                { 'symbol': 'maxBTC', 'cw20': os.getenv('CW20_MAXBTC', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx') },
+                { 'symbol': 'uniBTC', 'cw20': os.getenv('CW20_UNIBTC', 'neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy') }
+            ]
+        }
+        return details
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class BuildDepositRequest(BaseModel):
+    sender: str  # user wallet address
+    amount_maxbtc: int = 1
+    amount_unibtc: int = 1
+
+class BuildDepositResponse(BaseModel):
+    tx_bytes: str  # hex-encoded, unsigned
+    body: dict     # human-readable body for inspection/debug
+
+async def build_deposit(req: BuildDepositRequest):
+    try:
+        supervault = os.getenv('MAXUNI_SUPERVAULT', 'neutron1supervaultxxxxxxxxxxxxxxxxxxxx')
+
+        # ExecuteMsg expected by the Supervault contract
+        exec_msg = {
+            'deposit': {
+                'assets': [
+                    { 'token': os.getenv('CW20_MAXBTC', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'), 'amount': str(req.amount_maxbtc) },
+                    { 'token': os.getenv('CW20_UNIBTC', 'neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy'), 'amount': str(req.amount_unibtc) }
+                ]
+            }
+        }
+
+        tx = Transaction()
+        tx.add_message(
+            MsgExecuteContract(
+                sender = req.sender,
+                contract = supervault,
+                msg = exec_msg,
+                funds = []  # CW20 -> no native funds
+            )
+        )
+        # Fee/memo left empty so they can be set at signing time
+        unsigned_bytes = tx.get_tx_bytes(sign=False)  # Do **not** sign here!
+        return BuildDepositResponse(tx_bytes=unsigned_bytes.hex(), body=tx.get_tx_json(sign=False))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f'Failed to build deposit tx: {e}')
+
+
+class BroadcastResponse(BaseModel):
+    tx_hash: str
+    height: int

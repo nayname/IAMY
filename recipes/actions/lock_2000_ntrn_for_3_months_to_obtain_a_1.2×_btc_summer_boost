@@ -1,0 +1,54 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connect to Keplr and return the user\u2019s Neutron bech32 address that will perform the lock.",
+            "code": "export const getWalletAddress = async () => {\n  const chainId = 'neutron-1';\n\n  if (!window || !window.keplr) {\n    throw new Error('Keplr wallet is not installed in this browser.');\n  }\n\n  // Ask Keplr to enable the Neutron chain (will prompt the user on first run)\n  await window.keplr.enable(chainId);\n\n  // Retrieve the key information for this chain\n  const key = await window.keplr.getKey(chainId);\n\n  if (!key || !key.bech32Address) {\n    throw new Error('Failed to obtain a bech32 address from Keplr.');\n  }\n\n  return key.bech32Address; // e.g. neutron1...\n};",
+            "usage": "const address = await getWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Fetch the wallet\u2019s spendable `untrn` balance via Neutron\u2019s public LCD endpoint.",
+            "code": "export const fetchNtrnBalance = async (address) => {\n  // Public LCD endpoint \u2014 replace with your preferred endpoint or a proxy if needed\n  const LCD = 'https://lcd-neutron.blockpane.com';\n  const denom = 'untrn';\n\n  try {\n    const res = await fetch(`${LCD}/cosmos/bank/v1beta1/balances/${address}`);\n    if (!res.ok) {\n      throw new Error(`LCD error: ${res.status} ${res.statusText}`);\n    }\n    const data = await res.json();\n\n    /*  The response shape is:\n        {\n          \"balances\": [ { \"denom\": \"untrn\", \"amount\": \"12345\" }, ... ],\n          ...\n        }\n    */\n    const coin = (data.balances || []).find((c) => c.denom === denom);\n    const amount = coin ? Number(coin.amount) : 0;\n    return amount; // returns micro-denom amount (e.g. 2 000 000 000 for 2 000 NTRN)\n  } catch (err) {\n    console.error('[fetchNtrnBalance] ', err);\n    throw err;\n  }\n};",
+            "usage": "const rawBalance = await fetchNtrnBalance(address);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Validate that at least 2 000 NTRN (2 000 000 000 untrn) is available and abort otherwise.",
+            "code": "export const validateLockAmount = (rawBalance, amountToLock = 2_000_000_000) => {\n  if (rawBalance < amountToLock) {\n    throw new Error('Insufficient spendable NTRN balance (need \u2265 2,000 NTRN).');\n  }\n  /*\n    NOTE: Detecting whether funds are already vested or locked normally requires\n    contract-specific queries that are out of scope for a client-side snippet.\n    For simple front-end validation we only check spendable balance.\n  */\n  return true;\n};",
+            "usage": "validateLockAmount(rawBalance);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Calculate the unlock timestamp by adding 90 days (7 776 000 s) to the current block-time approximation.",
+            "code": "export const calculateUnlockTimestamp = () => {\n  const NOW_SEC = Math.floor(Date.now() / 1000); // JS Date gives ms\n  const LOCK_DURATION = 7_776_000; // 90 days in seconds\n  return NOW_SEC + LOCK_DURATION;\n};",
+            "usage": "const unlockTs = calculateUnlockTimestamp();"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Construct the `ExecuteMsg` that locks 2 000 000 000 untrn for `duration_seconds = 7 776 000`.",
+            "code": "export const constructLockExecuteMsg = ({ sender, amount = '2000000000', durationSeconds = 7_776_000 }) => {\n  if (!sender) throw new Error('`sender` is required');\n\n  const executeMsg = {\n    lock: {\n      duration_seconds: durationSeconds.toString()\n    }\n  };\n\n  return {\n    contract_address: 'neutron14lnmj4k0tqsfn3x8kmnmacg64ct2utyz0aaxtm5g3uwwp8kk4f6shcgrtt',\n    sender,\n    msg: executeMsg,\n    funds: [\n      {\n        denom: 'untrn',\n        amount: amount.toString()\n      }\n    ]\n  };\n};",
+            "usage": "const execPayload = constructLockExecuteMsg({ sender: address });"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "A FastAPI endpoint that receives the Execute payload, signs it with a backend wallet (mnemonic stored as an env-var) using CosmPy, and broadcasts it to Neutron main-net.",
+            "code": "###############################################################################\n# backend/lock_tokens.py                                                       #\n###############################################################################\n\nimport os\nimport json\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel, Field\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.aerial.wallet import LocalWallet\nfrom cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgExecuteContract\n\napp = FastAPI(title=\"NTRN Lock API\")\n\n# --- Models ------------------------------------------------------------------\nclass Fund(BaseModel):\n    denom: str\n    amount: str\n\nclass LockRequest(BaseModel):\n    contract_address: str = Field(..., description=\"Lock contract address\")\n    sender: str = Field(..., description=\"User address that appears as Msg sender\")\n    msg: dict = Field(..., description=\"ExecuteMsg JSON body\")\n    funds: list[Fund]\n\n# --- Chain Config ------------------------------------------------------------\nNETWORK = NetworkConfig(\n    chain_id=\"neutron-1\",\n    url=\"https://rpc-kralum.neutron.org\",  # Public RPC; replace if necessary\n    fee_denomination=\"untrn\",\n    gas_price=0.025,            # 0.025untrn is a safe over-estimate\n    staking_denomination=\"untrn\",\n)\n\n# Wallet that will sign the transaction (use with caution!)\nMNEMONIC = os.getenv(\"NTRN_WALLET_MNEMONIC\")\nif MNEMONIC is None:\n    raise RuntimeError(\"NTRN_WALLET_MNEMONIC env-var is not set\")\n\nWALLET = LocalWallet.from_mnemonic(MNEMONIC)\n\n# --- Endpoint ----------------------------------------------------------------\n@app.post(\"/api/lock_tokens\")\nasync def lock_tokens(req: LockRequest):\n    try:\n        # Defensive checks ----------------------------------------------------\n        if WALLET.address() != req.sender:\n            raise HTTPException(\n                status_code=400,\n                detail=\"Backend wallet address does not match provided sender.\"\n            )\n\n        # Build MsgExecuteContract -------------------------------------------\n        wasm_msg_bytes = json.dumps(req.msg).encode()\n        execute_msg = MsgExecuteContract(\n            sender=req.sender,\n            contract=req.contract_address,\n            msg=wasm_msg_bytes,\n            funds=[\n                {\n                    \"denom\": f.denom,\n                    \"amount\": f.amount,\n                }\n                for f in req.funds\n            ],\n        )\n\n        # Create & sign TX ----------------------------------------------------\n        tx = Transaction()\n        tx.add_message(execute_msg)\n        tx.with_sequence(LedgerClient(NETWORK).get_sequence(req.sender))\n        tx.with_chain_id(NETWORK.chain_id)\n        tx.with_gas(250_000)  # empirical gas; adjust if necessary\n        tx.with_memo(\"Lock 2K NTRN for 90d\")\n\n        # Sign using backend wallet\n        tx_signed = tx.sign(WALLET)\n\n        # Broadcast -----------------------------------------------------------\n        client = LedgerClient(NETWORK)\n        tx_response = client.broadcast_tx(tx_signed)\n\n        return {\n            \"tx_hash\": tx_response.tx_hash.hex(),\n            \"height\": tx_response.height,\n            \"raw_log\": tx_response.raw_log,\n        }\n\n    except HTTPException:\n        raise  # re-throw fastapi exceptions unchanged\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "// In your React / NextJS component\nconst res = await fetch('/api/lock_tokens', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify(execPayload)\n});\nconst result = await res.json();\nconsole.log('Tx broadcasted! Hash:', result.tx_hash);"
+        },
+        {
+            "step": 7,
+            "label": "frontend",
+            "introduction": "Query the Boost Pointer contract to verify the multiplier is now \u2265 1.2\u00d7 for this wallet.",
+            "code": "export const queryBoostMultiplier = async (address) => {\n  const BOOST_POINTER_CONTRACT = 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxx'; // TODO: replace with real addr\n  const queryMsg = {\n    multiplier: {\n      address\n    }\n  };\n\n  // LCD expects the smart-query to be Base64-encoded\n  const base64Query = btoa(JSON.stringify(queryMsg));\n  const LCD = 'https://lcd-neutron.blockpane.com';\n\n  try {\n    const url = `${LCD}/cosmwasm/wasm/v1/contract/${BOOST_POINTER_CONTRACT}/smart/${base64Query}`;\n    const res = await fetch(url);\n    if (!res.ok) {\n      throw new Error(`LCD error: ${res.status} ${res.statusText}`);\n    }\n    const data = await res.json();\n    /*  Expected shape (example):\n        {\n          \"data\": {\n            \"multiplier\": \"1.25\"\n          }\n        }\n    */\n    return data.data?.multiplier ?? null;\n  } catch (err) {\n    console.error('[queryBoostMultiplier] ', err);\n    throw err;\n  }\n};",
+            "usage": "const multiplier = await queryBoostMultiplier(address);\nconsole.log('Current boost multiplier:', multiplier);"
+        }
+    ]
+}
