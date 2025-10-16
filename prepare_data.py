@@ -4,9 +4,11 @@ import json
 import os
 import random
 import sys
+import time
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+from mcp.client.streamable_http import streamablehttp_client
 
 from lib.query_w_tools import create_graph
 from langchain.globals import set_verbose
@@ -38,7 +40,13 @@ onliners = {
 pages = {
     # "NeutronTemplate":"data/pages/NeutronTemplate",
     # "Cron": "data/pages/Cron",
-    "BTC": "data/pages/BTC",
+    #***
+    # COSMOS
+    #***
+    "UserGuides": "data/pages/UserGuides",
+    # "ToolingResources": "data/pages/ToolingResources",
+    # "EthereumJSON_RPC": "data/pages/EthereumJSON_RPC",
+    # "Learn": "data/pages/Learn",
 }
 
 synthesize_ners = open("prompts/synthesize_ners").read()
@@ -50,10 +58,11 @@ synthesize_picking_functions = open("prompts/synthesize_picking_functions").read
 
 server_params = StdioServerParameters(
     command="node",
-    args=["/root/neutron/docs/mcp/mcp-server.js"],
+    args=["/root/neutron/cosmos-docs/docs/mcp/mcp-server.js"],
     env=None,
 )
 
+MCP_ENDPOINT = "https://evm.cosmos.network/mcp"
 
 def create_ner_dataset(filepaths, num):
     """Loads data from all provided CLI files and creates a unified NER dataset."""
@@ -177,6 +186,8 @@ async def create_pre_recipe(session, config):
                 json.dump(serializable_state, f, indent=4)
             with open('data/pre_recipes/' + batch[0]['label'] + str(count), 'w') as f:
                 json.dump(json.loads(response["messages"][-1].content), f, indent=4)
+            print("SLEEPING")
+            time.sleep(30)
 
         count += 1
 
@@ -212,21 +223,27 @@ def escape(param):
 
 
 async def create_actions(session, config):
+    count = 0
     with os.scandir("data/pre_recipes") as entries:
         for entry in entries:
             if entry.is_file():  # Check if it's a file
                 if not entry.path.endswith("result.txt"):
                     found = False
+                    title = ""
+
                     for key in pages.keys():
                         if key in entry.path:
                             found = True
+                            title = key
                             break
 
                     if found:
+                        print(entry.path)
                         with open(entry.path, 'r') as f:
                             items = json.load(f)
 
                         for key in items:
+                            count += 1
                             # if action == key['intent']:
                             workflow = key['workflow']
 
@@ -238,17 +255,23 @@ async def create_actions(session, config):
                                 with open('recipes/actions/' + escape(key['intent']), 'w') as f:
                                     json.dump(json.loads(response["messages"][-1].content), f, indent=4)
 
+                                print("Page:"+title+", count: "+str(count))
+                                time.sleep(30)
+
 
 async def pick_tools(session, config):
-    with os.scandir("data/pre_recipes") as entries:
+    count = 0
+    with (os.scandir("data/pre_recipes") as entries):
         for entry in entries:
             if entry.is_file():  # Check if it's a file
                 if not entry.path.endswith("result.txt"):
                     found = False
+                    title = ""
 
                     for key in pages.keys():
                         if key in entry.path:
                             found = True
+                            title = key
                             break
 
                     if found:
@@ -256,7 +279,9 @@ async def pick_tools(session, config):
                             items = json.load(f)
 
                         for key in items:
-                            if not os.path.exists('recipes/tools/' + escape(key['intent'])):  #action == key['intent'] and
+                            count += 1
+                            if not os.path.exists('recipes/tools/' + escape(key['intent'])) \
+                                and os.path.exists('recipes/actions/' + escape(key['intent'])):  #action == key['intent'] and
                                 with open("/root/neutron/IAMY/recipes/frontend.jsx", "r") as f:
                                     frontend_tools = f.read()
 
@@ -291,11 +316,16 @@ async def pick_tools(session, config):
                                 with open('recipes/tools/' + escape(key['intent']), 'w') as f:
                                     json.dump(res, f, indent=4)
 
+                                print("Page:" + title + ", count: " + str(count))
+                                time.sleep(30)
+
 
 async def main(flag):
     config = {"configurable": {"thread_id": 1234}}
     async with stdio_client(server_params) as (read, write):
+    # async with streamablehttp_client(MCP_ENDPOINT) as (read, write, _):
         async with ClientSession(read, write) as session:
+            # Handshake
             await session.initialize()
 
             # parser = argparse.ArgumentParser(description="Client")
@@ -320,7 +350,13 @@ async def main(flag):
 
 
 if __name__ == "__main__":
-    asyncio.run(main(sys.argv[1]))
+    # try:
+        asyncio.run(main(sys.argv[1]))
+    # except Exception as e:
+    #     print("ERROR SLEEEPING")
+    #     time.sleep(100)
+    #     asyncio.run(main(sys.argv[1]))
+
 
 # Agent(queries['crowdfund'][0], 'crowdfund')
 # Agent(queries['cw20_exchange'][0], 'cw20_exchange')

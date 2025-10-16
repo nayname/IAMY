@@ -35,8 +35,10 @@ from recipes.backend import extract_code_id_from_tx, select_data_provider, build
     connect_rpc_endpoint, neutrond_status, extract_block_height, build_msg_delete_schedule, query_cron_schedule, \
     query_all_cron_schedules, query_cron_params, build_msg_add_schedule, build_dao_proposal, construct_update_admin_tx, \
     get_admin_wallet, get_contract_address, query_contracts_by_creator, \
-    extract_last_execution_height, amber_positions, query_supervault_details, construct_supervault_deposit_tx, \
-    sign_and_broadcast_tx_
+    extract_last_execution_height, amber_positions, construct_supervault_deposit_tx, \
+    sign_and_broadcast_tx_, check_balance, get_supervault_details, build_deposit, get_controller_address, \
+    _query_wasm_smart, supervault_address, validate_balances, construct_and_sign, broadcast_signed_tx, \
+    parse_balance_response
 
 
 # --- Placeholder for your generation logic ---
@@ -479,7 +481,35 @@ async def handle_generate(request_data: Request):
             res.append("Tx_hash: " + json.dumps(tx_hash))
 
             return JSONResponse(content=res)
+        case "Execute an emergency withdrawal for the user's Amber trading position":
+            positions = await amber_positions(req["address"])  # step: 6 Tool: query_bank_balance Desciption: After confirmation, re-query the user\u2019s bank balance to reflect the incoming 50 NTRN."
+            return JSONResponse(content=positions)
+        case "Increase the user's deposit in the WBTC/USDC Supervault by 0.2 WBTC and 12 000 USDC":
+            res = []
 
+            # await validate_balances(userAddress)#step: 2 Tool: validate_token_balances Desciption: Ensure the wallet has at least 0.2 WBTC and 12 000 USDC available.",
+            vault_addr = supervault_address()["address"]#step: 3 Tool: get_supervault_contract_address Desciption: Look up the contract address for the WBTC/USDC Supervault.",
+            res.append("Vault details: " + json.dumps(vault_addr))
+
+            tx_pkg = construct_supervault_deposit_tx({"address": vault_addr, "wbtc_amount": 20000000, "usdc_amount": 12000000000})#step: 4 Tool: construct_tx_supervault_deposit Desciption: Create the deposit message specifying 0.2 WBTC and 12 000 USDC as the amounts.",
+            res.append("Deposit message: " + json.dumps(tx_pkg))
+
+            tx_hash = await sign_and_broadcast_tx_({"tx_base64": tx_pkg["tx_base64"]})#step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the deposit transaction."
+            res.append("Tx_hash: " + json.dumps(tx_hash))
+
+            return JSONResponse(content=res)
+        case "Enable USDC gas payments for my next transaction":
+            res = []
+            signed_tx = await construct_and_sign("")#step: 4 Tool: construct_and_sign_next_tx Desciption: When building the user\u2019s next transaction, set `--fees <amount>uusdc` where `<amount>` \u2265 Step 2\u2019s minimum threshold, then sign.",
+            res.append("Signed_tx: " + json.dumps(signed_tx))
+
+            tx_hash = await broadcast_signed_tx()#step: 5 Tool: broadcast_tx Desciption: Broadcast the signed transaction to Neutron and await inclusion in a block."
+            res.append("Tx_hash: " + json.dumps(tx_hash))
+
+            return JSONResponse(content=res)
+        case "Query a wallet’s bank balances via the REST API":
+            parsed = parse_balance_response(req["balance"], denom='untrn')#step: 3 Tool: parse_json_response Desciption: Decode the JSON payload to view the \"balances\" array containing denomination/amount pairs.
+            return JSONResponse(content=parsed)
 
 # case _:
         #     # Default case (optional), executed if no other pattern matches

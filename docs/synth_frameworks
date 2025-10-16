@@ -1,0 +1,275 @@
+| Category                                         | What it gives you                        | Good projects / libs                                                                                    | How you’d use it for web3                                                                                                                                                                                                                     |
+| ------------------------------------------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. Templating + slot enumeration**             | 100 % controllable, no hallucination     | *Python + Jinja2*, *pypika* for SQL, `textwrap.dedent`, `string.Template`                               | Hand-write canonical sentences like “Send {{amount}} {{token}} to {{address}} on {{chain}}.”  Enumerate slots from a registry of chains, tokens, test addresses.  Fast, no verification surprises.                                            |
+| **2. Rule-based paraphrase pipelines**           | Surface variety while staying safe       | **NL-Augmenter** (HuggingFace), **Parrot**, **TextAttack**                                              | Feed the canonical templates; get tense/voice/ synonym rewrites.  Keep only paraphrases that still parse back to the same slots (use regex or spaCy matcher).                                                                                 |
+| **3. Weak-supervision / labeling frameworks**    | Semi-automatic intent tags on mined text | **Snorkel**, **Cleanlab**, **NLTK → Snips NLU**                                                         | Scrape docs / Stack Exchange Q\&A, write labeling functions that fire if a line contains “delegate” & “validator”.  Yields raw NL intents you can align to commands later.                                                                    |
+| **4. *Self-Instruct-style* LLM synthesis**       | Mass generation with quality filters     | **Self-Instruct** repo, **Evol-Instruct**, **Alpaca-Data-GM**                                           | Prompt GPT-4: “You are an expert in Foundry CLI. Produce 10 diverse natural-language requests and the exact `cast ...` commands. Follow JSON schema …” Then auto-verify each command on `anvil` or a Cosmos devnet; keep only ones that pass. |
+| **5. Function-call / API-spec driven pipelines** | NL ↔ structured call pairs at scale      | **Gorilla-OpenFunctions / APIBench**, **ToolBench-builder**, **OpenAPI-Tooling** (OpenAI function mode) | Convert each CLI/RPC to a JSON *function schema*, then let the Gorilla / ToolBench generator call GPT-4 to create NL instructions that invoke that function. Works well for web3 where commands have clear signatures.                        |
+| **6. Agent-task datasets + replay**              | Multi-step web/CLI traces w/ intents     | **Mind2Web**, **WebShop**, **ReActFx**                                                                  | Record you (or an auto-agent) doing multi-step tasks on `hermes`, `neutrond`, Foundry; store NL goal + action list.  Good for training chain-of-thought agents rather than single commands.                                                   |
+| **7. LangChain / LangSmith synthetic helpers**   | Quick scripts; eval harness built-in     | `langchain.data.synthesizer`, **LangSmith datasets**                                                    | Spin up a notebook: loop over slot-filled JSON, call `chat_model.generate` to create 3 paraphrases each, log to LangSmith, auto-run unit tests that call the command against a sandbox RPC.                                                   |
+| **8. Programmatic “help-tree crawler”**          | Guaranteed coverage of every sub-command | Tiny custom script + `subprocess.run(["cmd", "--help"])`                                                | Recursively crawl CLIs (`cast`, `neutrond tx`, `solana --help`), capture option signatures → create minimal NL like “query wasm contract code”.  Combine with LLM paraphraser for fluency.                                                    |
+
+### Verification tricks for web3
+
+| Stack                | “Safe exec” idea                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **EVM**              | Spin up `anvil --fork-url=$RPC --balance 1000ether…`; run `cast` commands with `--simulate` or `eth_call` for writes.    |
+| **Cosmos / Neutron** | Use a single-node devnet (`neutrond start --home …`) and `--dry-run`/`--generate-only` flag; check that Tx bytes decode. |
+| **Solana**           | `solana-test-validator`; pre-airdrop account then run `solana`/`spl-token` commands.                                     |
+| **Relayers**         | `hermes` can `--dry-run`; ensure channel handshake packets decode.                                                       |
+
+#### TL;DR
+
+Pick a synthesis pipeline:
+
+1. **Start from canonical command schema** (crawl `--help` trees).
+2. **Generate NL** via templating or LLM (Self-Instruct / Gorilla).
+3. **Auto-verify** each pair on a sandbox chain.
+4. **Store JSONL** with `nl`, `command`, `tool`, `intent`, `verified`.
+
+Frameworks that shortcut steps 2-3: **Self-Instruct**, **Gorilla-OpenFunctions**, **ToolBench-builder**, **NL-Augmenter**, or just LangChain + your verification harness. Let me know if you want a concrete starter script for, say, Foundry `cast` + GPT-4.
+
+##################################################################################
+
+Below are the \*\*main patterns and open-source “frameworks” people use to *synthesize high-quality natural-language intents* (prompts) that map to deterministic actions such as CLI commands, RPC calls, or API invocations.  They’re listed roughly from simplest to most automated; you can mix-and-match.
+
+| Category                                         | What it gives you                        | Good projects / libs                                                                                    | How you’d use it for web3                                                                                                                                                                                                                     |
+| ------------------------------------------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. Templating + slot enumeration**             | 100 % controllable, no hallucination     | *Python + Jinja2*, *pypika* for SQL, `textwrap.dedent`, `string.Template`                               | Hand-write canonical sentences like “Send {{amount}} {{token}} to {{address}} on {{chain}}.”  Enumerate slots from a registry of chains, tokens, test addresses.  Fast, no verification surprises.                                            |
+| **2. Rule-based paraphrase pipelines**           | Surface variety while staying safe       | **NL-Augmenter** (HuggingFace), **Parrot**, **TextAttack**                                              | Feed the canonical templates; get tense/voice/ synonym rewrites.  Keep only paraphrases that still parse back to the same slots (use regex or spaCy matcher).                                                                                 |
+| **3. Weak-supervision / labeling frameworks**    | Semi-automatic intent tags on mined text | **Snorkel**, **Cleanlab**, **NLTK → Snips NLU**                                                         | Scrape docs / Stack Exchange Q\&A, write labeling functions that fire if a line contains “delegate” & “validator”.  Yields raw NL intents you can align to commands later.                                                                    |
+| **4. *Self-Instruct-style* LLM synthesis**       | Mass generation with quality filters     | **Self-Instruct** repo, **Evol-Instruct**, **Alpaca-Data-GM**                                           | Prompt GPT-4: “You are an expert in Foundry CLI. Produce 10 diverse natural-language requests and the exact `cast ...` commands. Follow JSON schema …” Then auto-verify each command on `anvil` or a Cosmos devnet; keep only ones that pass. |
+| **5. Function-call / API-spec driven pipelines** | NL ↔ structured call pairs at scale      | **Gorilla-OpenFunctions / APIBench**, **ToolBench-builder**, **OpenAPI-Tooling** (OpenAI function mode) | Convert each CLI/RPC to a JSON *function schema*, then let the Gorilla / ToolBench generator call GPT-4 to create NL instructions that invoke that function. Works well for web3 where commands have clear signatures.                        |
+| **6. Agent-task datasets + replay**              | Multi-step web/CLI traces w/ intents     | **Mind2Web**, **WebShop**, **ReActFx**                                                                  | Record you (or an auto-agent) doing multi-step tasks on `hermes`, `neutrond`, Foundry; store NL goal + action list.  Good for training chain-of-thought agents rather than single commands.                                                   |
+| **7. LangChain / LangSmith synthetic helpers**   | Quick scripts; eval harness built-in     | `langchain.data.synthesizer`, **LangSmith datasets**                                                    | Spin up a notebook: loop over slot-filled JSON, call `chat_model.generate` to create 3 paraphrases each, log to LangSmith, auto-run unit tests that call the command against a sandbox RPC.                                                   |
+| **8. Programmatic “help-tree crawler”**          | Guaranteed coverage of every sub-command | Tiny custom script + `subprocess.run(["cmd", "--help"])`                                                | Recursively crawl CLIs (`cast`, `neutrond tx`, `solana --help`), capture option signatures → create minimal NL like “query wasm contract code”.  Combine with LLM paraphraser for fluency.                                                    |
+
+---
+
+### Minimal “LLM + verification” loop (pattern 4)
+
+```python
+schema = {
+  "nl": "str",
+  "command": "str",
+  "tool": "str",
+  "chain": "str"
+}
+
+prompt = f"""
+For each tuple below, return JSON with keys {schema}.
+Tuple: (tool='cast', action='transfer', chain='sepolia',
+        amount='0.1ether', to='0xABC...', rpc='$SEPOLIA_RPC').
+"""
+
+resp = chat_gpt4(prompt)                 # 1️⃣ generation
+data  = json.loads(resp)
+ok    = check_command(data["command"])   # 2️⃣ run on anvil; returns bool
+if ok:
+    save(data)                           # 3️⃣ add to dataset
+```
+
+Repeat for Foundry, Solana, Neutron, etc.  A thousand synth-and-verify iterations give you a clean NL→command dataset in minutes.
+
+---
+
+### Verification tricks for web3
+
+| Stack                | “Safe exec” idea                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **EVM**              | Spin up `anvil --fork-url=$RPC --balance 1000ether…`; run `cast` commands with `--simulate` or `eth_call` for writes.    |
+| **Cosmos / Neutron** | Use a single-node devnet (`neutrond start --home …`) and `--dry-run`/`--generate-only` flag; check that Tx bytes decode. |
+| **Solana**           | `solana-test-validator`; pre-airdrop account then run `solana`/`spl-token` commands.                                     |
+| **Relayers**         | `hermes` can `--dry-run`; ensure channel handshake packets decode.                                                       |
+
+Only keep rows that exit 0 and satisfy an assert (e.g., balance change).
+
+---
+
+### Ready-made repos you can crib from
+
+| Repo                      | What to borrow                                                        |
+| ------------------------- | --------------------------------------------------------------------- |
+| **nl2bash**               | File structure: `dataset.jsonl`, `labels`, splits, evaluation script. |
+| **Gorilla OpenFunctions** | Prompt templates that turn OpenAPI/CLI schema into diversified NL.    |
+| **Self-Instruct**         | Task generation harness + quality filters.                            |
+| **ToolBench-Builder**     | GPT-4 prompt set + automatic validation for function calls.           |
+| **Mind2Web**              | Format for multi-step tasks if you go beyond single commands.         |
+
+---
+
+#### TL;DR
+
+Pick a synthesis pipeline:
+
+1. **Start from canonical command schema** (crawl `--help` trees).
+2. **Generate NL** via templating or LLM (Self-Instruct / Gorilla).
+3. **Auto-verify** each pair on a sandbox chain.
+4. **Store JSONL** with `nl`, `command`, `tool`, `intent`, `verified`.
+
+Frameworks that shortcut steps 2-3: **Self-Instruct**, **Gorilla-OpenFunctions**, **ToolBench-builder**, **NL-Augmenter**, or just LangChain + your verification harness. Let me know if you want a concrete starter script for, say, Foundry `cast` + GPT-4.
+
+##################################################################################
+
+Yes — you can build a **fully non-LLM pipeline** that synthesises “plain-English” intents from command templates, very much like the way the original **nl2bash** dataset was boot-strapped in 2016-17 (before large-scale LLMs were available).
+
+---
+
+## 1  Collect canonical command templates
+
+* Crawl `neutrond --help` (and any plugin CLIs) recursively.
+* For each leaf command, store:
+
+  ```json
+  {"path":"tx staking delegate",
+   "args":["validator","amount"],
+   "flags":["--from","--chain-id","--gas","--fees"],
+   "verb":"delegate",
+   "object":"tokens"}
+  ```
+* Save as `schema_neutrond.json`.
+
+---
+
+## 2  Author a **single plain-English seed** per intent
+
+Example:
+
+| intent             | seed NL (imperative)                     | slot tags                 |
+| ------------------ | ---------------------------------------- | ------------------------- |
+| `staking.delegate` | `Delegate {amount} NTRN to {validator}.` | `{amount}`, `{validator}` |
+| `wallet.transfer`  | `Send {amount} NTRN to {address}.`       | `{amount}`, `{address}`   |
+
+These seeds give you **one unambiguous formulation** that maps 1-to-1 to the CLI call.
+
+---
+
+## 3  Expand vocabulary **without an LLM**
+
+### a) Static synonym tables
+
+Create tiny lists per slot or verb:
+
+```python
+VERBS = {
+  "delegate": ["delegate", "stake", "bond"],
+  "transfer": ["send", "transfer"]
+}
+NTRN_SYNS = ["NTRN", "ntrn", "tokens"]
+DET      = ["the", ""]                  # optional articles
+```
+
+### b) Simple morphology / grammar tools
+
+* **SimpleNLG-EN** (Java / Python port) – generates tense/voice:
+
+  ```python
+  from simplenlg import NLGFactory, Realiser
+  factory, realise = NLGFactory(), Realiser()
+  p = factory.createClause()
+  p.setVerb("delegate"); p.setObject("10 NTRN"); p.setPreposition("to"); p.setComplement("val1...")
+  realise.realiseSentence(p)   # "Delegate 10 NTRN to val1 ..."
+  ```
+* Or use **spaCy** to lemmatise and swap synonyms.
+
+### c) PPDB / word-level paraphrase DB
+
+Look up phrase replacements from **PPDB-XL** and keep only substitutions whose POS tag matches.
+
+### d) Combinatorial templating (Jinja2)
+
+```python
+from jinja2 import Template
+tmpl = Template("{{verb}} {{amount}} {{unit}} {{det}} {{target}}.")
+for verb in VERBS["delegate"]:
+    for det in DET:
+        sentence = tmpl.render(verb=verb,
+                               amount="10",
+                               unit=random.choice(NTRN_SYNS),
+                               det=det,
+                               target="{{validator}}")
+        yield sentence  # "Stake 10 tokens to {{validator}}."
+```
+
+### e) Mining real docs / GitHub snippets
+
+* Grep “delegate 10” in README / docs → extract the imperative part.
+* Filter via regex so only lines containing the slot placeholders are kept.
+
+---
+
+## 4  Slot enumeration
+
+Keep it deterministic:
+
+```python
+AMOUNTS      = ["10", "5.5", "100"]
+VALIDATORS   = ["val1qxyz...", "val1abcd..."]
+ADDRESSES    = ["neutron1...", "cosmos1..."]
+```
+
+Use **cartesian products** or random sampling to fill the slots.
+
+---
+
+## 5  Generate the executable workflow
+
+A trivial mapper turns the intent + slot dict into the CLI JSON:
+
+```python
+def render_workflow(intent, slots):
+    if intent == "staking.delegate":
+        amount_u = int(float(slots["amount"])*1_000_000)  # to untrn
+        return [{
+          "tool":"neutrond",
+          "cmd":"tx staking delegate",
+          "args":[slots["validator"], f"{amount_u}untrn"],
+          "flags":{"--from":"$KEY","--chain-id":"$CHAIN_ID",
+                   "--gas":"auto","--fees":"5000untrn"}
+        }]
+```
+
+---
+
+## 6  Verification without LLMs
+
+Spin up a single-validator Neutron devnet (docker), fund `$KEY`, then:
+
+```python
+def verify(recipe):
+    for step in recipe["workflow"]:
+        ok = subprocess.run(build_cmd(step), capture_output=True,
+                            env=DEV_ENV).returncode == 0
+        if not ok:
+            return False
+    return True
+```
+
+* For **state-changing** TXs call `--generate-only` (Cosmos SDK flag) so the TX is constructed and signed but **not broadcast**.
+* For **queries** expect JSON output and parse it (`jq` or `json.loads`).
+
+Only recipes that **pass** are written to `recipes_verified.jsonl`.
+
+---
+
+## 7  Quality levers without an LLM
+
+| Lever                                                                           | Effect                                               |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| **Slot diversity** – vary amounts/addresses/chains                              | prevents classifier over-fitting to constants.       |
+| **Synonym coverage** – hand-curate 3–5 verbs/nouns per intent                   | enough lexical variety for DeBERTa without GPT-4.    |
+| **Negative paraphrases** – leave a few “distractor” NLs labelled `others`       | helps the classifier learn what **isn’t** an intent. |
+| **Rule validation** – POS/regex checks so generated sentences stay grammatical. |                                                      |
+
+Typical dataset size: **( #intents × templates × synonyms × slot combos)**. With 10 intents, 3 templates each, 3 verb variants, and 5 slot combos → `10*3*3*5 = 450` rows; double it by optional determiners and you’re near 1 k. Enough for fine-tuning a DeBERTa-base head.
+
+---
+
+### TL;DR – minimal stack
+
+* **Jinja2** for templating
+* **SimpleNLG** + synonym tables for grammar mutations (no LLM)
+* **Python script** to enumerate slots & write `recipes_raw.jsonl`
+* **Subprocess + devnet** to verify and produce `recipes_verified.jsonl`
+
+This mirrors nl2bash’s non-LLM generation, but geared to Neutron’s CLI. You can later swap in GPT-4 for richer paraphrases without changing the pipeline.
