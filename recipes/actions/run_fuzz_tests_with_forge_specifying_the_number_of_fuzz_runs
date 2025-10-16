@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Compiles all Solidity smart contracts using Foundry\u2019s `forge build` command and returns the compilation output.",
+            "code": "import subprocess\nfrom typing import Dict\n\ndef compile_tests() -> Dict[str, str]:\n    \"\"\"Run `forge build` to compile the project\u2019s contracts.\n\n    Returns\n    -------\n    Dict[str, str]\n        success : bool   - True if the build succeeded (exit-code 0).\n        stdout  : str    - Standard output from the CLI.\n        stderr  : str    - Standard error from the CLI (compiler warnings / errors).\n    \"\"\"\n    try:\n        result = subprocess.run(\n            [\"forge\", \"build\"],\n            capture_output=True,\n            text=True,\n            check=False  # Allow us to capture non-zero exit codes instead of raising.\n        )\n        return {\n            \"success\": result.returncode == 0,\n            \"stdout\": result.stdout,\n            \"stderr\": result.stderr,\n        }\n    except FileNotFoundError:\n        # The user does not have Foundry installed or forge is not in PATH.\n        return {\n            \"success\": False,\n            \"stdout\": \"\",\n            \"stderr\": \"Forge CLI not found. Please install Foundry and ensure `forge` is available in PATH.\",\n        }\n    except Exception as exc:\n        # Catch-all for any other unexpected error.\n        return {\n            \"success\": False,\n            \"stdout\": \"\",\n            \"stderr\": str(exc),\n        }",
+            "usage": "POST /api/compile_tests\nResponse JSON \u2192 { \"success\": true|false, \"stdout\": \"...\", \"stderr\": \"...\" }"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Executes fuzz testing with a configurable number of runs by invoking `forge test --fuzz-runs <N>`.",
+            "code": "import subprocess\nfrom typing import Dict\n\ndef execute_forge_test_fuzz(fuzz_runs: int = 500) -> Dict[str, str]:\n    \"\"\"Run `forge test --fuzz-runs <N>`.\n\n    Parameters\n    ----------\n    fuzz_runs : int\n        Number of fuzz iterations you wish to run. Must be > 0.\n\n    Returns\n    -------\n    Dict[str, str]\n        success : bool   - True if all tests passed (exit-code 0).\n        stdout  : str    - Standard output of the test run.\n        stderr  : str    - Standard error of the test run.\n    \"\"\"\n    if fuzz_runs <= 0:\n        return {\n            \"success\": False,\n            \"stdout\": \"\",\n            \"stderr\": \"`fuzz_runs` must be a positive integer.\",\n        }\n\n    cmd = [\"forge\", \"test\", \"--fuzz-runs\", str(fuzz_runs)]\n    try:\n        result = subprocess.run(cmd, capture_output=True, text=True, check=False)\n        return {\n            \"success\": result.returncode == 0,\n            \"stdout\": result.stdout,\n            \"stderr\": result.stderr,\n        }\n    except FileNotFoundError:\n        return {\n            \"success\": False,\n            \"stdout\": \"\",\n            \"stderr\": \"Forge CLI not found. Please install Foundry and ensure `forge` is available in PATH.\",\n        }\n    except Exception as exc:\n        return {\n            \"success\": False,\n            \"stdout\": \"\",\n            \"stderr\": str(exc),\n        }",
+            "usage": "POST /api/execute_fuzz  { \"fuzz_runs\": 500 }\nResponse JSON \u2192 { \"success\": true|false, \"stdout\": \"...\", \"stderr\": \"...\" }"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Parses the test output to surface any failing properties, reverted transactions, or other anomalies detected during fuzzing.",
+            "code": "import re\nfrom typing import Dict, List\n\ndef review_test_output(forge_stdout: str) -> Dict[str, object]:\n    \"\"\"Analyse `forge test` output and summarise failures.\n\n    Parameters\n    ----------\n    forge_stdout : str\n        Raw standard-output from a Forge test run.\n\n    Returns\n    -------\n    Dict[str, object]\n        failed      : bool     - True if any test failed.\n        fail_cases  : List[str]- Lines that hint at failures or reverts.\n        raw_output  : str      - Echo back the original output for reference.\n    \"\"\"\n    failure_regex = re.compile(r\"(FAIL|revert|Assertion|Error)\", re.IGNORECASE)\n    fail_cases: List[str] = []\n\n    for line in forge_stdout.splitlines():\n        if failure_regex.search(line):\n            fail_cases.append(line.strip())\n\n    return {\n        \"failed\": len(fail_cases) > 0,\n        \"fail_cases\": fail_cases,\n        \"raw_output\": forge_stdout,\n    }",
+            "usage": "Assuming you already have the stdout string from the fuzz run:\n\nresult = execute_forge_test_fuzz(500)\nsummary = review_test_output(result[\"stdout\"])"
+        }
+    ]
+}

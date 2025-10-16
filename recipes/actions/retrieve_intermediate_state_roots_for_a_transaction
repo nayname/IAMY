@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 defines a small helper that returns the JSON-RPC endpoint you wish to query. In a real application you might read this from environment variables or user input; here we include a safe fallback and basic validation.",
+            "code": "export const selectRpcEndpoint = () => {\n  // Prefer an endpoint supplied at runtime (e.g., window.RPC_ENDPOINT)\n  // and fall back to a hard-coded default.\n  const fallback = 'https://rpc.example.com';\n  const endpoint = typeof window !== 'undefined' && window.RPC_ENDPOINT ? window.RPC_ENDPOINT : fallback;\n\n  // Very basic sanity-check so we fail early if the URL is missing.\n  if (!endpoint || typeof endpoint !== 'string') {\n    throw new Error('RPC endpoint is not defined or is invalid.');\n  }\n\n  return endpoint;\n};",
+            "usage": "const rpcEndpoint = selectRpcEndpoint();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 performs the actual JSON-RPC request to `debug_intermediateRoots`, returning the intermediate state roots for the supplied transaction hash. The function is written in plain JavaScript so it runs directly in the browser without external libraries.",
+            "code": "export const debugIntermediateRoots = async (txHash, rpcEndpoint) => {\n  if (!txHash || typeof txHash !== 'string') {\n    throw new Error('`txHash` must be a non-empty string.');\n  }\n\n  // Build the JSON-RPC payload exactly as required by the node.\n  const payload = {\n    method: 'debug_intermediateRoots',\n    params: [txHash],\n    id: 1,\n    jsonrpc: '2.0',\n  };\n\n  try {\n    const response = await fetch(rpcEndpoint, {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(payload),\n    });\n\n    if (!response.ok) {\n      throw new Error(`RPC call failed with HTTP status ${response.status}`);\n    }\n\n    const json = await response.json();\n\n    if (json.error) {\n      // Preserve the original error message from the node for easier debugging.\n      throw new Error(`RPC error: ${json.error.message || JSON.stringify(json.error)}`);\n    }\n\n    return json.result;\n  } catch (err) {\n    console.error('[debugIntermediateRoots] Unexpected error:', err);\n    throw err;\n  }\n};",
+            "usage": "const rpcEndpoint = selectRpcEndpoint();\nconst roots = await debugIntermediateRoots('0xABCD\u2026', rpcEndpoint);\nconsole.log('Intermediate Roots:', roots);"
+        }
+    ]
+}

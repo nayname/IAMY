@@ -1,0 +1,26 @@
+{
+    "label": "send",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that exports KEYRING_PASSPHRASE as an environment variable and automatically clears it after a time-to-live (TTL) period.",
+            "code": "import os\nimport threading\nimport time\n\n\ndef export_passphrase_env(passphrase: str, ttl: int = 60):\n    '''\n    Temporarily exports KEYRING_PASSPHRASE as an environment variable and\n    clears it after `ttl` seconds in a background thread.\n    '''\n    if not passphrase:\n        raise ValueError('Passphrase cannot be empty.')\n\n    # Export the variable so any subprocess (e.g., simd) will inherit it.\n    os.environ['KEYRING_PASSPHRASE'] = passphrase\n    print('KEYRING_PASSPHRASE exported. It will be cleared in', ttl, 'seconds.')\n\n    def _unset():\n        '''Waits for ttl seconds and removes the passphrase from env.'''\n        time.sleep(ttl)\n        os.environ.pop('KEYRING_PASSPHRASE', None)\n        print('KEYRING_PASSPHRASE cleared from environment.')\n\n    # Fire-and-forget the cleaner thread so the main program continues.\n    threading.Thread(target=_unset, daemon=True).start()\n",
+            "usage": "from passphrase_manager import export_passphrase_env\n\nexport_passphrase_env('myVeryStrongPassphrase', ttl=60)  # Passphrase cleared automatically."
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 runs the desired simd transaction (sign + broadcast) while the passphrase is still available in the environment.",
+            "code": "import subprocess\nimport os\nfrom typing import List\n\n\ndef run_timeboxed_script(cmd: List[str]):\n    '''\n    Executes a simd CLI transaction command (sign + broadcast) while the\n    KEYRING_PASSPHRASE env var is present.\n    '''\n    if 'KEYRING_PASSPHRASE' not in os.environ:\n        raise EnvironmentError('KEYRING_PASSPHRASE is not set. Call export_passphrase_env first.')\n\n    try:\n        result = subprocess.run(\n            cmd,\n            capture_output=True,\n            text=True,\n            check=True,\n        )\n        print('Transaction successfully broadcasted:')\n        print(result.stdout)\n        return result\n    except subprocess.CalledProcessError as err:\n        print('simd command failed:', err.stderr)\n        raise\n",
+            "usage": "from tx_runner import run_timeboxed_script\n\nrun_timeboxed_script([\n    'simd', 'tx', 'bank', 'send',\n    'alice', 'cosmos1destinationaddress...', '100stake',\n    '--chain-id', 'cosmoshub-testnet',\n    '--fees', '2000stake',\n    '--yes'\n])"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 confirms that the keyring is relocked by running a dry-run transaction after the TTL has expired and detecting whether the CLI prompts for the passphrase again.",
+            "code": "import subprocess\nimport os\nimport time\nfrom typing import List\n\n\ndef confirm_relock(cmd: List[str]) -> bool:\n    '''\n    Attempts to execute a signing command after the KEYRING_PASSPHRASE TTL has\n    expired. Returns True if the CLI prompts for a passphrase, indicating\n    that the keyring is re-locked.\n    '''\n    # Ensure the passphrase env var is gone\n    if 'KEYRING_PASSPHRASE' in os.environ:\n        print('Waiting 1 s for passphrase to clear\u2026')\n        time.sleep(1)\n\n    # Use --dry-run so we do not broadcast real transactions during the test\n    dry_cmd = cmd + ['--dry-run']\n\n    process = subprocess.Popen(\n        dry_cmd,\n        stdin=subprocess.PIPE,\n        stdout=subprocess.PIPE,\n        stderr=subprocess.STDOUT,\n        text=True\n    )\n\n    # Give the CLI a moment to output its prompt\n    time.sleep(2)\n    try:\n        output = process.stdout.read()\n    finally:\n        process.kill()\n\n    relocked = any(kw in output for kw in ['Enter keyring passphrase', 'Passphrase:'])\n\n    if relocked:\n        print('Account is relocked. Passphrase prompt detected.')\n    else:\n        print('Account is still unlocked (NO passphrase prompt detected).')\n\n    return relocked\n",
+            "usage": "import time\nfrom relock_tester import confirm_relock\n\ntime.sleep(60)  # Ensure the previous TTL has elapsed.\nrelocked = confirm_relock(['simd', 'tx', 'bank', 'send', 'alice', 'alice', '1stake'])\nprint('Relock confirmed:', relocked)"
+        }
+    ]
+}

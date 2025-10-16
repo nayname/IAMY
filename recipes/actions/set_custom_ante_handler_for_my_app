@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 is a Bash helper that scans your Cosmos-SDK repository and prints the path to the main `app.go` file (where `baseapp` is instantiated).",
+            "code": "#!/usr/bin/env bash\nset -e\n\n# Locate app.go file within the repository\nAPP_FILE=$(git ls-files | grep -E '(^|/)app.go$' || true)\n\nif [ -z \"$APP_FILE\" ]; then\n  echo \"app.go not found in repository.\"\n  exit 1\nfi\n\necho \"Found app.go at: $APP_FILE\"",
+            "usage": "Save as `scripts/locate_app_go.sh` and run `bash scripts/locate_app_go.sh` from your repo root."
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 creates a Go file (`ante/custom.go`) that implements a custom `sdk.AnteHandler` with minimum-fee and signature-count checks.",
+            "code": "package ante\n\nimport (\n    sdk \"github.com/cosmos/cosmos-sdk/types\"\n    sdkerrors \"github.com/cosmos/cosmos-sdk/types/errors\"\n    \"github.com/cosmos/cosmos-sdk/x/auth/ante\"\n    \"github.com/cosmos/cosmos-sdk/x/auth/signing\"\n)\n\n// CustomAnteHandlerOptions holds configuration for our custom ante handler.\ntype CustomAnteHandlerOptions struct {\n    ante.HandlerOptions\n\n    // MaxSignatures sets an upper bound on allowed signatures per transaction.\n    MaxSignatures int\n    // MinFee defines the mandatory minimum fee.\n    MinFee sdk.Coin\n}\n\n// NewCustomAnteHandler returns an sdk.AnteHandler that wraps the default handler\n// and adds fee + signature checks.\nfunc NewCustomAnteHandler(opts CustomAnteHandlerOptions) sdk.AnteHandler {\n    defaultHandler := ante.NewAnteHandler(opts.HandlerOptions)\n\n    return func(ctx sdk.Context, tx sdk.Tx, simulate bool) (sdk.Context, error) {\n        // Execute default ante checks first.\n        newCtx, err := defaultHandler(ctx, tx, simulate)\n        if err != nil {\n            return newCtx, err\n        }\n\n        // ---------- Custom Fee Check ----------\n        feeTx, ok := tx.(sdk.FeeTx)\n        if !ok {\n            return newCtx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, \"tx does not implement FeeTx\")\n        }\n\n        fees := feeTx.GetFee()\n        if !fees.AmountOf(opts.MinFee.Denom).IsGTE(opts.MinFee.Amount) {\n            return newCtx, sdkerrors.Wrapf(sdkerrors.ErrInsufficientFee,\n                \"minimum fee %s required\", opts.MinFee.String())\n        }\n\n        // ---------- Signature Limit ----------\n        sigTx, ok := tx.(signing.SigVerifiableTx)\n        if !ok {\n            return newCtx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, \"tx does not implement SigVerifiableTx\")\n        }\n\n        if len(sigTx.GetSignaturesV2()) > opts.MaxSignatures {\n            return newCtx, sdkerrors.Wrapf(sdkerrors.ErrUnauthorized,\n                \"transaction has %d signatures; maximum allowed is %d\",\n                len(sigTx.GetSignaturesV2()), opts.MaxSignatures)\n        }\n\n        // All good!\n        return newCtx, nil\n    }\n}",
+            "usage": "Place this file at `ante/custom.go` inside your chain repo."
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 wires the custom ante handler into the application constructor (`app/app.go`).",
+            "code": "// Inside NewMyApp() after keepers are initialized and before returning the app instance.\n\nminGasPrices, _ := sdk.ParseDecCoins(\"0.01uatom\") // adjust denom & value as needed\ncustomAnteOpts := ante.CustomAnteHandlerOptions{\n    HandlerOptions: ante.HandlerOptions{\n        AccountKeeper:   app.AccountKeeper,\n        BankKeeper:      app.BankKeeper,\n        SignModeHandler: txCfg.SignModeHandler(),\n        FeegrantKeeper:  app.FeeGrantKeeper,\n        SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,\n        TxFeeChecker:    ante.NewMempoolFeeChecker(app.BaseApp, minGasPrices),\n    },\n    MaxSignatures: 2,\n    MinFee:        sdk.NewInt64Coin(\"uatom\", 1000), // 1,000 uatom minimum fee\n}\n\napp.SetAnteHandler(ante.NewCustomAnteHandler(customAnteOpts))",
+            "usage": "Paste the snippet into `app/app.go` (or your equivalent app constructor) and import the `ante` package."
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 runs unit tests and compiles the binary to make sure the new ante handler doesn\u2019t break the build.",
+            "code": "#!/usr/bin/env bash\nset -e\n\necho \"Running unit tests...\"\ngo test ./...\n\necho \"Building application binary...\"\nif [ -f Makefile ] && grep -q \"install:\" Makefile; then\n  make install\nelse\n  go build -o build/myappd ./cmd/myappd\nfi\n\necho \"\u2705  All tests passed and binary built.\"",
+            "usage": "Save as `scripts/build_and_test.sh` and execute `bash scripts/build_and_test.sh`."
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 spins up a single-node localnet, then broadcasts a sample transaction to verify that the custom ante handler logic is triggered (fee + signature checks).",
+            "code": "#!/usr/bin/env bash\nset -e\n\nAPP_CMD=\"myappd\"             # Update to your binary name\nCHAIN_ID=\"localnet-1\"\nHOME_DIR=\"$HOME/.myapp\"\nDENOM=\"uatom\"\n\n# Kill any existing process\npkill -f \"$APP_CMD\" || true\nrm -rf \"$HOME_DIR\"\n\n# Initialise chain\n$APP_CMD init tester --chain-id $CHAIN_ID --home $HOME_DIR\n\n# Add key and grab its address\n$APP_CMD keys add tester --keyring-backend test --home $HOME_DIR\nADDRESS=$($APP_CMD keys show tester -a --keyring-backend test --home $HOME_DIR)\n\n# Allocate large balance in genesis (1 B uatom)\ncat $HOME_DIR/config/genesis.json | \\\n  jq --arg ADDRESS $ADDRESS '.app_state.bank.balances += [{\"address\":$ADDRESS,\"coins\":[{\"denom\":\"uatom\",\"amount\":\"1000000000\"}]}]' \\\n  > tmp_genesis.json && mv tmp_genesis.json $HOME_DIR/config/genesis.json\n\n# Start node (background)\n$APP_CMD start --home $HOME_DIR --log_level info --pruning=nothing > node.log 2>&1 &\nNODE_PID=$!\ntrap \"kill $NODE_PID\" EXIT\nsleep 8\n\n# Broadcast test tx (meets fee requirement)\n$APP_CMD tx bank send $ADDRESS $ADDRESS 1$DENOM --fees 2000$DENOM \\\n  --chain-id $CHAIN_ID --keyring-backend test --home $HOME_DIR --yes --broadcast-mode block\n\necho \"Tail of node log (look for ante-handler messages) \u27a1\ufe0f\"\ntail -20 node.log | grep -E \"insufficient fee|signatures; maximum\" || true",
+            "usage": "Store as `scripts/localnet_test.sh` and run `bash scripts/localnet_test.sh`. Examine the node log to ensure your custom ante validations fire."
+        }
+    ]
+}

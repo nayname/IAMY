@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates a FastAPI endpoint that optionally runs `foundryup` so the Foundry tool-chain is updated to the latest release.",
+            "code": "# foundry_backend.py\nfrom fastapi import FastAPI, HTTPException\nimport subprocess\nimport shutil\n\napp = FastAPI()\n\n@app.post(\"/api/foundry/update\")\nasync def foundryup_update():\n    \"\"\"Run `foundryup` to update Foundry. Returns the CLI output.\"\"\"\n    # Make sure the binary exists on the host machine.\n    if not shutil.which(\"foundryup\"):\n        raise HTTPException(status_code=404, detail=\"`foundryup` binary not found. Please install Foundry first.\")\n\n    try:\n        result = subprocess.run(\n            [\"foundryup\"],\n            capture_output=True,\n            text=True,\n            check=True,\n        )\n        return {\"stdout\": result.stdout, \"stderr\": result.stderr}\n    except subprocess.CalledProcessError as e:\n        # Surface the actual CLI error back to the caller.\n        raise HTTPException(status_code=500, detail=e.stderr or \"`foundryup` failed with an unknown error.\")",
+            "usage": "// Front-end example\nawait fetch('/api/foundry/update', { method: 'POST' })\n  .then(res => res.json())\n  .then(console.log)\n  .catch(console.error);"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Adds an endpoint that returns the current version of `forge` by executing `forge --version`.",
+            "code": "# foundry_backend.py (append below previous code)\nfrom fastapi import FastAPI, HTTPException\nimport subprocess\nimport shutil\n\napp = FastAPI()\n\n@app.get(\"/api/foundry/forge/version\")\nasync def forge_version():\n    \"\"\"Return the installed Forge version.\"\"\"\n    if not shutil.which(\"forge\"):\n        raise HTTPException(status_code=404, detail=\"`forge` binary not found. Have you installed Foundry?\")\n\n    try:\n        result = subprocess.run(\n            [\"forge\", \"--version\"],\n            capture_output=True,\n            text=True,\n            check=True,\n        )\n        return {\"version\": result.stdout.strip()}\n    except subprocess.CalledProcessError as e:\n        raise HTTPException(status_code=500, detail=e.stderr or \"`forge --version` failed.\")",
+            "usage": "// Front-end example\nconst forgeInfo = await fetch('/api/foundry/forge/version').then(r => r.json());"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Adds an endpoint that returns the current version of `cast` by executing `cast --version`.",
+            "code": "# foundry_backend.py (append below previous code)\nfrom fastapi import FastAPI, HTTPException\nimport subprocess\nimport shutil\n\napp = FastAPI()\n\n@app.get(\"/api/foundry/cast/version\")\nasync def cast_version():\n    \"\"\"Return the installed Cast version.\"\"\"\n    if not shutil.which(\"cast\"):\n        raise HTTPException(status_code=404, detail=\"`cast` binary not found. Have you installed Foundry?\")\n\n    try:\n        result = subprocess.run(\n            [\"cast\", \"--version\"],\n            capture_output=True,\n            text=True,\n            check=True,\n        )\n        return {\"version\": result.stdout.strip()}\n    except subprocess.CalledProcessError as e:\n        raise HTTPException(status_code=500, detail=e.stderr or \"`cast --version` failed.\")",
+            "usage": "// Front-end example\nconst castInfo = await fetch('/api/foundry/cast/version').then(r => r.json());"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Adds an endpoint that returns the current version of `anvil` by executing `anvil --version`.",
+            "code": "# foundry_backend.py (append below previous code)\nfrom fastapi import FastAPI, HTTPException\nimport subprocess\nimport shutil\n\napp = FastAPI()\n\n@app.get(\"/api/foundry/anvil/version\")\nasync def anvil_version():\n    \"\"\"Return the installed Anvil version.\"\"\"\n    if not shutil.which(\"anvil\"):\n        raise HTTPException(status_code=404, detail=\"`anvil` binary not found. Have you installed Foundry?\")\n\n    try:\n        result = subprocess.run(\n            [\"anvil\", \"--version\"],\n            capture_output=True,\n            text=True,\n            check=True,\n        )\n        return {\"version\": result.stdout.strip()}\n    except subprocess.CalledProcessError as e:\n        raise HTTPException(status_code=500, detail=e.stderr or \"`anvil --version` failed.\")",
+            "usage": "// Front-end example\nconst anvilInfo = await fetch('/api/foundry/anvil/version').then(r => r.json());"
+        }
+    ]
+}

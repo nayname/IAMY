@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 sets up a reusable FastAPI helper for authenticated requests to the JSON-RPC endpoint. It reads RPC_ENDPOINT, RPC_USERNAME, and RPC_PASSWORD from environment variables and returns a helper that safely performs POST requests.",
+            "code": "import os\\nimport httpx\\nfrom fastapi import FastAPI, HTTPException\\n\\napp = FastAPI()\\n\\n# RPC configuration is provided via environment variables so that secrets never reach the browser.\\nRPC_ENDPOINT = os.getenv(\\\"RPC_ENDPOINT\\\", \\\"http://localhost:8545\\\")\\nRPC_USERNAME = os.getenv(\\\"RPC_USERNAME\\\")\\nRPC_PASSWORD = os.getenv(\\\"RPC_PASSWORD\\\")\\n\\nasync def _rpc_call(payload: dict):\\n    \\\"\\\"\\\"Internal helper to perform an authenticated JSON-RPC call.\\\"\\\"\\\"\\n    auth = None\\n    if RPC_USERNAME and RPC_PASSWORD:\\n        auth = (RPC_USERNAME, RPC_PASSWORD)  # Basic-Auth tuple for httpx\\n\\n    try:\\n        async with httpx.AsyncClient(auth=auth, timeout=10) as client:\\n            response = await client.post(RPC_ENDPOINT, json=payload)\\n            response.raise_for_status()\\n    except httpx.HTTPError as http_err:\\n        raise HTTPException(status_code=502, detail=f\\\"RPC connection failed: {http_err}\\\")\\n    except Exception as err:\\n        raise HTTPException(status_code=500, detail=f\\\"Unexpected error: {err}\\\")\\n\\n    # Parse JSON-RPC response and bubble up any RPC-level errors.\\n    data = response.json()\\n    if \\\"error\\\" in data and data[\\\"error\\\"] is not None:\\n        raise HTTPException(status_code=500, detail=data[\\\"error\\\"])\\n\\n    return data.get(\\\"result\\\")",
+            "usage": "# This module is imported by subsequent backend routes\\n# from rpc_client import _rpc_call"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 exposes a public GET endpoint /api/personal_list_wallets that internally calls the personal_listWallets JSON-RPC method using the authenticated helper from Step 1.",
+            "code": "from fastapi import APIRouter\\n\\nrouter = APIRouter()\\n\\n@router.get(\\\"/api/personal_list_wallets\\\")\\nasync def personal_list_wallets():\\n    \\\"\\\"\\\"Return the list of wallets managed by the node.\\\"\\\"\\\"\\n    payload = {\\n        \\\"jsonrpc\\\": \\\"2.0\\\",\\n        \\\"method\\\": \\\"personal_listWallets\\\",\\n        \\\"params\\\": [],\\n        \\\"id\\\": 1\\n    }\\n    result = await _rpc_call(payload)\\n    return {\\\"wallets\\\": result}\\n\\n# Remember to include the router in your FastAPI application\\n# app.include_router(router)",
+            "usage": "GET /api/personal_list_wallets     # returns { \"wallets\": [...] }"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 adds a lightweight browser helper that fetches the wallet list by calling the backend route from Step 2.",
+            "code": "export const getWalletList = async () => {\\n  try {\\n    const res = await fetch('/api/personal_list_wallets');\\n    if (!res.ok) {\\n      throw new Error(`Backend responded with ${res.status}`);\\n    }\\n    const data = await res.json();\\n    return data.wallets;\\n  } catch (err) {\\n    console.error('Failed to fetch wallet list:', err);\\n    throw err;\\n  }\\n};",
+            "usage": "const wallets = await getWalletList();\\nconsole.log('Node managed wallets:', wallets);"
+        }
+    ]
+}

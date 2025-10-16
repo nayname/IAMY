@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Locate the chain\u2019s home directory and resolve the absolute path to config/app.toml.",
+            "code": "import os\n\n# Step 1: Utilities to locate the chain's home directory and the app.toml file\n\ndef get_chain_home(custom_home: str = None) -> str:\n    \"\"\"Return the absolute path to the node's home directory.\n\n    Priority order:\n      1) custom_home argument if provided\n      2) $SIMD_HOME environment variable if set\n      3) Default to ~/.simapp\n    \"\"\"\n    home = custom_home or os.getenv('SIMD_HOME') or os.path.expanduser('~/.simapp')\n    home = os.path.expanduser(home)\n    if not os.path.isdir(home):\n        raise FileNotFoundError(f\"Chain home directory not found: {home}\")\n    return home\n\n\ndef get_app_toml(home_dir: str) -> str:\n    \"\"\"Return the absolute path to config/app.toml given a chain home directory.\"\"\"\n    app_toml = os.path.join(home_dir, 'config', 'app.toml')\n    if not os.path.isfile(app_toml):\n        raise FileNotFoundError(f\"app.toml not found at {app_toml}\")\n    return app_toml\n",
+            "usage": "# Discover important paths\nhome_dir = get_chain_home()\napp_toml_path = get_app_toml(home_dir)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Create a backup of app.toml so changes can be rolled back if needed.",
+            "code": "import shutil\nimport os\n\n# Step 2: Backup the current configuration file\n\ndef backup_file(file_path: str) -> str:\n    \"\"\"Copy <file_path> to <file_path>.bak, preserving metadata.\"\"\"\n    if not os.path.isfile(file_path):\n        raise FileNotFoundError(file_path)\n    backup_path = file_path + '.bak'\n    shutil.copy2(file_path, backup_path)\n    return backup_path\n",
+            "usage": "backup_path = backup_file(app_toml_path)  # e.g., /home/user/.simapp/config/app.toml.bak"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Update app.toml to enable the REST API server (api.enable = true) and generate the Swagger endpoint (api.swagger = true).",
+            "code": "import os\nimport toml\n\n# Step 3: Perform in-place update of REST API settings inside app.toml\n\ndef enable_rest_api(app_toml_path: str) -> None:\n    \"\"\"Sets api.enable = true and api.swagger = true inside app.toml.\"\"\"\n    # Load current config\n    try:\n        config = toml.load(app_toml_path)\n    except toml.TomlDecodeError as err:\n        raise ValueError(f'Failed to parse TOML file: {err}') from err\n\n    # Ensure the api table exists and toggle the desired flags\n    api_cfg = config.get('api', {})\n    api_cfg['enable'] = True\n    api_cfg['swagger'] = True\n    config['api'] = api_cfg\n\n    # Persist changes atomically via temporary file replacement\n    tmp_path = app_toml_path + '.tmp'\n    with open(tmp_path, 'w') as tmp_file:\n        toml.dump(config, tmp_file)\n    os.replace(tmp_path, app_toml_path)\n",
+            "usage": "enable_rest_api(app_toml_path)  # app.toml is now modified on disk"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Restart the simd node so the new API settings are loaded.",
+            "code": "import subprocess\nimport time\n\n# Step 4: Restart the local simd node\n\ndef restart_simd(home_dir: str, start_command: str = 'simd start') -> None:\n    \"\"\"Restarts the simd process using a best-effort cross-platform approach.\"\"\"\n    try:\n        # Attempt to gracefully stop any running simd instance\n        subprocess.run(['pkill', '-f', 'simd'], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)\n        time.sleep(2)  # brief pause to ensure the process has terminated\n\n        # Start the node in a detached process so the Python script can exit\n        cmd = start_command.split() + ['--home', home_dir]\n        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)\n    except Exception as e:\n        raise RuntimeError(f'Failed to restart simd: {e}') from e\n",
+            "usage": "restart_simd(home_dir)  # restarts simd in the background"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Poll the /swagger endpoint and ensure it returns HTTP 200, indicating the REST server is running.",
+            "code": "import requests\nimport time\n\n# Step 5: Verify REST & Swagger are live\n\ndef wait_for_swagger(url: str = 'http://localhost:1317/swagger', timeout: int = 30) -> bool:\n    \"\"\"Poll <url> until it returns HTTP 200 or raise TimeoutError after <timeout> seconds.\"\"\"\n    end_time = time.time() + timeout\n    while time.time() < end_time:\n        try:\n            resp = requests.get(url, timeout=3)\n            if resp.status_code == 200:\n                return True\n        except requests.RequestException:\n            pass  # keep trying until timeout\n        time.sleep(1)\n    raise TimeoutError(f'Swagger endpoint did not become available within {timeout} seconds')\n",
+            "usage": "wait_for_swagger()  # returns True when http://localhost:1317/swagger responds with 200"
+        }
+    ]
+}

@@ -1,0 +1,106 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "createHardhatProject() scaffolds a brand-new Hardhat workspace by running the interactive \u201cnpm init hardhat\u201d command.",
+            "function": "createHardhatProject()",
+            "usage": "createHardhatProject()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "install() adds Hardhat and its toolbox as development dependencies with npm.",
+            "function": "install()",
+            "usage": "install()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No implemented helper for programmatically editing hardhat.config.js is available in the codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "compile() invokes \u201cnpx hardhat compile\u201d to build the Solidity contracts and generate artifacts.",
+            "function": "compile()",
+            "usage": "compile()"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "The repository contains no ready-made function to generate a Hardhat deployment script.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "No helper function is present to run a Hardhat deployment script against a specified network.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "The codebase does not include an implemented routine for verifying contracts on an explorer.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "createHardhatProject()#step: 1 Tool: hardhat_init_project Desciption: Run `npm init -y && npm install --save-dev hardhat` then execute `npx hardhat` to scaffold a new Hardhat project.",
+        "install()#step: 2 Tool: install_solidity_dependencies Desciption: Add the Solidity compiler and Cosmos-EVM plugins: `npm install --save-dev @nomicfoundation/hardhat-toolbox @evmos/hardhat-evmos` (or the specific plugin for your chain).",
+        "undef#step: 3 Tool: configure_hardhat_network Desciption: Edit `hardhat.config.js` to add the testnet RPC URL, chainId, gas price, and the deployer\u2019s private key in the `networks` section.",
+        "compile()#step: 4 Tool: hardhat_compile_contracts Desciption: Run `npx hardhat compile` to compile all Solidity contracts and generate type artifacts.",
+        "undef#step: 5 Tool: create_deployment_script Desciption: Create a deployment script inside `scripts/` that calls `await ContractFactory.deploy()` for the desired contract.",
+        "undef#step: 6 Tool: hardhat_run_deployment Desciption: Execute `npx hardhat run scripts/deploy.js --network <cosmosTestnet>` to broadcast the deployment transaction.",
+        "undef#step: 7 Tool: hardhat_verify_contract Desciption: Optional: Verify the contract on an explorer (if supported) with `npx hardhat verify --network <cosmosTestnet> <contractAddress> <constructorArgs>`."
+    ],
+    "intent": "Deploy a smart contract to a Cosmos EVM testnet with Hardhat",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "hardhat_init_project",
+            "description": "Run `npm init -y && npm install --save-dev hardhat` then execute `npx hardhat` to scaffold a new Hardhat project."
+        },
+        {
+            "step": 2,
+            "tool": "install_solidity_dependencies",
+            "description": "Add the Solidity compiler and Cosmos-EVM plugins: `npm install --save-dev @nomicfoundation/hardhat-toolbox @evmos/hardhat-evmos` (or the specific plugin for your chain)."
+        },
+        {
+            "step": 3,
+            "tool": "configure_hardhat_network",
+            "description": "Edit `hardhat.config.js` to add the testnet RPC URL, chainId, gas price, and the deployer\u2019s private key in the `networks` section."
+        },
+        {
+            "step": 4,
+            "tool": "hardhat_compile_contracts",
+            "description": "Run `npx hardhat compile` to compile all Solidity contracts and generate type artifacts."
+        },
+        {
+            "step": 5,
+            "tool": "create_deployment_script",
+            "description": "Create a deployment script inside `scripts/` that calls `await ContractFactory.deploy()` for the desired contract."
+        },
+        {
+            "step": 6,
+            "tool": "hardhat_run_deployment",
+            "description": "Execute `npx hardhat run scripts/deploy.js --network <cosmosTestnet>` to broadcast the deployment transaction."
+        },
+        {
+            "step": 7,
+            "tool": "hardhat_verify_contract",
+            "description": "Optional: Verify the contract on an explorer (if supported) with `npx hardhat verify --network <cosmosTestnet> <contractAddress> <constructorArgs>`."
+        }
+    ],
+    "outcome_checks": [
+        "Deployment script returns a non-zero contract address.",
+        "Transaction hash appears on the Cosmos EVM testnet explorer and shows status \u2018success\u2019.",
+        "Calling a public getter on the new contract returns expected data."
+    ]
+}

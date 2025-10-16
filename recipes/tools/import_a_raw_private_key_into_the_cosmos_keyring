@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No helper function is provided to write the raw private key to a temporary file.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "run_timeboxed_script executes any simd CLI command (including `simd keys import`) while a temporary KEYRING_PASSPHRASE is set, enabling the private-key import step.",
+            "function": "run_timeboxed_script(cmd)",
+            "usage": "run_timeboxed_script([\"simd\", \"keys\", \"import\", \"alice\", \"/tmp/privkey.hex\", \"--keyring-backend\", \"file\"])"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "verify_key wraps `simd keys show` to confirm that the key was imported and returns its bech32 address.",
+            "function": "verify_key(key_name, keyring_backend='test')",
+            "usage": "await verify_key(\"alice\", \"file\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: prepare_privkey_file Desciption: Save the hex-encoded private key to a temporary file (e.g., privkey.hex).",
+        "run_timeboxed_script([\"simd\", \"keys\", \"import\", \"alice\", \"/tmp/privkey.hex\", \"--keyring-backend\", \"file\"])#step: 2 Tool: keys_import Desciption: Execute: simd keys import <name> privkey.hex --keyring-backend file , then supply a new passphrase to encrypt the key.",
+        "await verify_key(\"alice\", \"file\")#step: 3 Tool: verify_import Desciption: Run: simd keys show <name> --keyring-backend file to display the newly imported address."
+    ],
+    "intent": "Import a raw private key into the Cosmos keyring",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "prepare_privkey_file",
+            "description": "Save the hex-encoded private key to a temporary file (e.g., privkey.hex)."
+        },
+        {
+            "step": 2,
+            "tool": "keys_import",
+            "description": "Execute: simd keys import <name> privkey.hex --keyring-backend file , then supply a new passphrase to encrypt the key."
+        },
+        {
+            "step": 3,
+            "tool": "verify_import",
+            "description": "Run: simd keys show <name> --keyring-backend file to display the newly imported address."
+        }
+    ],
+    "outcome_checks": [
+        "keys import exits with code 0.",
+        "simd keys list includes the new key name.",
+        "simd keys show returns a valid bech32 address."
+    ]
+}

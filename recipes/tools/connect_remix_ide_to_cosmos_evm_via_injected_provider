@@ -1,0 +1,93 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "connectEthWallet verifies that MetaMask is installed, prompts the user to unlock it, and returns the connected Ethereum account information.",
+            "function": "connectEthWallet()",
+            "usage": "const { account } = await connectEthWallet();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "No implemented function is available to programmatically add the Cosmos EVM network to MetaMask in this codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "No implemented function is available that opens Remix IDE in the browser.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "No implemented function is available that automates provider selection inside Remix.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "No implemented function is available that compiles a Solidity contract inside Remix.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 6,
+            "label": "frontend",
+            "introduction": "No implemented function is available that deploys a contract via Remix and confirms the MetaMask transaction.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "const { account } = await connectEthWallet();//step: 1 Tool: install_metamask_extension Desciption: Ensure the MetaMask browser extension is installed and unlocked.",
+        "undef//step: 2 Tool: add_cosmos_evm_network Desciption: In MetaMask, add the Cosmos EVM network with correct RPC URL, chainId, symbol, and explorer URL.",
+        "undef//step: 3 Tool: open_remix_ide Desciption: Navigate to https://remix.ethereum.org and allow MetaMask to connect when prompted.",
+        "undef//step: 4 Tool: select_injected_provider Desciption: In Remix\u2019s Deploy & Run module, choose \u2018Injected Provider - MetaMask\u2019, which should display the Cosmos EVM chainId.",
+        "undef//step: 5 Tool: compile_contract_in_remix Desciption: Use the Solidity compiler tab to compile the desired contract with the target Solidity version.",
+        "undef//step: 6 Tool: deploy_contract_via_remix Desciption: Click \u2018Deploy\u2019 in the Deploy & Run module; MetaMask will pop up to confirm the transaction which is sent to the Cosmos EVM network."
+    ],
+    "backend": [],
+    "intent": "Connect Remix IDE to Cosmos EVM via Injected Provider",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "install_metamask_extension",
+            "description": "Ensure the MetaMask browser extension is installed and unlocked."
+        },
+        {
+            "step": 2,
+            "tool": "add_cosmos_evm_network",
+            "description": "In MetaMask, add the Cosmos EVM network with correct RPC URL, chainId, symbol, and explorer URL."
+        },
+        {
+            "step": 3,
+            "tool": "open_remix_ide",
+            "description": "Navigate to https://remix.ethereum.org and allow MetaMask to connect when prompted."
+        },
+        {
+            "step": 4,
+            "tool": "select_injected_provider",
+            "description": "In Remix\u2019s Deploy & Run module, choose \u2018Injected Provider - MetaMask\u2019, which should display the Cosmos EVM chainId."
+        },
+        {
+            "step": 5,
+            "tool": "compile_contract_in_remix",
+            "description": "Use the Solidity compiler tab to compile the desired contract with the target Solidity version."
+        },
+        {
+            "step": 6,
+            "tool": "deploy_contract_via_remix",
+            "description": "Click \u2018Deploy\u2019 in the Deploy & Run module; MetaMask will pop up to confirm the transaction which is sent to the Cosmos EVM network."
+        }
+    ],
+    "outcome_checks": [
+        "MetaMask shows the correct network (chainId matches Cosmos EVM).",
+        "Deployment transaction appears in the Cosmos EVM explorer with status \u2018success\u2019.",
+        "Remix\u2019s console logs the new contract address."
+    ]
+}

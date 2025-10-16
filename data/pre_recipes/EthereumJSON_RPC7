@@ -1,0 +1,128 @@
+[
+    {
+        "intent": "Write a CPU profile to cpu.prof for 30 seconds",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "check_pprof_port",
+                "description": "Confirm the node was started with the built-in pprof HTTP server enabled (it listens on http://localhost:6060 by default). Restart the node with pprof enabled if necessary."
+            },
+            {
+                "step": 2,
+                "tool": "send_pprof_request",
+                "description": "Run: `curl http://localhost:6060/debug/pprof/profile?seconds=30 --output cpu.prof` to start a 30-second CPU capture and write the binary data to cpu.prof."
+            },
+            {
+                "step": 3,
+                "tool": "verify_profile_file",
+                "description": "Ensure cpu.prof now exists and its size is greater than 0 bytes."
+            }
+        ],
+        "outcome_checks": [
+            "cpu.prof is present in the working directory.",
+            "File size > 0 bytes and `go tool pprof cpu.prof` opens without error."
+        ]
+    },
+    {
+        "intent": "Write a block profile to block.prof for 30 seconds",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "enable_block_profiling",
+                "description": "Restart the node with the environment variable `GODEBUG=blockprofilerate=1` so the Go runtime records blocking events."
+            },
+            {
+                "step": 2,
+                "tool": "wait_runtime",
+                "description": "Allow the node to run under normal load for 30 seconds to accumulate samples."
+            },
+            {
+                "step": 3,
+                "tool": "fetch_block_profile",
+                "description": "Execute `curl http://localhost:6060/debug/pprof/block?debug=0 --output block.prof` to download the collected block profile."
+            },
+            {
+                "step": 4,
+                "tool": "verify_profile_file",
+                "description": "Confirm block.prof exists and is non-zero in size."
+            }
+        ],
+        "outcome_checks": [
+            "block.prof exists and its size is > 0 bytes.",
+            "`go tool pprof block.prof` loads successfully."
+        ]
+    },
+    {
+        "intent": "Start indefinite CPU profiling to cpu.prof",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "update_node_start_flags",
+                "description": "Edit the node start command or systemd service to add `--cpu-profile cpu.prof`, leveraging the Cosmos SDK\u2019s `wrapCPUProfile` helper."
+            },
+            {
+                "step": 2,
+                "tool": "restart_node",
+                "description": "Restart (or start) the node so continuous CPU profiling begins immediately."
+            },
+            {
+                "step": 3,
+                "tool": "check_profile_growth",
+                "description": "After a few seconds run `ls -lh cpu.prof` (or similar) to verify the file is being written and growing."
+            }
+        ],
+        "outcome_checks": [
+            "cpu.prof is present and its size increases over time.",
+            "Node logs contain the line `starting CPU profiler`."
+        ]
+    },
+    {
+        "intent": "Stop the current CPU profile",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "graceful_shutdown",
+                "description": "Send SIGINT (Ctrl-C) or `kill -INT <pid>` to the node process\u2014or `systemctl stop <service>` if running as a service\u2014to trigger the deferred `pprof.StopCPUProfile()` call."
+            },
+            {
+                "step": 2,
+                "tool": "wait_for_exit",
+                "description": "Wait until the node fully exits and observe the log message `stopping CPU profiler`."
+            },
+            {
+                "step": 3,
+                "tool": "verify_profile_file",
+                "description": "Check that cpu.prof has been flushed to disk and is non-empty."
+            }
+        ],
+        "outcome_checks": [
+            "Node process has terminated cleanly.",
+            "cpu.prof timestamp updated and size > 0 bytes.",
+            "`go tool pprof cpu.prof` parses without error."
+        ]
+    },
+    {
+        "intent": "Set garbage collection percentage to 100",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "update_environment",
+                "description": "Add `Environment=\"GOGC=100\"` to the node\u2019s service file or export `GOGC=100` in the shell before starting the daemon. This sets `debug.SetGCPercent(100)` at launch."
+            },
+            {
+                "step": 2,
+                "tool": "restart_node",
+                "description": "Restart the Cosmos SDK daemon so the new GC setting takes effect."
+            },
+            {
+                "step": 3,
+                "tool": "validate_gc_setting",
+                "description": "Query `http://localhost:6060/debug/vars` and confirm the GCPercent value is 100, or inspect runtime metrics if enabled."
+            }
+        ],
+        "outcome_checks": [
+            "debug/vars endpoint reports `\"GCPercent\": 100`.",
+            "Node starts normally and exhibits expected memory behavior."
+        ]
+    }
+]

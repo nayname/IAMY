@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No implemented backend helper was found to run a `foundryup` update.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Calls the CLI and returns the version string for the specified tool (e.g., Forge).",
+            "function": "getVersion(cmd)",
+            "usage": "forge_version = getVersion('forge')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Calls the CLI and returns the version string for the specified tool (e.g., Cast).",
+            "function": "getVersion(cmd)",
+            "usage": "cast_version = getVersion('cast')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Calls the CLI and returns the version string for the specified tool (e.g., Anvil).",
+            "function": "getVersion(cmd)",
+            "usage": "anvil_version = getVersion('anvil')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: foundryup_update Desciption: Optionally run `foundryup` to ensure you\u2019re on the latest release.",
+        "forge_version = getVersion('forge')#step: 2 Tool: check_forge_version Desciption: Run `forge --version` to display the current version.",
+        "cast_version = getVersion('cast')#step: 3 Tool: check_cast_version Desciption: Run `cast --version` to display the current version.",
+        "anvil_version = getVersion('anvil')#step: 4 Tool: check_anvil_version Desciption: Run `anvil --version` to display the current version."
+    ],
+    "intent": "Verify the installed versions of Foundry components (forge, cast, anvil)",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "foundryup_update",
+            "description": "Optionally run `foundryup` to ensure you\u2019re on the latest release."
+        },
+        {
+            "step": 2,
+            "tool": "check_forge_version",
+            "description": "Run `forge --version` to display the current version."
+        },
+        {
+            "step": 3,
+            "tool": "check_cast_version",
+            "description": "Run `cast --version` to display the current version."
+        },
+        {
+            "step": 4,
+            "tool": "check_anvil_version",
+            "description": "Run `anvil --version` to display the current version."
+        }
+    ],
+    "outcome_checks": [
+        "Each command outputs a semantic version string.",
+        "All versions are within the expected range for your project (e.g., match the CI toolchain)."
+    ]
+}

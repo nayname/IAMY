@@ -1,0 +1,61 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"UserGuides\", \"query\": \"Send 1000stake from my_validator to recipient\"}, {\"label\": \"UserGuides\", \"query\": \"Query the bank balance of my_validator address\"}, {\"label\": \"UserGuides\", \"query\": \"Add a new key called my_validator to the test keyring\"}, {\"label\": \"UserGuides\", \"query\": \"Initialize a new chain with chain-id my-test-chain\"}, {\"label\": \"UserGuides\", \"query\": \"Start the local simd node\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "3d8f3c4f-28cc-44a5-9ad5-1d0c3be1fca2",
+            "example": false
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Send 1000stake from key my_validator to a recipient address\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_key_address\",\n        \"description\": \"Retrieve the bech32 account address associated with the key name `my_validator` in the test keyring.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"validate_recipient_address\",\n        \"description\": \"Ensure the provided recipient address conforms to the chain's bech32 prefix and checksum.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_bank_send\",\n        \"description\": \"Build a bank send transaction specifying sender address, recipient address, amount 1000stake, and appropriate fees.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_tx\",\n        \"description\": \"Sign the constructed transaction using the `my_validator` key.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"broadcast_tx\",\n        \"description\": \"Broadcast the signed transaction to the network and obtain the transaction hash.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Confirm the transaction hash is found in a committed block via `simd q tx`.\",\n      \"Verify the recipient's balance increased by exactly 1000stake.\",\n      \"Verify the sender's balance decreased by 1000stake plus gas fees.\"\n    ]\n  },\n  {\n    \"intent\": \"Query the bank balance of the address associated with key my_validator\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_key_address\",\n        \"description\": \"Retrieve the account address for `my_validator` from the test keyring.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_bank_balances\",\n        \"description\": \"Execute `simd q bank balances <address>` to fetch all token balances for the address.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"parse_balance\",\n        \"description\": \"Parse the JSON response to extract denomination and amount fields.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The CLI returns exit code 0 and valid JSON output.\",\n      \"The balance list contains the expected denominations (e.g., stake).\"\n    ]\n  },\n  {\n    \"intent\": \"Add a new key named my_validator to the test keyring\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"generate_key\",\n        \"description\": \"Run `simd keys add my_validator --keyring-backend test` to create a new key pair.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"save_key_to_keyring\",\n        \"description\": \"Ensure the generated key is stored in the test keyring backend.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Running `simd keys list --keyring-backend test` shows `my_validator` in the output.\",\n      \"The key entry includes a valid bech32 address and public key.\"\n    ]\n  },\n  {\n    \"intent\": \"Initialize a new chain with chain-id my-test-chain\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"init_genesis\",\n        \"description\": \"Execute `simd init <moniker> --chain-id my-test-chain` to create default genesis and configuration files.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"verify_genesis_file\",\n        \"description\": \"Open the generated genesis.json and confirm the `chain_id` field is set to `my-test-chain`.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"genesis.json exists under the configured home directory.\",\n      \"The chain_id inside genesis.json matches my-test-chain.\"\n    ]\n  },\n  {\n    \"intent\": \"Start the local simd node\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_chain_home\",\n        \"description\": \"Confirm the SIMD home directory contains a valid genesis.json and config.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"start_node\",\n        \"description\": \"Run `simd start` (optionally with `--home` flag) to launch the ABCI application and Tendermint node.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"health_check\",\n        \"description\": \"Query the node status endpoint `curl localhost:26657/status` until it returns a non-empty latest_block_height.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The node process remains running without errors in logs.\",\n      \"The status endpoint shows syncing:false after initial blocks, indicating the node is fully started.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2828,
+                    "prompt_tokens": 720,
+                    "total_tokens": 3548,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1792,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CPp7wFxFVOd1W6Zzgdlbr52EJs8Ib",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--0190e00a-5be0-4ade-8ac3-bea07a4a8fcd-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 720,
+                "output_tokens": 2828,
+                "total_tokens": 3548,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1792
+                }
+            }
+        }
+    ]
+}

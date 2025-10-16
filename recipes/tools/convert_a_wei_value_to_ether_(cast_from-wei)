@@ -1,0 +1,41 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "No implemented frontend function was found that explicitly prompts the user for a Wei amount.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No implemented backend utility wraps the `cast from-wei` command for Wei-to-Ether conversion.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "undef//step: 1 Tool: prompt_user Desciption: Request the Wei amount to convert (e.g., \"420000000000000000\")."
+    ],
+    "backend": [
+        "undef#step: 2 Tool: cast_cli Desciption: Execute `cast from-wei <wei_amount>` to convert the supplied Wei value into Ether units."
+    ],
+    "intent": "Convert a Wei value to Ether (cast from-wei)",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "prompt_user",
+            "description": "Request the Wei amount to convert (e.g., \"420000000000000000\")."
+        },
+        {
+            "step": 2,
+            "tool": "cast_cli",
+            "description": "Execute `cast from-wei <wei_amount>` to convert the supplied Wei value into Ether units."
+        }
+    ],
+    "outcome_checks": [
+        "The command returns a decimal number with up to 18 digits of precision.",
+        "Multiplying the result by 10^18 yields the original Wei amount."
+    ]
+}

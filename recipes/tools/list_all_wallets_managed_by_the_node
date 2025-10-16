@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates the Basic-Auth header needed to access the node\u2019s JSON-RPC interface.",
+            "function": "get_rpc_auth_header()",
+            "usage": "headers = get_rpc_auth_header()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Sends a JSON-RPC request to call personal_listWallets and obtain the list of wallets managed by the node.",
+            "function": "rpc_request(method, params=None, id=1)",
+            "usage": "wallets = rpc_request('personal_listWallets', [])"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "headers = get_rpc_auth_header()#step: 1 Tool: authenticate_rpc Desciption: Authenticate to the JSON-RPC endpoint (personal namespace).",
+        "wallets = rpc_request('personal_listWallets', [])#step: 2 Tool: personal_listWallets Desciption: Invoke personal_listWallets with an empty parameter array to retrieve the wallet list."
+    ],
+    "intent": "List all wallets managed by the node",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "authenticate_rpc",
+            "description": "Authenticate to the JSON-RPC endpoint (personal namespace)."
+        },
+        {
+            "step": 2,
+            "tool": "personal_listWallets",
+            "description": "Invoke personal_listWallets with an empty parameter array to retrieve the wallet list."
+        }
+    ],
+    "outcome_checks": [
+        "RPC call completes without error (result may be an array or null depending on node support).",
+        "If wallets are supported, array length matches the number of initialized wallets; if not supported, result is null as documented."
+    ]
+}

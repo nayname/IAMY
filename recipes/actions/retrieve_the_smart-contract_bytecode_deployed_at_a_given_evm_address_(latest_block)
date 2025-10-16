@@ -1,0 +1,19 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 provides a lightweight JavaScript utility that checks whether a user-supplied string is a properly formatted EVM address (0x-prefixed, 20-byte / 40-hex-char). It throws an error if the address is invalid, allowing calling code to handle the failure gracefully before any network request is made.",
+            "code": "export const validateEvmAddress = (address) => {\n  // Ensure the value is a string\n  if (typeof address !== 'string') {\n    throw new Error('Address must be a string.');\n  }\n\n  // Basic regex: starts with 0x followed by exactly 40 hex chars (case-insensitive)\n  const evmRegex = /^0x[a-fA-F0-9]{40}$/;\n\n  if (!evmRegex.test(address)) {\n    throw new Error('Invalid EVM address. Expect 0x + 40 hex characters.');\n  }\n\n  // All good \u2014 return true so calling code can proceed\n  return true;\n};",
+            "usage": "try {\n  validateEvmAddress(userInputAddress);\n  // Safe to proceed with the RPC call\n} catch (err) {\n  console.error(err.message);\n  alert('Please enter a valid 0x-prefixed address.');\n}"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 defines a small FastAPI backend endpoint that forwards an `eth_getCode` JSON-RPC request to a Cosmos-EVM node, returning the bytecode found at the given address. Running this on the server shields the frontend from CORS issues and allows you to keep node URLs or API keys out of client code.",
+            "code": "import os\nimport httpx\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\n# You can set EVM_NODE_URL in your deployment environment to switch RPC endpoints without code changes\nEVM_NODE_URL = os.getenv(\"EVM_NODE_URL\", \"https://rpc.evmos.org:443\")\n\n@app.get(\"/api/evm/get_code\")\nasync def get_code(address: str):\n    \"\"\"Proxy eth_getCode to the configured Cosmos-EVM JSON-RPC endpoint.\"\"\"\n    # Basic server-side validation (defense-in-depth)\n    if not address or not address.startswith(\"0x\") or len(address) != 42:\n        raise HTTPException(status_code=400, detail=\"Invalid EVM address supplied.\")\n\n    payload = {\n        \"jsonrpc\": \"2.0\",\n        \"method\": \"eth_getCode\",\n        \"params\": [address, \"latest\"],\n        \"id\": 1,\n    }\n\n    try:\n        async with httpx.AsyncClient() as client:\n            rpc_resp = await client.post(EVM_NODE_URL, json=payload, timeout=10)\n            rpc_resp.raise_for_status()\n    except Exception as exc:\n        # Bubble up networking / RPC errors to the caller\n        raise HTTPException(status_code=502, detail=f\"RPC request failed: {exc}\")\n\n    rpc_json = rpc_resp.json()\n\n    # The RPC node may return its own error structure\n    if \"error\" in rpc_json:\n        raise HTTPException(status_code=502, detail=rpc_json[\"error\"].get(\"message\", \"Unknown RPC error\"))\n\n    return {\n        \"address\": address,\n        \"bytecode\": rpc_json.get(\"result\", \"0x\")  # Empty contracts return \"0x\"\n    }",
+            "usage": "// After validating the address client-side\nconst response = await fetch(`/api/evm/get_code?address=${address}`);\nif (!response.ok) {\n  throw new Error(`Server error: ${response.statusText}`);\n}\nconst { bytecode } = await response.json();\nconsole.log('On-chain bytecode:', bytecode);"
+        }
+    ]
+}

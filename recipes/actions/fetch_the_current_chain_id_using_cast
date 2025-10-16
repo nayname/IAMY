@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a FastAPI route that verifies whether Foundry\u2019s `cast` CLI is installed on the server and returns its version.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport subprocess\n\nrouter = APIRouter()\n\n@router.get('/api/verify_foundry')\nasync def verify_foundry_installation():\n    \"\"\"Check if the `cast` executable is available in $PATH and return its version.\"\"\"\n    try:\n        result = subprocess.run(\n            ['cast', '--version'],\n            capture_output=True,\n            text=True,\n            check=True,\n            timeout=5,\n        )\n        return {\n            'installed': True,\n            'version': result.stdout.strip(),\n        }\n    except FileNotFoundError:\n        raise HTTPException(\n            status_code=500,\n            detail=\"Foundry 'cast' executable was not found in $PATH.\"\n        )\n    except subprocess.TimeoutExpired:\n        raise HTTPException(\n            status_code=500,\n            detail='Timeout while attempting to execute cast.'\n        )\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(\n            status_code=500,\n            detail=f'Error executing cast: {err.stderr}'\n        )",
+            "usage": "GET /api/verify_foundry  \u279c  { \"installed\": true, \"version\": \"cast 0.43.0\" }"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 supplies a route that returns a known-good RPC endpoint for a supported Cosmos-EVM chain. Extend or replace the static map as needed.",
+            "code": "from fastapi import APIRouter, HTTPException\n\nrouter = APIRouter()\n\n# Static mapping of chain \u2192 RPC; customise as required.\nRPC_ENDPOINTS = {\n    'evmos': 'https://eth.bd.evmos.org:8545',\n    'canto': 'https://canto.slingshot.finance',\n    'injective': 'https://ethereum.injective.network',\n    'ki': 'https://rpc-mainnet.ki.chainstacklabs.com',\n}\n\n@router.get('/api/get_rpc_url')\nasync def get_rpc_url(chain: str):\n    \"\"\"Return a pre-configured JSON-RPC endpoint for the requested chain.\"\"\"\n    if chain not in RPC_ENDPOINTS:\n        raise HTTPException(status_code=400, detail=f'Unsupported chain: {chain}')\n    return {\n        'chain': chain,\n        'rpc_url': RPC_ENDPOINTS[chain],\n    }",
+            "usage": "GET /api/get_rpc_url?chain=evmos  \u279c  { \"chain\": \"evmos\", \"rpc_url\": \"https://eth.bd.evmos.org:8545\" }"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 adds a route that invokes `cast chain-id --rpc-url <RPC_URL>` to retrieve the numeric chain ID for the provided RPC endpoint.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport subprocess\n\nrouter = APIRouter()\n\n@router.get('/api/get_chain_id')\nasync def get_chain_id(rpc_url: str):\n    \"\"\"Return the EVM chain-ID reported by the given RPC URL using `cast`.\"\"\"\n    cmd = ['cast', 'chain-id', '--rpc-url', rpc_url]\n    try:\n        result = subprocess.run(\n            cmd,\n            capture_output=True,\n            text=True,\n            check=True,\n            timeout=10,\n        )\n        # `cast chain-id` prints the ID as plain text; convert to int for clarity.\n        chain_id = int(result.stdout.strip())\n        return {\n            'rpc_url': rpc_url,\n            'chain_id': chain_id,\n        }\n    except FileNotFoundError:\n        raise HTTPException(\n            status_code=500,\n            detail=\"Foundry 'cast' executable was not found in $PATH.\"\n        )\n    except subprocess.TimeoutExpired:\n        raise HTTPException(\n            status_code=500,\n            detail='Timeout while querying the chain-ID.'\n        )\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(\n            status_code=500,\n            detail=f'Failed to fetch chain-ID: {err.stderr}'\n        )\n    except ValueError:\n        raise HTTPException(\n            status_code=500,\n            detail='Non-numeric chain-ID returned by cast.'\n        )",
+            "usage": "GET /api/get_chain_id?rpc_url=https://eth.bd.evmos.org:8545  \u279c  { \"rpc_url\": \"https://eth.bd.evmos.org:8545\", \"chain_id\": 9001 }"
+        }
+    ]
+}

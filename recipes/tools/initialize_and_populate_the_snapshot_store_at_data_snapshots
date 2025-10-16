@@ -1,0 +1,79 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "get_node_home resolves and returns the absolute path to the Cosmos-SDK node\u2019s home directory.",
+            "function": "get_node_home(env_var='SIMD_HOME', default_path='~/.simd')",
+            "usage": "home = get_node_home()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "graceful_shutdown cleanly stops the running node either via systemd or a direct signal, ensuring a consistent on-disk state.",
+            "function": "graceful_shutdown(pid=None, use_systemctl=False, service_name=None)",
+            "usage": "graceful_shutdown(use_systemctl=True, service_name='appd')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "ensure_output_directory creates the <home>/data/snapshots directory if it is missing.",
+            "function": "ensure_output_directory(path)",
+            "usage": "ensure_output_directory(f\"{home}/data/snapshots\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "No implemented function found that executes the snapshot export command.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "list_snapshots queries the node\u2019s CLI and returns structured information about existing snapshot archives.",
+            "function": "list_snapshots(home_dir)",
+            "usage": "snapshots = list_snapshots(home)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "home = get_node_home()#step: 1 Tool: get_node_home Desciption: Detect the home directory (e.g., ~/.appd) and binary name for the running Cosmos SDK node.",
+        "graceful_shutdown(use_systemctl=True, service_name='appd')#step: 2 Tool: stop_node_process Desciption: Gracefully stop the node so a consistent snapshot can be created.",
+        "ensure_output_directory(f\"{home}/data/snapshots\")#step: 3 Tool: ensure_directory Desciption: Verify that the path <home>/data/snapshots exists; create it if missing.",
+        "undef#step: 4 Tool: run_cli_command Desciption: Execute `<appd> snapshots export` to write the latest application state into the snapshot store.",
+        "snapshots = list_snapshots(home)#step: 5 Tool: verify_snapshot_exists Desciption: Confirm at least one snapshot archive now resides inside <home>/data/snapshots and that `<appd> snapshots list` returns it."
+    ],
+    "intent": "Initialize and populate the snapshot store at data/snapshots",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_node_home",
+            "description": "Detect the home directory (e.g., ~/.appd) and binary name for the running Cosmos SDK node."
+        },
+        {
+            "step": 2,
+            "tool": "stop_node_process",
+            "description": "Gracefully stop the node so a consistent snapshot can be created."
+        },
+        {
+            "step": 3,
+            "tool": "ensure_directory",
+            "description": "Verify that the path <home>/data/snapshots exists; create it if missing."
+        },
+        {
+            "step": 4,
+            "tool": "run_cli_command",
+            "description": "Execute `<appd> snapshots export` to write the latest application state into the snapshot store."
+        },
+        {
+            "step": 5,
+            "tool": "verify_snapshot_exists",
+            "description": "Confirm at least one snapshot archive now resides inside <home>/data/snapshots and that `<appd> snapshots list` returns it."
+        }
+    ],
+    "outcome_checks": [
+        "A new snapshot archive file is present under data/snapshots.",
+        "`<appd> snapshots list` shows the snapshot with a recent height and size."
+    ]
+}

@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Validates that the supplied Bech32 address has the correct HRP and checksum before it is written into genesis.",
+            "function": "validate_recipient_address(address, expected_prefix=\"cosmos\")",
+            "usage": "validate_recipient_address(\"cosmos1abcd...\", \"cosmos\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Adds the my_validator account with 100000000000stake to the chain\u2019s genesis file.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Runs the chain binary\u2019s built-in check to ensure the modified genesis file is structurally sound.",
+            "function": "validate_genesis(chain_binary=\"mychaind\", home=\".\")",
+            "usage": "validate_genesis(\"mychaind\", \"/home/user/.mychaind\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "validate_recipient_address(\"cosmos1abcd...\", \"cosmos\")#step: 1 Tool: validate_address Desciption: Ensure the supplied my_validator Bech32 address is syntactically valid.",
+        "undef#step: 2 Tool: add_genesis_account Desciption: Run `<chain_binary> add-genesis-account my_validator 100000000000stake` to append the account and balance to the genesis file.",
+        "validate_genesis(\"mychaind\", \"/home/user/.mychaind\")#step: 3 Tool: validate_genesis Desciption: Execute `<chain_binary> validate-genesis` to confirm the updated genesis file has no structural errors."
+    ],
+    "intent": "Add my_validator address as a genesis account with 100000000000stake",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_address",
+            "description": "Ensure the supplied my_validator Bech32 address is syntactically valid."
+        },
+        {
+            "step": 2,
+            "tool": "add_genesis_account",
+            "description": "Run `<chain_binary> add-genesis-account my_validator 100000000000stake` to append the account and balance to the genesis file."
+        },
+        {
+            "step": 3,
+            "tool": "validate_genesis",
+            "description": "Execute `<chain_binary> validate-genesis` to confirm the updated genesis file has no structural errors."
+        }
+    ],
+    "outcome_checks": [
+        "Genesis file now lists my_validator with a balance of 100000000000stake.",
+        "`validate-genesis` exits with success (code 0 and no error output)."
+    ]
+}

@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Checks whether the chosen key name already exists in the specified keyring by calling the simd CLI.",
+            "function": "verify_key(key_name, keyring_backend='test')",
+            "usage": "await verify_key('my_unique_key', keyring_backend='file')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Creates a new key in the file-based keyring and returns its details (including the mnemonic).",
+            "function": "generate_key(key_name, keyring_backend='test')",
+            "usage": "await generate_key('my_unique_key', keyring_backend='file')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Securely copies the mnemonic file to an off-site machine for safe, offline storage.",
+            "function": "secure_offsite_copy(local_path, remote_user, remote_host, remote_dir)",
+            "usage": "secure_offsite_copy('/tmp/my_unique_key.mnemonic', 'backup', 'offline-host', '/backups/keys')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "await verify_key('my_unique_key', keyring_backend='file')#step: 1 Tool: choose_key_name Desciption: Select a unique key name that is not already present in the keyring.",
+        "await generate_key('my_unique_key', keyring_backend='file')#step: 2 Tool: keys_add Desciption: Run: simd keys add <name> --keyring-backend file , then provide the desired passphrase twice when prompted.",
+        "secure_offsite_copy('/tmp/my_unique_key.mnemonic', 'backup', 'offline-host', '/backups/keys')#step: 3 Tool: record_mnemonic Desciption: Safely store the 24-word mnemonic output by the command in an offline location."
+    ],
+    "intent": "Create a new key (account) secured with a passphrase",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "choose_key_name",
+            "description": "Select a unique key name that is not already present in the keyring."
+        },
+        {
+            "step": 2,
+            "tool": "keys_add",
+            "description": "Run: simd keys add <name> --keyring-backend file , then provide the desired passphrase twice when prompted."
+        },
+        {
+            "step": 3,
+            "tool": "record_mnemonic",
+            "description": "Safely store the 24-word mnemonic output by the command in an offline location."
+        }
+    ],
+    "outcome_checks": [
+        "CLI prints a bech32 address and mnemonic.",
+        "simd keys show <name> --keyring-backend file returns the same address without error."
+    ]
+}

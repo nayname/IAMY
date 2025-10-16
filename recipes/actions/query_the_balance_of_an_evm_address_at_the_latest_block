@@ -1,0 +1,33 @@
+{
+    "label": "query_balance",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Validates that a user-supplied string is a correctly formatted Ethereum address.",
+            "code": "export const validateEthAddress = (address) => {\n  const regex = /^0x[0-9a-fA-F]{40}$/;\n  if (!regex.test(address)) {\n    throw new Error('Invalid Ethereum address format.');\n  }\n  return true; // address is valid\n};",
+            "usage": "validateEthAddress(userInputAddress);"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Selects a public, read-only JSON-RPC endpoint. Rotation helps with rate-limits and uptime.",
+            "code": "export const selectRpcEndpoint = () => {\n  // A small pool of free public RPC providers\n  const endpoints = [\n    'https://cloudflare-eth.com',\n    'https://rpc.flashbots.net'\n  ];\n  return endpoints[Math.floor(Math.random() * endpoints.length)];\n};",
+            "usage": "const rpcEndpoint = selectRpcEndpoint();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "FastAPI route that performs the eth_getBalance JSON-RPC call and returns the raw hex balance.",
+            "code": "from fastapi import FastAPI, HTTPException, Query\nimport httpx, re, os\n\napp = FastAPI()\n\nETH_ADDRESS_REGEX = re.compile(r'^0x[0-9a-fA-F]{40}$')\nDEFAULT_RPC_ENDPOINT = os.getenv('RPC_ENDPOINT', 'https://cloudflare-eth.com')\n\n@app.get('/api/eth/balance')\nasync def get_eth_balance(\n    address: str = Query(..., description='0x-prefixed Ethereum address'),\n    rpc_endpoint: str = Query(DEFAULT_RPC_ENDPOINT, description='Optional JSON-RPC endpoint')\n):\n    \"\"\"Returns the latest ETH balance in Wei (hex encoded).\"\"\"\n    # Safety check on backend as well\n    if not ETH_ADDRESS_REGEX.fullmatch(address):\n        raise HTTPException(status_code=400, detail='Invalid Ethereum address')\n\n    payload = {\n        'jsonrpc': '2.0',\n        'method': 'eth_getBalance',\n        'params': [address, 'latest'],\n        'id': 1\n    }\n\n    try:\n        async with httpx.AsyncClient(timeout=10) as client:\n            resp = await client.post(rpc_endpoint, json=payload)\n            resp.raise_for_status()\n            data = resp.json()\n    except httpx.HTTPError as e:\n        raise HTTPException(status_code=502, detail=f'Upstream RPC error: {e}')\n\n    if data.get('error'):\n        raise HTTPException(status_code=500, detail=data['error'])\n\n    return {\n        'address': address,\n        'balance_hex': data.get('result', '0x0')\n    }",
+            "usage": "const response = await fetch(`/api/eth/balance?address=${address}&rpc_endpoint=${encodeURIComponent(rpcEndpoint)}`);\nconst { balance_hex } = await response.json();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Converts the hex Wei balance returned by the backend into decimal Wei and whole-number Ether for display.",
+            "code": "export const parseBalanceHexToDecimal = (balanceHex) => {\n  if (!balanceHex || typeof balanceHex !== 'string') {\n    throw new Error('balanceHex must be a non-empty hex string.');\n  }\n  try {\n    const weiBigInt = BigInt(balanceHex); // BigInt handles the 0x prefix\n    const weiStr = weiBigInt.toString(10);\n    const etherStr = (weiBigInt / 10n ** 18n).toString(10);\n    return { wei: weiStr, ether: etherStr };\n  } catch (err) {\n    throw new Error('Failed to parse balance: ' + err.message);\n  }\n};",
+            "usage": "const { wei, ether } = parseBalanceHexToDecimal(balance_hex);\nconsole.log(`Balance: ${wei} Wei (\u2248 ${ether} ETH)`);"
+        }
+    ]
+}

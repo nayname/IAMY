@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Performs a programmatic search against Cosmos-SDK documentation and returns matching results for a given query string.",
+            "function": "search_circuit_docs(query)",
+            "usage": "docs = search_circuit_docs(\"cosmosd export app state and validators command flags\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Stops a running blockchain daemon cleanly, either via systemd or by sending a SIGINT to its process.",
+            "function": "graceful_shutdown(pid=None, use_systemctl=False, service_name=None)",
+            "usage": "graceful_shutdown(use_systemctl=True, service_name=\"appd\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Executes an arbitrary CLI command (in this case the export command) within a controlled, time-boxed environment.",
+            "function": "run_timeboxed_script(cmd)",
+            "usage": "run_timeboxed_script([\"appd\", \"export\", \"--home\", \"/var/lib/appd\", \"--height\", \"123456\", \">\", \"state.json\"])"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Loads a JSON genesis-style file and validates that core fields are present and correctly set.",
+            "function": "verify_genesis_file(genesis_path='~/.simapp/config/genesis.json', expected_chain_id='my-test-chain')",
+            "usage": "is_valid = verify_genesis_file(\"state.json\", expected_chain_id=\"neutron-1\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "docs = search_circuit_docs(\"cosmosd export app state and validators command flags\")#step: 1 Tool: SearchCosmosDocumentation Desciption: Query: \"cosmosd export app state and validators command flags\" to get correct CLI syntax.",
+        "graceful_shutdown(use_systemctl=True, service_name=\"appd\")#step: 2 Tool: stop_node Desciption: Gracefully stop any running node to guarantee database consistency.",
+        "run_timeboxed_script([\"appd\", \"export\", \"--home\", \"/var/lib/appd\", \"--height\", \"123456\", \">\", \"state.json\"])#step: 3 Tool: run_cli_command Desciption: Execute `<appd> export --home <node_home> --height <target_height> > state.json`.",
+        "is_valid = verify_genesis_file(\"state.json\", expected_chain_id=\"neutron-1\")#step: 4 Tool: validate_json_schema Desciption: Check that state.json contains top-level keys `app_state` and `validators`."
+    ],
+    "intent": "Export app state and validators",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "SearchCosmosDocumentation",
+            "description": "Query: \"cosmosd export app state and validators command flags\" to get correct CLI syntax."
+        },
+        {
+            "step": 2,
+            "tool": "stop_node",
+            "description": "Gracefully stop any running node to guarantee database consistency."
+        },
+        {
+            "step": 3,
+            "tool": "run_cli_command",
+            "description": "Execute `<appd> export --home <node_home> --height <target_height> > state.json`."
+        },
+        {
+            "step": 4,
+            "tool": "validate_json_schema",
+            "description": "Check that state.json contains top-level keys `app_state` and `validators`."
+        }
+    ],
+    "outcome_checks": [
+        "state.json file is created and not empty.",
+        "JSON passes schema validation and includes expected keys.",
+        "File size roughly matches chain size expectations (sanity check)."
+    ]
+}

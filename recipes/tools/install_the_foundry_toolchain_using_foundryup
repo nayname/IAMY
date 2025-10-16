@@ -1,0 +1,79 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "verify_protoc_plugins inspects the local PATH and confirms that a list of required binaries is installed before any further setup begins.",
+            "function": "verify_protoc_plugins()",
+            "usage": "status = verify_protoc_plugins()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No pre-written helper exists to download the foundryup installer script.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "reload_shell launches a new login shell so that PATH changes (e.g. the newly installed foundryup binary) take effect immediately.",
+            "function": "reload_shell()",
+            "usage": "reload_shell()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "No dedicated function was found to invoke the foundryup command and install Forge and Cast.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "getVersion executes '<tool> --version' and returns the version string, allowing you to confirm that Forge and Cast are available.",
+            "function": "getVersion(cmd)",
+            "usage": "forge_ver = getVersion('forge')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "status = verify_protoc_plugins()#step: 1 Tool: check_system_prerequisites Desciption: Verify that `curl`, `bash`, and a recent version of `git` are installed on the system.",
+        "undef#step: 2 Tool: download_foundryup Desciption: Execute `curl -L https://foundry.paradigm.xyz | bash` to download and install the `foundryup` installer script.",
+        "reload_shell()#step: 3 Tool: source_environment Desciption: Reload your shell profile (`source ~/.bashrc` or `source ~/.zshrc`) so that the `foundryup` binary is in your PATH.",
+        "undef#step: 4 Tool: run_foundryup_install Desciption: Run `foundryup` to download the latest stable versions of `forge`, `cast`, and other Foundry binaries.",
+        "forge_ver = getVersion('forge')#step: 5 Tool: verify_foundry_installation Desciption: Check tool availability by running `forge --version` and `cast --version`."
+    ],
+    "intent": "Install the Foundry toolchain using foundryup",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "check_system_prerequisites",
+            "description": "Verify that `curl`, `bash`, and a recent version of `git` are installed on the system."
+        },
+        {
+            "step": 2,
+            "tool": "download_foundryup",
+            "description": "Execute `curl -L https://foundry.paradigm.xyz | bash` to download and install the `foundryup` installer script."
+        },
+        {
+            "step": 3,
+            "tool": "source_environment",
+            "description": "Reload your shell profile (`source ~/.bashrc` or `source ~/.zshrc`) so that the `foundryup` binary is in your PATH."
+        },
+        {
+            "step": 4,
+            "tool": "run_foundryup_install",
+            "description": "Run `foundryup` to download the latest stable versions of `forge`, `cast`, and other Foundry binaries."
+        },
+        {
+            "step": 5,
+            "tool": "verify_foundry_installation",
+            "description": "Check tool availability by running `forge --version` and `cast --version`."
+        }
+    ],
+    "outcome_checks": [
+        "`forge --version` and `cast --version` return valid semantic versions.",
+        "The `~/.foundry/bin` (or equivalent) directory contains the Forge and Cast binaries."
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Creates a small utility module that lets the documentation viewer configure or read the CometBFT RPC endpoint that subsequent calls will use.",
+            "code": "/* cometRpc.js */\n\nexport let COMET_RPC_ENDPOINT = 'http://localhost:26657';\n\n/**\n * Return the currently-configured RPC endpoint.\n * @returns {string}\n */\nexport const getCometRpcEndpoint = () => COMET_RPC_ENDPOINT;\n\n/**\n * Update the global RPC endpoint in a type-safe way.\n * @param {string} url \u2013 Full URL including protocol, e.g. \"http://my-node:26657\".\n */\nexport const setCometRpcEndpoint = (url) => {\n  try {\n    const parsed = new URL(url);\n    // Strip trailing slash so we can safely concatenate paths later\n    COMET_RPC_ENDPOINT = parsed.href.replace(/\\/$/, '');\n  } catch (err) {\n    console.error('Invalid RPC endpoint supplied:', err);\n    throw new Error('Provided RPC endpoint is not a valid URL.');\n  }\n};",
+            "usage": "// Somewhere in your docs example\nimport { setCometRpcEndpoint, getCometRpcEndpoint } from './cometRpc.js';\n\nsetCometRpcEndpoint('http://localhost:26657');\nconst rpc = getCometRpcEndpoint();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Exposes a FastAPI route that proxies the /unconfirmed_txs RPC call to the node and returns the raw JSON response. Using a backend avoids browser CORS issues that many nodes disable by default.",
+            "code": "# api_mempool.py\nfrom fastapi import APIRouter, HTTPException, Query\nimport requests\n\nrouter = APIRouter()\n\n\ndef _build_rpc_url(rpc_endpoint: str, limit: int) -> str:\n    \"\"\"Helper that assembles the final RPC URL without double slashes.\"\"\"\n    return f\"{rpc_endpoint.rstrip('/')}/unconfirmed_txs?limit={limit}\"\n\n\n@router.get('/api/unconfirmed_txs')\ndef fetch_unconfirmed_txs(\n    limit: int = Query(50, ge=1, le=1000),\n    rpc_endpoint: str = Query('http://localhost:26657')\n):\n    \"\"\"Fetch raw unconfirmed transactions from a CometBFT node.\"\"\"\n    url = _build_rpc_url(rpc_endpoint, limit)\n    try:\n        response = requests.get(url, timeout=5)\n        response.raise_for_status()\n        return response.json()\n    except requests.RequestException as exc:\n        # Surface networking problems as a clean 502 to the caller\n        raise HTTPException(status_code=502, detail=f'Unable to reach RPC endpoint: {exc}')",
+            "usage": "// Frontend call example\nconst rpc = getCometRpcEndpoint();\nconst raw = await fetch(`/api/unconfirmed_txs?limit=30&rpc_endpoint=${encodeURIComponent(rpc)}`).then(r => r.json());"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Parses the raw /unconfirmed_txs response and returns only the fields you care about: n_txs and the txs array. Keeping this in the backend means the frontend receives a minimal payload.",
+            "code": "# Extend api_mempool.py\nfrom fastapi import Body\n\n@router.post('/api/parse_unconfirmed_txs')\ndef parse_unconfirmed_txs(raw_response: dict = Body(...)):\n    \"\"\"Extract `n_txs` and `txs` from the raw RPC response.\"\"\"\n    try:\n        result = raw_response.get('result', {})\n        n_txs = int(result.get('n_txs', 0))\n        txs = result.get('txs', [])\n        return {\n            'n_txs': n_txs,\n            'txs': txs  # still base64-encoded per CometBFT spec\n        }\n    except (ValueError, AttributeError) as exc:\n        raise HTTPException(status_code=400, detail=f'Malformed RPC response: {exc}')",
+            "usage": "// Frontend call example\nconst parsed = await fetch('/api/parse_unconfirmed_txs', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify(raw)\n}).then(r => r.json());\n\nconsole.log(`Mempool contains ${parsed.n_txs} txs`, parsed.txs);"
+        }
+    ]
+}

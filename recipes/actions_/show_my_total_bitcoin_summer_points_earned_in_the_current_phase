@@ -1,0 +1,68 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects to the user\u2019s browser wallet (Keplr / Leap) and returns the Neutron bech32 address.",
+            "function": "getNeutronAddress()",
+            "usage": "const userAddress = await getNeutronAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No fully-implemented function was found that retrieves the active BTC-Summer campaign phase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Queries the Points contract with the user address and phase ID to obtain the current-phase point balance.",
+            "function": "query_phase_points(address, phase_id)",
+            "usage": "points_info = query_phase_points(userAddress, currentPhaseId)"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Renders the retrieved point total in the web page for the user.",
+            "function": "displayPoints(points)",
+            "usage": "displayPoints(points_info.points);"
+        }
+    ],
+    "frontend": [
+        "const userAddress = await getNeutronAddress();//step: 1 Tool: get_neutron_address Desciption: Identify the user\u2019s Neutron wallet address.",
+        "displayPoints(points_info.points);//step: 4 Tool: present_result Desciption: Display the returned point total to the user in a readable format."
+    ],
+    "backend": [
+        "undef#step: 2 Tool: fetch_current_campaign_phase Desciption: Query the BTC Summer Campaign contract to discover the active phase ID.",
+        "points_info = query_phase_points(userAddress, currentPhaseId)#step: 3 Tool: query_points_contract Desciption: Call `get_phase_points { address, phase_id }` on the Points contract to retrieve the user\u2019s point balance for the active phase."
+    ],
+    "intent": "Show my total Bitcoin Summer points earned in the current phase",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_neutron_address",
+            "description": "Identify the user\u2019s Neutron wallet address."
+        },
+        {
+            "step": 2,
+            "tool": "fetch_current_campaign_phase",
+            "description": "Query the BTC Summer Campaign contract to discover the active phase ID."
+        },
+        {
+            "step": 3,
+            "tool": "query_points_contract",
+            "description": "Call `get_phase_points { address, phase_id }` on the Points contract to retrieve the user\u2019s point balance for the active phase."
+        },
+        {
+            "step": 4,
+            "tool": "present_result",
+            "description": "Display the returned point total to the user in a readable format."
+        }
+    ],
+    "outcome_checks": [
+        "The contract query returns a non-error JSON response.",
+        "The `points` field is a non-negative integer.",
+        "The phase ID in the response matches the active phase ID fetched in Step 2."
+    ]
+}

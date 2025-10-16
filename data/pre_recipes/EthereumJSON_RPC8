@@ -1,0 +1,162 @@
+[
+    {
+        "intent": "Configure the JSON-RPC gas cap to 20,000,000 gas",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "stop_node",
+                "description": "Gracefully shut down the running evmd node so configuration changes can be applied safely."
+            },
+            {
+                "step": 2,
+                "tool": "open_app_toml",
+                "description": "Open ~/.evmd/config/app.toml and navigate to the [json-rpc] section."
+            },
+            {
+                "step": 3,
+                "tool": "modify_json_rpc_field",
+                "description": "Set gas-cap = 20000000 to cap eth_call and estimateGas requests at 20 M gas."
+            },
+            {
+                "step": 4,
+                "tool": "save_and_close_file",
+                "description": "Persist the updated configuration file."
+            },
+            {
+                "step": 5,
+                "tool": "restart_node",
+                "description": "Start the node again (e.g., evmd start or systemd service) so the new gas cap takes effect."
+            }
+        ],
+        "outcome_checks": [
+            "Run grep \"gas-cap\" ~/.evmd/config/app.toml and confirm the value is 20000000.",
+            "Observe startup logs; they should print \"JSON-RPC gas-cap: 20000000\"."
+        ]
+    },
+    {
+        "intent": "Enable only the eth, web3, net, and txpool namespaces on JSON-RPC",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "stop_node",
+                "description": "Stop the evmd process to edit configuration."
+            },
+            {
+                "step": 2,
+                "tool": "open_app_toml",
+                "description": "Edit ~/.evmd/config/app.toml and locate the api field under [json-rpc]."
+            },
+            {
+                "step": 3,
+                "tool": "modify_json_rpc_field",
+                "description": "Set api = \"eth,web3,net,txpool\" so only those namespaces are exposed."
+            },
+            {
+                "step": 4,
+                "tool": "save_and_close_file",
+                "description": "Save the file and exit the editor."
+            },
+            {
+                "step": 5,
+                "tool": "restart_node",
+                "description": "Restart evmd to load the new namespace list."
+            }
+        ],
+        "outcome_checks": [
+            "Invoke curl -s -X POST --data '{\"jsonrpc\":\"2.0\",\"method\":\"rpc_modules\",\"params\":[],\"id\":1}' http://localhost:8545 and verify the response lists only eth, web3, net, and txpool.",
+            "Confirm no debug or personal endpoints respond."
+        ]
+    },
+    {
+        "intent": "Expose the WebSocket JSON-RPC endpoint on port 8546",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "stop_node",
+                "description": "Shut down the node to update configuration."
+            },
+            {
+                "step": 2,
+                "tool": "open_app_toml",
+                "description": "Open ~/.evmd/config/app.toml and go to the [json-rpc] section."
+            },
+            {
+                "step": 3,
+                "tool": "modify_json_rpc_field",
+                "description": "Ensure enable = true and set ws-address = \"0.0.0.0:8546\" (or 127.0.0.1:8546 for local access)."
+            },
+            {
+                "step": 4,
+                "tool": "save_and_close_file",
+                "description": "Write changes and close the editor."
+            },
+            {
+                "step": 5,
+                "tool": "restart_node",
+                "description": "Start evmd; the WebSocket server should bind to port 8546."
+            }
+        ],
+        "outcome_checks": [
+            "Run netstat -an | grep 8546 and verify the LISTEN state on the expected interface.",
+            "Use wscat -c ws://localhost:8546 to open a connection and confirm you receive a valid JSON-RPC greeting."
+        ]
+    },
+    {
+        "intent": "Set the EVM call timeout (RPCEVM timeout) to 5 seconds",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "stop_node",
+                "description": "Stop the running evmd instance."
+            },
+            {
+                "step": 2,
+                "tool": "open_app_toml",
+                "description": "Navigate to ~/.evmd/config/app.toml and find the [json-rpc] block."
+            },
+            {
+                "step": 3,
+                "tool": "modify_json_rpc_field",
+                "description": "Set evm-timeout = \"5s\" (or rpc-evm-timeout depending on version) so eth_call operations abort after five seconds."
+            },
+            {
+                "step": 4,
+                "tool": "save_and_close_file",
+                "description": "Save the configuration change."
+            },
+            {
+                "step": 5,
+                "tool": "restart_node",
+                "description": "Restart the node to apply the new timeout."
+            }
+        ],
+        "outcome_checks": [
+            "Inspect startup logs for the line \"EVM timeout: 5s\".",
+            "Issue a deliberately long eth_call and confirm it errors after ~5 seconds."
+        ]
+    },
+    {
+        "intent": "Query storage slot 0 for a given Ethereum address via JSON-RPC",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "construct_json_rpc_request",
+                "description": "Build a POST request body: {\"jsonrpc\":\"2.0\",\"method\":\"eth_getStorageAt\",\"params\":[\"<0xADDRESS>\",\"0x0\",\"latest\"],\"id\":1}."
+            },
+            {
+                "step": 2,
+                "tool": "send_http_post",
+                "description": "Send the request to http://localhost:8545 using curl or an HTTP client."
+            },
+            {
+                "step": 3,
+                "tool": "parse_json_rpc_response",
+                "description": "Extract the result field, which is a 32-byte hex string representing the value stored at slot 0."
+            }
+        ],
+        "outcome_checks": [
+            "Ensure the HTTP response has status code 200 and jsonrpc == \"2.0\".",
+            "Confirm the result value is a 0x-prefixed 64-hex-character string (32 bytes)."
+        ]
+    }
+]

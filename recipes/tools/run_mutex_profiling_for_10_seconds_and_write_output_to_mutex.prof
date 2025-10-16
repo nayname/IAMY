@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates the HTTP Basic-Auth header required to perform privileged JSON-RPC debug calls.",
+            "function": "get_rpc_auth_header()",
+            "usage": "auth_headers = get_rpc_auth_header()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No implemented backend function exactly matches the task of merely setting the profiling parameters.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Enables Go mutex contention profiling via the debug_setMutexProfileFraction RPC method so that a mutex profile can subsequently be written to disk.",
+            "function": "enable_mutex_profiling()",
+            "usage": "enable_mutex_profiling()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "auth_headers = get_rpc_auth_header()#step: 1 Tool: authenticate_rpc Desciption: Obtain privileged access needed for debug_* RPC calls.",
+        "undef#step: 2 Tool: prepare_profile_parameters Desciption: Set duration = 10 (seconds) and outputPath = \"mutex.prof\".",
+        "enable_mutex_profiling()#step: 3 Tool: debug_mutexProfile Desciption: Call debug_mutexProfile(outputPath, duration) to start profiling and write the contention profile to disk after 10 s."
+    ],
+    "intent": "Run mutex profiling for 10 seconds and write output to mutex.prof",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "authenticate_rpc",
+            "description": "Obtain privileged access needed for debug_* RPC calls."
+        },
+        {
+            "step": 2,
+            "tool": "prepare_profile_parameters",
+            "description": "Set duration = 10 (seconds) and outputPath = \"mutex.prof\"."
+        },
+        {
+            "step": 3,
+            "tool": "debug_mutexProfile",
+            "description": "Call debug_mutexProfile(outputPath, duration) to start profiling and write the contention profile to disk after 10 s."
+        }
+    ],
+    "outcome_checks": [
+        "RPC response confirms profiling started (typically returns \"true\" or an OK message).",
+        "After ~10 s, the file mutex.prof exists at the node working directory and is non-empty."
+    ]
+}

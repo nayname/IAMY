@@ -1,0 +1,106 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "getWalletAddress obtains the user\u2019s first Neutron bech32 account address from the connected signer.",
+            "function": "getWalletAddress(signer)",
+            "usage": "const address = await getWalletAddress(signer);"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "fetchNtrnBalance queries the Neutron LCD and returns the wallet\u2019s spendable NTRN balance (in micro-units).",
+            "function": "fetchNtrnBalance(address)",
+            "usage": "const balanceMicro = await fetchNtrnBalance(address);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "validateLockAmount confirms the balance meets the 2 000 NTRN requirement and throws if it does not.",
+            "function": "validateLockAmount(rawBalance, amountToLock = 2_000_000_000)",
+            "usage": "validateLockAmount(balanceMicro);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "calculateUnlockTimestamp adds 7 776 000 seconds (\u2248 90 days) to the current time and returns the lock\u2019s end timestamp.",
+            "function": "calculateUnlockTimestamp()",
+            "usage": "const unlockTs = calculateUnlockTimestamp();"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "constructLockExecuteMsg builds the MsgExecuteContract that locks 2 000 000 000 untrn for 90 days in the designated lock contract.",
+            "function": "constructLockExecuteMsg({ sender, amount = '2000000000', durationSeconds = 7776000 })",
+            "usage": "const executeMsg = constructLockExecuteMsg({ sender: address });"
+        },
+        {
+            "step": 6,
+            "label": "frontend",
+            "introduction": "signAndBroadcast signs the execute message with the user\u2019s wallet and relays it to the backend for broadcasting to mainnet.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo = '')",
+            "usage": "const txHash = await signAndBroadcast(signer, address, [executeMsg], 'auto');"
+        },
+        {
+            "step": 7,
+            "label": "frontend",
+            "introduction": "queryBoostMultiplier reads the Boost Pointer contract and returns the wallet\u2019s current multiplier to verify it is \u2265 1.2\u00d7.",
+            "function": "queryBoostMultiplier(address)",
+            "usage": "const multiplier = await queryBoostMultiplier(address);"
+        }
+    ],
+    "frontend": [
+        "const address = await getWalletAddress(signer);//step: 1 Tool: get_wallet_address Desciption: Retrieve the user\u2019s Neutron bech32 address that will perform the lock.",
+        "const balanceMicro = await fetchNtrnBalance(address);//step: 2 Tool: query_cw20_balance Desciption: Check the wallet\u2019s spendable NTRN balance to confirm \u2265 2000 NTRN is available.",
+        "validateLockAmount(balanceMicro);//step: 3 Tool: validate_amount Desciption: Abort if balance is insufficient or if 2000 NTRN points to a vested/locked position.",
+        "const unlockTs = calculateUnlockTimestamp();//step: 4 Tool: calculate_unlock_timestamp Desciption: Add 90 days (\u2248 7 776 000 s) to the current block time to derive the lock\u2019s end timestamp.",
+        "const executeMsg = constructLockExecuteMsg({ sender: address });//step: 5 Tool: construct_execute_msg Desciption: Create an ExecuteMsg to the NTRN Lock contract (neutron14lnmj4k0tqsfn3x8kmnmacg64ct2utyz0aaxtm5g3uwwp8kk4f6shcgrtt) locking 2 000 000 000 untrn for duration_seconds = 7776000.",
+        "const txHash = await signAndBroadcast(signer, address, [executeMsg], 'auto');//step: 6 Tool: sign_and_broadcast_tx Desciption: Sign with the user\u2019s wallet and broadcast the lock transaction to Neutron main-net.",
+        "const multiplier = await queryBoostMultiplier(address);//step: 7 Tool: query_boost_pointer Desciption: Read the Boost Pointer contract to verify the multiplier is now \u2265 1.2\u00d7 for this wallet."
+    ],
+    "backend": [],
+    "intent": "Lock 2000 NTRN for 3 months to obtain a 1.2\u00d7 BTC Summer boost",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_wallet_address",
+            "description": "Retrieve the user\u2019s Neutron bech32 address that will perform the lock."
+        },
+        {
+            "step": 2,
+            "tool": "query_cw20_balance",
+            "description": "Check the wallet\u2019s spendable NTRN balance to confirm \u2265 2000 NTRN is available."
+        },
+        {
+            "step": 3,
+            "tool": "validate_amount",
+            "description": "Abort if balance is insufficient or if 2000 NTRN points to a vested/locked position."
+        },
+        {
+            "step": 4,
+            "tool": "calculate_unlock_timestamp",
+            "description": "Add 90 days (\u2248 7 776 000 s) to the current block time to derive the lock\u2019s end timestamp."
+        },
+        {
+            "step": 5,
+            "tool": "construct_execute_msg",
+            "description": "Create an ExecuteMsg to the NTRN Lock contract (neutron14lnmj4k0tqsfn3x8kmnmacg64ct2utyz0aaxtm5g3uwwp8kk4f6shcgrtt) locking 2 000 000 000 untrn for duration_seconds = 7776000."
+        },
+        {
+            "step": 6,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign with the user\u2019s wallet and broadcast the lock transaction to Neutron main-net."
+        },
+        {
+            "step": 7,
+            "tool": "query_boost_pointer",
+            "description": "Read the Boost Pointer contract to verify the multiplier is now \u2265 1.2\u00d7 for this wallet."
+        }
+    ],
+    "outcome_checks": [
+        "The NTRN Lock contract records a new lock of exactly 2000 NTRN with the correct unlock timestamp.",
+        "Boost Pointer returns a multiplier of 1.2\u00d7 (or higher if other boosts apply).",
+        "The wallet\u2019s spendable NTRN balance decreased by 2000 NTRN."
+    ]
+}

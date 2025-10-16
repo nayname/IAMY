@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No fully-implemented function that explicitly verifies a Foundry / cast installation exists in the codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "connect_rpc_endpoint tries a given Neutron RPC HTTPS URL, returning it only if the endpoint responds correctly \u2014 effectively picking a healthy RPC URL for later cast calls.",
+            "function": "connect_rpc_endpoint(rpc_endpoint)",
+            "usage": "healthy_rpc = connect_rpc_endpoint('https://rpc-kralum.neutron.org')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "query_balance fetches an account\u2019s on-chain balance (default denom untrn) via the Neutron LCD, mirroring the information that `cast balance` would return.",
+            "function": "query_balance(address, denom='untrn')",
+            "usage": "bal_info = query_balance('neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: verify_foundry_installation Desciption: Ensure Foundry\u2019s CLI (cast) is installed and available in the PATH.",
+        "healthy_rpc = connect_rpc_endpoint('https://rpc-kralum.neutron.org')#step: 2 Tool: get_rpc_url Desciption: Identify a healthy HTTPS RPC endpoint for the desired Cosmos EVM chain from the docs.",
+        "bal_info = query_balance('neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')#step: 3 Tool: cast_balance_query Desciption: Run: `cast balance <ADDRESS> --rpc-url <RPC_URL>` to fetch the account balance."
+    ],
+    "intent": "Query an account\u2019s balance with cast",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "verify_foundry_installation",
+            "description": "Ensure Foundry\u2019s CLI (cast) is installed and available in the PATH."
+        },
+        {
+            "step": 2,
+            "tool": "get_rpc_url",
+            "description": "Identify a healthy HTTPS RPC endpoint for the desired Cosmos EVM chain from the docs."
+        },
+        {
+            "step": 3,
+            "tool": "cast_balance_query",
+            "description": "Run: `cast balance <ADDRESS> --rpc-url <RPC_URL>` to fetch the account balance."
+        }
+    ],
+    "outcome_checks": [
+        "Command returns a numeric balance without error.",
+        "Cross-check the returned balance against a block-explorer for the same address."
+    ]
+}

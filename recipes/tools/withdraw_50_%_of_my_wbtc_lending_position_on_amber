@@ -1,0 +1,81 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Fetches the connected user\u2019s Neutron address from the Keplr browser wallet.",
+            "function": "getUserWalletAddress()",
+            "usage": "const address = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries Amber\u2019s lending contract for the caller\u2019s current lending positions (including supplied WBTC).",
+            "function": "amber_positions(user_address, contract_addr?)",
+            "usage": "const positions = await amber_positions(address);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "No existing helper calculates 50 % of an arbitrary numeric amount.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Creates a MsgExecuteContract object that calls the lending contract\u2019s \u201cwithdraw\u201d entry-point with the desired amount.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds = [])",
+            "usage": "const execMsg = constructTxWasmExecute(address, AMBER_CONTRACT_ADDR, { withdraw: { amount } }, []);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Signs the prepared transaction with the user\u2019s wallet and broadcasts it to the network.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo = '')",
+            "usage": "const txHash = await signAndBroadcast(signer, address, [execMsg], 'auto');"
+        }
+    ],
+    "frontend": [
+        "const address = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Identify the wallet address that opened the lending position.",
+        "undef//step: 3 Tool: calculate_partial_amount Desciption: Compute 50 % of the supplied WBTC to determine the withdrawal amount.",
+        "const execMsg = constructTxWasmExecute(address, AMBER_CONTRACT_ADDR, { withdraw: { amount } }, []);//step: 4 Tool: construct_tx_contract_execute Desciption: Create an ExecuteMsg to Amber\u2019s lending contract using its \u201cwithdraw\u201d (or similar) entry point with the calculated amount.",
+        "const txHash = await signAndBroadcast(signer, address, [execMsg], 'auto');//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign the lending-withdrawal transaction and broadcast it."
+    ],
+    "backend": [
+        "const positions = await amber_positions(address);#step: 2 Tool: query_lending_position Desciption: Call Amber\u2019s lending contract to retrieve the current supplied WBTC amount."
+    ],
+    "intent": "Withdraw 50 % of my WBTC lending position on Amber",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_wallet_address",
+            "description": "Identify the wallet address that opened the lending position."
+        },
+        {
+            "step": 2,
+            "tool": "query_lending_position",
+            "description": "Call Amber\u2019s lending contract to retrieve the current supplied WBTC amount."
+        },
+        {
+            "step": 3,
+            "tool": "calculate_partial_amount",
+            "description": "Compute 50 % of the supplied WBTC to determine the withdrawal amount."
+        },
+        {
+            "step": 4,
+            "tool": "construct_tx_contract_execute",
+            "description": "Create an ExecuteMsg to Amber\u2019s lending contract using its \u201cwithdraw\u201d (or similar) entry point with the calculated amount."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the lending-withdrawal transaction and broadcast it."
+        }
+    ],
+    "outcome_checks": [
+        "Amber contract should emit an event showing the exact WBTC amount removed.",
+        "Wallet\u2019s WBTC balance should increase by the withdrawn amount (minus any protocol fees).",
+        "Remaining supplied balance in Amber should equal approximately the original amount \u00d7 0.5."
+    ]
+}

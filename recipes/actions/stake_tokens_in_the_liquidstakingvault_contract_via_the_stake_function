@@ -1,0 +1,47 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that establishes a connection to an Ethereum JSON-RPC endpoint and returns a Web3 instance.",
+            "code": "# backend/ethereum_provider.py\nfrom web3 import Web3\nimport os\n\n\ndef get_web3_provider() -> Web3:\n    # Connects to an Ethereum JSON-RPC endpoint based on ETH_RPC_URL environment variable.\n    rpc_url = os.getenv(\"ETH_RPC_URL\", \"https://mainnet.infura.io/v3/YOUR_API_KEY\")\n    w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={\"timeout\": 60}))\n\n    # Verify connectivity\n    if not w3.isConnected():\n        raise ConnectionError(f\"Unable to connect to Ethereum node at {rpc_url}\")\n\n    return w3",
+            "usage": "w3 = get_web3_provider()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 loads the wallet credentials (private key) from an environment variable and returns an eth-account signer.",
+            "code": "# backend/credentials.py\nimport os\nfrom eth_account import Account\nfrom web3 import Web3\n\n\ndef load_signer(web3: Web3):\n    # Loads the private key from the PRIVATE_KEY environment variable and returns an Account object.\n    private_key = os.getenv(\"PRIVATE_KEY\")\n    if not private_key:\n        raise ValueError(\"PRIVATE_KEY environment variable is not set.\")\n\n    if not private_key.startswith(\"0x\"):\n        private_key = \"0x\" + private_key\n\n    account = web3.eth.account.from_key(private_key)\n    return account",
+            "usage": "signer = load_signer(w3)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 instantiates the LiquidStakingVault contract using its on-chain address and ABI file.",
+            "code": "# backend/contract.py\nimport json\nimport os\nfrom web3 import Web3\n\n\ndef get_liquid_staking_vault_contract(web3: Web3):\n    # Instantiates the LiquidStakingVault contract using its address and ABI.\n    contract_address = os.getenv(\"VAULT_CONTRACT_ADDRESS\")\n    if not contract_address:\n        raise ValueError(\"VAULT_CONTRACT_ADDRESS environment variable is not set.\")\n    contract_address = Web3.toChecksumAddress(contract_address)\n\n    abi_path = os.getenv(\"VAULT_CONTRACT_ABI_PATH\", \"backend/abis/LiquidStakingVault.abi.json\")\n\n    try:\n        with open(abi_path, \"r\") as abi_file:\n            abi = json.load(abi_file)\n    except FileNotFoundError as err:\n        raise FileNotFoundError(f\"Unable to locate ABI file at {abi_path}\") from err\n\n    contract = web3.eth.contract(address=contract_address, abi=abi)\n    return contract",
+            "usage": "vault_contract = get_liquid_staking_vault_contract(w3)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 builds the stake transaction data for vault.stake(amount, recipient).",
+            "code": "# backend/transactions.py\nfrom decimal import Decimal\nfrom web3 import Web3\n\n\ndef build_stake_tx(web3: Web3, contract, signer, amount_eth: float, recipient_address: str):\n    # Builds an unsigned stake transaction for vault.stake(amount, recipient).\n    try:\n        amount_wei = web3.to_wei(Decimal(str(amount_eth)), \"ether\")\n    except Exception as err:\n        raise ValueError(f\"Invalid staking amount: {err}\") from err\n\n    recipient_address = Web3.toChecksumAddress(recipient_address)\n\n    nonce = web3.eth.get_transaction_count(signer.address)\n\n    tx = contract.functions.stake(amount_wei, recipient_address).build_transaction({\n        \"from\": signer.address,\n        \"nonce\": nonce\n    })\n\n    return tx",
+            "usage": "unsigned_tx = build_stake_tx(w3, vault_contract, signer, amount_eth=1.5, recipient_address=\"0xRecipientAddress\")"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 estimates gas, sets gas price and chain-ID, and returns the finalized transaction ready for signing.",
+            "code": "# backend/gas.py\nfrom web3 import Web3\n\n\ndef finalize_gas_and_chain_id(web3: Web3, tx: dict) -> dict:\n    # Estimates gas, sets gas price, and fills in chainId.\n    try:\n        tx[\"gas\"] = web3.eth.estimate_gas(tx)\n    except Exception as err:\n        raise ValueError(f\"Gas estimation failed: {err}\") from err\n\n    try:\n        tx[\"gasPrice\"] = web3.eth.gas_price\n    except Exception:\n        tx[\"gasPrice\"] = web3.to_wei(3, \"gwei\")\n\n    tx[\"chainId\"] = web3.eth.chain_id\n\n    return tx",
+            "usage": "ready_tx = finalize_gas_and_chain_id(w3, unsigned_tx)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Step 6 signs the finalized transaction with the loaded credentials and broadcasts it to the network, returning the transaction hash.",
+            "code": "# backend/broadcast.py\nfrom web3 import Web3\n\n\ndef sign_and_send_tx(web3: Web3, signer, tx: dict) -> str:\n    # Signs the provided transaction and broadcasts it to the network.\n    try:\n        signed_tx = signer.sign_transaction(tx)\n    except Exception as err:\n        raise ValueError(f\"Failed to sign transaction: {err}\") from err\n\n    try:\n        tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)\n    except Exception as err:\n        raise ConnectionError(f\"Broadcast failed: {err}\") from err\n\n    return tx_hash.hex()",
+            "usage": "tx_hash = sign_and_send_tx(w3, signer, ready_tx)\nprint(f\"Transaction sent with hash: {tx_hash}\")"
+        }
+    ]
+}

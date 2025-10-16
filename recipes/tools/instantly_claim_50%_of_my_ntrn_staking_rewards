@@ -1,0 +1,81 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Retrieves the user\u2019s Neutron bech32 address from their connected browser wallet.",
+            "function": "getNeutronAddress()",
+            "usage": "const delegator = await getNeutronAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Queries the Neutron LCD for all unclaimed staking rewards belonging to the provided delegator address.",
+            "function": "queryPendingStakingRewards(delegatorAddress, restEndpoint)",
+            "usage": "const rewards = await queryPendingStakingRewards(delegator);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Calculates a 50 % slice of each validator-specific reward entry from the LCD response.",
+            "function": "calculatePartialRewards(rewardsResponse, fraction, denom)",
+            "usage": "const halfRewards = calculatePartialRewards(rewards, 0.5);"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Creates a MsgWithdrawDelegatorReward transaction (one per validator) for the specified partial-reward amounts and returns the sign-doc bytes.",
+            "function": "build_withdraw_tx(req)",
+            "usage": "const signDoc = build_withdraw_tx({ delegator_address: delegator, rewards: halfRewards });"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Signs the withdraw-rewards transaction with Keplr and sends the signed payload to the backend for broadcasting.",
+            "function": "signAndBroadcastWithdrawal(signerAddress, signDoc, apiUrl)",
+            "usage": "const txResult = await signAndBroadcastWithdrawal(delegator, signDoc);"
+        }
+    ],
+    "frontend": [
+        "const delegator = await getNeutronAddress();//step: 1 Tool: get_delegator_address Desciption: Identify the user\u2019s delegator address tied to their Neutron wallet.",
+        "const rewards = await queryPendingStakingRewards(delegator);//step: 2 Tool: query_pending_staking_rewards Desciption: Fetch the total unclaimed NTRN rewards for the delegator.",
+        "const halfRewards = calculatePartialRewards(rewards, 0.5);//step: 3 Tool: calculate_partial_amount Desciption: Compute 50 % of the pending reward amount.",
+        "const txResult = await signAndBroadcastWithdrawal(delegator, signDoc);//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign the reward-withdrawal transaction with the user\u2019s wallet and broadcast it to Neutron."
+    ],
+    "backend": [
+        "const signDoc = build_withdraw_tx({ delegator_address: delegator, rewards: halfRewards });#step: 4 Tool: construct_tx_distribution_withdraw_rewards Desciption: Build a MsgWithdrawDelegatorReward transaction with the calculated 50 % amount, adding split-withdraw logic if multiple validators are involved."
+    ],
+    "intent": "Instantly claim 50% of my NTRN staking rewards",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_delegator_address",
+            "description": "Identify the user\u2019s delegator address tied to their Neutron wallet."
+        },
+        {
+            "step": 2,
+            "tool": "query_pending_staking_rewards",
+            "description": "Fetch the total unclaimed NTRN rewards for the delegator."
+        },
+        {
+            "step": 3,
+            "tool": "calculate_partial_amount",
+            "description": "Compute 50 % of the pending reward amount."
+        },
+        {
+            "step": 4,
+            "tool": "construct_tx_distribution_withdraw_rewards",
+            "description": "Build a MsgWithdrawDelegatorReward transaction with the calculated 50 % amount, adding split-withdraw logic if multiple validators are involved."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the reward-withdrawal transaction with the user\u2019s wallet and broadcast it to Neutron."
+        }
+    ],
+    "outcome_checks": [
+        "Confirm the transaction hash is included in a block.",
+        "Verify the delegator\u2019s NTRN balance has increased by roughly 50 % of previously pending rewards (minus gas).",
+        "Validate that the remaining ~50 % of rewards are still queryable as pending."
+    ]
+}

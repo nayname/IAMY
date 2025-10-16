@@ -1,0 +1,92 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "verify_generated_services confirms that the expected gRPC files for a given Cosmos-SDK module exist on disk, letting us assert that x/bank has been generated and included in the application.",
+            "function": "verify_generated_services(module_path)",
+            "usage": "verify_generated_services(\"x/bank/types\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "build_send_tx programmatically invokes the equivalent of `tx bank send`, producing an unsigned MsgSend transaction that the new TxBankSendCmd will later sign and broadcast.",
+            "function": "build_send_tx(sender, recipient, amount, fee, chain_id, outfile)",
+            "usage": "build_send_tx(\"alice\", \"bob\", \"1000untrn\", \"2000untrn\", \"neutron-1\", \"send.json\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "register_preblocker writes a new registration line into app/app.go, mirroring the act of attaching a freshly defined command to the root command tree.",
+            "function": "register_preblocker(app_dir)",
+            "usage": "register_preblocker(\"./\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "compile_binary runs `go install ./...`, rebuilding the chain binary so the newly added command becomes available.",
+            "function": "compile_binary(app_dir=\".\")",
+            "usage": "compile_binary()"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "There is no helper function in the provided code that performs an automated `appd tx bank send --help` check; this validation must be done manually.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "sign_and_broadcast_tx signs a prepared Transaction with a wallet and immediately broadcasts it, serving as the backend mechanism for the end-to-end test send.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "sign_and_broadcast_tx(tx, wallet, client)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "verify_generated_services(\"x/bank/types\")#step: 1 Tool: verify_module_exists Desciption: Confirm that the x/bank module is imported in app/app.go and included in the module manager; the command relies on MsgSend from x/bank.",
+        "build_send_tx(\"alice\", \"bob\", \"1000untrn\", \"2000untrn\", \"neutron-1\", \"send.json\")#step: 2 Tool: create_cli_command_file Desciption: Create a new file (e.g., cmd/bank_send.go) that defines a Cobra command `TxBankSendCmd` which builds and broadcasts a `MsgSend` using clienttx.Factory.",
+        "register_preblocker(\"./\")#step: 3 Tool: register_command_root Desciption: Add `TxBankSendCmd` to the Tx sub-command tree in cmd/root.go so it is available as `appd tx bank send`.",
+        "compile_binary()#step: 4 Tool: compile_binary Desciption: Run `make install` (or `go install ./...`) to build the binary with the new command.",
+        "undef#step: 5 Tool: validate_cli_help Desciption: Execute `appd tx bank send --help` and check that usage and flags render correctly.",
+        "sign_and_broadcast_tx(tx, wallet, client)#step: 6 Tool: broadcast_test_tx Desciption: Send a small test transaction on a local node to verify the command signs and broadcasts successfully."
+    ],
+    "intent": "Add a `tx bank send` CLI command to the chain binary",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "verify_module_exists",
+            "description": "Confirm that the x/bank module is imported in app/app.go and included in the module manager; the command relies on MsgSend from x/bank."
+        },
+        {
+            "step": 2,
+            "tool": "create_cli_command_file",
+            "description": "Create a new file (e.g., cmd/bank_send.go) that defines a Cobra command `TxBankSendCmd` which builds and broadcasts a `MsgSend` using clienttx.Factory."
+        },
+        {
+            "step": 3,
+            "tool": "register_command_root",
+            "description": "Add `TxBankSendCmd` to the Tx sub-command tree in cmd/root.go so it is available as `appd tx bank send`."
+        },
+        {
+            "step": 4,
+            "tool": "compile_binary",
+            "description": "Run `make install` (or `go install ./...`) to build the binary with the new command."
+        },
+        {
+            "step": 5,
+            "tool": "validate_cli_help",
+            "description": "Execute `appd tx bank send --help` and check that usage and flags render correctly."
+        },
+        {
+            "step": 6,
+            "tool": "broadcast_test_tx",
+            "description": "Send a small test transaction on a local node to verify the command signs and broadcasts successfully."
+        }
+    ],
+    "outcome_checks": [
+        "`appd tx bank send --help` shows expected arguments <from_addr> <to_addr> <amount>`.",
+        "A broadcast test transaction is included in a block and the recipient balance increases."
+    ]
+}

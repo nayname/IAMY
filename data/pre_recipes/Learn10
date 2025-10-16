@@ -1,0 +1,151 @@
+[
+    {
+        "intent": "Expose Swagger (OpenAPI) routes for your blockchain\u2019s REST API",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "modify_config_file",
+                "description": "Open $HOME/.<app>/config/app.toml and set api.enable = true and api.swagger = true to turn on the REST server and Swagger endpoint."
+            },
+            {
+                "step": 2,
+                "tool": "generate_swagger_spec",
+                "description": "Run the Cosmos-SDK swagger generation script (make swagger-docs or scripts/swagger-generate.sh) so your custom modules\u2019 Query and Msg services appear in the spec."
+            },
+            {
+                "step": 3,
+                "tool": "register_grpc_gateway_routes",
+                "description": "In app/app.go call app.ModuleManager.RegisterGRPCGatewayRoutes(apiServer.ClientCtx, mux) to wire every module\u2019s gRPC-Gateway handlers into the REST server."
+            },
+            {
+                "step": 4,
+                "tool": "start_node_with_api",
+                "description": "Start (or restart) the full node with the REST API flag enabled (e.g. <app>d start --api.enable) so /swagger serves the OpenAPI JSON."
+            }
+        ],
+        "outcome_checks": [
+            "GET http://localhost:1317/swagger returns HTTP 200 and a valid OpenAPI v2 JSON document.",
+            "Sample query (e.g. /cosmos/bank/v1beta1/balances/{addr}) listed in the spec responds correctly."
+        ]
+    },
+    {
+        "intent": "Define and initialize module-accounts with explicit permissions",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "edit_source_code",
+                "description": "In x/<module>/types/permissions.go create a map[string][]string declaring the auth types (Minter, Burner, Staking, etc.) the module account needs."
+            },
+            {
+                "step": 2,
+                "tool": "wire_module_account_permissions",
+                "description": "Add the new entry to the global ModuleAccountPermissions variable in app/app.go so the auth keeper knows which permissions to enforce."
+            },
+            {
+                "step": 3,
+                "tool": "create_module_account",
+                "description": "Inside app.NewApp(), call authTypes.NewEmptyModuleAccount(<moduleName>, permissions...) and pass it to authKeeper.SetModuleAccount during genesis."
+            },
+            {
+                "step": 4,
+                "tool": "regenerate_genesis",
+                "description": "Run <app>d init or migrate your genesis file so the module account is allocated with a zero balance and the correct permission flags."
+            }
+        ],
+        "outcome_checks": [
+            "app build succeeds and starts without unknown permission errors.",
+            "cli query auth module-accounts shows the new account with the expected permission set.",
+            "Transactions that require those permissions (e.g. minting or burning) execute successfully."
+        ]
+    },
+    {
+        "intent": "Activate the object-capabilities security model via the capability module",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "include_capability_module",
+                "description": "Import github.com/cosmos/ibc-go/modules/capability and add capability.AppModuleBasic{} to ModuleBasics in app/app.go."
+            },
+            {
+                "step": 2,
+                "tool": "instantiate_capability_keeper",
+                "description": "Create a capabilitykeeper.Keeper in app.NewApp() and store it in the app struct (capKeeper)."
+            },
+            {
+                "step": 3,
+                "tool": "scope_capability_keepers",
+                "description": "Derive scoped keepers such as scopedIBCKeeper := capKeeper.ScopeToModule(ibc.ModuleName) and pass them to the respective modules (IBC, Transfer, etc.)."
+            },
+            {
+                "step": 4,
+                "tool": "seal_capability_keeper",
+                "description": "After all scoped keepers are created and modules initialized, call capKeeper.Seal() to prevent further scopes from being created at runtime."
+            }
+        ],
+        "outcome_checks": [
+            "Application boots without \u2018capability not found\u2019 panics.",
+            "ibc channel-create and packet-transfer transactions succeed, proving scoped capabilities were properly granted.",
+            "Invariant checks (appd q crisis invariant-broken all) show no capability leaks."
+        ]
+    },
+    {
+        "intent": "Register a custom Bech32 codec for account addresses",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "set_sdk_config",
+                "description": "In app/init.go (or main), obtain cfg := sdk.GetConfig() and call cfg.SetBech32PrefixForAccount(\"my\", \"mypub\") with your desired HRP prefixes."
+            },
+            {
+                "step": 2,
+                "tool": "define_bech32_codec",
+                "description": "If using Cosmos SDK \u2265 v0.50, create myCodec := addresscodec.NewBech32Codec(\"my\") and register it with codectypes.RegisterInterfaces so proto JSON works."
+            },
+            {
+                "step": 3,
+                "tool": "update_cli_config",
+                "description": "Set the client-side bech32-prefix flag or ~/.<app>/config/client.toml to match the new prefix so keys add / query commands encode correctly."
+            },
+            {
+                "step": 4,
+                "tool": "rebuild_and_start",
+                "description": "Re-compile and restart the node so all address strings generated by log lines, REST and gRPC adopt the new codec."
+            }
+        ],
+        "outcome_checks": [
+            "`keys add alice` returns an address that starts with the new prefix (e.g. my1...).",
+            "Incoming REST or gRPC requests with my1... addresses are accepted without decoding errors.",
+            "Sending tokens to a my1... address succeeds and balance queries show correct results."
+        ]
+    },
+    {
+        "intent": "Use a dedicated codec for validator operator addresses",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "set_validator_prefix",
+                "description": "In the same sdk config block, call cfg.SetBech32PrefixForValidator(\"myvaloper\", \"myvaloperpub\") to define validator HRPs."
+            },
+            {
+                "step": 2,
+                "tool": "register_validator_codec",
+                "description": "For the new address-codec API, create valCodec := addresscodec.NewBech32Codec(\"myvaloper\") and expose it through your params/encoding.go so it\u2019s available everywhere."
+            },
+            {
+                "step": 3,
+                "tool": "migrate_genesis_validator_addresses",
+                "description": "Update any existing validator operator addresses in genesis.json or via a migration script to use the new prefix."
+            },
+            {
+                "step": 4,
+                "tool": "restart_consensus",
+                "description": "Start the chain; ensure that CometBFT recognises the updated validator set and that staking module queries reflect the new formatted addresses."
+            }
+        ],
+        "outcome_checks": [
+            "cli query staking validators shows operator_address fields beginning with myvaloper.",
+            "Delegation transactions specifying myvaloper\u2026 succeed.",
+            "REST /grpc queries that return validator info use the custom prefix with no encoding/decoding issues."
+        ]
+    }
+]

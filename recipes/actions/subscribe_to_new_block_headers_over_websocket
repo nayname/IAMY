@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Create a browser-native WebSocket connection to the node\u2019s endpoint.",
+            "code": "// openWebsocketConnection.js\n// Establishes a WebSocket connection and resolves with the open socket instance.\nexport const openWebsocketConnection = (endpoint = 'ws://localhost:8546') => {\n  return new Promise((resolve, reject) => {\n    try {\n      const ws = new WebSocket(endpoint);\n\n      // Resolve once the socket is open\n      ws.onopen = () => resolve(ws);\n\n      // Bubble up any connection errors\n      ws.onerror = (err) => {\n        reject(new Error(`WebSocket connection error: ${err.message || err}`));\n      };\n    } catch (error) {\n      reject(error);\n    }\n  });\n};",
+            "usage": "const ws = await openWebsocketConnection();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Send an eth_subscribe request to receive notifications for newly-mined block headers.",
+            "code": "// ethSubscribeNewHeads.js\n// Sends the JSON-RPC subscribe call and resolves with the returned subscription ID.\nexport const ethSubscribeNewHeads = (ws) => {\n  return new Promise((resolve, reject) => {\n    // Use a timestamp as a simple unique id; production code may want a counter.\n    const id = Date.now();\n\n    const request = {\n      id,\n      jsonrpc: '2.0',\n      method: 'eth_subscribe',\n      params: ['newHeads']\n    };\n\n    // Handler waits for the matching response frame.\n    const handleMessage = (event) => {\n      try {\n        const data = JSON.parse(event.data);\n        if (data.id === id) {\n          ws.removeEventListener('message', handleMessage);\n          if (data.error) {\n            reject(new Error(`Subscription failed: ${data.error.message}`));\n          } else {\n            resolve(data.result); // This is the subscription ID\n          }\n        }\n      } catch (_) {\n        /* Ignore non-JSON frames */\n      }\n    };\n\n    ws.addEventListener('message', handleMessage);\n\n    // Fire the request\n    ws.send(JSON.stringify(request));\n  });\n};",
+            "usage": "const subscriptionId = await ethSubscribeNewHeads(ws);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Store the returned subscription ID so it can be reused by other functions.",
+            "code": "// storeSubscriptionId.js\n// Simple in-module variable holder; you could swap this for IndexedDB, Redux, etc.\nlet currentSubscriptionId = null;\n\nexport const storeSubscriptionId = (subId) => {\n  if (!subId) throw new Error('No subscription ID provided.');\n  currentSubscriptionId = subId;\n  return currentSubscriptionId;\n};\n\nexport const getSubscriptionId = () => currentSubscriptionId;",
+            "usage": "storeSubscriptionId(subscriptionId);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Attach a listener that fires a callback whenever a new block header is pushed over the subscription.",
+            "code": "// listenForNewBlocks.js\n// Listens for eth_subscription notifications and invokes a user-supplied callback.\nexport const listenForNewBlocks = (ws, subId, onNewBlock) => {\n  if (!subId) throw new Error('Subscription ID is required to listen for notifications.');\n  if (typeof onNewBlock !== 'function') throw new Error('onNewBlock callback must be a function.');\n\n  const handleMessage = (event) => {\n    try {\n      const data = JSON.parse(event.data);\n      if (\n        data.method === 'eth_subscription' &&\n        data.params &&\n        data.params.subscription === subId\n      ) {\n        // Pass the block header (data.params.result) to the callback\n        onNewBlock(data.params.result);\n      }\n    } catch (_) {\n      /* Ignore frames we can\u2019t parse */\n    }\n  };\n\n  ws.addEventListener('message', handleMessage);\n\n  // Return a disposer in case the caller wants to stop listening later.\n  return () => ws.removeEventListener('message', handleMessage);\n};",
+            "usage": "listenForNewBlocks(ws, subscriptionId, (header) => console.log('New block header \u2192', header));"
+        }
+    ]
+}

@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "This Python function wraps the `simd init` CLI command to create default genesis and configuration files for a new local chain.",
+            "code": "import subprocess\nfrom typing import Dict\n\n\ndef init_genesis(moniker: str, chain_id: str = \"my-test-chain\") -> Dict[str, str]:\n    \"\"\"Initialise a new chain by executing `simd init`.\n\n    Args:\n        moniker (str): A human-readable name for your node.\n        chain_id (str, optional): The desired chain-ID. Defaults to \"my-test-chain\".\n\n    Returns:\n        Dict[str, str]: Captured stdout/stderr for logging purposes.\n    \"\"\"\n    cmd = [\"simd\", \"init\", moniker, \"--chain-id\", chain_id]\n\n    try:\n        # Run the command and capture output for debugging/logging.\n        completed = subprocess.run(\n            cmd,\n            check=True,\n            capture_output=True,\n            text=True,\n        )\n        return {\"stdout\": completed.stdout, \"stderr\": completed.stderr}\n    except FileNotFoundError:\n        raise RuntimeError(\n            \"`simd` binary not found. Make sure the Cosmos SDK binary is installed and in $PATH.\"\n        )\n    except subprocess.CalledProcessError as exc:\n        raise RuntimeError(\n            f\"simd init failed with exit code {exc.returncode}: {exc.stderr.strip()}\"\n        )\n",
+            "usage": "# Example usage inside a FastAPI/Flask handler or a standalone Python script\n\ntry:\n    output = init_genesis(moniker=\"my-local-node\")\n    print(\"Genesis initialized successfully:\\n\", output[\"stdout\"])\nexcept RuntimeError as err:\n    print(\"Error:\", err)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Reads the generated genesis.json file and verifies that the `chain_id` field matches `my-test-chain`.",
+            "code": "import json\nimport os\n\n\ndef verify_genesis_file(\n    genesis_path: str = os.path.expanduser(\"~/.simapp/config/genesis.json\"),\n    expected_chain_id: str = \"my-test-chain\",\n) -> bool:\n    \"\"\"Verify that the genesis file contains the expected chain-ID.\n\n    Args:\n        genesis_path (str, optional): Path to genesis.json. Defaults to standard simd location.\n        expected_chain_id (str, optional): The chain-ID we expect. Defaults to \"my-test-chain\".\n\n    Returns:\n        bool: True if verification succeeds, raises otherwise.\n    \"\"\"\n    if not os.path.isfile(genesis_path):\n        raise FileNotFoundError(\n            f\"Genesis file not found at {genesis_path}. Did you run `simd init`?\"\n        )\n\n    with open(genesis_path, \"r\", encoding=\"utf-8\") as fp:\n        data = json.load(fp)\n\n    actual_chain_id = data.get(\"chain_id\")\n\n    if actual_chain_id != expected_chain_id:\n        raise ValueError(\n            f\"chain_id mismatch: expected '{expected_chain_id}', found '{actual_chain_id}'\"\n        )\n\n    return True\n",
+            "usage": "# Example usage\n\ntry:\n    verified = verify_genesis_file()\n    if verified:\n        print(\"Genesis file verification succeeded.\")\nexcept (FileNotFoundError, ValueError) as err:\n    print(\"Verification error:\", err)"
+        }
+    ]
+}

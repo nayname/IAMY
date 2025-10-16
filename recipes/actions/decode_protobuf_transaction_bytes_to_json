@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Validates that the user-supplied string is well-formed base64 before it is sent to the backend for decoding.",
+            "code": "export const validateBase64Input = (inputStr) => {\n  // Regular-expression check for valid base64 padding/charset\n  const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;\n  if (!base64Regex.test(inputStr)) {\n    throw new Error(\"Input is not valid base64.\");\n  }\n  // Double-check by actually decoding; browsers throw on bad padding\n  try {\n    atob(inputStr);\n  } catch (err) {\n    throw new Error(\"Failed to decode base64 string: \" + err.message);\n  }\n  return true; // Valid base64\n};",
+            "usage": "// Throws on invalid input\nvalidateBase64Input(userProvidedTxBytes);"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Exposes a FastAPI endpoint that wraps the `simd tx decode` CLI command to convert protobuf-encoded `TxRaw` bytes into JSON.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport subprocess\nimport json\nimport base64\nimport re\n\napp = FastAPI()\n\nclass DecodeRequest(BaseModel):\n    raw_tx: str  # base64-encoded TxRaw bytes\n\ndef is_valid_base64(data: str) -> bool:\n    \"\"\"Performs a strict base64 validation (length & charset).\"\"\"\n    base64_regex = re.compile(r\"^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$\")\n    if not base64_regex.match(data):\n        return False\n    try:\n        base64.b64decode(data, validate=True)\n        return True\n    except Exception:\n        return False\n\n@app.post(\"/api/decode_tx\")\nasync def decode_tx(request: DecodeRequest):\n    # Step 1: sanity-check inside backend for extra safety\n    if not is_valid_base64(request.raw_tx):\n        raise HTTPException(status_code=400, detail=\"Invalid base64 provided.\")\n\n    # Step 2: call `simd tx decode <base64>` via subprocess\n    try:\n        result = subprocess.run(\n            [\"simd\", \"tx\", \"decode\", request.raw_tx],\n            capture_output=True,\n            text=True,\n            check=True,\n        )\n    except FileNotFoundError:\n        raise HTTPException(status_code=500, detail=\"simd binary not found on server.\")\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=f\"simd error: {err.stderr.strip()}\")\n\n    # Step 3: ensure stdout is valid JSON\n    try:\n        decoded_json = json.loads(result.stdout)\n    except json.JSONDecodeError:\n        raise HTTPException(status_code=500, detail=\"simd returned non-JSON output.\")\n\n    return decoded_json",
+            "usage": "// Frontend example\nconst response = await fetch(\"/api/decode_tx\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\" },\n  body: JSON.stringify({ raw_tx: userProvidedTxBytes })\n});\nconst decodedJson = await response.json();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Formats the decoded JSON for display and optionally triggers a download to a local file.",
+            "code": "export const prettyPrintJSON = (jsonObj, downloadFileName = null) => {\n  const pretty = JSON.stringify(jsonObj, null, 2); // 2-space indent for readability\n\n  // Optionally offer a JSON file download to the user\n  if (downloadFileName) {\n    const blob = new Blob([pretty], { type: \"application/json\" });\n    const url = URL.createObjectURL(blob);\n    const anchor = document.createElement(\"a\");\n    anchor.href = url;\n    anchor.download = downloadFileName;\n    anchor.click();\n    URL.revokeObjectURL(url);\n  }\n\n  return pretty; // Useful for placing in a <pre> tag or console.log\n};",
+            "usage": "const humanReadable = prettyPrintJSON(decodedJson, \"decoded_tx.json\");\nconsole.log(humanReadable);"
+        }
+    ]
+}

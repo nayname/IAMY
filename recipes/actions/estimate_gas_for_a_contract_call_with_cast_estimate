@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 exposes a FastAPI route that verifies the Foundry `cast` CLI is present on the server.",
+            "code": "# backend/check_foundry.py\n\nimport subprocess\nfrom fastapi import APIRouter, HTTPException\n\nrouter = APIRouter()\n\n@router.get(\"/api/check_foundry\")\nasync def check_foundry():\n    \"\"\"\n    Returns `{ installed: bool, version: str }`.\n    Raises HTTP 500 if the `cast` binary is missing or mis-configured.\n    \"\"\"\n    try:\n        # `cast --version` is a quick way to test availability\n        result = subprocess.run([\"cast\", \"--version\"], capture_output=True, text=True, check=True)\n        return {\"installed\": True, \"version\": result.stdout.strip()}\n    except FileNotFoundError:\n        raise HTTPException(status_code=500, detail=\"Foundry not installed (`cast` binary not found).\")\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=f\"Error running cast: {err.stderr.strip()}\")",
+            "usage": "await fetch('/api/check_foundry').then(r => r.json())"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 collects user-supplied parameters (RPC URL, contract, signature, args) from the DOM.",
+            "code": "// frontend/gatherCallParameters.js\n\n/**\n * Reads inputs from the page and bundles them for the backend.\n * Required element IDs:\n *   #rpcUrl, #contractAddress, #functionSignature, #abiArgs (optional, comma-separated)\n */\nexport const gatherCallParameters = () => {\n  try {\n    const rpcUrl = document.getElementById('rpcUrl').value.trim();\n    const contractAddress = document.getElementById('contractAddress').value.trim();\n    const functionSignature = document.getElementById('functionSignature').value.trim();\n    const abiArgsRaw = (document.getElementById('abiArgs')?.value || '').trim();\n\n    if (!rpcUrl || !contractAddress || !functionSignature) {\n      throw new Error('RPC URL, contract address, and function signature are required.');\n    }\n\n    const args = abiArgsRaw.length ? abiArgsRaw.split(',').map(arg => arg.trim()) : [];\n\n    return {\n      rpc_url: rpcUrl,\n      contract_address: contractAddress,\n      function_signature: functionSignature,\n      args,\n    };\n  } catch (err) {\n    console.error(err);\n    alert(err.message);\n    throw err;\n  }\n};",
+            "usage": "const params = gatherCallParameters();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 runs `cast estimate` via a FastAPI endpoint to obtain the gas-unit estimate.",
+            "code": "# backend/estimate_gas.py\n\nimport subprocess\nfrom typing import List\n\nfrom fastapi import APIRouter, HTTPException\nfrom pydantic import BaseModel, Field\n\nrouter = APIRouter()\n\nclass EstimateRequest(BaseModel):\n    rpc_url: str = Field(..., example=\"https://rpc.my-evm-chain.org\")\n    contract_address: str = Field(..., example=\"0x1234\u2026abcd\")\n    function_signature: str = Field(..., example=\"transfer(address,uint256)\")\n    args: List[str] = Field(default_factory=list, example=[\"0xabc\u2026\", \"1000000000000000000\"])\n\n@router.post(\"/api/estimate_gas\")\nasync def estimate_gas(body: EstimateRequest):\n    \"\"\"Executes `cast estimate` and returns `{ gas_units: int }`.\"\"\"\n    cmd = [\n        \"cast\",\n        \"estimate\",\n        \"--rpc-url\",\n        body.rpc_url,\n        body.contract_address,\n        body.function_signature,\n    ] + body.args\n\n    try:\n        completed = subprocess.run(cmd, capture_output=True, text=True, check=True)\n        gas_units_str = completed.stdout.strip()\n        gas_units = int(gas_units_str, 0)  # auto-detect base (0x\u2026, decimal, etc.)\n        return {\"gas_units\": gas_units}\n    except FileNotFoundError:\n        raise HTTPException(status_code=500, detail=\"`cast` binary not found on server.\")\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=f\"cast error: {err.stderr.strip()}\")\n    except ValueError:\n        raise HTTPException(status_code=500, detail=\"Unexpected output from cast estimate.\")",
+            "usage": "const gasRes = await fetch('/api/estimate_gas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(params) }).then(r => r.json());"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 converts the integer gas units into a fiat-friendly cost using a chosen gas price.",
+            "code": "// frontend/interpretGasCost.js\n\n/**\n * Computes total gas cost.\n * @param {number} gasUnits       \u2013 integer from backend.\n * @param {number} gasPriceGwei   \u2013 gas price in Gwei (default = 20).\n * @returns {{ gasUnits, gasPriceGwei, weiCost: string, etherCost: number }}\n */\nexport const interpretGasCost = (gasUnits, gasPriceGwei = 20) => {\n  if (typeof gasUnits !== 'number' || gasUnits <= 0) throw new Error('Invalid gasUnits.');\n  if (typeof gasPriceGwei !== 'number' || gasPriceGwei <= 0) throw new Error('Invalid gasPriceGwei.');\n\n  const GWEI_TO_WEI = 1_000_000_000n;       // 1e9\n  const ETHER_TO_WEI = 1_000_000_000_000_000_000n; // 1e18\n\n  const weiCostBig = BigInt(gasUnits) * (BigInt(Math.round(gasPriceGwei * 1e9)));\n  const etherCost = Number(weiCostBig) / Number(ETHER_TO_WEI);\n\n  return {\n    gasUnits,\n    gasPriceGwei,\n    weiCost: weiCostBig.toString(),\n    etherCost,\n  };\n};",
+            "usage": "const { etherCost } = interpretGasCost(gasRes.gas_units, 25);"
+        }
+    ]
+}

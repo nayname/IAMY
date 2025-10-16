@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Reads the selected number of months from the range-slider element.",
+            "function": "captureSliderInput(sliderElementId)",
+            "usage": "const months = captureSliderInput('durationSlider');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Calculates the NTRN boost multiplier that corresponds to the chosen lock duration.",
+            "function": "calculateBoostMultiplier(months)",
+            "usage": "const multiplier = calculateBoostMultiplier(months);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Persists the user\u2019s 48-month lock preference in localStorage for future sessions.",
+            "function": "saveLockDurationPreference(months)",
+            "usage": "saveLockDurationPreference(months);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Updates the UI preview with the computed multiplier and minimum lock amount.",
+            "function": "displayMultiplierPreview({ months, multiplier, minLockBase })",
+            "usage": "displayMultiplierPreview({ months, multiplier, minLockBase: 100 });"
+        }
+    ],
+    "frontend": [
+        "const months = captureSliderInput('durationSlider');//step: 1 Tool: capture_slider_input Desciption: Read the UI slider value (48) expressed in months.",
+        "const multiplier = calculateBoostMultiplier(months);//step: 2 Tool: calculate_boost_multiplier Desciption: Apply the front-end formula to map 48 months to its expected NTRN boost multiplier (e.g., 2.0\u00d7).",
+        "saveLockDurationPreference(months);//step: 3 Tool: update_user_preference Desciption: Persist the 48-month preference (e.g., to localStorage or user profile cache) for future lock transactions.",
+        "displayMultiplierPreview({ months, multiplier, minLockBase: 100 });//step: 4 Tool: display_preview Desciption: Render the projected multiplier and required minimum lock amounts so the user knows what to expect before submitting any on-chain action."
+    ],
+    "backend": [],
+    "intent": "Set boost lock duration preference to 48 months",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "capture_slider_input",
+            "description": "Read the UI slider value (48) expressed in months."
+        },
+        {
+            "step": 2,
+            "tool": "calculate_boost_multiplier",
+            "description": "Apply the front-end formula to map 48 months to its expected NTRN boost multiplier (e.g., 2.0\u00d7)."
+        },
+        {
+            "step": 3,
+            "tool": "update_user_preference",
+            "description": "Persist the 48-month preference (e.g., to localStorage or user profile cache) for future lock transactions."
+        },
+        {
+            "step": 4,
+            "tool": "display_preview",
+            "description": "Render the projected multiplier and required minimum lock amounts so the user knows what to expect before submitting any on-chain action."
+        }
+    ],
+    "outcome_checks": [
+        "Slider visually remains at the 48-month position.",
+        "UI shows correct multiplier and explanatory text.",
+        "No blockchain transaction is sent until the user explicitly confirms a lock."
+    ]
+}

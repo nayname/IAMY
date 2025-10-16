@@ -1,0 +1,41 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Opens a browser prompt so the user can type in the required Ethereum address (e.g. the factory / deployer address).",
+            "function": "getUserEvmAddressInput()",
+            "usage": "const deployer = await getUserEvmAddressInput();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Generates the deterministic CREATE2 contract address from the given deployer, salt and init-code hash values.",
+            "function": "compute_create2_address(req)",
+            "usage": "const create2 = compute_create2_address({deployer, salt, init_code_hash});"
+        }
+    ],
+    "frontend": [
+        "const deployer = await getUserEvmAddressInput();//step: 1 Tool: prompt_user Desciption: Collect the deployer (factory) address, salt (32-byte hex), and the contract\u2019s init code hash."
+    ],
+    "backend": [
+        "const create2 = compute_create2_address({deployer, salt, init_code_hash});#step: 2 Tool: cast_cli Desciption: Execute `cast compute-address --deployer <address> --salt <salt> --init-code-hash <hash>` to derive the deterministic CREATE2 address."
+    ],
+    "intent": "Compute a CREATE2 contract address (cast compute-address)",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "prompt_user",
+            "description": "Collect the deployer (factory) address, salt (32-byte hex), and the contract\u2019s init code hash."
+        },
+        {
+            "step": 2,
+            "tool": "cast_cli",
+            "description": "Execute `cast compute-address --deployer <address> --salt <salt> --init-code-hash <hash>` to derive the deterministic CREATE2 address."
+        }
+    ],
+    "outcome_checks": [
+        "Returned address begins with 0x and is 42 characters long.",
+        "If the same parameters are re-used, the command outputs the identical address."
+    ]
+}

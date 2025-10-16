@@ -1,0 +1,40 @@
+{
+    "label": "send",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 retrieves the bech32 address associated with the key `my_validator` stored in the local test key-ring by shelling out to the `simd` CLI.",
+            "code": "import subprocess\n\n\ndef get_key_address(key_name: str = \"my_validator\", keyring_backend: str = \"test\") -> str:\n    \"\"\"Return the bech32 address for a key stored in the local key-ring.\n\n    Args:\n        key_name: The name of the key to look up.\n        keyring_backend: One of [os|file|test]. \"test\" stores keys unencrypted for dev chains.\n\n    Raises:\n        RuntimeError: If the CLI call fails or returns an empty address.\n    \"\"\"\n    try:\n        cmd = [\n            \"simd\", \"keys\", \"show\", key_name,\n            \"--keyring-backend\", keyring_backend,\n            \"-a\"  # address only\n        ]\n        result = subprocess.run(cmd, capture_output=True, check=True, text=True)\n        address = result.stdout.strip()\n        if not address:\n            raise RuntimeError(\"Received empty address from key-ring query\")\n        return address\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f\"simd keys show failed: {e.stderr}\") from e",
+            "usage": "sender_address = get_key_address()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 guarantees that a user-supplied recipient string is a valid bech32 address for the chain\u2019s prefix (`cosmos` by default).",
+            "code": "from bech32 import bech32_decode\n\n\ndef validate_recipient_address(address: str, expected_prefix: str = \"cosmos\") -> str:\n    \"\"\"Verify HRP and checksum of a bech32 address.\n\n    Args:\n        address: The address to validate.\n        expected_prefix: Human-readable prefix (HRP) for the target chain.\n    Returns:\n        The original address if valid.\n    Raises:\n        ValueError: If the address is malformed or has an unexpected prefix.\n    \"\"\"\n    hrp, data = bech32_decode(address)\n    if hrp != expected_prefix or data is None:\n        raise ValueError(f\"{address} is not a valid {expected_prefix} bech32 address\")\n    return address",
+            "usage": "recipient_address = validate_recipient_address(user_supplied_address)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 generates an **unsigned** bank-send transaction (1000stake) using the `simd` CLI and writes it to `unsigned_tx.json`.",
+            "code": "import os\nimport subprocess\n\n\ndef build_send_tx(\n    sender: str,\n    recipient: str,\n    amount: str = \"1000stake\",\n    fee: str = \"200stake\",\n    chain_id: str = \"my-test-chain\",\n    outfile: str = \"unsigned_tx.json\",\n) -> str:\n    \"\"\"Create an unsigned MsgSend and persist it to disk.\n\n    Returns the file path of the unsigned tx JSON.\n    \"\"\"\n    cmd = [\n        \"simd\", \"tx\", \"bank\", \"send\", sender, recipient, amount,\n        \"--generate-only\",\n        \"--fees\", fee,\n        \"--chain-id\", chain_id,\n        \"--output\", \"json\"\n    ]\n    try:\n        with open(outfile, \"w\", encoding=\"utf-8\") as fp:\n            subprocess.run(cmd, check=True, text=True, stdout=fp)\n        if not os.path.exists(outfile):\n            raise RuntimeError(\"Unsigned TX file was not created\")\n        return outfile\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f\"Failed to build tx: {e.stderr}\") from e",
+            "usage": "unsigned_path = build_send_tx(sender_address, recipient_address)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 signs the previously generated transaction with the `my_validator` key and outputs `signed_tx.json`.",
+            "code": "import os\nimport subprocess\n\n\ndef sign_tx(\n    unsigned_tx_path: str,\n    key_name: str = \"my_validator\",\n    keyring_backend: str = \"test\",\n    chain_id: str = \"my-test-chain\",\n    outfile: str = \"signed_tx.json\",\n) -> str:\n    \"\"\"Sign an unsigned transaction file with a local key-ring key.\"\"\"\n    cmd = [\n        \"simd\", \"tx\", \"sign\", unsigned_tx_path,\n        \"--from\", key_name,\n        \"--keyring-backend\", keyring_backend,\n        \"--chain-id\", chain_id,\n        \"--output\", \"json\",\n        \"--yes\"  # auto-confirm\n    ]\n    try:\n        with open(outfile, \"w\", encoding=\"utf-8\") as fp:\n            subprocess.run(cmd, check=True, text=True, stdout=fp)\n        if not os.path.exists(outfile):\n            raise RuntimeError(\"Signed TX file was not created\")\n        return outfile\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f\"Signing failed: {e.stderr}\") from e",
+            "usage": "signed_path = sign_tx(unsigned_path)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 broadcasts the signed transaction to a node and returns the resulting transaction hash.",
+            "code": "import json\nimport subprocess\n\n\ndef broadcast_tx(\n    signed_tx_path: str,\n    chain_id: str = \"my-test-chain\",\n    node_rpc: str = \"http://localhost:26657\",\n) -> str:\n    \"\"\"Broadcast a signed tx and return its hash.\"\"\"\n    cmd = [\n        \"simd\", \"tx\", \"broadcast\", signed_tx_path,\n        \"--node\", node_rpc,\n        \"--chain-id\", chain_id,\n        \"--output\", \"json\"\n    ]\n    try:\n        result = subprocess.run(cmd, check=True, capture_output=True, text=True)\n        response = json.loads(result.stdout)\n        tx_hash = response.get(\"txhash\")\n        if not tx_hash:\n            raise RuntimeError(f\"Unexpected response: {response}\")\n        return tx_hash\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f\"Broadcast failed: {e.stderr}\") from e",
+            "usage": "tx_hash = broadcast_tx(signed_path)"
+        }
+    ]
+}

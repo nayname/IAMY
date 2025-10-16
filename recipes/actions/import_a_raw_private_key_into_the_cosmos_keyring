@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates a Python utility that writes a hex-encoded private key to a secure temporary file with owner-only permissions.",
+            "code": "import tempfile\nimport os\nimport stat\n\n\ndef save_privkey_to_file(privkey_hex: str) -> str:\n    \"\"\"\n    Persist a hex-encoded private key in a temporary file that is readable only by\n    the current user. The function returns the absolute file path so that it can\n    be consumed by the next step.\n    \"\"\"\n    # Basic validation \u2014 ensure every character is hexadecimal\n    if not privkey_hex or any(c not in \"0123456789abcdefABCDEF\" for c in privkey_hex.strip()):\n        raise ValueError(\"Invalid hex-encoded private key provided.\")\n\n    # Create a secure temp file that survives after close (delete=False)\n    tmp_file = tempfile.NamedTemporaryFile(mode=\"w\", suffix=\".hex\", delete=False)\n    try:\n        tmp_file.write(privkey_hex.strip())\n        tmp_file.flush()\n        tmp_file.close()\n\n        # Restrict permissions to 0o600 (read/write by owner only)\n        os.chmod(tmp_file.name, stat.S_IRUSR | stat.S_IWUSR)\n        return tmp_file.name\n    except Exception as err:\n        # Best-effort cleanup on failure\n        tmp_file.close()\n        if os.path.exists(tmp_file.name):\n            os.remove(tmp_file.name)\n        raise err",
+            "usage": "file_path = save_privkey_to_file(\"0a1b2c3d4e5f...\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Runs `simd keys import` using the temporary file from Step 1 and pipes the passphrase non-interactively.",
+            "code": "import subprocess\nimport shlex\nimport os\n\n\ndef import_key(name: str, privkey_file: str, passphrase: str) -> str:\n    \"\"\"\n    Imports the private key into the local `simd` keyring (file backend).\n    The CLI prompts twice for a passphrase; both prompts are satisfied by\n    piping the provided `passphrase` via STDIN.\n\n    Returns the command's STDOUT on success.\n    \"\"\"\n    if not os.path.exists(privkey_file):\n        raise FileNotFoundError(f\"Private key file {privkey_file} does not exist.\")\n\n    # Construct the CLI command safely\n    cmd = f\"simd keys import {shlex.quote(name)} {shlex.quote(privkey_file)} --keyring-backend file\"\n\n    # Provide the passphrase twice, each followed by a newline\n    pass_input = f\"{passphrase}\\n{passphrase}\\n\".encode()\n\n    proc = subprocess.run(\n        shlex.split(cmd),\n        input=pass_input,\n        capture_output=True,\n    )\n\n    # Always wipe the temporary file after use\n    try:\n        os.remove(privkey_file)\n    except OSError:\n        pass\n\n    if proc.returncode != 0:\n        raise RuntimeError(f\"simd key import failed: {proc.stderr.decode()}\")\n\n    return proc.stdout.decode()",
+            "usage": "result_msg = import_key(\"alice\", file_path, \"myStrongPassphrase\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Verifies the import by showing the bech32 address associated with the newly added key.",
+            "code": "import subprocess\nimport shlex\n\n\ndef show_address(name: str) -> str:\n    \"\"\"\n    Retrieves the address of the imported key from the `simd` keyring.\n    Returns the bech32 address as a string.\n    \"\"\"\n    cmd = f\"simd keys show {shlex.quote(name)} --keyring-backend file --address\"\n    proc = subprocess.run(shlex.split(cmd), capture_output=True)\n\n    if proc.returncode != 0:\n        raise RuntimeError(f\"simd keys show failed: {proc.stderr.decode()}\")\n\n    return proc.stdout.decode().strip()",
+            "usage": "address = show_address(\"alice\")"
+        }
+    ]
+}

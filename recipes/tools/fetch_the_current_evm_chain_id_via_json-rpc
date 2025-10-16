@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "There is no standalone helper that only constructs the eth_chainId JSON-RPC payload without sending it.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "json_rpc_call builds the standard JSON-RPC body and POSTs it to the given endpoint, returning the node\u2019s raw result.",
+            "function": "json_rpc_call(method='eth_chainId', params=[], endpoint='http://localhost:8545')",
+            "usage": "chain_id_hex = json_rpc_call('eth_chainId', [], 'http://localhost:8545')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No specific utility exists to convert the hex chain-ID returned in step 2 to decimal; this conversion must be done inline (e.g., int(chain_id_hex, 16)).",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: prepare_json_rpc_payload Desciption: Create the request body: {\"jsonrpc\":\"2.0\",\"method\":\"eth_chainId\",\"params\":[],\"id\":1}",
+        "chain_id_hex = json_rpc_call('eth_chainId', [], 'http://localhost:8545')#step: 2 Tool: http_post Desciption: POST the payload to the node\u2019s JSON-RPC endpoint (e.g., http://localhost:8545) with header Content-Type: application/json.",
+        "undef#step: 3 Tool: parse_json_rpc_response Desciption: Read the \"result\" field, which contains the chain ID as a hex string (e.g., 0x40000). Convert to decimal if needed."
+    ],
+    "intent": "Fetch the current EVM chain ID via JSON-RPC",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "prepare_json_rpc_payload",
+            "description": "Create the request body: {\"jsonrpc\":\"2.0\",\"method\":\"eth_chainId\",\"params\":[],\"id\":1}"
+        },
+        {
+            "step": 2,
+            "tool": "http_post",
+            "description": "POST the payload to the node\u2019s JSON-RPC endpoint (e.g., http://localhost:8545) with header Content-Type: application/json."
+        },
+        {
+            "step": 3,
+            "tool": "parse_json_rpc_response",
+            "description": "Read the \"result\" field, which contains the chain ID as a hex string (e.g., 0x40000). Convert to decimal if needed."
+        }
+    ],
+    "outcome_checks": [
+        "HTTP response status is 200.",
+        "\"result\" field is a non-empty hex string.",
+        "Converted numeric chain ID is greater than zero."
+    ]
+}

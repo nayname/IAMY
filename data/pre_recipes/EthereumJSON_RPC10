@@ -1,0 +1,153 @@
+[
+    {
+        "intent": "Get an account Merkle proof at a specific block (eth_getProof)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_eth_address",
+                "description": "Confirm the supplied account address is a valid 0x-prefixed, 20-byte EVM address."
+            },
+            {
+                "step": 2,
+                "tool": "validate_block_height",
+                "description": "Verify the given block number (e.g. 0x1) is \u2265 0x1, because Cosmos EVM rejects heights < 1."
+            },
+            {
+                "step": 3,
+                "tool": "construct_json_rpc_payload",
+                "description": "Build the JSON-RPC body:\n{\n  \"jsonrpc\":\"2.0\",\n  \"method\":\"eth_getProof\",\n  \"params\":[\"<account>\",[],\"0x1\"],\n  \"id\":1\n}"
+            },
+            {
+                "step": 4,
+                "tool": "http_post_rpc",
+                "description": "POST the payload to the node\u2019s HTTP RPC endpoint (default http://localhost:8545)."
+            },
+            {
+                "step": 5,
+                "tool": "parse_rpc_response",
+                "description": "Decode the result, returning account proof fields (balance, nonce, storageHash, codeHash, and proof array)."
+            }
+        ],
+        "outcome_checks": [
+            "HTTP 200 status with a non-null result field.",
+            "Result.proof array length > 0 (Merkle proof present).",
+            "No error object in the JSON-RPC response."
+        ]
+    },
+    {
+        "intent": "Create a new pending-transaction filter (eth_newPendingTransactionFilter)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "construct_json_rpc_payload",
+                "description": "Create the JSON-RPC body:\n{\n  \"jsonrpc\":\"2.0\",\n  \"method\":\"eth_newPendingTransactionFilter\",\n  \"params\":[],\n  \"id\":1\n}"
+            },
+            {
+                "step": 2,
+                "tool": "http_post_rpc",
+                "description": "POST the payload to the HTTP RPC endpoint."
+            },
+            {
+                "step": 3,
+                "tool": "parse_rpc_response",
+                "description": "Extract the returned filter ID (hex string)."
+            },
+            {
+                "step": 4,
+                "tool": "store_filter_id",
+                "description": "Persist the filter ID locally for later use with eth_getFilterChanges or eth_uninstallFilter."
+            }
+        ],
+        "outcome_checks": [
+            "Response result starts with \"0x\" and is 32 hex chars (typical filter ID).",
+            "No error field present."
+        ]
+    },
+    {
+        "intent": "Fetch changes for an existing pending-transaction filter (eth_getFilterChanges)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "retrieve_filter_id",
+                "description": "Load the previously stored filter ID that tracks pending transactions."
+            },
+            {
+                "step": 2,
+                "tool": "construct_json_rpc_payload",
+                "description": "Build the JSON-RPC body:\n{\n  \"jsonrpc\":\"2.0\",\n  \"method\":\"eth_getFilterChanges\",\n  \"params\":[\"<filterId>\"],\n  \"id\":1\n}"
+            },
+            {
+                "step": 3,
+                "tool": "http_post_rpc",
+                "description": "POST the payload to the node\u2019s HTTP RPC endpoint."
+            },
+            {
+                "step": 4,
+                "tool": "parse_rpc_response",
+                "description": "Return an array of pending-transaction hashes that arrived since the last poll."
+            }
+        ],
+        "outcome_checks": [
+            "Result is an array (possibly empty) of 0x-prefixed 32-byte hashes.",
+            "No error object present in the response."
+        ]
+    },
+    {
+        "intent": "Unsubscribe from a WebSocket subscription (eth_unsubscribe)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "websocket_connect",
+                "description": "Open (or reuse) a WebSocket connection to ws://<node>:8546."
+            },
+            {
+                "step": 2,
+                "tool": "retrieve_subscription_id",
+                "description": "Fetch the active WebSocket subscription ID to cancel."
+            },
+            {
+                "step": 3,
+                "tool": "send_ws_message",
+                "description": "Send the JSON-RPC frame:\n{\n  \"jsonrpc\":\"2.0\",\n  \"method\":\"eth_unsubscribe\",\n  \"params\":[\"<subscriptionId>\"],\n  \"id\":1\n}"
+            },
+            {
+                "step": 4,
+                "tool": "await_ws_response",
+                "description": "Wait for the confirmation message from the node."
+            }
+        ],
+        "outcome_checks": [
+            "Response.result is true, indicating the subscription was removed.",
+            "No further events are received for that subscription ID."
+        ]
+    },
+    {
+        "intent": "List personal accounts managed by the node (personal_listAccounts)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "authenticate_rpc",
+                "description": "Attach HTTP basic auth header or JWT if the node\u2019s personal namespace requires authentication."
+            },
+            {
+                "step": 2,
+                "tool": "construct_json_rpc_payload",
+                "description": "Create the JSON-RPC body:\n{\n  \"jsonrpc\":\"2.0\",\n  \"method\":\"personal_listAccounts\",\n  \"params\":[],\n  \"id\":1\n}"
+            },
+            {
+                "step": 3,
+                "tool": "http_post_rpc",
+                "description": "POST the payload to the HTTP RPC endpoint."
+            },
+            {
+                "step": 4,
+                "tool": "parse_rpc_response",
+                "description": "Return the array of addresses the node controls."
+            }
+        ],
+        "outcome_checks": [
+            "Result is an array (possibly empty) of valid 0x-prefixed addresses.",
+            "No error object; if authentication fails, the node should return an error which must be handled."
+        ]
+    }
+]

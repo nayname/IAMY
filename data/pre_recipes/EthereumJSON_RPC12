@@ -1,0 +1,107 @@
+[
+    {
+        "intent": "Write a memory allocation profile to mem.prof on a Cosmos-EVM node",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "select_rpc_endpoint",
+                "description": "Identify the JSON-RPC URL of the Cosmos-EVM full node (e.g. http://localhost:8545)."
+            },
+            {
+                "step": 2,
+                "tool": "authenticate_debug_namespace",
+                "description": "Provide the node\u2019s configured credentials or JWT token because debug_writeMemProfile is marked Private and requires authentication."
+            },
+            {
+                "step": 3,
+                "tool": "json_rpc_call",
+                "description": "Invoke debug_writeMemProfile with the single parameter \"mem.prof\" to instruct the node to write the allocation profile:\n{\n  \"method\": \"debug_writeMemProfile\",\n  \"params\": [\"mem.prof\"],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+            }
+        ],
+        "outcome_checks": [
+            "Receive a JSON-RPC result field with value true or an empty string (implementation dependent).",
+            "Confirm that a new file named mem.prof appears in the node\u2019s working directory."
+        ]
+    },
+    {
+        "intent": "Enable block-profiling with rate 1 on a Cosmos-EVM node",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "select_rpc_endpoint",
+                "description": "Locate the node\u2019s JSON-RPC URL."
+            },
+            {
+                "step": 2,
+                "tool": "authenticate_debug_namespace",
+                "description": "Supply the private-API credentials for the debug namespace."
+            },
+            {
+                "step": 3,
+                "tool": "json_rpc_call",
+                "description": "Send the call to debug_setBlockProfileRate with parameter 1:\n{\n  \"method\": \"debug_setBlockProfileRate\",\n  \"params\": [1],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+            }
+        ],
+        "outcome_checks": [
+            "Expect the result field to echo the rate set or return null (stub implementation).",
+            "Optionally, write a few blocks and verify that cpu.block profile data is being collected in the node\u2019s pprof endpoint."
+        ]
+    },
+    {
+        "intent": "Trace all transactions in block number 0xE using debug_traceBlockByNumber",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "select_rpc_endpoint",
+                "description": "Point to the Cosmos-EVM JSON-RPC endpoint."
+            },
+            {
+                "step": 2,
+                "tool": "json_rpc_call",
+                "description": "Invoke debug_traceBlockByNumber with the hex string \"0xe\" and an empty tracer object:\n{\n  \"method\": \"debug_traceBlockByNumber\",\n  \"params\": [\"0xe\", {}],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+            }
+        ],
+        "outcome_checks": [
+            "According to current Cosmos-EVM docs the implementation is stubbed; the response is expected to be an empty array [].",
+            "If/when full tracing is enabled, verify the array contains one trace object per transaction in block 14 (decimal)."
+        ]
+    },
+    {
+        "intent": "Trace a block by hash with debug_traceBlockByHash",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "select_rpc_endpoint",
+                "description": "Use the node\u2019s JSON-RPC URL."
+            },
+            {
+                "step": 2,
+                "tool": "json_rpc_call",
+                "description": "Call debug_traceBlockByHash with the desired block hash and an empty tracer:\n{\n  \"method\": \"debug_traceBlockByHash\",\n  \"params\": [\"<blockHash>\", {}],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+            }
+        ],
+        "outcome_checks": [
+            "Expect an empty array [] while tracing is stubbed.",
+            "Once implemented, ensure each transaction trace object is returned in the same order as the block\u2019s transactions."
+        ]
+    },
+    {
+        "intent": "Retrieve intermediate state roots for a transaction",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "select_rpc_endpoint",
+                "description": "Determine the full node\u2019s JSON-RPC address."
+            },
+            {
+                "step": 2,
+                "tool": "json_rpc_call",
+                "description": "Request debug_intermediateRoots with the target transaction hash:\n{\n  \"method\": \"debug_intermediateRoots\",\n  \"params\": [\"<txHash>\"],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+            }
+        ],
+        "outcome_checks": [
+            "A successful call returns an array of hex-encoded state root values for each step of the transaction\u2019s execution.",
+            "Validate that the first element matches the pre-state root of the containing block and the last element matches the post-state root recorded in the receipt."
+        ]
+    }
+]

@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "build_simd_start_cmd crafts the exact `simd start` shell command (including extra flags and home path) that is executed to launch the ABCI application only.",
+            "function": "build_simd_start_cmd(home_dir, additional_flags='')",
+            "usage": "cmd = build_simd_start_cmd(os.path.expanduser('~/.simapp'), '--with-comet=false')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "_log_streamer streams the running simd process logs line-by-line, allowing callers to wait until the line \"ABCI server started\" appears.",
+            "function": "_log_streamer()",
+            "usage": "async for log_line in _log_streamer():\n    if 'ABCI server started' in log_line:\n        break"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No implemented utility for constructing or launching the `cometbft start ...` command could be located in the provided code.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "verify_local_chain_running repeatedly queries the local RPC endpoint (`/status`) until it receives a valid JSON response, confirming the node is up.",
+            "function": "verify_local_chain_running(rpc_url='http://localhost:26657/status', timeout=60)",
+            "usage": "verify_local_chain_running('http://localhost:26657/status')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "cmd = build_simd_start_cmd(os.path.expanduser('~/.simapp'), '--with-comet=false')#step: 1 Tool: run_command Desciption: In terminal #1 run `simd start --with-comet=false --home $HOME/.simapp` to launch only the ABCI application.",
+        "async for log_line in _log_streamer():\n    if 'ABCI server started' in log_line:\n        break#step: 2 Tool: wait_for_log Desciption: Watch for the log line \"ABCI server started\" indicating the app is listening on tcp://localhost:26658.",
+        "undef#step: 3 Tool: run_command Desciption: In terminal #2 run `cometbft start --home $HOME/.simapp --proxy_app tcp://127.0.0.1:26658` to launch the consensus engine.",
+        "verify_local_chain_running('http://localhost:26657/status')#step: 4 Tool: check_http_endpoint Desciption: Query `curl -s localhost:26657/status` until the JSON status response is received."
+    ],
+    "intent": "Start the node with the application and CometBFT processes split",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "run_command",
+            "description": "In terminal #1 run `simd start --with-comet=false --home $HOME/.simapp` to launch only the ABCI application."
+        },
+        {
+            "step": 2,
+            "tool": "wait_for_log",
+            "description": "Watch for the log line \"ABCI server started\" indicating the app is listening on tcp://localhost:26658."
+        },
+        {
+            "step": 3,
+            "tool": "run_command",
+            "description": "In terminal #2 run `cometbft start --home $HOME/.simapp --proxy_app tcp://127.0.0.1:26658` to launch the consensus engine."
+        },
+        {
+            "step": 4,
+            "tool": "check_http_endpoint",
+            "description": "Query `curl -s localhost:26657/status` until the JSON status response is received."
+        }
+    ],
+    "outcome_checks": [
+        "Both terminals show blocks being executed (height incrementing).",
+        "localhost:26657/status returns node_info and sync_info without errors."
+    ]
+}

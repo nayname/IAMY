@@ -1,0 +1,152 @@
+[
+    {
+        "intent": "Retrieve the latest block number from the Cosmos EVM JSON-RPC endpoint",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "select_rpc_endpoint",
+                "description": "Determine the HTTP or WebSocket JSON-RPC URL of a reachable Cosmos-SDK EVM node."
+            },
+            {
+                "step": 2,
+                "tool": "eth_blockNumber",
+                "description": "Send a JSON-RPC request {\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1,\"jsonrpc\":\"2.0\"} to fetch the current block height."
+            },
+            {
+                "step": 3,
+                "tool": "parse_hex_to_decimal",
+                "description": "Convert the returned 0x-prefixed hex block number to a human-readable decimal integer."
+            }
+        ],
+        "outcome_checks": [
+            "The response is a 0x-prefixed string exactly representing a valid hexadecimal number.",
+            "The decimal value is greater than zero, indicating the chain has produced blocks."
+        ]
+    },
+    {
+        "intent": "Broadcast a raw, RLP-encoded signed transaction to the network",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_signed_raw_tx",
+                "description": "Obtain the full 0x-prefixed, RLP-encoded transaction string from the user or upstream wallet."
+            },
+            {
+                "step": 2,
+                "tool": "select_rpc_endpoint",
+                "description": "Choose a Cosmos EVM JSON-RPC endpoint that accepts writes."
+            },
+            {
+                "step": 3,
+                "tool": "eth_sendRawTransaction",
+                "description": "POST {\"method\":\"eth_sendRawTransaction\",\"params\":[<rawTx>],\"id\":1,\"jsonrpc\":\"2.0\"} to broadcast the transaction."
+            },
+            {
+                "step": 4,
+                "tool": "capture_tx_hash",
+                "description": "Store the 32-byte transaction hash returned by the node for later tracking."
+            }
+        ],
+        "outcome_checks": [
+            "A 0x-prefixed 66-character hash is returned immediately by eth_sendRawTransaction.",
+            "Subsequent eth_getTransactionReceipt calls eventually return a non-null receipt indicating block inclusion."
+        ]
+    },
+    {
+        "intent": "Query the balance of an EVM address at the latest block",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_eth_address",
+                "description": "Ensure the provided address matches the 0x[0-9a-fA-F]{40} format."
+            },
+            {
+                "step": 2,
+                "tool": "select_rpc_endpoint",
+                "description": "Pick a read-enabled JSON-RPC endpoint."
+            },
+            {
+                "step": 3,
+                "tool": "eth_getBalance",
+                "description": "Invoke {\"method\":\"eth_getBalance\",\"params\":[<address>,\"latest\"],\"id\":1,\"jsonrpc\":\"2.0\"}."
+            },
+            {
+                "step": 4,
+                "tool": "parse_balance_hex_to_decimal",
+                "description": "Convert the returned Wei balance from hex to decimal for display (optionally format to ETH by dividing by 1e18)."
+            }
+        ],
+        "outcome_checks": [
+            "Response is a 0x-prefixed hex string.",
+            "Parsed balance is non-negative and consistent with expected account activity."
+        ]
+    },
+    {
+        "intent": "Estimate the gas required for a simple native-token transfer",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "collect_transfer_parameters",
+                "description": "Gather sender address, recipient address, and value (in Wei)."
+            },
+            {
+                "step": 2,
+                "tool": "construct_tx_object",
+                "description": "Build a JSON object {from,to,value,data:\"0x\"} suitable for gas estimation."
+            },
+            {
+                "step": 3,
+                "tool": "select_rpc_endpoint",
+                "description": "Point to a JSON-RPC node that supports eth_estimateGas."
+            },
+            {
+                "step": 4,
+                "tool": "eth_estimateGas",
+                "description": "Send {\"method\":\"eth_estimateGas\",\"params\":[<txObject>],\"id\":1,\"jsonrpc\":\"2.0\"} to obtain the gas needed."
+            },
+            {
+                "step": 5,
+                "tool": "parse_hex_to_decimal",
+                "description": "Convert the returned gas value from hex to decimal and optionally add a safety buffer (e.g., +10%)."
+            }
+        ],
+        "outcome_checks": [
+            "Returned gas is a 0x-prefixed hex string that converts to an integer \u2265 21000.",
+            "If the sender has sufficient balance, the same gas value should allow the real transaction to succeed without out-of-gas errors."
+        ]
+    },
+    {
+        "intent": "Fetch the transaction receipt for a given hash",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_tx_hash_format",
+                "description": "Ensure the supplied transaction hash is 0x-prefixed and 66 characters long."
+            },
+            {
+                "step": 2,
+                "tool": "select_rpc_endpoint",
+                "description": "Choose an RPC endpoint that can serve historical data."
+            },
+            {
+                "step": 3,
+                "tool": "eth_getTransactionReceipt",
+                "description": "Issue {\"method\":\"eth_getTransactionReceipt\",\"params\":[<txHash>],\"id\":1,\"jsonrpc\":\"2.0\"}."
+            },
+            {
+                "step": 4,
+                "tool": "poll_until_non_null",
+                "description": "If the receipt is null (transaction pending), retry at an interval (e.g., every 5 s) until a receipt appears or a timeout is reached."
+            },
+            {
+                "step": 5,
+                "tool": "interpret_receipt",
+                "description": "Read status, gasUsed, logs, and blockNumber fields to determine execution outcome."
+            }
+        ],
+        "outcome_checks": [
+            "A non-null receipt object is eventually returned, containing at least blockNumber, gasUsed, and status.",
+            "Status equals 0x1 for success or 0x0 for failure, matching on-chain effects."
+        ]
+    }
+]

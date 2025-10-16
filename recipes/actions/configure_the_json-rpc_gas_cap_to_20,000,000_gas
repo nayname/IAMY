@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "A small Python helper that gracefully stops a running evmd node so configuration changes can be applied safely.",
+            "code": "import subprocess, shutil\n\n\ndef stop_node(service_name: str = \"evmd\") -> None:\n    \"\"\"Gracefully stop a running evmd node.\n    1. Try the `evmd stop` CLI.\n    2. Fallback to `systemctl stop evmd` if the CLI is unavailable or fails.\n    Raises an exception if both methods fail.\n    \"\"\"\n    try:\n        # First attempt: `evmd stop`\n        result = subprocess.run([\"evmd\", \"stop\"], capture_output=True, text=True)\n        if result.returncode == 0:\n            print(\"Node stopped with `evmd stop`.\")\n            return\n        else:\n            print(\"`evmd stop` returned non-zero exit code \u2013 trying systemd fallback\u2026\\n\", result.stderr)\n    except FileNotFoundError:\n        # evmd binary not found \u2013 will try systemd next\n        pass\n\n    # Second attempt: systemd service\n    if shutil.which(\"systemctl\") is None:\n        raise RuntimeError(\"Neither `evmd stop` nor systemctl is available to stop the node.\")\n\n    systemd = subprocess.run([\"systemctl\", \"stop\", service_name], capture_output=True, text=True)\n    if systemd.returncode != 0:\n        raise RuntimeError(systemd.stderr.strip())\n\n    print(\"Node successfully stopped via systemd.\")",
+            "usage": ">>> stop_node()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Loads ~/.evmd/config/app.toml into memory so that it can be modified programmatically.",
+            "code": "import toml\nfrom pathlib import Path\n\n# Default configuration path\nCONFIG_PATH = Path.home() / \".evmd\" / \"config\" / \"app.toml\"\n\n# Global in-memory cache so later steps can reuse the parsed file\nconfig_cache: dict = {}\n\n\ndef open_app_toml(path: Path = CONFIG_PATH) -> dict:\n    \"\"\"Open and parse the TOML file, caching it globally.\"\"\"\n    global config_cache\n    if not path.exists():\n        raise FileNotFoundError(f\"app.toml not found at: {path}\")\n\n    with path.open(\"r\", encoding=\"utf-8\") as fp:\n        config_cache = toml.load(fp)\n\n    print(\"Configuration loaded into memory.\")\n    return config_cache",
+            "usage": ">>> cfg = open_app_toml()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Modifies the [json-rpc] gas-cap field in the in-memory configuration dictionary.",
+            "code": "def modify_json_rpc_field(gas_cap: int = 20_000_000) -> dict:\n    \"\"\"Update (or create) the `gas-cap` inside the `[json-rpc]` section.\"\"\"\n    global config_cache\n    if not config_cache:\n        raise RuntimeError(\"Configuration not loaded. Run open_app_toml() first.\")\n\n    json_rpc_cfg = config_cache.setdefault(\"json-rpc\", {})\n    json_rpc_cfg[\"gas-cap\"] = gas_cap\n\n    print(f\"Set [json-rpc].gas-cap = {gas_cap}\")\n    return config_cache",
+            "usage": ">>> modify_json_rpc_field(20_000_000)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Persists the updated configuration back to disk, creating a backup of the original file for safety.",
+            "code": "import shutil\n\n\ndef save_and_close_file(path: Path = CONFIG_PATH) -> None:\n    \"\"\"Write the in-memory `config_cache` back to `app.toml` and clear the cache.\n\n    A *.bak file will be created beside the original for easy rollback.\n    \"\"\"\n    global config_cache\n    if not config_cache:\n        raise RuntimeError(\"Nothing to save \u2013 configuration cache is empty.\")\n\n    # Create a timestamped backup copy of the existing file\n    backup_path = path.with_suffix(path.suffix + \".bak\")\n    shutil.copy2(path, backup_path)\n\n    # Write the new configuration\n    with path.open(\"w\", encoding=\"utf-8\") as fp:\n        toml.dump(config_cache, fp)\n\n    print(f\"Configuration saved. Backup stored at {backup_path}\")\n    config_cache = {}  # clear cache",
+            "usage": ">>> save_and_close_file()"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Restarts the evmd node so the new gas cap takes effect.",
+            "code": "import subprocess, shutil\n\n\ndef restart_node(service_name: str = \"evmd\") -> None:\n    \"\"\"Start the evmd node again.\n\n    1. Prefer systemd (`systemctl start evmd`) if available.\n    2. Fallback to the CLI (`evmd start`) otherwise.\n    \"\"\"\n    # First attempt: systemd\n    if shutil.which(\"systemctl\"):\n        result = subprocess.run([\"systemctl\", \"start\", service_name], capture_output=True, text=True)\n        if result.returncode == 0:\n            print(\"Node started via systemd.\")\n            return\n        else:\n            print(\"systemctl start failed \u2013 falling back to CLI\u2026\\n\", result.stderr)\n\n    # Second attempt: CLI fallback\n    result = subprocess.run([\"evmd\", \"start\"], capture_output=True, text=True)\n    if result.returncode != 0:\n        raise RuntimeError(result.stderr.strip())\n\n    print(\"Node restarted with `evmd start`.\")",
+            "usage": ">>> restart_node()"
+        }
+    ]
+}

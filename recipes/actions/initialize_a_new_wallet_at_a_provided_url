@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 collects and validates the remote URL where the new wallet keystore will be created.",
+            "code": "export const getWalletUrl = async () => {\n  // Prompt the user for the keystore location\n  const rawUrl = window.prompt('Enter the remote URL where the wallet keystore will be created:');\n  if (!rawUrl) {\n    throw new Error('URL cannot be empty.');\n  }\n\n  try {\n    const url = new URL(rawUrl);\n\n    // Simple protocol + hostname validation\n    if (!['http:', 'https:'].includes(url.protocol)) {\n      throw new Error('URL must start with http:// or https://');\n    }\n    if (!url.hostname) {\n      throw new Error('URL must contain a valid hostname.');\n    }\n\n    return url.toString();\n  } catch (err) {\n    throw new Error(`Invalid URL provided: ${err.message}`);\n  }\n};",
+            "usage": "const remoteUrl = await getWalletUrl();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 creates an authenticated JSON-RPC session to the node so that private RPC calls (e.g., personal_initializeWallet) can succeed.",
+            "code": "import os\nimport base64\nimport requests\nfrom typing import Any\n\n# Configuration is read from environment variables for security\nRPC_ENDPOINT = os.getenv('RPC_ENDPOINT', 'http://localhost:26657')\nRPC_USERNAME = os.getenv('RPC_USERNAME')\nRPC_PASSWORD = os.getenv('RPC_PASSWORD')\n\ndef get_rpc_session() -> requests.Session:\n    \"\"\"Return a requests.Session pre-configured with basic-auth headers.\"\"\"\n    session = requests.Session()\n    session.headers.update({'Content-Type': 'application/json'})\n\n    # Attach Basic-Auth only when credentials exist\n    if RPC_USERNAME and RPC_PASSWORD:\n        auth_pair = f'{RPC_USERNAME}:{RPC_PASSWORD}'.encode()\n        session.headers.update({\n            'Authorization': f'Basic {base64.b64encode(auth_pair).decode()}'\n        })\n\n    # Non-standard helper attribute for convenience\n    session.base_url = RPC_ENDPOINT  # type: ignore[attr-defined]\n    return session\n\n# Optional quick self-test when the file is executed directly\nif __name__ == '__main__':\n    try:\n        s = get_rpc_session()\n        resp = s.post(s.base_url, json={'jsonrpc': '2.0', 'method': 'health', 'params': [], 'id': 1}, timeout=5)\n        resp.raise_for_status()\n        print('RPC health check succeeded')\n    except Exception as err:\n        print(f'RPC health check failed: {err}')",
+            "usage": "from rpc_client import get_rpc_session  # save this file as rpc_client.py\nsession = get_rpc_session()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 calls the private personal_initializeWallet RPC method using the authenticated session created in Step 2 and returns the new key details.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom typing import Any\nimport requests\n\nfrom rpc_client import get_rpc_session\n\napp = FastAPI()\n\nclass InitWalletRequest(BaseModel):\n    remote_url: str\n\n@app.post('/api/initialize-wallet')\ndef initialize_wallet(payload: InitWalletRequest):\n    \"\"\"Generate a new private key and create a wallet at the given remote URL.\"\"\"\n    session = get_rpc_session()\n\n    json_rpc_body = {\n        'jsonrpc': '2.0',\n        'method': 'personal_initializeWallet',\n        'params': [payload.remote_url],\n        'id': 1,\n    }\n\n    try:\n        response = session.post(session.base_url, json=json_rpc_body, timeout=15)\n        response.raise_for_status()\n        data: dict[str, Any] = response.json()\n\n        # JSON-RPC error handling\n        if data.get('error') is not None:\n            raise HTTPException(status_code=500, detail=data['error'])\n\n        return {'wallet': data.get('result')}\n    except requests.RequestException as req_err:\n        raise HTTPException(status_code=502, detail=f'Network error: {req_err}')\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "// Frontend example\nconst walletDetails = await fetch('/api/initialize-wallet', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ remote_url: remoteUrl }) // remoteUrl is the value from Step 1\n}).then(res => res.json());"
+        }
+    ]
+}

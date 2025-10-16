@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Create a new TypeScript/JavaScript test file that imports Hardhat\u2019s helpers (`ethers`) and the Chai `expect` assertion library.",
+            "code": "/* File: test/MyContract.test.ts */\nimport { expect } from \"chai\";\nimport { ethers } from \"hardhat\";\nimport { MyContract } from \"../typechain-types\";\n\n// Top-level test suite for the contract\ndescribe(\"MyContract\", () => {\n  // The contract instance will be initialised in the next step\n  let myContract: MyContract;\n\n  // --- beforeEach & test cases are added in later steps ---\n});",
+            "usage": "Place this file in your Hardhat project\u2019s `test/` directory."
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Inside a `beforeEach` hook, deploy a fresh contract instance before every test so each test starts from the same clean state.",
+            "code": "/* Insert the following inside the describe block from Step 1 */\n\nlet myContract: MyContract; // re-declare for TypeScript scope safety\n\nbeforeEach(async () => {\n  try {\n    // Obtain a contract factory and deploy\n    const MyContractFactory = await ethers.getContractFactory(\"MyContract\");\n    // Replace constructor arguments below if your contract requires any\n    myContract = (await MyContractFactory.deploy()) as MyContract;\n    await myContract.deployed(); // wait for tx to be mined\n  } catch (error) {\n    console.error(\"Contract deployment failed:\", error);\n    throw error; // Fail the test immediately if deployment breaks\n  }\n});",
+            "usage": "The `beforeEach` runs automatically when `npx hardhat test` is executed."
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Write assertions that interact with the contract and verify behaviour using Chai\u2019s `expect` helper.",
+            "code": "/* Still inside test/MyContract.test.ts, underneath the beforeEach hook */\n\ndescribe(\"MyContract core functionality\", () => {\n  it(\"returns the correct value from someCall()\", async () => {\n    // Arrange: prepare any state if necessary\n    const expectedValue = 42;\n\n    // Act: call the contract function under test\n    const actualValue = await myContract.someCall();\n\n    // Assert: verify that contract logic works as expected\n    expect(actualValue).to.equal(expectedValue);\n  });\n});",
+            "usage": "Add as many `it()` blocks as needed to fully cover your contract logic."
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Define an NPM script (or run the CLI directly) to execute the entire Hardhat test suite.",
+            "code": "{\n  \"scripts\": {\n    \"test\": \"npx hardhat test --network cosmos_evm\"\n  }\n}",
+            "usage": "Run `npm run test` (or simply `npx hardhat test`) in your terminal."
+        }
+    ]
+}

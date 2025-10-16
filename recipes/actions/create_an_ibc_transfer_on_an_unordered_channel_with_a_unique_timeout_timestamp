@@ -1,0 +1,40 @@
+{
+    "label": "send",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Fetch all IBC channels from the chain\u2019s LCD endpoint and return only those that are UNORDERED so the user can pick a valid <port-id>/<channel-id> pair.",
+            "code": "export const getUnorderedIBCChannels = async (lcdEndpoint) => {\n  try {\n    const response = await fetch(`${lcdEndpoint}/ibc/core/channel/v1beta1/channels?pagination.limit=1000`);\n    if (!response.ok) {\n      throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);\n    }\n    const data = await response.json();\n    if (!data.channels) {\n      throw new Error('No channels data found.');\n    }\n    return data.channels\n      .filter((ch) => {\n        const ordering = (ch.ordering || ch.order || '').toUpperCase();\n        return ordering === 'UNORDERED' || ordering === 'ORDER_UNORDERED';\n      })\n      .map((ch) => ({\n        portId: ch.port_id,\n        channelId: ch.channel_id,\n      }));\n  } catch (error) {\n    console.error('[getUnorderedIBCChannels]', error);\n    throw error;\n  }\n};",
+            "usage": "const unorderedChannels = await getUnorderedIBCChannels('https://lcd.cosmos.directory/cosmoshub');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Generate a timeout timestamp (in nanoseconds) at least several minutes in the future, matching the CLI pattern `$(($(date +%s)+600))000000000`.",
+            "code": "export const generateTimeoutTimestamp = (secondsAhead = 600) => {\n  // Current Unix time in seconds\n  const currentSeconds = Math.floor(Date.now() / 1000);\n  const futureSeconds = currentSeconds + secondsAhead;\n  // Convert to nanoseconds\n  return (BigInt(futureSeconds) * 1000000000n).toString();\n};",
+            "usage": "const timeoutNs = generateTimeoutTimestamp(600);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "FastAPI route that builds, signs, and broadcasts an IBC (ICS-20) transfer using cosmpy. Secrets such as the mnemonic stay on the server.",
+            "code": "# backend/ibc_transfer.py\n'''\nFastAPI route that signs and broadcasts an IBC (ICS-20) transfer using cosmpy.\nThe mnemonic is read from the MNEMONIC environment variable to keep secrets off the\nfrontend. Adjust NETWORKS mapping for your target chains.\n'''\nimport os\nimport asyncio\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import LocalWallet\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.protos.ibc.applications.transfer.v1.tx_pb2 import MsgTransfer\nfrom cosmpy.protos.ibc.core.client.v1.client_pb2 import Height\n\napp = FastAPI()\n\nNETWORKS = {\n    'cosmoshub-4': NetworkConfig(\n        chain_id='cosmoshub-4',\n        url='https://rpc.cosmos.directory/cosmoshub',\n        fee_minimum_gas_price=0.025,\n        fee_denomination='uatom',\n        staking_denomination='uatom',\n        address_prefix='cosmos',\n    )\n}\n\nclass IbcTransferRequest(BaseModel):\n    port_id: str = 'transfer'\n    channel_id: str\n    amount: int           # base-denom amount, e.g. 1000000 uatom\n    denom: str            # base denom, e.g. \"uatom\"\n    receiver: str         # bech32 address on destination chain\n    timeout_timestamp: int\n    chain_id: str\n\n@app.post('/api/ibc_transfer')\nasync def ibc_transfer(req: IbcTransferRequest):\n    try:\n        net_cfg = NETWORKS.get(req.chain_id)\n        if not net_cfg:\n            raise HTTPException(status_code=400, detail=f'Unsupported chain_id {req.chain_id}')\n\n        mnemonic = os.getenv('MNEMONIC')\n        if not mnemonic:\n            raise HTTPException(status_code=500, detail='Backend mis-configuration: MNEMONIC environment variable not set')\n\n        wallet = LocalWallet.from_mnemonic(mnemonic, prefix=net_cfg.address_prefix)\n        client = LedgerClient(net_cfg)\n\n        msg = MsgTransfer(\n            source_port=req.port_id,\n            source_channel=req.channel_id,\n            token={'denom': req.denom, 'amount': str(req.amount)},\n            sender=wallet.address(),\n            receiver=req.receiver,\n            timeout_height=Height(revision_number=0, revision_height=0),\n            timeout_timestamp=req.timeout_timestamp,\n        )\n\n        tx = Transaction()\n        tx.add_message(msg)\n        tx.seal(client, wallet)\n        tx.sign(wallet)\n\n        broadcast_result = client.broadcast_transaction(tx)\n        if broadcast_result.code != 0:\n            raise HTTPException(\n                status_code=400,\n                detail=f'Broadcast failed (code={broadcast_result.code}): {broadcast_result.raw_log}',\n            )\n\n        return {'tx_hash': broadcast_result.tx_hash}\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "POST JSON to /api/ibc_transfer (see step 4) and receive { \"tx_hash\": \"...\" }."
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Helper that calls the backend route, then captures and returns the resulting transaction hash.",
+            "code": "export const sendIbcTransfer = async (transferPayload) => {\n  try {\n    const response = await fetch('/api/ibc_transfer', {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(transferPayload),\n    });\n    if (!response.ok) {\n      const errText = await response.text();\n      throw new Error(`IBC transfer failed: ${errText}`);\n    }\n    const data = await response.json();\n    return data.tx_hash;\n  } catch (error) {\n    console.error('[sendIbcTransfer]', error);\n    throw error;\n  }\n};",
+            "usage": "const txHash = await sendIbcTransfer({ channel_id: 'channel-1', amount: 1000000, denom: 'uatom', receiver: 'cosmos1\u2026', timeout_timestamp: timeoutNs, chain_id: 'cosmoshub-4' });"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Endpoint that repeatedly queries the chain until the transaction is included in a block (code 0) or returns an error/timeout.",
+            "code": "# backend/tx_monitor.py\n'''\nSimple endpoint that polls a Cosmos RPC node for the transaction until it is confirmed.\n'''\nimport asyncio\nfrom fastapi import HTTPException\nfrom cosmpy.aerial.client import LedgerClient\n\nasync def _wait_for_tx(client: LedgerClient, tx_hash: str, poll_interval: int = 5, max_attempts: int = 60):\n    attempts = 0\n    while attempts < max_attempts:\n        tx_resp = client.query_tx(tx_hash)\n        if tx_resp:\n            if tx_resp.code == 0:\n                return {'status': 'success', 'tx_response': tx_resp}\n            else:\n                raise HTTPException(status_code=400, detail=f'Transaction failed (code={tx_resp.code}): {tx_resp.raw_log}')\n        await asyncio.sleep(poll_interval)\n        attempts += 1\n    raise HTTPException(status_code=504, detail='Timed out waiting for transaction confirmation')\n\n@app.get('/api/tx_status/{chain_id}/{tx_hash}')\nasync def tx_status(chain_id: str, tx_hash: str):\n    net_cfg = NETWORKS.get(chain_id)\n    if not net_cfg:\n        raise HTTPException(status_code=400, detail=f'Unsupported chain {chain_id}')\n    client = LedgerClient(net_cfg)\n    return await _wait_for_tx(client, tx_hash)",
+            "usage": "const txInfo = await fetch(`/api/tx_status/cosmoshub-4/${txHash}`).then(r => r.json());"
+        }
+    ]
+}

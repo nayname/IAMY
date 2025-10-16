@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Checks whether the Foundry updater (`foundryup`) is installed by executing `foundryup --version` and returning the version string.",
+            "code": "import subprocess\n\ndef check_foundryup_installation():\n    \"\"\"Verify that `foundryup` is on the PATH and return its version.\"\"\"\n    try:\n        result = subprocess.run([\n            \"foundryup\",\n            \"--version\"\n        ], check=True, capture_output=True, text=True)\n        version = result.stdout.strip()\n        return {\"foundryup_version\": version}\n    except FileNotFoundError:\n        raise RuntimeError(\"`foundryup` binary not found. Please install Foundry or add it to your PATH.\")\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"Error while checking `foundryup --version`: {err.stderr.strip()}\")",
+            "usage": "info = check_foundryup_installation()\nprint(info[\"foundryup_version\"])"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Downloads and installs the latest nightly binaries for Forge, Cast, Anvil, and Foundryup by running `foundryup nightly`.",
+            "code": "import subprocess\n\ndef run_foundryup_nightly():\n    \"\"\"Install the latest nightly version of Foundry toolchain.\"\"\"\n    try:\n        result = subprocess.run(\n            [\"foundryup\", \"nightly\"],\n            check=True,\n            capture_output=True,\n            text=True\n        )\n        return {\"output\": result.stdout.strip()}\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"`foundryup nightly` failed: {err.stderr.strip()}\")",
+            "usage": "logs = run_foundryup_nightly()\nprint(logs[\"output\"])"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Verifies that Forge was updated to a nightly build by executing `forge --version` and ensuring the output contains a nightly commit hash.",
+            "code": "import subprocess\n\ndef verify_foundry_version():\n    \"\"\"Confirm that `forge` is on a nightly build.\"\"\"\n    try:\n        result = subprocess.run([\n            \"forge\",\n            \"--version\"\n        ], check=True, capture_output=True, text=True)\n        version = result.stdout.strip()\n        if \"nightly\" not in version.lower():\n            raise RuntimeError(f\"Forge version does not appear to be nightly: {version}\")\n        return {\"forge_version\": version}\n    except FileNotFoundError:\n        raise RuntimeError(\"`forge` binary not found. Ensure Foundry installation succeeded.\")\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"Error while checking `forge --version`: {err.stderr.strip()}\")",
+            "usage": "version_info = verify_foundry_version()\nprint(version_info[\"forge_version\"])"
+        }
+    ]
+}

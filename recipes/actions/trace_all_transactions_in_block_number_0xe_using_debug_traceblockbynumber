@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 defines a helper function that picks the Cosmos-EVM JSON-RPC endpoint, falling back to a public node when no environment variable is set.",
+            "code": "export const getRpcEndpoint = () => {\n  // Use an environment variable if available, otherwise fallback to a public RPC.\n  return import.meta.env.VITE_COSMOS_EVM_RPC_ENDPOINT || \"https://rpc.evmos.org:8545\";\n};",
+            "usage": "const endpoint = getRpcEndpoint();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 sends a debug_traceBlockByNumber request (block 0xe) to the selected RPC endpoint and returns the trace result.",
+            "code": "export const debugTraceBlockByNumber = async (\n  blockNumberHex = \"0xe\", // default block number in hex\n  endpoint = getRpcEndpoint()\n) => {\n  try {\n    const payload = {\n      jsonrpc: \"2.0\",\n      id: 1,\n      method: \"debug_traceBlockByNumber\",\n      params: [blockNumberHex, {}]\n    };\n\n    // Send the JSON-RPC request\n    const response = await fetch(endpoint, {\n      method: \"POST\",\n      headers: {\n        \"Content-Type\": \"application/json\"\n      },\n      body: JSON.stringify(payload)\n    });\n\n    // Basic HTTP-level error handling\n    if (!response.ok) {\n      throw new Error(`Network error: ${response.status} ${response.statusText}`);\n    }\n\n    const data = await response.json();\n\n    // JSON-RPC-level error handling\n    if (data.error) {\n      throw new Error(`RPC Error: ${data.error.code} \u2013 ${data.error.message}`);\n    }\n\n    return data.result; // the actual trace data\n  } catch (error) {\n    console.error(\"Failed to trace block:\", error);\n    throw error;\n  }\n};",
+            "usage": "const trace = await debugTraceBlockByNumber(\"0xe\");"
+        }
+    ]
+}

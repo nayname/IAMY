@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 checks that the system has curl, bash, and an up-to-date version of git installed.",
+            "code": "import shutil\nimport subprocess\n\n\ndef check_system_prerequisites():\n    '''Verify that curl, bash, and git are installed and git is up to date (>= 2.30).'''\n    required_bins = ['curl', 'bash', 'git']\n    missing = [bin for bin in required_bins if shutil.which(bin) is None]\n    if missing:\n        raise EnvironmentError(f\"Missing required binaries: {', '.join(missing)}\")\n\n    # Check git version\n    try:\n        result = subprocess.run(['git', '--version'], capture_output=True, text=True, check=True)\n        version_str = result.stdout.strip()  # e.g., 'git version 2.35.1'\n        version_number = version_str.split()[-1]\n        major, minor, *_ = map(int, version_number.split('.'))\n        if (major, minor) < (2, 30):\n            raise EnvironmentError(f'git version 2.30 or higher is required, found {version_number}')\n    except subprocess.CalledProcessError as e:\n        raise EnvironmentError(f'Could not determine git version: {e}')\n\n    return {\n        'curl_path': shutil.which('curl'),\n        'bash_path': shutil.which('bash'),\n        'git_version': version_number,\n    }\n",
+            "usage": "prereq_info = check_system_prerequisites()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 downloads the Foundry installer script via curl and executes it to set up the `foundryup` binary.",
+            "code": "import subprocess\nimport os\nfrom pathlib import Path\n\ndef download_foundryup():\n    '''Download and run the Foundry installation script.'''\n    cmd = 'curl -L https://foundry.paradigm.xyz | bash'\n    try:\n        subprocess.run(cmd, shell=True, check=True)\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f'Failed to download and install foundryup: {e}')\n\n    # Add ~/.foundry/bin to PATH for current process so subsequent steps can find foundryup\n    foundry_bin = Path.home() / '.foundry' / 'bin'\n    os.environ['PATH'] += os.pathsep + str(foundry_bin)\n    return str(foundry_bin)\n",
+            "usage": "foundry_path = download_foundryup()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 reloads the user's shell profile so that the newly installed Foundry binaries are discoverable in the PATH (best-effort within Python).",
+            "code": "import os\nfrom pathlib import Path\n\ndef source_shell_profile(profile_path: str = None):\n    '''Reload shell profile so that Foundry tools are in PATH. If sourcing in the current Python process is not possible, update PATH manually as fallback.'''\n    # Determine which profile to source\n    if profile_path is None:\n        bashrc = Path.home() / '.bashrc'\n        zshrc = Path.home() / '.zshrc'\n        profile_path = zshrc if zshrc.exists() else bashrc\n\n    if not Path(profile_path).exists():\n        raise FileNotFoundError(f'Shell profile {profile_path} does not exist.')\n\n    # Since \"source\" only affects the current shell, we emulate by appending Foundry bin to PATH.\n    foundry_bin = Path.home() / '.foundry' / 'bin'\n    os.environ['PATH'] += os.pathsep + str(foundry_bin)\n    return str(profile_path)\n",
+            "usage": "source_shell_profile()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 runs `foundryup` which fetches and installs the latest stable versions of Forge, Cast, and other Foundry tools.",
+            "code": "import subprocess\n\ndef run_foundryup_install():\n    '''Run \\\"foundryup\\\" to install or update the Foundry toolchain.'''\n    try:\n        subprocess.run(['foundryup'], check=True)\n    except FileNotFoundError:\n        raise RuntimeError('foundryup not found in PATH. Did you run download_foundryup()?')\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f'foundryup execution failed: {e}')\n    return True\n",
+            "usage": "run_foundryup_install()"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 verifies the installation by printing the versions of Forge and Cast.",
+            "code": "import subprocess\n\ndef verify_foundry_installation():\n    '''Verify that \\\"forge\\\" and \\\"cast\\\" are installed and return their version strings.'''\n    tools = ['forge', 'cast']\n    versions = {}\n    for tool in tools:\n        try:\n            result = subprocess.run([tool, '--version'], capture_output=True, text=True, check=True)\n            versions[tool] = result.stdout.strip()\n        except FileNotFoundError:\n            versions[tool] = 'not found'\n        except subprocess.CalledProcessError:\n            versions[tool] = 'error'\n    return versions\n",
+            "usage": "version_info = verify_foundry_installation()"
+        }
+    ]
+}

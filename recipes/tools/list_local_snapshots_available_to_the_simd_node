@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Resolves the simd node\u2019s home directory by checking the SIMD_HOME environment variable or falling back to ~/.simd.",
+            "function": "get_node_home()",
+            "usage": "home_dir = get_node_home()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Runs the \"simd snapshot list\" (or fallback ls) command for the given home directory and returns the raw console output.",
+            "function": "_list_snapshots(home)",
+            "usage": "raw_output = _list_snapshots(home_dir)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Converts the raw snapshot CLI output into a structured list containing height, format and hash fields.",
+            "function": "_parse_snapshot_output(raw_output)",
+            "usage": "snapshots = _parse_snapshot_output(raw_output)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "home_dir = get_node_home()#step: 1 Tool: get_node_home Desciption: Identify the node\u2019s home directory containing the data folder.",
+        "raw_output = _list_snapshots(home_dir)#step: 2 Tool: execute_shell_command Desciption: Run `simd snapshot list --home=<home>` (or `ls -lh <home>/data/snapshots`) to enumerate snapshots.",
+        "snapshots = _parse_snapshot_output(raw_output)#step: 3 Tool: parse_snapshot_list Desciption: Convert the command output into a structured list with height, format, and hash."
+    ],
+    "intent": "List local snapshots available to the simd node",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_node_home",
+            "description": "Identify the node\u2019s home directory containing the data folder."
+        },
+        {
+            "step": 2,
+            "tool": "execute_shell_command",
+            "description": "Run `simd snapshot list --home=<home>` (or `ls -lh <home>/data/snapshots`) to enumerate snapshots."
+        },
+        {
+            "step": 3,
+            "tool": "parse_snapshot_list",
+            "description": "Convert the command output into a structured list with height, format, and hash."
+        }
+    ],
+    "outcome_checks": [
+        "A structured array of snapshots is returned.",
+        "No errors such as \u201csnapshot directory not found\u201d occur."
+    ]
+}

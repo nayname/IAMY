@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Retrieves the first Neutron bech32 account from the user\u2019s Keplr wallet.",
+            "function": "getUserWalletAddress()",
+            "usage": "const address = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Checks that the specified address holds at least 1 000 000 000 uNTRN (\u2248 1 000 NTRN) before proceeding.",
+            "function": "hasMinBalance(address, minAmount)",
+            "usage": "const hasEnough = await hasMinBalance(address, 1_000_000_000);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Loads the Boost-Lock contract address from the dApp\u2019s environment configuration.",
+            "function": "loadContractAddress()",
+            "usage": "const contractAddress = loadContractAddress();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Builds the CosmWasm execute payload that locks 1 000 000 000 uNTRN for 48 months.",
+            "function": "constructBoostLockMsg(amount, durationMonths)",
+            "usage": "const lockMsg = constructBoostLockMsg('1000000000', 48);"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Signs the prepared transaction and broadcasts it to the Neutron network, returning the resulting hash.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "const txHash = sign_and_broadcast_tx(tx, wallet, client);"
+        }
+    ],
+    "frontend": [
+        "const address = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Fetch the user\u2019s Neutron address that will lock NTRN.",
+        "const hasEnough = await hasMinBalance(address, 1_000_000_000);//step: 2 Tool: validate_asset_balance Desciption: Confirm the wallet holds \u2265 1000 NTRN plus gas fees.",
+        "const contractAddress = loadContractAddress();//step: 3 Tool: get_ntrn_boost_lock_contract Desciption: Obtain the address of the NTRN Boost/Lock contract (used for rewards multipliers).",
+        "const lockMsg = constructBoostLockMsg('1000000000', 48);//step: 4 Tool: construct_wasm_execute_lock Desciption: Build `{ \"lock\": { \"amount\": \"1000000000\", \"duration_months\": 48 } }` (amount in 6-decimals uNTRN) to lock tokens."
+    ],
+    "backend": [
+        "const txHash = sign_and_broadcast_tx(tx, wallet, client);#step: 5 Tool: sign_and_broadcast_tx Desciption: Sign the lock transaction and broadcast it."
+    ],
+    "intent": "Stake 1000 NTRN for 48 months to maximize my boost",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_wallet_address",
+            "description": "Fetch the user\u2019s Neutron address that will lock NTRN."
+        },
+        {
+            "step": 2,
+            "tool": "validate_asset_balance",
+            "description": "Confirm the wallet holds \u2265 1000 NTRN plus gas fees."
+        },
+        {
+            "step": 3,
+            "tool": "get_ntrn_boost_lock_contract",
+            "description": "Obtain the address of the NTRN Boost/Lock contract (used for rewards multipliers)."
+        },
+        {
+            "step": 4,
+            "tool": "construct_wasm_execute_lock",
+            "description": "Build `{ \"lock\": { \"amount\": \"1000000000\", \"duration_months\": 48 } }` (amount in 6-decimals uNTRN) to lock tokens."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the lock transaction and broadcast it."
+        }
+    ],
+    "outcome_checks": [
+        "Tx succeeds and appears in a block.",
+        "Query lock contract: entry shows 1 000 NTRN locked, 48-month expiry, and boost multiplier updated."
+    ]
+}

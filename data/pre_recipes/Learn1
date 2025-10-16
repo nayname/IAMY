@@ -1,0 +1,142 @@
+[
+    {
+        "intent": "Start a full node client on a Cosmos SDK network",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "install_cosmos_binary",
+                "description": "Download or build the correct version of the Cosmos SDK node binary (e.g., gaiad, appd) for the target network."
+            },
+            {
+                "step": 2,
+                "tool": "configure_node_home",
+                "description": "Set up the node\u2019s home directory and configure chain-id, keyring-backend, and RPC settings (e.g., gaiad config chain-id <chain-id>)."
+            },
+            {
+                "step": 3,
+                "tool": "download_genesis_and_addrbook",
+                "description": "Fetch the network\u2019s genesis.json and addrbook.json (or seeds/peers) so the node can connect to existing peers."
+            },
+            {
+                "step": 4,
+                "tool": "start_full_node",
+                "description": "Launch the node with the start command (e.g., gaiad start) and begin state sync or full sync."
+            }
+        ],
+        "outcome_checks": [
+            "CLI logs show blocks being executed and height increasing.",
+            "A call to http://localhost:26657/status returns catching_up = false when synced."
+        ]
+    },
+    {
+        "intent": "Initialize a new Cosmos SDK blockchain",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "install_cosmos_binary",
+                "description": "Ensure the custom application binary (e.g., appd) is compiled and on PATH."
+            },
+            {
+                "step": 2,
+                "tool": "init_cosmos_sdk_chain",
+                "description": "Run `appd init <moniker> --chain-id <chain-id>` to create the initial configuration and genesis file."
+            },
+            {
+                "step": 3,
+                "tool": "verify_genesis_file",
+                "description": "Confirm genesis.json and config files were created in the designated home directory."
+            },
+            {
+                "step": 4,
+                "tool": "validate_genesis",
+                "description": "Execute `appd validate-genesis` to be sure the file is internally consistent."
+            }
+        ],
+        "outcome_checks": [
+            "genesis.json exists at ~/.appd/config/genesis.json.",
+            "`appd validate-genesis` returns SUCCESS with no errors."
+        ]
+    },
+    {
+        "intent": "Query the balance of an address",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_address_format",
+                "description": "Check that the provided Bech32 address is well-formed for the chain\u2019s HRP."
+            },
+            {
+                "step": 2,
+                "tool": "query_bank_balance",
+                "description": "Run `appd query bank balances <address> --node <rpc>` to fetch on-chain balances."
+            },
+            {
+                "step": 3,
+                "tool": "parse_balance_output",
+                "description": "Decode the CLI or JSON response to present spendable and vesting balances to the user."
+            }
+        ],
+        "outcome_checks": [
+            "The command returns a list of coin objects (denom, amount) without error.",
+            "Amounts match expectations from recent transactions or on-chain explorers."
+        ]
+    },
+    {
+        "intent": "Send 100token from address A to address B",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_key",
+                "description": "Locate the key or hardware wallet for address A and ensure it has enough balance and fee tokens."
+            },
+            {
+                "step": 2,
+                "tool": "validate_recipient_address",
+                "description": "Confirm that address B is a valid Bech32 address for the chain."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_bank_send",
+                "description": "Build a bank send transaction for 100token from A to B, specifying gas, fees, and memo if needed."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the transaction with A\u2019s key and broadcast it to the network."
+            },
+            {
+                "step": 5,
+                "tool": "wait_for_tx_commit",
+                "description": "Poll the transaction hash until it is included in a block."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction hash appears in a committed block and shows success code = 0.",
+            "Address A\u2019s balance decreased by 100token + fees; address B\u2019s balance increased by 100token."
+        ]
+    },
+    {
+        "intent": "Generate a genesis file with default modules",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "run_init_command",
+                "description": "Execute `appd init <moniker> --chain-id <chain-id>`; this scaffolds a default genesis.json containing standard modules (auth, bank, staking, gov, crisis, etc.)."
+            },
+            {
+                "step": 2,
+                "tool": "verify_genesis_contains_modules",
+                "description": "Inspect genesis.json to ensure required module state objects exist at top level (e.g., \"bank\", \"staking\", \"gov\")."
+            },
+            {
+                "step": 3,
+                "tool": "validate_genesis",
+                "description": "Run `appd validate-genesis` to confirm the generated file is valid."
+            }
+        ],
+        "outcome_checks": [
+            "genesis.json is present and includes default Cosmos SDK module sections.",
+            "`appd validate-genesis` returns SUCCESS with no missing or invalid fields."
+        ]
+    }
+]

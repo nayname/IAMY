@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "No fully-implemented function in the provided code instantiates a viem client over HTTP.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "No function was found that opens a viem batch context or equivalent.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "No function was located that enqueues individual calls inside a viem batch.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "No function exists that executes a queued viem batch and returns the ordered results.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "undef//step: 1 Tool: viem_create_client Desciption: Instantiate a viem client with an HTTP transport that targets the desired Cosmos-EVM RPC endpoint.",
+        "undef//step: 2 Tool: viem_batch Desciption: Call `client.batch()` to open a batch context, specifying optional concurrency or batch size parameters.",
+        "undef//step: 3 Tool: viem_add_calls_to_batch Desciption: Inside the batch context, enqueue multiple read-only methods (e.g., `getBalance`, `getBlockNumber`, `readContract`).",
+        "undef//step: 4 Tool: viem_execute_batch Desciption: Await the batch promise to execute all queued RPC calls in a single request and receive an ordered array of results."
+    ],
+    "backend": [],
+    "intent": "Batch multiple JSON-RPC calls with the viem library",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "viem_create_client",
+            "description": "Instantiate a viem client with an HTTP transport that targets the desired Cosmos-EVM RPC endpoint."
+        },
+        {
+            "step": 2,
+            "tool": "viem_batch",
+            "description": "Call `client.batch()` to open a batch context, specifying optional concurrency or batch size parameters."
+        },
+        {
+            "step": 3,
+            "tool": "viem_add_calls_to_batch",
+            "description": "Inside the batch context, enqueue multiple read-only methods (e.g., `getBalance`, `getBlockNumber`, `readContract`)."
+        },
+        {
+            "step": 4,
+            "tool": "viem_execute_batch",
+            "description": "Await the batch promise to execute all queued RPC calls in a single request and receive an ordered array of results."
+        }
+    ],
+    "outcome_checks": [
+        "The batch request returns an array whose length matches the number of queued calls.",
+        "No individual call errors; each result object matches the expected schema (e.g., balances are BigInt strings)."
+    ]
+}

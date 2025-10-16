@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 defines a small helper that returns the RPC endpoint. It first looks for the `NEXT_PUBLIC_COSMOS_RPC_URL` environment variable (set at build-time in Mintlify) and falls back to a public RPC URL if none is provided.",
+            "code": "export const getRpcEndpoint = () => {\n  // Read the value injected at build time by Mintlify (or any React-style env system)\n  const rpcUrl = process.env.NEXT_PUBLIC_COSMOS_RPC_URL;\n\n  if (!rpcUrl) {\n    // Fallback to a well-known public RPC if the env var is missing\n    console.warn(\n      'NEXT_PUBLIC_COSMOS_RPC_URL is not defined. Falling back to a public mainnet RPC.'\n    );\n    return 'https://cosmos-rpc.polkachu.com:443';\n  }\n\n  return rpcUrl;\n};",
+            "usage": "const rpcUrl = getRpcEndpoint();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 fetches the Tendermint node\u2019s version information from the `/status` endpoint and returns both the raw response and a convenient `version` string.",
+            "code": "export const fetchNodeVersion = async (rpcUrl) => {\n  try {\n    const response = await fetch(`${rpcUrl}/status`);\n\n    if (!response.ok) {\n      throw new Error(`RPC responded with HTTP status ${response.status}`);\n    }\n\n    const data = await response.json();\n\n    // Tendermint RPC usually places the version in one of these fields\n    const version =\n      data?.result?.node_info?.version ||\n      data?.result?.application_version?.version ||\n      'Unknown';\n\n    return {\n      raw: data,\n      version,\n    };\n  } catch (error) {\n    console.error('Unable to fetch node version', error);\n    throw error;\n  }\n};",
+            "usage": "const { version } = await fetchNodeVersion(rpcUrl);\nconsole.log('Tendermint version:', version);"
+        }
+    ]
+}

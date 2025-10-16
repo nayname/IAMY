@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 provides a Python utility that checks if the Cosmos node\u2019s built-in pprof HTTP server is running on the expected port.",
+            "code": "def check_pprof_port(host: str = \"localhost\", port: int = 6060, timeout: int = 2):\n    '''\n    Check whether the Cosmos node was started with pprof enabled.\n\n    Args:\n        host (str): Hostname where the node is running.\n        port (int): Port where pprof is expected to listen (default 6060).\n        timeout (int): Timeout in seconds for the HTTP request.\n\n    Returns:\n        dict: Dictionary containing 'pprof_running' (bool) and 'message' (str).\n    '''\n    import http.client\n\n    conn = http.client.HTTPConnection(host, port, timeout=timeout)\n    try:\n        # '/debug/pprof/' returns 200 if pprof is enabled.\n        conn.request(\"GET\", \"/debug/pprof/\")\n        resp = conn.getresponse()\n\n        if resp.status == 200:\n            return {\n                \"pprof_running\": True,\n                \"message\": f\"pprof is active at http://{host}:{port}/debug/pprof/\"\n            }\n        return {\n            \"pprof_running\": False,\n            \"message\": f\"HTTP {resp.status} received; pprof might not be enabled.\"\n        }\n    except Exception as exc:\n        return {\n            \"pprof_running\": False,\n            \"message\": f\"Unable to connect to {host}:{port}. Error: {str(exc)}\"\n        }\n    finally:\n        conn.close()",
+            "usage": "status = check_pprof_port()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 implements a Python function that performs a 30-second CPU profile capture via the pprof endpoint and stores it to disk.",
+            "code": "def capture_cpu_profile(seconds: int = 30, host: str = \"localhost\", port: int = 6060, output_file: str = \"cpu.prof\"):\n    '''\n    Capture a CPU profile from the running Cosmos node via the pprof HTTP endpoint.\n\n    The call blocks for `seconds` while profiling is active, then writes the binary\n    profile to `output_file`.\n    '''\n    import http.client\n\n    path = f\"/debug/pprof/profile?seconds={seconds}\"\n    conn = http.client.HTTPConnection(host, port, timeout=seconds + 5)\n    try:\n        conn.request(\"GET\", path)\n        resp = conn.getresponse()\n\n        if resp.status != 200:\n            return {\"ok\": False, \"error\": f\"pprof returned HTTP {resp.status} {resp.reason}\"}\n\n        with open(output_file, \"wb\") as fp:\n            # Stream the response body to disk.\n            while True:\n                data = resp.read(8192)\n                if not data:\n                    break\n                fp.write(data)\n\n        return {\"ok\": True, \"output_file\": output_file, \"message\": f\"CPU profile captured to {output_file}\"}\n    except Exception as exc:\n        return {\"ok\": False, \"error\": str(exc)}\n    finally:\n        conn.close()",
+            "usage": "capture_result = capture_cpu_profile(seconds=30)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 offers a Python helper that validates the captured profile file exists and contains data.",
+            "code": "def verify_profile_file(path: str = \"cpu.prof\"):\n    '''\n    Verify that the CPU profile file exists and is not empty.\n    '''\n    import os\n\n    if not os.path.exists(path):\n        return {\"verified\": False, \"message\": f\"{path} does not exist.\"}\n\n    size = os.path.getsize(path)\n    if size <= 0:\n        return {\"verified\": False, \"message\": f\"{path} is empty.\"}\n\n    return {\"verified\": True, \"message\": f\"{path} is present and is {size} bytes.\"}",
+            "usage": "verify_result = verify_profile_file(\"cpu.prof\")"
+        }
+    ]
+}

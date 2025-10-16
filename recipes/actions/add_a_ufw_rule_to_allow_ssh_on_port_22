@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 is a Python helper that checks if UFW is active. It returns a JSON-serialisable dictionary with the raw command output and a boolean flag indicating whether the firewall is enabled.",
+            "code": "import subprocess\n\n\ndef get_ufw_status():\n    \"\"\"Check if UFW is active and return the raw output.\"\"\"\n    try:\n        proc = subprocess.run([\n            \"sudo\", \"ufw\", \"status\"\n        ], capture_output=True, text=True, check=True)\n        return {\n            \"active\": \"inactive\" not in proc.stdout.lower(),\n            \"output\": proc.stdout.strip()\n        }\n    except subprocess.CalledProcessError as err:\n        return {\n            \"active\": False,\n            \"error\": err.stderr.strip() if err.stderr else \"Failed to obtain UFW status.\"\n        }\n\n# Example direct usage:\n# result = get_ufw_status()\n# print(result)",
+            "usage": "status = get_ufw_status()\nif not status.get(\"active\"):\n    print(\"UFW is inactive; please enable it before continuing.\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 exposes a Python function that adds a UFW rule allowing inbound SSH traffic (22/tcp) and tags it with a helpful comment.",
+            "code": "import subprocess\n\n\ndef allow_ssh_via_ufw():\n    \"\"\"Add a UFW rule to allow SSH on port 22/tcp with the comment 'Allow SSH'.\"\"\"\n    try:\n        proc = subprocess.run([\n            \"sudo\", \"ufw\", \"allow\", \"22/tcp\", \"comment\", \"Allow SSH\"\n        ], capture_output=True, text=True, check=True)\n        return {\n            \"success\": True,\n            \"output\": proc.stdout.strip() or \"Rule added\"\n        }\n    except subprocess.CalledProcessError as err:\n        return {\n            \"success\": False,\n            \"error\": err.stderr.strip() if err.stderr else \"Failed to add SSH rule.\"\n        }\n\n# Example direct usage:\n# response = allow_ssh_via_ufw()\n# print(response)",
+            "usage": "response = allow_ssh_via_ufw()\nprint(response.get(\"output\") or response.get(\"error\"))"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 defines a Python helper that reloads UFW so any new or modified rules take effect.",
+            "code": "import subprocess\n\n\ndef reload_ufw():\n    \"\"\"Reload the UFW ruleset to apply recent changes.\"\"\"\n    try:\n        proc = subprocess.run([\n            \"sudo\", \"ufw\", \"reload\"\n        ], capture_output=True, text=True, check=True)\n        return {\n            \"reloaded\": True,\n            \"output\": proc.stdout.strip() or \"UFW reloaded\"\n        }\n    except subprocess.CalledProcessError as err:\n        return {\n            \"reloaded\": False,\n            \"error\": err.stderr.strip() if err.stderr else \"Failed to reload UFW.\"\n        }\n\n# Example direct usage:\n# info = reload_ufw()\n# print(info)",
+            "usage": "reload_info = reload_ufw()\nprint(reload_info)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 lists current UFW rules in numbered format so the caller can confirm that the new SSH rule was inserted successfully.",
+            "code": "import subprocess\nfrom typing import List, Dict\n\n\ndef list_ufw_rules_numbered() -> Dict[str, List[str]]:\n    \"\"\"Return UFW rules in numbered format for easy review.\"\"\"\n    try:\n        proc = subprocess.run([\n            \"sudo\", \"ufw\", \"status\", \"numbered\"\n        ], capture_output=True, text=True, check=True)\n        lines = [line.strip() for line in proc.stdout.strip().split(\"\\n\") if line.strip()]\n        return {\"rules\": lines}\n    except subprocess.CalledProcessError as err:\n        return {\n            \"error\": err.stderr.strip() if err.stderr else \"Unable to list UFW rules.\"\n        }\n\n# Example direct usage:\n# numbered = list_ufw_rules_numbered()\n# print(\"\\n\".join(numbered.get(\"rules\", [])))",
+            "usage": "rules = list_ufw_rules_numbered()\nfor line in rules.get(\"rules\", []):\n    print(line)"
+        }
+    ]
+}

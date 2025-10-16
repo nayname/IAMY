@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Initiates a graceful shutdown by sending SIGINT to a PID or stopping the specified systemd service.",
+            "function": "graceful_shutdown(pid=None, use_systemctl=False, service_name=None)",
+            "usage": "graceful_shutdown(pid=12345)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Continuously polls the operating system until the target PID has fully exited.",
+            "function": "wait_for_exit(pid, log_path=None, timeout=120, poll_interval=1.0)",
+            "usage": "wait_for_exit(pid=12345, timeout=180)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Checks that cpu.prof exists and is non-empty, confirming the CPU profile was written.",
+            "function": "verify_profile_file(profile_path='cpu.prof')",
+            "usage": "verify_profile_file('cpu.prof')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "graceful_shutdown(pid=12345)#step: 1 Tool: graceful_shutdown Desciption: Send SIGINT (Ctrl-C) or `kill -INT <pid>` to the node process\u2014or `systemctl stop <service>` if running as a service\u2014to trigger the deferred `pprof.StopCPUProfile()` call.",
+        "wait_for_exit(pid=12345, timeout=180)#step: 2 Tool: wait_for_exit Desciption: Wait until the node fully exits and observe the log message `stopping CPU profiler`.",
+        "verify_profile_file('cpu.prof')#step: 3 Tool: verify_profile_file Desciption: Check that cpu.prof has been flushed to disk and is non-empty."
+    ],
+    "intent": "Stop the current CPU profile",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "graceful_shutdown",
+            "description": "Send SIGINT (Ctrl-C) or `kill -INT <pid>` to the node process\u2014or `systemctl stop <service>` if running as a service\u2014to trigger the deferred `pprof.StopCPUProfile()` call."
+        },
+        {
+            "step": 2,
+            "tool": "wait_for_exit",
+            "description": "Wait until the node fully exits and observe the log message `stopping CPU profiler`."
+        },
+        {
+            "step": 3,
+            "tool": "verify_profile_file",
+            "description": "Check that cpu.prof has been flushed to disk and is non-empty."
+        }
+    ],
+    "outcome_checks": [
+        "Node process has terminated cleanly.",
+        "cpu.prof timestamp updated and size > 0 bytes.",
+        "`go tool pprof cpu.prof` parses without error."
+    ]
+}

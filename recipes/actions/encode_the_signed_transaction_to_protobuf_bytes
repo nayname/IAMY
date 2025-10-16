@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "This Python (FastAPI) endpoint wraps the `cosmos tx encode` CLI command, turning a signed JSON transaction into protobuf bytes and\u2014optionally\u2014saving the result to a `.pb` file.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport subprocess\nimport base64\nimport os\nfrom typing import Optional\n\napp = FastAPI()\n\nclass EncodeRequest(BaseModel):\n    input_json_path: str               # Path to the already-signed JSON tx (e.g. \"tx_signed.json\")\n    output_pb_path: Optional[str] = None  # If provided, the .pb file will be written here\n\n@app.post(\"/api/encode-tx\")\nasync def encode_tx(req: EncodeRequest):\n    \"\"\"Encode a signed JSON tx into protobuf bytes using the Cosmos CLI.\"\"\"\n    if not os.path.isfile(req.input_json_path):\n        raise HTTPException(status_code=404, detail=\"input_json_path does not exist\")\n\n    cmd = [\"cosmos\", \"tx\", \"encode\", req.input_json_path]\n    try:\n        # Run the CLI command and capture stdout (base64 string)\n        result = subprocess.run(cmd, check=True, capture_output=True)\n        base64_tx = result.stdout.decode().strip()\n\n        # Optionally persist the raw protobuf bytes to disk\n        if req.output_pb_path:\n            with open(req.output_pb_path, \"wb\") as f:\n                f.write(base64.b64decode(base64_tx))\n\n        return {\n            \"base64_tx\": base64_tx,\n            \"output_pb_path\": req.output_pb_path\n        }\n    except subprocess.CalledProcessError as err:\n        # Surface any CLI errors back to the caller\n        err_msg = err.stderr.decode() if err.stderr else \"Unknown CLI error\"\n        raise HTTPException(status_code=500, detail=err_msg)",
+            "usage": "// Frontend example (JS)\nconst res = await fetch('/api/encode-tx', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({\n    input_json_path: '/tmp/tx_signed.json',\n    output_pb_path: '/tmp/tx_signed.pb'\n  })\n});\nconst { base64_tx } = await res.json();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "This FastAPI endpoint decodes the previously-encoded protobuf bytes back to JSON using `cosmos tx decode`, allowing the caller to verify round-trip fidelity.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport subprocess\nimport os\n\napp = FastAPI()\n\nclass DecodeRequest(BaseModel):\n    pb_file_path: str   # Path to the protobuf file produced in step 1 (e.g. \"tx_signed.pb\")\n\n@app.post(\"/api/decode-tx\")\nasync def decode_tx(req: DecodeRequest):\n    \"\"\"Decode protobuf bytes back into JSON using the Cosmos CLI.\"\"\"\n    if not os.path.isfile(req.pb_file_path):\n        raise HTTPException(status_code=404, detail=\"pb_file_path does not exist\")\n\n    cmd = [\"cosmos\", \"tx\", \"decode\", req.pb_file_path]\n    try:\n        result = subprocess.run(cmd, check=True, capture_output=True)\n        json_tx = result.stdout.decode()\n        return { \"decoded_tx_json\": json_tx }\n    except subprocess.CalledProcessError as err:\n        err_msg = err.stderr.decode() if err.stderr else \"Unknown CLI error\"\n        raise HTTPException(status_code=500, detail=err_msg)",
+            "usage": "// Frontend example (JS)\nconst res = await fetch('/api/decode-tx', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ pb_file_path: '/tmp/tx_signed.pb' })\n});\nconst { decoded_tx_json } = await res.json();"
+        }
+    ]
+}

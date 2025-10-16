@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Gracefully stop the running Cosmos-SDK node using Python\u2019s subprocess module so that configuration files can be safely updated.",
+            "code": "import subprocess\n\n\ndef stop_node_service(service_name: str = \"cosmosd\") -> None:\n    \"\"\"Stops a systemd-managed Cosmos SDK node.\n\n    Args:\n        service_name: The name of the systemd service running the node.\n    Raises:\n        RuntimeError: If the service fails to stop.\n    \"\"\"\n    try:\n        # `systemctl is-active` returns 0 if active, non-zero otherwise.\n        status = subprocess.run([\"systemctl\", \"is-active\", service_name], capture_output=True, text=True)\n        if status.returncode != 0:\n            print(f\"[INFO] Service '{service_name}' is already stopped.\")\n            return\n\n        print(f\"[INFO] Stopping service '{service_name}'\u2026\")\n        stop = subprocess.run([\"sudo\", \"systemctl\", \"stop\", service_name], check=True)\n        print(f\"[SUCCESS] Service '{service_name}' stopped.\")\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"Failed to stop service '{service_name}': {err}\") from err",
+            "usage": "python -c \"from node_snapshot import stop_node_service; stop_node_service('cosmosd')\""
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Edit the `app.toml` snapshot section to set `snapshot-interval` and `snapshot-keep-recent` values programmatically.",
+            "code": "import os\nimport re\n\n\ndef edit_app_toml_snapshot_section(\n    chain_id: str,\n    snapshot_interval: int = 1000,\n    snapshot_keep_recent: int = 2,\n) -> None:\n    \"\"\"Updates snapshot settings inside $HOME/.<chain-id>/config/app.toml.\n\n    The function searches for existing `snapshot-interval` and `snapshot-keep-recent` lines\n    and replaces their values. If a key is missing, it appends the config to the end of the file.\n    \"\"\"\n    path = os.path.expanduser(f\"~/.{chain_id}/config/app.toml\")\n    if not os.path.isfile(path):\n        raise FileNotFoundError(f\"app.toml not found at {path}\")\n\n    with open(path, \"r\", encoding=\"utf-8\") as fp:\n        lines = fp.readlines()\n\n    def upsert(key: str, value: int, lines: list[str]) -> list[str]:\n        pattern = re.compile(rf\"^\\s*{key}\\s*=\\s*\\d+\")\n        for i, line in enumerate(lines):\n            if pattern.match(line):\n                lines[i] = f\"{key} = {value}\\n\"\n                return lines\n        # Key not found; append.\n        lines.append(f\"{key} = {value}\\n\")\n        return lines\n\n    lines = upsert(\"snapshot-interval\", snapshot_interval, lines)\n    lines = upsert(\"snapshot-keep-recent\", snapshot_keep_recent, lines)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fp:\n        fp.writelines(lines)\n\n    print(\n        f\"[SUCCESS] Updated snapshot settings in {path}: interval={snapshot_interval}, keep_recent={snapshot_keep_recent}\"\n    )",
+            "usage": "python -c \"from node_snapshot import edit_app_toml_snapshot_section; edit_app_toml_snapshot_section('mychain', 1000, 5)\""
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Restart the node so the modified `app.toml` settings take effect.",
+            "code": "import subprocess\n\n\ndef start_node_service(service_name: str = \"cosmosd\") -> None:\n    \"\"\"Starts (or restarts) the Cosmos SDK node using systemd.\"\"\"\n    try:\n        print(f\"[INFO] Starting service '{service_name}'\u2026\")\n        subprocess.run([\"sudo\", \"systemctl\", \"start\", service_name], check=True)\n        print(f\"[SUCCESS] Service '{service_name}' started.\")\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"Failed to start service '{service_name}': {err}\") from err",
+            "usage": "python -c \"from node_snapshot import start_node_service; start_node_service('cosmosd')\""
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Verify that snapshots are being created every N blocks by inspecting the snapshot directory.",
+            "code": "import os\nimport time\nfrom pathlib import Path\n\n\ndef verify_snapshot_creation(chain_id: str, check_interval: int = 30) -> None:\n    \"\"\"Polls the snapshot directory until at least one snapshot appears.\n\n    Args:\n        chain_id: The chain ID used to locate the data directory.\n        check_interval: Seconds between directory scans.\n    \"\"\"\n    snap_dir = Path(os.path.expanduser(f\"~/.{chain_id}/data/snapshots\"))\n    if not snap_dir.exists():\n        raise FileNotFoundError(f\"Snapshot directory not found: {snap_dir}\")\n\n    print(f\"[INFO] Watching {snap_dir} for new snapshot files\u2026 (Ctrl+C to exit)\")\n    try:\n        already_seen = {p.name for p in snap_dir.iterdir() if p.is_dir() or p.is_file()}\n        while True:\n            current = {p.name for p in snap_dir.iterdir() if p.is_dir() or p.is_file()}\n            new_files = current - already_seen\n            if new_files:\n                for f in new_files:\n                    print(f\"[SUCCESS] New snapshot detected: {f}\")\n                already_seen = current\n            time.sleep(check_interval)\n    except KeyboardInterrupt:\n        print(\"[INFO] Stopped watching snapshot directory.\")",
+            "usage": "python -c \"from node_snapshot import verify_snapshot_creation; verify_snapshot_creation('mychain')\""
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Expose and validate the snapshot RPC endpoint so peers can state-sync from this node.",
+            "code": "import requests\n\n\ndef serve_snapshot_rpc(rpc_url: str = \"http://localhost:26657/snapshot/info\") -> dict:\n    \"\"\"Checks that the node\u2019s RPC endpoint responds with snapshot info.\n\n    Args:\n        rpc_url: Full URL to the /snapshot/info endpoint.\n    Returns:\n        Parsed JSON response if successful.\n    Raises:\n        RuntimeError: If the RPC endpoint is unreachable or returns a non-200 code.\n    \"\"\"\n    try:\n        print(f\"[INFO] Querying snapshot info at {rpc_url}\u2026\")\n        resp = requests.get(rpc_url, timeout=5)\n        if resp.status_code != 200:\n            raise RuntimeError(f\"Endpoint returned HTTP {resp.status_code}\")\n        json_resp = resp.json()\n        print(\"[SUCCESS] Snapshot RPC is live. Response snippet:\", json_resp.get(\"result\", {})[:1])\n        return json_resp\n    except (requests.ConnectionError, requests.Timeout) as err:\n        raise RuntimeError(f\"Failed to reach snapshot RPC at {rpc_url}: {err}\") from err",
+            "usage": "python -c \"from node_snapshot import serve_snapshot_rpc; serve_snapshot_rpc('http://localhost:26657/snapshot/info')\""
+        }
+    ]
+}

@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects the user\u2019s Keplr wallet and returns the voter\u2019s bech32 address.",
+            "code": "export const getVoterAddress = async () => {\n  const chainId = 'cosmoshub-4'; // Change to your chain if different\n\n  // 1. Check that Keplr is present\n  if (!window.keplr) {\n    throw new Error('Keplr wallet is not installed.');\n  }\n\n  // 2. Request access to the chain\n  await window.keplr.enable(chainId);\n\n  // 3. Obtain the signer & first account (default)\n  const signer = window.keplr.getOfflineSigner(chainId);\n  const accounts = await signer.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No account found in the signer.');\n  }\n\n  // 4. Return the bech32 address\n  return accounts[0].address;\n};",
+            "usage": "const voterAddress = await getVoterAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Verifies that proposal #5 exists on-chain and is currently in the VotingPeriod.",
+            "code": "export const validateProposal = async (proposalId = 5) => {\n  const lcdEndpoint = 'https://api.cosmos.network'; // Public LCD; replace if you run your own\n\n  const resp = await fetch(`${lcdEndpoint}/cosmos/gov/v1beta1/proposals/${proposalId}`);\n  if (!resp.ok) {\n    throw new Error(`Proposal ${proposalId} not found (HTTP ${resp.status}).`);\n  }\n\n  const data = await resp.json();\n  const status = data?.proposal?.status;\n  if (status !== 'PROPOSAL_STATUS_VOTING_PERIOD') {\n    throw new Error(`Proposal ${proposalId} is not in voting period. Current status: ${status}`);\n  }\n\n  return data.proposal; // Return the full proposal object if the check passes\n};",
+            "usage": "await validateProposal(5);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Python helper that constructs a MsgVote with option YES for a given proposal and voter.",
+            "code": "#################################\n# governance_utils.py           #\n#################################\n\nfrom enum import IntEnum\nfrom cosmpy.protos.cosmos.gov.v1beta1.tx_pb2 import MsgVote\n\nclass VoteOption(IntEnum):\n    \"\"\"Subset of the chain's VoteOption enum for clarity.\"\"\"\n    VOTE_OPTION_UNSPECIFIED = 0\n    VOTE_OPTION_YES = 1\n    VOTE_OPTION_ABSTAIN = 2\n    VOTE_OPTION_NO = 3\n    VOTE_OPTION_NO_WITH_VETO = 4\n\n\ndef construct_msg_vote_yes(voter: str, proposal_id: int) -> MsgVote:\n    \"\"\"Returns a MsgVote protobuf message (YES).\"\"\"\n    if not voter:\n        raise ValueError('Voter address must be provided')\n    if proposal_id <= 0:\n        raise ValueError('Proposal ID must be a positive integer')\n\n    msg = MsgVote()\n    msg.proposal_id = proposal_id\n    msg.voter = voter\n    msg.option = VoteOption.VOTE_OPTION_YES  # YES\n    return msg",
+            "usage": "from governance_utils import construct_msg_vote_yes\nmsg = construct_msg_vote_yes(voter_address, 5)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "A FastAPI endpoint that signs and broadcasts the vote transaction using a server-side key (mnemonic stored in env var).",
+            "code": "#################################\n# main.py                       #\n#################################\n\nimport os\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import LocalWallet\nfrom cosmpy.aerial.tx import Transaction\nfrom governance_utils import construct_msg_vote_yes\n\napp = FastAPI(title='Governance Vote BFF')\n\n# --- Chain configuration (override via env if needed) ---\nCHAIN_ID = os.getenv('CHAIN_ID', 'cosmoshub-4')\nGRPC_ENDPOINT = os.getenv('GRPC_ENDPOINT', 'grpc+https://cosmoshub.grpc.cosmostation.io:443')\nMNEMONIC = os.getenv('SERVER_WALLET_MNEMONIC')  # NEVER commit this to source control!\n\nif MNEMONIC is None:\n    raise RuntimeError('SERVER_WALLET_MNEMONIC environment variable is not set')\n\nnetwork_cfg = NetworkConfig(\n    chain_id=CHAIN_ID,\n    url=GRPC_ENDPOINT,\n)\n\nclient = LedgerClient(network_cfg)\nwallet = LocalWallet.from_mnemonic(MNEMONIC)\n\nclass VoteRequest(BaseModel):\n    proposal_id: int\n\n@app.post('/api/gov/vote_yes')\nasync def sign_and_broadcast_tx(payload: VoteRequest):\n    \"\"\"Signs a YES vote for the configured wallet and broadcasts the TX.\"\"\"\n    try:\n        # 1. Build the MsgVote\n        msg = construct_msg_vote_yes(wallet.address(), payload.proposal_id)\n\n        # 2. Build & sign the transaction\n        tx = Transaction()\n        tx.add_message(msg)\n        tx.with_signer(wallet)\n\n        # 3. Broadcast and wait for inclusion in a block\n        response = client.broadcast_block(tx)\n        if not response.is_successful():\n            raise HTTPException(status_code=500, detail=f'Broadcast error: {response.raw_log}')\n\n        return {\"tx_hash\": response.tx_hash}\n\n    except HTTPException:\n        raise  # re-raise FastAPI exceptions untouched\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "await fetch('/api/gov/vote_yes', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ proposal_id: 5 })\n});"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Queries the on-chain ballot for the voter to confirm the vote was recorded as YES.",
+            "code": "export const queryVoteRecord = async (proposalId, voterAddress) => {\n  const lcdEndpoint = 'https://api.cosmos.network';\n\n  // Each chain may differ slightly in path. The Cosmos Hub LCD supports:\n  // /cosmos/gov/v1beta1/proposals/{proposal_id}/votes/{voter}\n  const url = `${lcdEndpoint}/cosmos/gov/v1beta1/proposals/${proposalId}/votes/${voterAddress}`;\n  const res = await fetch(url);\n\n  if (!res.ok) {\n    throw new Error(`Failed to fetch vote record (HTTP ${res.status}).`);\n  }\n\n  const data = await res.json();\n  const option = data?.vote?.option;\n\n  if (option !== 'VOTE_OPTION_YES') {\n    throw new Error(`Vote not recorded as YES. Found: ${option ?? 'none'}`);\n  }\n\n  return data.vote; // Full vote object\n};",
+            "usage": "const vote = await queryVoteRecord(5, voterAddress);\nconsole.log('Vote confirmed:', vote);"
+        }
+    ]
+}

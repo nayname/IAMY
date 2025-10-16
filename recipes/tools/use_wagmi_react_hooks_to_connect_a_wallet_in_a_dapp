@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Executes an npm command that installs the project\u2019s JavaScript dependencies.",
+            "function": "installDeps()",
+            "usage": "installDeps();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Checks whether the required Neutron chain is present in the wallet and, if missing, suggests it to the user.",
+            "function": "ensureNeutronNetwork()",
+            "usage": "await ensureNeutronNetwork();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Enables the user\u2019s wallet, retrieves an OfflineSigner, and returns both signer and address for app-wide use.",
+            "function": "getOfflineSignerAndAddress(chainId)",
+            "usage": "const { address, signer } = await getOfflineSignerAndAddress('neutron-1');"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Prompts the chosen browser wallet to connect and returns an OfflineSigner that can be used throughout the dApp.",
+            "function": "connectWallet(preferredWallet)",
+            "usage": "const signer = await connectWallet('keplr');"
+        }
+    ],
+    "frontend": [
+        "installDeps();//step: 1 Tool: npm_install_dependencies Desciption: Install `wagmi`, `@rainbow-me/rainbowkit`, `viem`, and `react` using npm or yarn.",
+        "await ensureNeutronNetwork();//step: 2 Tool: wagmi_configure_chains Desciption: Import desired Cosmos-EVM chains (or any EVM chain) from `wagmi/chains` and set up providers\u2014including a public RPC URL\u2014using `configureChains`.",
+        "const { address, signer } = await getOfflineSignerAndAddress('neutron-1');//step: 3 Tool: wagmi_create_client Desciption: Create a Wagmi client with `createConfig` (or `createClient` in older versions) and wrap the React app in `<WagmiConfig>` and `<RainbowKitProvider>`.",
+        "const signer = await connectWallet('keplr');//step: 4 Tool: react_render_component Desciption: Inside a component, render `<ConnectButton />` (RainbowKit) or invoke `useConnect` to trigger wallet connection flows."
+    ],
+    "backend": [],
+    "intent": "Use Wagmi React hooks to connect a wallet in a dApp",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "npm_install_dependencies",
+            "description": "Install `wagmi`, `@rainbow-me/rainbowkit`, `viem`, and `react` using npm or yarn."
+        },
+        {
+            "step": 2,
+            "tool": "wagmi_configure_chains",
+            "description": "Import desired Cosmos-EVM chains (or any EVM chain) from `wagmi/chains` and set up providers\u2014including a public RPC URL\u2014using `configureChains`."
+        },
+        {
+            "step": 3,
+            "tool": "wagmi_create_client",
+            "description": "Create a Wagmi client with `createConfig` (or `createClient` in older versions) and wrap the React app in `<WagmiConfig>` and `<RainbowKitProvider>`."
+        },
+        {
+            "step": 4,
+            "tool": "react_render_component",
+            "description": "Inside a component, render `<ConnectButton />` (RainbowKit) or invoke `useConnect` to trigger wallet connection flows."
+        }
+    ],
+    "outcome_checks": [
+        "Clicking the connect button opens the wallet modal and allows account selection.",
+        "The React component\u2019s `useAccount` hook reports `isConnected === true` and returns the selected address and chain ID."
+    ]
+}

@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Installs Foundry (if missing) and runs `foundryup` so that the `forge` and `cast` binaries are available and up-to-date.",
+            "code": "############################################\n# backend/ensure_foundryup.py               #\n############################################\nfrom fastapi import APIRouter, HTTPException\nimport subprocess, shutil, os\nfrom pathlib import Path\n\nrouter = APIRouter()\n\n@router.post(\"/api/ensure_foundryup\")\nasync def ensure_foundryup():\n    \"\"\"Ensure that the Foundry tool-chain is installed and current.\"\"\"\n    try:\n        # 1. Check whether `foundryup` is already on PATH\n        foundryup_path = shutil.which(\"foundryup\")\n        if foundryup_path is None:\n            # 2. Install Foundry non-interactively (adds binaries under $HOME/.foundry/bin)\n            install_cmd = \"curl -L https://foundry.paradigm.xyz | bash\"\n            subprocess.run(install_cmd, shell=True, check=True)\n            # 3. Add the bin directory to PATH for the life-time of this process\n            os.environ[\"PATH\"] += f\":{Path.home()}/.foundry/bin\"\n        # 4. Update (or finish installing) the tool-chain\n        subprocess.run(\"foundryup\", shell=True, check=True)\n        return {\"status\": \"success\", \"message\": \"Foundry is installed and up to date.\"}\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=f\"Foundry installation failed: {err}\")",
+            "usage": "await fetch('/api/ensure_foundryup', { method: 'POST' });"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Creates the global `$HOME/.foundry/foundry.toml` file using `forge config --global` (or touches the file if Forge is unavailable).",
+            "code": "############################################\n# backend/create_foundry_toml.py            #\n############################################\nfrom fastapi import APIRouter, HTTPException\nimport subprocess\nfrom pathlib import Path\n\nrouter = APIRouter()\n\n@router.post(\"/api/create_foundry_toml\")\nasync def create_foundry_toml():\n    \"\"\"Generate the global Foundry TOML configuration file.\"\"\"\n    try:\n        # Preferred path: let Forge initialise the file for us\n        subprocess.run([\"forge\", \"config\", \"--global\"], check=True)\n        return {\"status\": \"success\", \"message\": \"Global foundry.toml created/updated by Forge.\"}\n    except FileNotFoundError:\n        # Fallback: Forge not on PATH yet \u2013 create an empty file manually\n        cfg_path = Path.home() / \".foundry\" / \"foundry.toml\"\n        cfg_path.parent.mkdir(parents=True, exist_ok=True)\n        cfg_path.touch(exist_ok=True)\n        return {\"status\": \"success\", \"message\": f\"Created empty config at {cfg_path}.\"}\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=f\"`forge config --global` failed: {err}\")",
+            "usage": "await fetch('/api/create_foundry_toml', { method: 'POST' });"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Appends common RPC and optimizer settings to `$HOME/.foundry/foundry.toml`.",
+            "code": "############################################\n# backend/edit_foundry_toml.py              #\n############################################\nfrom fastapi import APIRouter, HTTPException\nfrom pathlib import Path\n\nrouter = APIRouter()\n\n@router.post(\"/api/edit_foundry_toml\")\nasync def edit_foundry_toml():\n    \"\"\"Inject recommended defaults into the global Foundry config.\"\"\"\n    try:\n        cfg_path = Path.home() / \".foundry\" / \"foundry.toml\"\n        cfg_path.parent.mkdir(parents=True, exist_ok=True)\n        if not cfg_path.exists():\n            cfg_path.touch()\n\n        # Desired key/value lines\n        desired = [\n            'rpc_endpoints = { cosmos_evm = \"https://rpc.my-chain.com\" }',\n            'default_rpc_endpoint = \"cosmos_evm\"',\n            'optimizer = true',\n            'optimizer_runs = 200'\n        ]\n\n        existing_lines = cfg_path.read_text().splitlines()\n        with cfg_path.open(\"a\") as fp:\n            for line in desired:\n                # Avoid duplicate keys on successive calls\n                key = line.split(\"=\")[0].strip()\n                if not any(key == l.split(\"=\")[0].strip() for l in existing_lines):\n                    fp.write(line + \"\\n\")\n        return {\"status\": \"success\", \"message\": \"foundry.toml updated with standard settings.\"}\n    except Exception as err:\n        raise HTTPException(status_code=500, detail=f\"Unable to update foundry.toml: {err}\")",
+            "usage": "await fetch('/api/edit_foundry_toml', { method: 'POST' });"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Runs `forge config --show --global` and returns the parsed configuration so you can verify the values.",
+            "code": "############################################\n# backend/validate_foundry_config.py        #\n############################################\nfrom fastapi import APIRouter, HTTPException\nimport subprocess\n\nrouter = APIRouter()\n\n@router.get(\"/api/validate_foundry_config\")\nasync def validate_foundry_config():\n    \"\"\"Return the current global Foundry configuration as plain text.\"\"\"\n    try:\n        output = subprocess.check_output(\n            [\"forge\", \"config\", \"--show\", \"--global\"],\n            text=True\n        )\n        return {\"status\": \"success\", \"config\": output}\n    except FileNotFoundError:\n        raise HTTPException(status_code=404, detail=\"Forge binary not found on PATH. Have you run /api/ensure_foundryup?\")\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=f\"Unable to display config: {err}\")",
+            "usage": "const cfg = await fetch('/api/validate_foundry_config').then(r => r.json());\nconsole.log(cfg.config);"
+        }
+    ]
+}

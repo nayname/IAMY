@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 launches the Cosmos SDK ABCI application (`simd`) in ABCI-only mode and returns the running subprocess handle.",
+            "code": "import os\nimport subprocess\n\n\ndef start_abci_app(home_dir: str = os.path.expanduser(\"~/.simapp\")):\n    \"\"\"Spawn `simd start --with-comet=false` and pipe its output.\"\"\"\n    cmd = [\n        \"simd\",\n        \"start\",\n        \"--with-comet=false\",\n        \"--home\",\n        home_dir,\n    ]\n    try:\n        proc = subprocess.Popen(\n            cmd,\n            stdout=subprocess.PIPE,\n            stderr=subprocess.STDOUT,\n            text=True,          # decode bytes \u2192 str automatically\n            bufsize=1,          # line-buffered\n        )\n    except FileNotFoundError:\n        raise RuntimeError(\"`simd` binary not found in PATH. Make sure it is installed and executable.\")\n\n    print(f\"Started simd (ABCI-only). PID={proc.pid}\")\n    return proc",
+            "usage": "simd_proc = start_abci_app()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 continuously reads `simd` log lines until the text \u201cABCI server started\u201d appears, signalling that the ABCI app is ready.",
+            "code": "import time\n\n\ndef wait_for_abci_ready(proc, timeout: int = 60):\n    \"\"\"Block until the given `simd` process outputs `ABCI server started`.\"\"\"\n    deadline = time.time() + timeout\n    if proc.stdout is None:\n        raise RuntimeError(\"Process stdout pipe is not available.\")\n\n    for line in iter(proc.stdout.readline, \"\"):\n        print(line.rstrip())  # optional: stream logs to console\n        if \"ABCI server started\" in line:\n            print(\"\u2705 ABCI application is up and listening on tcp://localhost:26658\")\n            return True\n        if time.time() > deadline:\n            proc.terminate()\n            raise TimeoutError(\"Timed out waiting for ABCI server to start.\")\n    raise RuntimeError(\"simd process exited unexpectedly before readiness.\")",
+            "usage": "wait_for_abci_ready(simd_proc)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 starts the CometBFT consensus engine and connects it to the already-running ABCI application.",
+            "code": "def start_cometbft(home_dir: str = os.path.expanduser(\"~/.simapp\"), proxy_addr: str = \"tcp://127.0.0.1:26658\"):\n    \"\"\"Spawn `cometbft start` that points to the ABCI app via `--proxy_app`.\"\"\"\n    cmd = [\n        \"cometbft\",\n        \"start\",\n        \"--home\",\n        home_dir,\n        \"--proxy_app\",\n        proxy_addr,\n    ]\n    try:\n        proc = subprocess.Popen(\n            cmd,\n            stdout=subprocess.PIPE,\n            stderr=subprocess.STDOUT,\n            text=True,\n            bufsize=1,\n        )\n    except FileNotFoundError:\n        raise RuntimeError(\"`cometbft` binary not found in PATH. Install CometBFT or adjust PATH.\")\n\n    print(f\"Started CometBFT. PID={proc.pid}\")\n    return proc",
+            "usage": "comet_proc = start_cometbft()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 polls the CometBFT RPC endpoint (`/status`) until it returns a successful JSON response, confirming that the full node is operational.",
+            "code": "import requests\nimport time\n\n\ndef wait_for_cometbft_rpc(rpc_url: str = \"http://localhost:26657/status\", timeout: int = 60, interval: float = 2.0):\n    \"\"\"Repeatedly query the RPC `/status` endpoint until it responds with HTTP 200.\"\"\"\n    deadline = time.time() + timeout\n    while time.time() < deadline:\n        try:\n            resp = requests.get(rpc_url, timeout=5)\n            if resp.status_code == 200:\n                print(\"\u2705 CometBFT RPC is live on tcp://localhost:26657\")\n                return resp.json()\n        except requests.RequestException:\n            pass  # endpoint not ready yet\n        print(\"Waiting for CometBFT RPC endpoint \u2026\")\n        time.sleep(interval)\n    raise TimeoutError(\"Timed out waiting for CometBFT RPC endpoint to become available.\")",
+            "usage": "status_json = wait_for_cometbft_rpc()"
+        }
+    ]
+}

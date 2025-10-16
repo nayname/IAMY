@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Adds the `--cpu-profile cpu.prof` flag to a Cosmos SDK node\u2019s systemd service file so that CPU profiling starts on the next boot.",
+            "code": "import subprocess\nimport shutil\nfrom pathlib import Path\n\nSERVICE_NAME = \"cosmosd.service\"  # change as needed\nCPU_PROFILE_FLAG = \"--cpu-profile cpu.prof\"\n\n\ndef update_node_start_flags(service_name: str = SERVICE_NAME, flag: str = CPU_PROFILE_FLAG):\n    \"\"\"Append a CPU-profiling flag to the ExecStart line of a systemd service.\n\n    1. Backs up the original unit file to `/etc/systemd/system/<service>.bak`.\n    2. Appends the profiling flag if it is not already present.\n    3. Reloads systemd so the change takes effect.\n    \"\"\"\n    unit_path = Path(\"/etc/systemd/system\") / service_name\n    backup_path = unit_path.with_suffix(\".bak\")\n\n    if not unit_path.exists():\n        raise FileNotFoundError(f\"Service file {unit_path} not found. Run on the host where the node is installed.\")\n\n    # Backup first\n    if not backup_path.exists():\n        shutil.copy(unit_path, backup_path)\n\n    # Read & update\n    with unit_path.open(\"r\") as f:\n        lines = f.readlines()\n\n    updated_lines = []\n    exec_found = False\n    for line in lines:\n        if line.startswith(\"ExecStart=\"):\n            exec_found = True\n            if flag not in line:\n                # Insert the profiling flag just before the linebreak\n                parts = line.strip().split(\" \")\n                parts.insert(-1, flag)\n                line = \" \".join(parts) + \"\\n\"\n        updated_lines.append(line)\n\n    if not exec_found:\n        raise ValueError(\"No ExecStart entry found in service file. Manual intervention required.\")\n\n    with unit_path.open(\"w\") as f:\n        f.writelines(updated_lines)\n\n    # Reload systemd\n    subprocess.run([\"systemctl\", \"daemon-reload\"], check=True)\n    print(f\"[\u2714] {service_name} updated with CPU profiling flag.\")\n\n# Example direct call (uncomment when running as root)\n# update_node_start_flags()",
+            "usage": "Run as root on the node host: `python3 manage_profile.py` (after placing this script in `manage_profile.py`)."
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Restarts the node\u2019s systemd service so the new profiling flag takes effect immediately.",
+            "code": "import subprocess\n\nSERVICE_NAME = \"cosmosd.service\"  # keep consistent with step-1\n\n\ndef restart_node(service_name: str = SERVICE_NAME):\n    \"\"\"Safely restarts the cosmos node service.\"\"\"\n    try:\n        subprocess.run([\"systemctl\", \"restart\", service_name], check=True)\n        subprocess.run([\"systemctl\", \"is-active\", \"--quiet\", service_name], check=True)\n        print(f\"[\u2714] {service_name} restarted successfully.\")\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f\"Failed to restart {service_name}: {e}\")\n\n# Example direct call\n# restart_node()",
+            "usage": "From the same script or REPL, call `restart_node()` once step-1 completes."
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Verifies that the `cpu.prof` file is being written to disk and is growing in size.",
+            "code": "import os\nimport time\nfrom pathlib import Path\n\nPROFILE_PATH = Path.home() / \".\bcosmos\" / \"cpu.prof\"  # adjust path if different\n\n\ndef check_profile_growth(profile_path: Path = PROFILE_PATH, wait_seconds: int = 5):\n    \"\"\"Checks that the profile file exists and increases in size over a short interval.\"\"\"\n    if not profile_path.exists():\n        raise FileNotFoundError(f\"{profile_path} does not exist. Did you enable profiling?\")\n\n    size_before = profile_path.stat().st_size\n    time.sleep(wait_seconds)\n    size_after = profile_path.stat().st_size\n\n    if size_after > size_before:\n        print(f\"[\u2714] cpu.prof is growing (size {size_before} \u2192 {size_after} bytes).\")\n    else:\n        raise RuntimeError(\"cpu.prof did not grow; profiling may not be active.\")\n\n# Example direct call\n# check_profile_growth()",
+            "usage": "Run `check_profile_growth()` after a few seconds/minutes of node uptime to confirm profiling output."
+        }
+    ]
+}

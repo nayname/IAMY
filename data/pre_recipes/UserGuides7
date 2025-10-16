@@ -1,0 +1,196 @@
+[
+    {
+        "intent": "Launch a simd node with an unlimited mempool (max-txs = -1)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "check_binary_available",
+                "description": "Ensure the `simd` binary is installed and accessible in the system PATH."
+            },
+            {
+                "step": 2,
+                "tool": "get_node_home",
+                "description": "Determine (or prompt for) the node\u2019s home directory, e.g., ~/.simapp."
+            },
+            {
+                "step": 3,
+                "tool": "construct_simd_start_command",
+                "description": "Build the CLI command `simd start --mempool.max-txs=-1 --home=<home>`."
+            },
+            {
+                "step": 4,
+                "tool": "execute_shell_command",
+                "description": "Execute the constructed start command as a long-running process."
+            },
+            {
+                "step": 5,
+                "tool": "monitor_logs",
+                "description": "Stream node logs and look for healthy block production or sync messages."
+            },
+            {
+                "step": 6,
+                "tool": "query_node_status",
+                "description": "Call `simd status` or hit the RPC endpoint to confirm the node is live."
+            }
+        ],
+        "outcome_checks": [
+            "RPC endpoint returns a valid JSON status.",
+            "Logs show height increasing with no mempool errors."
+        ]
+    },
+    {
+        "intent": "List local snapshots available to the simd node",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_node_home",
+                "description": "Identify the node\u2019s home directory containing the data folder."
+            },
+            {
+                "step": 2,
+                "tool": "execute_shell_command",
+                "description": "Run `simd snapshot list --home=<home>` (or `ls -lh <home>/data/snapshots`) to enumerate snapshots."
+            },
+            {
+                "step": 3,
+                "tool": "parse_snapshot_list",
+                "description": "Convert the command output into a structured list with height, format, and hash."
+            }
+        ],
+        "outcome_checks": [
+            "A structured array of snapshots is returned.",
+            "No errors such as \u201csnapshot directory not found\u201d occur."
+        ]
+    },
+    {
+        "intent": "Export the current application state to a new snapshot file",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_node_home",
+                "description": "Locate the node\u2019s home directory."
+            },
+            {
+                "step": 2,
+                "tool": "query_node_status",
+                "description": "Fetch the latest block height so the snapshot can be tagged correctly."
+            },
+            {
+                "step": 3,
+                "tool": "execute_shell_command",
+                "description": "Run `simd snapshot create --home=<home>` to generate a snapshot at the current height."
+            },
+            {
+                "step": 4,
+                "tool": "monitor_logs",
+                "description": "Wait until the CLI reports the snapshot was created."
+            },
+            {
+                "step": 5,
+                "tool": "execute_shell_command",
+                "description": "Run `simd snapshot list --home=<home>` to verify the new snapshot appears."
+            }
+        ],
+        "outcome_checks": [
+            "A new snapshot archive exists in <home>/data/snapshots at the expected height."
+        ]
+    },
+    {
+        "intent": "Load an external snapshot archive into the node's store",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_node_home",
+                "description": "Locate the node\u2019s home directory."
+            },
+            {
+                "step": 2,
+                "tool": "stop_node_service",
+                "description": "Gracefully stop the running simd process or systemd service."
+            },
+            {
+                "step": 3,
+                "tool": "validate_snapshot_archive",
+                "description": "Verify the snapshot file\u2019s existence, checksum, and chain-ID compatibility."
+            },
+            {
+                "step": 4,
+                "tool": "backup_and_remove_data",
+                "description": "Back up and then remove the current <home>/data directory."
+            },
+            {
+                "step": 5,
+                "tool": "execute_shell_command",
+                "description": "Run `simd snapshot restore <archive-file> --home=<home>` (or decompress the archive into <home>/data)."
+            },
+            {
+                "step": 6,
+                "tool": "construct_simd_start_command",
+                "description": "Prepare the standard `simd start` command."
+            },
+            {
+                "step": 7,
+                "tool": "execute_shell_command",
+                "description": "Restart the node from the restored snapshot."
+            },
+            {
+                "step": 8,
+                "tool": "query_node_status",
+                "description": "Check that the node reports the restored height and is catching up."
+            }
+        ],
+        "outcome_checks": [
+            "Node starts without snapshot mismatch errors.",
+            "Reported height matches or exceeds the snapshot\u2019s height."
+        ]
+    },
+    {
+        "intent": "Restore application state from an existing local snapshot",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_node_home",
+                "description": "Locate the node\u2019s home directory."
+            },
+            {
+                "step": 2,
+                "tool": "execute_shell_command",
+                "description": "Run `simd snapshot list --home=<home>` and select a snapshot ID or height."
+            },
+            {
+                "step": 3,
+                "tool": "stop_node_service",
+                "description": "Stop the simd node."
+            },
+            {
+                "step": 4,
+                "tool": "backup_and_remove_data",
+                "description": "Back up and clear the existing data directory."
+            },
+            {
+                "step": 5,
+                "tool": "execute_shell_command",
+                "description": "Run `simd snapshot restore --home=<home> <snapshot-id>` to unpack the chosen snapshot."
+            },
+            {
+                "step": 6,
+                "tool": "construct_simd_start_command",
+                "description": "Prepare the `simd start` command."
+            },
+            {
+                "step": 7,
+                "tool": "execute_shell_command",
+                "description": "Start the node from the restored state."
+            },
+            {
+                "step": 8,
+                "tool": "query_node_status",
+                "description": "Verify via RPC that the node height equals the snapshot\u2019s height and progresses."
+            }
+        ],
+        "outcome_checks": [
+            "RPC status shows the snapshot height or higher.",
+            "Logs confirm successful IAVL and snapshot restoration without errors."
+        ]
+    }
+]

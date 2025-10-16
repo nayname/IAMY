@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Fetches the connected user\u2019s Neutron wallet address via the Keplr extension.",
+            "function": "getUserWalletAddress()",
+            "usage": "const userAddress = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the maxBTC CW20 contract to obtain the user\u2019s token balance.",
+            "function": "cw20_balance(contract, addr)",
+            "usage": "const balance = cw20_balance(MAXBTC_CONTRACT, userAddress);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Ensures the retrieved balance is greater than zero so the user qualifies for 1\u00d7 holding rewards.",
+            "function": "validateTokenBalance(address, options)",
+            "usage": "const { ok } = await validateTokenBalance(userAddress, { min: 1n, denom: 'amaxbtc' });"
+        }
+    ],
+    "frontend": [
+        "const userAddress = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Identify the wallet that should hold the maxBTC.",
+        "const { ok } = await validateTokenBalance(userAddress, { min: 1n, denom: 'amaxbtc' });//step: 3 Tool: validate_balance Desciption: Confirm that the balance is greater than zero so the user qualifies for 1\u00d7 holding rewards; no further action is required."
+    ],
+    "backend": [
+        "const balance = cw20_balance(MAXBTC_CONTRACT, userAddress);#step: 2 Tool: query_cw20_balance Desciption: Verify the wallet balance contains the desired amount of maxBTC."
+    ],
+    "intent": "Hold maxBTC in my wallet for base 1x rewards",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_wallet_address",
+            "description": "Identify the wallet that should hold the maxBTC."
+        },
+        {
+            "step": 2,
+            "tool": "query_cw20_balance",
+            "description": "Verify the wallet balance contains the desired amount of maxBTC."
+        },
+        {
+            "step": 3,
+            "tool": "validate_balance",
+            "description": "Confirm that the balance is greater than zero so the user qualifies for 1\u00d7 holding rewards; no further action is required."
+        }
+    ],
+    "outcome_checks": [
+        "Wallet address shows a non-zero maxBTC balance when queried on-chain.",
+        "No staking or locking contracts list the user\u2019s maxBTC (tokens remain in the wallet)."
+    ]
+}

@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Obtains the connected wallet\u2019s Neutron bech32 address by enabling the chain in Keplr/Leap and reading the first account.",
+            "function": "getUserWalletAddress()",
+            "usage": "const userAddr = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Returns the Supervault contract address stored as a dApp constant.",
+            "function": "getSupervaultContractAddress()",
+            "usage": "const contractAddr = getSupervaultContractAddress();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Calls the Supervault smart-contract with `{ positions_by_user: { address } }` and returns the raw list of positions.",
+            "function": "supervault_positions(req)",
+            "usage": "const positions = await supervault_positions({ user_address: userAddr, contract_address: contractAddr });"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Filters the full position array so only entries whose `eligible_campaigns` include \u201cBitcoin Summer\u201d remain.",
+            "function": "filterPositionsByCampaign(positions, campaignName)",
+            "usage": "const btcSummerPositions = filterPositionsByCampaign(positions, \"Bitcoin Summer\");"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Renders a table component that lists each filtered position\u2019s ID, deposit amount and rewards status.",
+            "function": "PositionsTable({ positions })",
+            "usage": "<PositionsTable positions={btcSummerPositions} />"
+        }
+    ],
+    "frontend": [
+        "const userAddr = await getUserWalletAddress();//step: 1 Tool: get_user_address Desciption: Retrieve the connected wallet address that owns Supervault positions.",
+        "const contractAddr = getSupervaultContractAddress();//step: 2 Tool: get_contract_address Desciption: Look up the Supervault contract address (from on-chain registry or hard-coded dApp constant).",
+        "const btcSummerPositions = filterPositionsByCampaign(positions, \"Bitcoin Summer\");//step: 4 Tool: filter_results_by_campaign Desciption: Filter the returned position objects where `eligible_campaigns` (or similar field) contains \"Bitcoin Summer.\"",
+        "<PositionsTable positions={btcSummerPositions} />//step: 5 Tool: display_positions Desciption: Present the filtered list (position ID, deposit amount, rewards status) to the user."
+    ],
+    "backend": [
+        "const positions = await supervault_positions({ user_address: userAddr, contract_address: contractAddr });#step: 3 Tool: query_wasm_contract Desciption: Call the Supervault contract with `{ positions_by_user: { address: <USER_ADDR> } }` to fetch all positions."
+    ],
+    "intent": "View available Supervault positions eligible for Bitcoin Summer",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_address",
+            "description": "Retrieve the connected wallet address that owns Supervault positions."
+        },
+        {
+            "step": 2,
+            "tool": "get_contract_address",
+            "description": "Look up the Supervault contract address (from on-chain registry or hard-coded dApp constant)."
+        },
+        {
+            "step": 3,
+            "tool": "query_wasm_contract",
+            "description": "Call the Supervault contract with `{ positions_by_user: { address: <USER_ADDR> } }` to fetch all positions."
+        },
+        {
+            "step": 4,
+            "tool": "filter_results_by_campaign",
+            "description": "Filter the returned position objects where `eligible_campaigns` (or similar field) contains \"Bitcoin Summer.\""
+        },
+        {
+            "step": 5,
+            "tool": "display_positions",
+            "description": "Present the filtered list (position ID, deposit amount, rewards status) to the user."
+        }
+    ],
+    "outcome_checks": [
+        "The contract query returns without error (non-empty JSON result).",
+        "All displayed positions include the string \"Bitcoin Summer\" in their eligibility metadata."
+    ]
+}

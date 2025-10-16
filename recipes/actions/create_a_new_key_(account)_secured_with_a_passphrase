@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Collect a key name from the user and verify that it is not already present in the local file-based keyring by querying a backend endpoint.",
+            "code": "export const requestUniqueKeyName = async () => {\n  try {\n    let name = '';\n\n    /* Loop until the user provides a unique name */\n    while (true) {\n      name = prompt('Enter a unique key name for your wallet:');\n      if (!name) throw new Error('Key name is required.');\n\n      // Ask the backend if the name is available\n      const resp = await fetch(`/api/keys/validate?name=${encodeURIComponent(name)}`);\n      if (!resp.ok) {\n        const errText = await resp.text();\n        throw new Error(`Validation request failed: ${errText}`);\n      }\n      const { available } = await resp.json();\n\n      if (available) {\n        alert(`Great! \u201c${name}\u201d is available.`);\n        return name;\n      }\n\n      alert(`The key name \u201c${name}\u201d already exists. Please choose another.`);\n    }\n  } catch (err) {\n    console.error(err);\n    throw err;\n  }\n};",
+            "usage": "const keyName = await requestUniqueKeyName();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Expose an HTTP GET endpoint that checks if a requested key name already exists in the file keyring by invoking `simd keys list`.",
+            "code": "import json\nimport subprocess\nfrom fastapi import APIRouter, HTTPException\n\nrouter = APIRouter()\n\n@router.get('/keys/validate')\ndef validate_key_name(name: str):\n    \"\"\"Return `{ available: bool }` indicating whether the key name is free.\"\"\"\n    try:\n        cmd = [\n            'simd',\n            'keys',\n            'list',\n            '--keyring-backend', 'file',\n            '--output', 'json'\n        ]\n        proc = subprocess.run(cmd, capture_output=True, text=True, check=False)\n        if proc.returncode != 0:\n            raise HTTPException(status_code=500, detail=proc.stderr.strip())\n\n        existing = json.loads(proc.stdout) if proc.stdout else []\n        existing_names = {entry.get('name') for entry in existing}\n        return {\"available\": name not in existing_names}\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "GET /api/keys/validate?name=<desired_key_name>"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Provide an HTTP POST endpoint that creates a new key in the file keyring by programmatically executing `simd keys add`. The endpoint securely pipes the user\u2019s passphrase to the CLI, parses the JSON output, and returns the address and mnemonic.",
+            "code": "import json\nimport subprocess\nfrom fastapi import APIRouter, HTTPException\n\nrouter = APIRouter()\n\n@router.post('/keys/add')\ndef add_key(payload: dict):\n    \"\"\"Create a key and return `{ address, mnemonic }`. Payload must contain `name` and `passphrase`.\"\"\"\n    name = payload.get('name')\n    passphrase = payload.get('passphrase')\n\n    if not name or not passphrase:\n        raise HTTPException(status_code=400, detail='Both `name` and `passphrase` are required.')\n\n    try:\n        cmd = [\n            'simd',\n            'keys', 'add', name,\n            '--keyring-backend', 'file',\n            '--output', 'json'\n        ]\n\n        # Feed passphrase twice via STDIN (create + confirm)\n        proc = subprocess.run(\n            cmd,\n            input=f\"{passphrase}\\n{passphrase}\\n\",\n            capture_output=True,\n            text=True,\n            check=False,\n        )\n\n        if proc.returncode != 0:\n            raise HTTPException(status_code=500, detail=proc.stderr.strip())\n\n        key_info = json.loads(proc.stdout)\n        return {\n            'address': key_info.get('address'),\n            'mnemonic': key_info.get('mnemonic')\n        }\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "POST /api/keys/add  { \"name\": \"mykey\", \"passphrase\": \"strongPass123\" }"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Request a passphrase from the user, call the backend to create the key, and render the mnemonic so the user can store it offline. The mnemonic is **never** stored by the frontend after display.",
+            "code": "export const createKeyAndShowMnemonic = async (name) => {\n  try {\n    const passphrase = prompt('Create a passphrase (min 8 chars) to secure your key:');\n    if (!passphrase || passphrase.length < 8) {\n      throw new Error('Passphrase must be at least 8 characters long.');\n    }\n\n    const res = await fetch('/api/keys/add', {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({ name, passphrase })\n    });\n\n    if (!res.ok) {\n      const errTxt = await res.text();\n      throw new Error(`Key creation failed: ${errTxt}`);\n    }\n\n    const { address, mnemonic } = await res.json();\n\n    /* Display mnemonic exactly once so the user can back it up */\n    alert(`IMPORTANT \u2014 BACKUP NOW!\\n\\nAddress: ${address}\\n\\n24-word mnemonic:\\n${mnemonic}`);\n\n    // Return values for further programmatic use if needed\n    return { address, mnemonic };\n  } catch (err) {\n    console.error(err);\n    throw err;\n  }\n};",
+            "usage": "const { address, mnemonic } = await createKeyAndShowMnemonic(keyName);   // Remember to store the mnemonic offline!"
+        }
+    ]
+}

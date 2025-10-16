@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "export_passphrase_env temporarily sets an environment variable (then unsets it later), which can be reused to inject simulation-specific flags before tests start.",
+            "function": "export_passphrase_env(passphrase, ttl=60)",
+            "usage": "export_passphrase_env('SIMAPP_RANDOM_SEED=42', ttl=7200)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "compile_generated_code runs `go vet` and `go test ./...` in the supplied repo path, mirroring the full-app simulation test command.",
+            "function": "compile_generated_code(repo_root='.')",
+            "usage": "compile_generated_code('.')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "_log_streamer continuously yields each line of a running process\u2019s stdout, letting you live-capture simulation seeds and block-heights as they appear.",
+            "function": "_log_streamer()",
+            "usage": "async for chunk in _log_streamer(): print(chunk)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "monitor_logs scans a log file for expected patterns, helping confirm the run ended with no panics or broken invariants.",
+            "function": "monitor_logs()",
+            "usage": "monitor_logs()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "export_passphrase_env('SIMAPP_RANDOM_SEED=42', ttl=7200)#step: 1 Tool: set_go_env Desciption: Export any required simulation flags, e.g., `SIMAPP_RANDOM_SEED`, and ensure `$GOFLAGS` is unset.",
+        "compile_generated_code('.')#step: 2 Tool: run_cli_command Desciption: From project root, run `make test-sim-nondeterminism` or `go test ./sim/... -run TestFullAppSimulation -v`.",
+        "async for chunk in _log_streamer(): print(chunk)#step: 3 Tool: capture_results Desciption: Stream the test output and log each simulation seed and block height executed.",
+        "monitor_logs()#step: 4 Tool: verify_test_pass Desciption: Assert exit-code 0 and scan logs for `no panic` / `invariants broken: 0` messages."
+    ],
+    "intent": "Execute full-app simulation fuzz testing",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "set_go_env",
+            "description": "Export any required simulation flags, e.g., `SIMAPP_RANDOM_SEED`, and ensure `$GOFLAGS` is unset."
+        },
+        {
+            "step": 2,
+            "tool": "run_cli_command",
+            "description": "From project root, run `make test-sim-nondeterminism` or `go test ./sim/... -run TestFullAppSimulation -v`."
+        },
+        {
+            "step": 3,
+            "tool": "capture_results",
+            "description": "Stream the test output and log each simulation seed and block height executed."
+        },
+        {
+            "step": 4,
+            "tool": "verify_test_pass",
+            "description": "Assert exit-code 0 and scan logs for `no panic` / `invariants broken: 0` messages."
+        }
+    ],
+    "outcome_checks": [
+        "Command exits successfully (code 0).",
+        "No invariants failed or panics occurred for any random seed.",
+        "Aggregate simulation report saved to `simulations/` directory."
+    ]
+}

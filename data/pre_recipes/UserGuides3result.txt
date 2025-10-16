@@ -1,0 +1,61 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"UserGuides\", \"query\": \"Enable the REST API server in app.toml\"}, {\"label\": \"UserGuides\", \"query\": \"Generate an unsigned transaction sending 1000stake from A to B\"}, {\"label\": \"UserGuides\", \"query\": \"Sign unsigned_tx.json with my_validator key in the test backend\"}, {\"label\": \"UserGuides\", \"query\": \"Broadcast the signed transaction tx_signed.json in sync mode\"}, {\"label\": \"UserGuides\", \"query\": \"Encode the signed transaction to protobuf bytes\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "0624c304-2aab-48c8-b367-6d6b5f6c852d",
+            "example": false
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Enable the REST API server via app.toml\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_node_home_dir\",\n        \"description\": \"Locate the node\u2019s home directory (e.g., ~/.gaia or ~/.wasmd) where config/app.toml resides.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"open_config_file\",\n        \"description\": \"Open <home>/config/app.toml for editing.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"update_toml_key\",\n        \"description\": \"Within the [api] section set `enable = true` (optionally `swagger = true`, `address = \\\"tcp://0.0.0.0:1317\\\"`).\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"save_and_restart_node\",\n        \"description\": \"Save the file, then restart the Cosmo-SDK node so the REST (API) server starts.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"curl http://localhost:1317/node_info returns a JSON response.\",\n      \"Node logs include a line such as \u201cstarting API server at 0.0.0.0:1317\u201d.\"\n    ]\n  },\n  {\n    \"intent\": \"Generate an unsigned transaction that sends 1000stake from address A to address B\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"validate_address_format\",\n        \"description\": \"Ensure both the sender (A) and recipient (B) Bech32 addresses are valid for the chain.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"cli_query_account\",\n        \"description\": \"Query the sender\u2019s account to obtain current account-number and sequence for later signing.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"cli_tx_bank_send_generate_only\",\n        \"description\": \"Run: `cosmos tx bank send A B 1000stake --generate-only --chain-id <chain-id> --output json > unsigned_tx.json`.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"unsigned_tx.json exists on disk.\",\n      \"The JSON shows empty `\\\"signatures\\\": []` but populated `\\\"body\\\"` and `\\\"auth_info\\\"` sections.\"\n    ]\n  },\n  {\n    \"intent\": \"Sign unsigned_tx.json using the key `my_validator` in the test keyring backend\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"cli_keys_show\",\n        \"description\": \"Confirm the `my_validator` key is present: `cosmos keys show my_validator --keyring-backend test`.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"cli_tx_sign\",\n        \"description\": \"Sign: `cosmos tx sign unsigned_tx.json --from my_validator --chain-id <chain-id> --keyring-backend test --output-document tx_signed.json`.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"inspect_tx_file\",\n        \"description\": \"Open tx_signed.json to verify that the `signatures` array now contains a non-empty signature.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"tx_signed.json has a populated `signatures` field.\",\n      \"Running `cosmos tx decode tx_signed.json` succeeds without errors.\"\n    ]\n  },\n  {\n    \"intent\": \"Broadcast tx_signed.json in sync mode\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"cli_tx_broadcast\",\n        \"description\": \"Execute: `cosmos tx broadcast tx_signed.json --broadcast-mode sync --chain-id <chain-id>` and capture the returned txhash.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"cli_query_tx\",\n        \"description\": \"Poll the network for the txhash until the transaction is found in a block.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The broadcast response has `code: 0` (success) and a txhash.\",\n      \"Querying the txhash shows the transaction\u2019s height and success code.\"\n    ]\n  },\n  {\n    \"intent\": \"Encode the signed transaction to protobuf bytes\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"cli_tx_encode\",\n        \"description\": \"Run: `cosmos tx encode tx_signed.json > tx_signed.pb` (or omit the redirection to print the base64 string).\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"verify_proto_bytes\",\n        \"description\": \"Optionally decode the bytes back using `cosmos tx decode tx_signed.pb` to confirm fidelity.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"File tx_signed.pb (or stdout) contains a non-empty base64-encoded protobuf byte string.\",\n      \"Decoding the bytes reproduces the original signed transaction JSON.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2114,
+                    "prompt_tokens": 720,
+                    "total_tokens": 2834,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1024,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CPpAMPYsA2OwLSAPwcCDZh9CYLx5f",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--3f63d02e-a321-4659-8596-74477b5e4f48-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 720,
+                "output_tokens": 2114,
+                "total_tokens": 2834,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1024
+                }
+            }
+        }
+    ]
+}

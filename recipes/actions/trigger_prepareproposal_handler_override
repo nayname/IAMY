@@ -1,0 +1,47 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 implements a small Python helper that searches the Cosmos documentation for any query string.  It can be reused in CI or run locally before touching the Go code.",
+            "code": "import requests\nfrom typing import Dict, Any\n\nCOSMOS_DOCS_SEARCH_URL = \"https://docs.cosmos.network/api/search\"  # fictitious public endpoint for illustration\n\ndef search_cosmos_docs(query: str) -> Dict[str, Any]:\n    \"\"\"Search the Cosmos docs site and return JSON results.\n\n    Args:\n        query (str): Free-form search text.\n\n    Returns:\n        Dict[str, Any]: JSON response containing documentation matches or an error description.\n    \"\"\"\n    try:\n        resp = requests.get(COSMOS_DOCS_SEARCH_URL, params={\"q\": query}, timeout=10)\n        resp.raise_for_status()\n        return resp.json()\n    except requests.exceptions.RequestException as exc:\n        # Gracefully surface the failure to callers\n        return {\"error\": str(exc), \"results\": []}",
+            "usage": "print(search_cosmos_docs(\"Cosmos SDK PrepareProposal override BaseApp\"))"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 shows the Go implementation of a custom PrepareProposal ABCI handler that trims the number of TXs to avoid oversized blocks and emits debug logs.",
+            "code": "// File: app/prepare_proposal.go\npackage app\n\nimport (\n    sdk \"github.com/cosmos/cosmos-sdk/types\"\n    abci \"github.com/cometbft/cometbft/abci/types\"\n)\n\n// PrepareProposal overrides the default BaseApp.PrepareProposal implementation.\n// It illustrates how to inspect and modify the list of TXs before the block\n// proposal is finalised by CometBFT.\nfunc (app *App) PrepareProposal(\n    ctx sdk.Context,\n    req *abci.RequestPrepareProposal,\n) (*abci.ResponsePrepareProposal, error) {\n    ctx.Logger().Info(\"[custom] PrepareProposal invoked\", \"txs\", len(req.Txs))\n\n    // \u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\n    // Example Rule: Keep only the first 100 txs to cap block size.\n    // \u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\n    const maxTxs = 100\n    trimmedTxs := req.Txs\n    if len(req.Txs) > maxTxs {\n        trimmedTxs = req.Txs[:maxTxs]\n        ctx.Logger().Info(\"[custom] Trimmed transactions\", \"kept\", maxTxs, \"discarded\", len(req.Txs)-maxTxs)\n    }\n\n    // Return the proposal with our (possibly) modified list of txs.\n    return &abci.ResponsePrepareProposal{Txs: trimmedTxs}, nil\n}",
+            "usage": "Place this file anywhere under your app/ folder, run `go vet ./...` to ensure it compiles."
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 wires the custom PrepareProposal into the application constructor so that CometBFT calls our override at runtime.",
+            "code": "// File: app/app.go  (excerpt)\n\n// \u2026 existing imports \u2026\nimport (\n    baseapp \"github.com/cosmos/cosmos-sdk/baseapp\"\n)\n\nfunc NewApp(/* existing params */) *App {\n    // Instantiate the BaseApp and other keepers as usual.\n    app := &App{\n        BaseApp: baseapp.NewBaseApp(\n            appName,\n            logger,\n            db,\n            encodingConfig.TxConfig,\n            // \u2026 other opts \u2026\n        ),\n        // \u2026 other struct fields \u2026\n    }\n\n    // \u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\n    // Register the override *before* mounting stores/startup.\n    // \u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\n    app.SetPrepareProposal(app.PrepareProposal)\n\n    // \u2026 rest of NewApp (mount stores, register modules, etc.) \u2026\n\n    return app\n}",
+            "usage": "Ensure this line appears in your NewApp constructor, then `go test ./...` to verify build integrity."
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 compiles the modified application binary using a lightweight Python script that shells out to `make install` (the conventional Cosmos SDK Makefile target).",
+            "code": "import subprocess, sys\n\ndef compile_application():\n    \"\"\"Rebuild the chain binary with the freshly-added ABCI override.\"\"\"\n    try:\n        # `make install` compiles and copies the binary into $GOBIN.\n        subprocess.run([\"make\", \"install\"], check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)\n        print(\"\u2705  Binary compiled and installed to $GOBIN.\")\n    except subprocess.CalledProcessError as exc:\n        print(\"\u274c  Compilation failed:\\n\", exc.stdout.decode())\n        sys.exit(1)\n\nif __name__ == \"__main__\":\n    compile_application()",
+            "usage": "python scripts/compile_application.py"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 launches a single-validator node from scratch and stores logs in `node.log`.  The Python wrapper makes it easy to reuse within dev-containers or CI.",
+            "code": "import os, subprocess, signal, time\n\nBINARY = os.getenv(\"CHAIN_BIN\", \"mychaind\")  # replace with your binary name\nHOME = os.getenv(\"CHAIN_HOME\", os.path.expanduser(\"~/.mychaind\"))\n\n\ndef start_node():\n    \"\"\"Starts the node in a subprocess and streams logs to a file.\"\"\"\n    log_file = open(\"node.log\", \"w\")\n    try:\n        # Initialise if the home directory does not yet exist\n        if not os.path.isdir(HOME):\n            subprocess.run([BINARY, \"init\", \"local-test\", \"--chain-id\", \"local-1\"], check=True)\n\n        # Start the chain and write logs to file\n        proc = subprocess.Popen(\n            [BINARY, \"start\", \"--home\", HOME, \"--log_format\", \"plain\"],\n            stdout=log_file,\n            stderr=subprocess.STDOUT,\n        )\n        print(\"\ud83d\udd04  Node started (PID %d). Producing blocks \u2026\" % proc.pid)\n        time.sleep(10)  # Let it run long enough to mint a block.\n    finally:\n        # Cleanly terminate and close file\n        proc.send_signal(signal.SIGINT)\n        proc.wait()\n        log_file.close()\n        print(\"\ud83d\uded1  Node stopped; logs available in node.log\")\n\nif __name__ == \"__main__\":\n    start_node()",
+            "usage": "CHAIN_BIN=mychaind python scripts/start_node.py"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Step 6 tail-greps the log file for evidence that the custom PrepareProposal function executed successfully.",
+            "code": "import re, sys\n\nLOG_PATH = \"node.log\"\nPATTERN = re.compile(r\"Custom PrepareProposal invoked\", re.IGNORECASE)\n\n\ndef monitor_logs():\n    try:\n        with open(LOG_PATH, \"r\") as fh:\n            matches = [line.strip() for line in fh if PATTERN.search(line)]\n        if matches:\n            print(\"\ud83c\udf89  Found %d PrepareProposal invocations:\" % len(matches))\n            for ln in matches:\n                print(\"   \", ln)\n        else:\n            print(\"\u26a0\ufe0f   No PrepareProposal logs detected. Ensure the node ran long enough to produce a block and that logging level isn't filtering them out.\")\n    except FileNotFoundError:\n        print(\"node.log not found. Did you run Step 5?\")\n        sys.exit(1)\n\nif __name__ == \"__main__\":\n    monitor_logs()",
+            "usage": "python scripts/monitor_logs.py"
+        }
+    ]
+}

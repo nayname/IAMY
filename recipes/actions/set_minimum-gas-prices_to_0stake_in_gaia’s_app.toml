@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that opens the Gaia app.toml file and returns its contents as a list of lines.",
+            "code": "import os\n\nCONFIG_PATH = os.path.expanduser(\"~/.gaia/config/app.toml\")\n\ndef open_config_file(config_path: str | None = None) -> list[str]:\n    \"\"\"Read $HOME/.gaia/config/app.toml and return a list of lines.\n\n    Args:\n        config_path: Optional custom path to the app.toml file.\n\n    Returns:\n        List of lines contained in the file.\n\n    Raises:\n        FileNotFoundError: If the file does not exist.\n    \"\"\"\n    path = config_path or CONFIG_PATH\n\n    if not os.path.exists(path):\n        raise FileNotFoundError(f\"Config file not found at: {path}\")\n\n    with open(path, \"r\", encoding=\"utf-8\") as fp:\n        lines = fp.readlines()\n\n    return lines",
+            "usage": "lines = open_config_file()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 mutates the in-memory list of lines, ensuring `minimum-gas-prices` is set to `0stake` (adds the key if it doesn\u2019t exist).",
+            "code": "def modify_minimum_gas_prices(lines: list[str], new_value: str = \"0stake\") -> list[str]:\n    \"\"\"Update\u2014or insert\u2014the `minimum-gas-prices` parameter.\n\n    Args:\n        lines: Original list of lines from app.toml.\n        new_value: The desired gas-price string, e.g. `\"0stake\"`.\n\n    Returns:\n        A new list of lines reflecting the change.\n    \"\"\"\n    target_line = f'minimum-gas-prices = \"{new_value}\"\\n'\n    updated = False\n\n    for idx, line in enumerate(lines):\n        if line.strip().startswith(\"minimum-gas-prices\"):\n            lines[idx] = target_line\n            updated = True\n            break\n\n    if not updated:\n        # If the key wasn\u2019t found, append it to the end of the [baseapp] section or file.\n        lines.append(\"\\n# Added automatically by script\\n\" + target_line)\n\n    return lines",
+            "usage": "updated_lines = modify_minimum_gas_prices(lines)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 writes the modified lines back to disk, creating a *.bak* backup for safety.",
+            "code": "import shutil\n\ndef save_and_close_file(lines: list[str], config_path: str | None = None) -> str:\n    \"\"\"Persist the updated app.toml to disk and keep a backup.\n\n    Args:\n        lines: The modified list of lines to write.\n        config_path: Optional custom path to the app.toml file.\n\n    Returns:\n        The path to the file that was written.\n    \"\"\"\n    path = config_path or CONFIG_PATH\n\n    if not os.path.exists(path):\n        raise FileNotFoundError(f\"Config file not found at: {path}\")\n\n    # Create a backup before overwriting\n    backup_path = path + \".bak\"\n    shutil.copy(path, backup_path)\n\n    with open(path, \"w\", encoding=\"utf-8\") as fp:\n        fp.writelines(lines)\n\n    return path",
+            "usage": "save_and_close_file(updated_lines)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 re-reads the file (or shells out to *grep*) to confirm the change was successfully written.",
+            "code": "def validate_file_change(config_path: str | None = None, expected_value: str = \"0stake\") -> bool:\n    \"\"\"Verify `minimum-gas-prices` now equals the expected string.\n\n    Args:\n        config_path: Optional custom path to the app.toml file.\n        expected_value: Expected gas-price value (default: \"0stake\").\n\n    Returns:\n        True if the parameter is set correctly, else False.\n    \"\"\"\n    path = config_path or CONFIG_PATH\n    expected_line = f'minimum-gas-prices = \"{expected_value}\"'\n\n    if not os.path.exists(path):\n        raise FileNotFoundError(f\"Config file not found at: {path}\")\n\n    with open(path, \"r\", encoding=\"utf-8\") as fp:\n        for line in fp:\n            if line.strip() == expected_line:\n                return True\n\n    return False",
+            "usage": "assert validate_file_change(), \"minimum-gas-prices was not updated to 0stake\""
+        }
+    ]
+}

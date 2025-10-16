@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "search_circuit_docs queries the Cosmos documentation site for the supplied text so you can verify the correct replay flags.",
+            "function": "search_circuit_docs(query)",
+            "usage": "docs = search_circuit_docs(\"Cosmos SDK replay switch load at height\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "graceful_shutdown stops a running node either by systemd service name or by sending a POSIX signal to its PID.",
+            "function": "graceful_shutdown(pid=None, use_systemctl=False, service_name=None)",
+            "usage": "graceful_shutdown(use_systemctl=True, service_name=\"appd\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "start_simd starts a Cosmos-SDK node and lets you append custom start flags such as --recover and --halt-height.",
+            "function": "start_simd(home_dir, additional_flags='', detach=True)",
+            "usage": "start_simd(\"$NODE_HOME\", additional_flags=\"--recover --halt-height 1000\", detach=False)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "check_node_sync continuously queries the RPC endpoint until the node\u2019s latest block height is at or above the expected height.",
+            "function": "check_node_sync(expected_height, rpc_url='http://localhost:26657', timeout=300)",
+            "usage": "check_node_sync(1000, rpc_url=\"http://localhost:26657\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "docs = search_circuit_docs(\"Cosmos SDK replay switch load at height\")#step: 1 Tool: SearchCosmosDocumentation Desciption: Query: \"Cosmos SDK replay switch load at height\" to confirm CLI flags (`--halt-height`, `--trace`, etc.).",
+        "graceful_shutdown(use_systemctl=True, service_name=\"appd\")#step: 2 Tool: stop_node Desciption: Terminate the running node so a replay can be started.",
+        "start_simd(\"$NODE_HOME\", additional_flags=\"--recover --halt-height 1000\", detach=False)#step: 3 Tool: run_cli_command Desciption: Start the node with `appd start --home <node_home> --recover --halt-height 1000` to load state up to block 1000 and stop.",
+        "check_node_sync(1000, rpc_url=\"http://localhost:26657\")#step: 4 Tool: verify_logs Desciption: Ensure the last committed block in the output is height 1000 and the process exits/halts as expected."
+    ],
+    "intent": "Load application at block height 1000",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "SearchCosmosDocumentation",
+            "description": "Query: \"Cosmos SDK replay switch load at height\" to confirm CLI flags (`--halt-height`, `--trace`, etc.)."
+        },
+        {
+            "step": 2,
+            "tool": "stop_node",
+            "description": "Terminate the running node so a replay can be started."
+        },
+        {
+            "step": 3,
+            "tool": "run_cli_command",
+            "description": "Start the node with `appd start --home <node_home> --recover --halt-height 1000` to load state up to block 1000 and stop."
+        },
+        {
+            "step": 4,
+            "tool": "verify_logs",
+            "description": "Ensure the last committed block in the output is height 1000 and the process exits/halts as expected."
+        }
+    ],
+    "outcome_checks": [
+        "Startup logs finish with `executed block height=1000`.",
+        "No further blocks are processed after height 1000.",
+        "`appd status` reports latest_height 1000."
+    ]
+}

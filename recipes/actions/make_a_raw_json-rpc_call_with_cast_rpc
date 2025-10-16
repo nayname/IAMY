@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Collect the RPC method name and parameters from the user and forward them to the backend API.",
+            "code": "// rpcClient.js\n// Utility that asks the user for a JSON-RPC method and parameters,\n// then POSTs the payload to our backend.\nexport async function requestRpcCall() {\n  try {\n    // 1. Prompt the user. Replace these prompts with a proper UI form in production.\n    const method = prompt(\"Enter JSON-RPC method (e.g. eth_getBalance):\");\n    if (!method) throw new Error(\"Method name is required\");\n\n    const rawParams = prompt(\"Enter params as a JSON array (e.g. [\\\"0x\u2026\\\",\\\"latest\\\"]):\", \"[]\");\n    const params = JSON.parse(rawParams || \"[]\");\n\n    // 2. Send the request to the backend.\n    const response = await fetch(\"/api/rpc\", {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application/json\" },\n      body: JSON.stringify({ method, params })\n    });\n\n    if (!response.ok) {\n      // Non-2xx HTTP status\n      const errorText = await response.text();\n      throw new Error(`Backend error: ${errorText}`);\n    }\n\n    const data = await response.json();\n    displayRpcResult(data);\n  } catch (err) {\n    console.error(err);\n    alert(`Error: ${err.message}`);\n  }\n}\n\n// Helper to render the backend result.\nfunction displayRpcResult(result) {\n  // In a real app, you would update the DOM. For docs, we just alert.\n  alert(JSON.stringify(result, null, 2));\n}\n",
+            "usage": "Call `requestRpcCall()` from any button click handler or immediately on page load for testing."
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Receive the method & params, forward them to the configured JSON-RPC endpoint, and return the raw result or an error object.",
+            "code": "# rpc_backend.py\nimport os\nimport uuid\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport httpx\n\napp = FastAPI()\n\nRPC_URL = os.getenv(\"RPC_URL\", \"https://mainnet.infura.io/v3/YOUR_INFURA_KEY\")\n\nclass RpcRequest(BaseModel):\n    method: str\n    params: list\n\n@app.post(\"/api/rpc\")\nasync def proxy_rpc(request: RpcRequest):\n    # Build a standard JSON-RPC 2.0 payload\n    payload = {\n        \"jsonrpc\": \"2.0\",\n        \"id\": uuid.uuid4().hex,\n        \"method\": request.method,\n        \"params\": request.params,\n    }\n\n    async with httpx.AsyncClient() as client:\n        try:\n            resp = await client.post(RPC_URL, json=payload, timeout=15)\n            resp.raise_for_status()\n        except (httpx.RequestError, httpx.HTTPStatusError) as e:\n            # Surface network/HTTP errors to the caller.\n            raise HTTPException(status_code=502, detail=str(e))\n\n    # Forward the JSON-RPC response (success or error) verbatim.\n    return resp.json()\n",
+            "usage": "Start the backend with `uvicorn rpc_backend:app --reload`, ensuring `RPC_URL` is set in your environment."
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "A convenience re-export so other modules can easily trigger the workflow.",
+            "code": "// index.js\nimport { requestRpcCall } from \"./rpcClient.js\";\n\n// Example: tie the function to a button click in your docs site.\ndocument.getElementById(\"rpcButton\").addEventListener(\"click\", requestRpcCall);\n",
+            "usage": "Add `<button id=\"rpcButton\">Run RPC Call</button>` somewhere in your HTML, include `index.js`, and click the button."
+        }
+    ]
+}

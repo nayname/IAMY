@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 verifies that the provided simd home directory contains a valid genesis.json and the required config files.",
+            "code": "import os\nimport json\n\nasync def check_chain_home(home_path: str = os.path.expanduser(\"~/.simapp\")) -> dict:\n    \"\"\"Validate that the simd home directory has a readable genesis.json and config.toml.\"\"\"\n    result = {\n        \"home\": home_path,\n        \"genesis_exists\": False,\n        \"genesis_valid_json\": False,\n        \"config_exists\": False,\n        \"valid\": False,\n        \"errors\": []\n    }\n\n    genesis_path = os.path.join(home_path, \"config\", \"genesis.json\")\n    config_toml_path = os.path.join(home_path, \"config\", \"config.toml\")\n\n    try:\n        # Check for genesis.json\n        if os.path.isfile(genesis_path):\n            result[\"genesis_exists\"] = True\n            with open(genesis_path, \"r\") as f:\n                json.load(f)  # Raises if the JSON is malformed\n            result[\"genesis_valid_json\"] = True\n        else:\n            result[\"errors\"].append(f\"Missing {genesis_path}\")\n\n        # Check for config.toml\n        if os.path.isfile(config_toml_path):\n            result[\"config_exists\"] = True\n        else:\n            result[\"errors\"].append(f\"Missing {config_toml_path}\")\n\n        # All checks must pass\n        result[\"valid\"] = result[\"genesis_exists\"] and result[\"genesis_valid_json\"] and result[\"config_exists\"]\n    except Exception as e:\n        result[\"errors\"].append(str(e))\n        result[\"valid\"] = False\n\n    return result",
+            "usage": "const response = await fetch(`/api/check_chain_home?home=${encodeURIComponent(userProvidedPath)}`).then(r => r.json());"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 launches the local node by spawning `simd start` (optionally passing the --home flag).",
+            "code": "import os\nimport subprocess\nfrom typing import Optional\n\n# Keep a global reference so we can ensure only one node runs per backend instance.\nNODE_PROCESS: Optional[subprocess.Popen] = None\n\nasync def start_node(home_path: str = os.path.expanduser(\"~/.simapp\")) -> dict:\n    \"\"\"Start `simd start` as a background subprocess and return its PID or an error.\"\"\"\n    global NODE_PROCESS\n\n    if NODE_PROCESS and NODE_PROCESS.poll() is None:\n        return {\"status\": \"already_running\", \"pid\": NODE_PROCESS.pid}\n\n    cmd = [\"simd\", \"start\"]\n\n    # Supply --home if user chose a custom directory\n    if home_path != os.path.expanduser(\"~/.simapp\"):\n        cmd.extend([\"--home\", home_path])\n\n    try:\n        NODE_PROCESS = subprocess.Popen(\n            cmd,\n            stdout=subprocess.PIPE,\n            stderr=subprocess.PIPE,\n            text=True  # decode bytes -> str automatically\n        )\n        return {\"status\": \"started\", \"pid\": NODE_PROCESS.pid, \"cmd\": \" \".join(cmd)}\n    except FileNotFoundError:\n        return {\"status\": \"error\", \"error\": \"`simd` binary not found in PATH.\"}\n    except Exception as e:\n        return {\"status\": \"error\", \"error\": str(e)}",
+            "usage": "const startInfo = await fetch(`/api/start_node?home=${encodeURIComponent(userProvidedPath)}`).then(r => r.json());"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 polls the Tendermint RPC status endpoint until `latest_block_height` is greater than 0, confirming the node is producing blocks.",
+            "code": "import time\nimport requests\n\nasync def health_check(max_attempts: int = 30, interval_sec: int = 2) -> dict:\n    \"\"\"Poll http://localhost:26657/status until the node reports a positive block height or times out.\"\"\"\n    url = \"http://localhost:26657/status\"\n    for attempt in range(1, max_attempts + 1):\n        try:\n            resp = requests.get(url, timeout=2)\n            if resp.status_code == 200:\n                data = resp.json()\n                height = int(data[\"result\"][\"sync_info\"][\"latest_block_height\"])\n                if height > 0:\n                    return {\"healthy\": True, \"latest_block_height\": height}\n        except Exception:\n            # Ignored: transient connection errors expected while node boots up\n            pass\n\n        time.sleep(interval_sec)\n\n    return {\"healthy\": False, \"error\": \"Node did not reach a non-zero block height within the allotted time.\"}",
+            "usage": "const health = await fetch('/api/health_check').then(r => r.json());"
+        }
+    ]
+}

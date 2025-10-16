@@ -1,0 +1,93 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "search_circuit_docs() queries the Cosmos documentation search API so we can locate official guidance on integrating the circuit-breaker module.",
+            "function": "search_circuit_docs(query)",
+            "usage": "results = search_circuit_docs(\"Cosmos SDK circuit breaker module integration BaseApp\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "create_preblocker_fn() programmatically edits app/app.go, demonstrating how to insert new imports or module registrations into the source code.",
+            "function": "create_preblocker_fn(app_dir)",
+            "usage": "create_preblocker_fn(\"./myapp\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "register_preblocker() updates the NewApp constructor in app.go, analogous to wiring the freshly-instantiated CircuitKeeper into the AnteHandler options.",
+            "function": "register_preblocker(app_dir)",
+            "usage": "register_preblocker(\"./myapp\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "No implemented helper for editing ModuleManager order lists exists in the current codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "compile_application() runs the project\u2019s build script to ensure the application still compiles after adding the circuit module.",
+            "function": "compile_application()",
+            "usage": "compile_application()"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "start_local_chain() boots a single-node blockchain, letting us verify that the node starts correctly with the circuit breaker registered.",
+            "function": "start_local_chain(home, chain_id, binary)",
+            "usage": "start_local_chain(\"./data\", \"localnet\", \"appd\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "results = search_circuit_docs(\"Cosmos SDK circuit breaker module integration BaseApp\")#step: 1 Tool: SearchCosmosDocumentation Desciption: Query: \"Cosmos SDK circuit breaker module integration BaseApp\" to locate official guide, keeper API, and ante-handler requirements.",
+        "create_preblocker_fn(\"./myapp\")#step: 2 Tool: modify_source_code Desciption: In app.go, import \"github.com/cosmos/cosmos-sdk/x/circuit\" and add circuit.AppModuleBasic to ModuleBasics.",
+        "register_preblocker(\"./myapp\")#step: 3 Tool: modify_source_code Desciption: Instantiate the CircuitKeeper (with appCodec, keys[...]) and append it to the list of keepers passed into the AnteHandler options.",
+        "undef#step: 4 Tool: update_module_manager Desciption: Append circuit.AppModule to the ModuleManager\u2019s order lists so it is initialized during begin-block.",
+        "compile_application()#step: 5 Tool: compile_application Desciption: Run `make build` (or `go build ./...`) to be sure the code compiles with the new module.",
+        "start_local_chain(\"./data\", \"localnet\", \"appd\")#step: 6 Tool: start_node Desciption: Launch a local node; verify startup succeeds with circuit module registered."
+    ],
+    "intent": "Add a circuit breaker to the application BaseApp",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "SearchCosmosDocumentation",
+            "description": "Query: \"Cosmos SDK circuit breaker module integration BaseApp\" to locate official guide, keeper API, and ante-handler requirements."
+        },
+        {
+            "step": 2,
+            "tool": "modify_source_code",
+            "description": "In app.go, import \"github.com/cosmos/cosmos-sdk/x/circuit\" and add circuit.AppModuleBasic to ModuleBasics."
+        },
+        {
+            "step": 3,
+            "tool": "modify_source_code",
+            "description": "Instantiate the CircuitKeeper (with appCodec, keys[...]) and append it to the list of keepers passed into the AnteHandler options."
+        },
+        {
+            "step": 4,
+            "tool": "update_module_manager",
+            "description": "Append circuit.AppModule to the ModuleManager\u2019s order lists so it is initialized during begin-block."
+        },
+        {
+            "step": 5,
+            "tool": "compile_application",
+            "description": "Run `make build` (or `go build ./...`) to be sure the code compiles with the new module."
+        },
+        {
+            "step": 6,
+            "tool": "start_node",
+            "description": "Launch a local node; verify startup succeeds with circuit module registered."
+        }
+    ],
+    "outcome_checks": [
+        "Compilation finishes without errors.",
+        "`appd start` logs include \"module=circuit\" during initialization.",
+        "CLI call `appd query circuit disabled-list` returns an empty set, showing the keeper is live."
+    ]
+}

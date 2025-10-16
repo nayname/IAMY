@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Retrieves the connected browser wallet\u2019s Neutron bech32 address.",
+            "function": "getNeutronAddress()",
+            "usage": "const userAddr = await getNeutronAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the on-chain bank module to obtain the user\u2019s spendable NTRN balance.",
+            "function": "query_bank_balance(address, denom='untrn')",
+            "usage": "balance = query_bank_balance(userAddr, 'untrn')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Creates a MsgExecuteContract transaction that calls `stake_and_mint_nft` with 250 NTRN for 12 months.",
+            "function": "build_stake_and_mint_tx(sender_address, contract_address, amount=250000000, denom='untrn', duration='12_months')",
+            "usage": "tx = build_stake_and_mint_tx(userAddr, BOOST_CONTRACT_ADDR, 250000000, 'untrn', '12_months')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the prepared transaction with the backend wallet and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast(tx, client)",
+            "usage": "broadcastResult = sign_and_broadcast(tx, client)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Polls the chain until the broadcasted transaction is included in a block.",
+            "function": "wait_for_tx_commit(tx_hash, client, timeout=120, poll=2.0)",
+            "usage": "receipt = wait_for_tx_commit(broadcastResult['tx_hash'], client)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Queries the NFT contract to list token IDs owned by the user and confirm the mint.",
+            "function": "query_nft_tokens(client, contract_address, owner_address)",
+            "usage": "tokens = query_nft_tokens(client, NFT_CONTRACT_ADDR, userAddr)"
+        }
+    ],
+    "frontend": [
+        "const userAddr = await getNeutronAddress();//step: 1 Tool: get_neutron_address Desciption: Identify the user\u2019s Neutron wallet address."
+    ],
+    "backend": [
+        "balance = query_bank_balance(userAddr, 'untrn')#step: 2 Tool: bank_query_balance Desciption: Ensure at least 250 NTRN (250000000 untrn) is available.",
+        "tx = build_stake_and_mint_tx(userAddr, BOOST_CONTRACT_ADDR, 250000000, 'untrn', '12_months')#step: 3 Tool: construct_boost_nft_stake_msg Desciption: Build a `stake_and_mint_nft` message to the Boost contract with `{ amount: 250000000untrn, duration: 12_months }`.",
+        "broadcastResult = sign_and_broadcast(tx, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the transaction to stake and mint the NFT.",
+        "receipt = wait_for_tx_commit(broadcastResult['tx_hash'], client)#step: 5 Tool: wait_for_tx_commit Desciption: Monitor inclusion of the transaction in a block.",
+        "tokens = query_nft_tokens(client, NFT_CONTRACT_ADDR, userAddr)#step: 6 Tool: query_nft_contract Desciption: Query the NFT contract\u2019s `tokens { owner }` endpoint to confirm a new token ID has been minted to the user."
+    ],
+    "intent": "Mint a boost-receipt NFT by staking 250 NTRN for 12 months",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_neutron_address",
+            "description": "Identify the user\u2019s Neutron wallet address."
+        },
+        {
+            "step": 2,
+            "tool": "bank_query_balance",
+            "description": "Ensure at least 250 NTRN (250000000 untrn) is available."
+        },
+        {
+            "step": 3,
+            "tool": "construct_boost_nft_stake_msg",
+            "description": "Build a `stake_and_mint_nft` message to the Boost contract with `{ amount: 250000000untrn, duration: 12_months }`."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the transaction to stake and mint the NFT."
+        },
+        {
+            "step": 5,
+            "tool": "wait_for_tx_commit",
+            "description": "Monitor inclusion of the transaction in a block."
+        },
+        {
+            "step": 6,
+            "tool": "query_nft_contract",
+            "description": "Query the NFT contract\u2019s `tokens { owner }` endpoint to confirm a new token ID has been minted to the user."
+        }
+    ],
+    "outcome_checks": [
+        "Transaction success with `code == 0`.",
+        "NFT contract lists a new token ID owned by the user.",
+        "`token_metadata.lock_amount` equals 250 NTRN and `lock_duration` equals 12 months."
+    ]
+}

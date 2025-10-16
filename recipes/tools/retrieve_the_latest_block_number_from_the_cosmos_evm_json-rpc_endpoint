@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Verifies that a given Neutron/Cosmos JSON-RPC URL is reachable and returns the working endpoint.",
+            "function": "connect_rpc_endpoint(rpc_endpoint)",
+            "usage": "rpc_url = connect_rpc_endpoint('https://rpc-kralum.neutron.org')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Sends an eth_blockNumber JSON-RPC request to the previously selected endpoint and receives the block height in hex.",
+            "function": "json_rpc_call(method, params, endpoint)",
+            "usage": "latest_block_hex = json_rpc_call('eth_blockNumber', [], rpc_url)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No fully-implemented helper for converting a 0x-prefixed hex block number to decimal exists in the provided codebase.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "rpc_url = connect_rpc_endpoint('https://rpc-kralum.neutron.org')#step: 1 Tool: select_rpc_endpoint Desciption: Determine the HTTP or WebSocket JSON-RPC URL of a reachable Cosmos-SDK EVM node.",
+        "latest_block_hex = json_rpc_call('eth_blockNumber', [], rpc_url)#step: 2 Tool: eth_blockNumber Desciption: Send a JSON-RPC request {\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1,\"jsonrpc\":\"2.0\"} to fetch the current block height.",
+        "undef#step: 3 Tool: parse_hex_to_decimal Desciption: Convert the returned 0x-prefixed hex block number to a human-readable decimal integer."
+    ],
+    "intent": "Retrieve the latest block number from the Cosmos EVM JSON-RPC endpoint",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "select_rpc_endpoint",
+            "description": "Determine the HTTP or WebSocket JSON-RPC URL of a reachable Cosmos-SDK EVM node."
+        },
+        {
+            "step": 2,
+            "tool": "eth_blockNumber",
+            "description": "Send a JSON-RPC request {\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1,\"jsonrpc\":\"2.0\"} to fetch the current block height."
+        },
+        {
+            "step": 3,
+            "tool": "parse_hex_to_decimal",
+            "description": "Convert the returned 0x-prefixed hex block number to a human-readable decimal integer."
+        }
+    ],
+    "outcome_checks": [
+        "The response is a 0x-prefixed string exactly representing a valid hexadecimal number.",
+        "The decimal value is greater than zero, indicating the chain has produced blocks."
+    ]
+}

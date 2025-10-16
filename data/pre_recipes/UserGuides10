@@ -1,0 +1,104 @@
+[
+    {
+        "intent": "Enable UFW firewall on the validator server",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "detect_os_package_manager",
+                "description": "Identify whether the host uses apt, yum, or another package manager."
+            },
+            {
+                "step": 2,
+                "tool": "update_package_cache",
+                "description": "Refresh the package index so the latest UFW version is available."
+            },
+            {
+                "step": 3,
+                "tool": "install_package",
+                "description": "Install the Uncomplicated Firewall package (ufw). Example: `sudo apt-get install ufw -y`."
+            },
+            {
+                "step": 4,
+                "tool": "run_shell_command",
+                "description": "Enable the firewall: `sudo ufw enable`."
+            },
+            {
+                "step": 5,
+                "tool": "run_shell_command",
+                "description": "Verify status and default policies: `sudo ufw status verbose`."
+            }
+        ],
+        "outcome_checks": [
+            "The command `sudo ufw status` returns `Status: active`.",
+            "Default incoming policy is set to `deny` (or another desired policy)."
+        ]
+    },
+    {
+        "intent": "Add a UFW rule to allow SSH on port 22",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "run_shell_command",
+                "description": "Confirm UFW is active: `sudo ufw status`.  If inactive, prompt user to enable it first."
+            },
+            {
+                "step": 2,
+                "tool": "run_shell_command",
+                "description": "Allow SSH traffic: `sudo ufw allow 22/tcp comment 'Allow SSH'`."
+            },
+            {
+                "step": 3,
+                "tool": "run_shell_command",
+                "description": "Reload UFW to apply rule set changes (optional on most systems): `sudo ufw reload`."
+            },
+            {
+                "step": 4,
+                "tool": "run_shell_command",
+                "description": "List numbered rules to confirm insertion: `sudo ufw status numbered`."
+            }
+        ],
+        "outcome_checks": [
+            "`sudo ufw status` shows a rule `22/tcp ALLOW` (or equivalent).",
+            "A remote SSH connection to the server on port 22 succeeds."
+        ]
+    },
+    {
+        "intent": "Back up priv_val_state.json to prevent double signing",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "stop_cosmos_service",
+                "description": "Gracefully stop the validator process (e.g., `sudo systemctl stop cosmosd`) to avoid writes during backup."
+            },
+            {
+                "step": 2,
+                "tool": "verify_file_exists",
+                "description": "Ensure `data/priv_val_state.json` exists in the node\u2019s home directory."
+            },
+            {
+                "step": 3,
+                "tool": "run_shell_command",
+                "description": "Create a timestamped backup: `cp $NODE_HOME/data/priv_val_state.json /var/backups/priv_val_state_$(date +%Y%m%d-%H%M%S).json`."
+            },
+            {
+                "step": 4,
+                "tool": "compute_checksum",
+                "description": "Generate SHA-256 checksums for both original and backup files and compare them."
+            },
+            {
+                "step": 5,
+                "tool": "secure_offsite_copy",
+                "description": "Optionally copy the backup to an offline or remote secure location (e.g., `scp` to a hardened backup server)."
+            },
+            {
+                "step": 6,
+                "tool": "start_cosmos_service",
+                "description": "Restart the validator process (e.g., `sudo systemctl start cosmosd`)."
+            }
+        ],
+        "outcome_checks": [
+            "Backup file exists in /var/backups (or chosen directory) with a matching checksum to the original.",
+            "Validator restarts without errors and continues signing new blocks (no evidence of double-signing)."
+        ]
+    }
+]

@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "ensure_key_exists verifies that the \u201cmy_validator\u201d key already exists in the local key-ring and automatically creates it when it doesn\u2019t.",
+            "function": "ensure_key_exists(key_name)",
+            "usage": "ensure_key_exists(\"my_validator\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "generate_gentx runs the chain binary\u2019s gentx command to create a genesis-transaction JSON for \u201cmy_validator\u201d that stakes 100000000stake.",
+            "function": "generate_gentx(key_name, amount=\"100000000stake\")",
+            "usage": "generate_gentx(\"my_validator\", \"100000000stake\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No implemented backend function is available that validates the contents of the produced gentx file.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "ensure_key_exists(\"my_validator\")#step: 1 Tool: ensure_key_exists Desciption: Verify the my_validator key is present in the local keyring; create it if it is missing.",
+        "generate_gentx(\"my_validator\", \"100000000stake\")#step: 2 Tool: gentx Desciption: Execute `<chain_binary> gentx my_validator 100000000stake --chain-id <chain-id>` to create the genesis transaction in `config/gentx/`.",
+        "undef#step: 3 Tool: validate_gentx Desciption: Confirm the generated gentx JSON is well-formed, signed by my_validator, and stakes exactly 100000000stake."
+    ],
+    "intent": "Generate a gentx for my_validator staking 100000000stake",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "ensure_key_exists",
+            "description": "Verify the my_validator key is present in the local keyring; create it if it is missing."
+        },
+        {
+            "step": 2,
+            "tool": "gentx",
+            "description": "Execute `<chain_binary> gentx my_validator 100000000stake --chain-id <chain-id>` to create the genesis transaction in `config/gentx/`."
+        },
+        {
+            "step": 3,
+            "tool": "validate_gentx",
+            "description": "Confirm the generated gentx JSON is well-formed, signed by my_validator, and stakes exactly 100000000stake."
+        }
+    ],
+    "outcome_checks": [
+        "A new gentx JSON file for my_validator exists in `config/gentx/`.",
+        "The gentx references 100000000stake and passes signature verification."
+    ]
+}

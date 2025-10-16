@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Checks the dynamic-fees module to confirm that the \"uusdc\" denom is fee-eligible.",
+            "function": "isFeeDenomEligible(\"uusdc\")",
+            "usage": "const { eligible } = await isFeeDenomEligible('uusdc');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Fetches the minimum gas-price that must be paid in \"uusdc\".",
+            "function": "getMinGasPrice(\"uusdc\")",
+            "usage": "const minGasPrice = await getMinGasPrice('uusdc');"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Persists \"uusdc\" as the default fee denomination for future transactions.",
+            "function": "setDefaultFeeDenom(\"uusdc\")",
+            "usage": "setDefaultFeeDenom('uusdc');"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Builds and signs the next transaction, allowing the caller to supply a fee in \"uusdc\".",
+            "function": "construct_and_sign(req)",
+            "usage": "signed_tx = await construct_and_sign(request_params)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Broadcasts the previously signed transaction to Neutron and waits for it to be included in a block.",
+            "function": "broadcast_signed_tx(req)",
+            "usage": "await broadcast_signed_tx({ signed_tx_hex });"
+        }
+    ],
+    "frontend": [
+        "const { eligible } = await isFeeDenomEligible('uusdc');//step: 1 Tool: query_dynamic_fees_supported_assets Desciption: Call `/neutron/dynamicfees/params` to confirm that \"uusdc\" (USDC-denom) is in `ntrn_prices` and thus fee-eligible.",
+        "const minGasPrice = await getMinGasPrice('uusdc');//step: 2 Tool: query_global_fee_minimum Desciption: Query `/neutron/globalfee/min_gas_prices` to fetch the minimum gas price required for the \"uusdc\" denom.",
+        "setDefaultFeeDenom('uusdc');//step: 3 Tool: set_wallet_default_fee_denom Desciption: Configure the local wallet/CLI to default to \"uusdc\" fees (e.g., `export NEUTRON_FEE_DENOM=uusdc`)."
+    ],
+    "backend": [
+        "signed_tx = await construct_and_sign(request_params)#step: 4 Tool: construct_and_sign_next_tx Desciption: When building the user\u2019s next transaction, set `--fees <amount>uusdc` where `<amount>` \u2265 Step 2\u2019s minimum threshold, then sign.",
+        "await broadcast_signed_tx({ signed_tx_hex });#step: 5 Tool: broadcast_tx Desciption: Broadcast the signed transaction to Neutron and await inclusion in a block."
+    ],
+    "intent": "Enable USDC gas payments for my next transaction",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "query_dynamic_fees_supported_assets",
+            "description": "Call `/neutron/dynamicfees/params` to confirm that \"uusdc\" (USDC-denom) is in `ntrn_prices` and thus fee-eligible."
+        },
+        {
+            "step": 2,
+            "tool": "query_global_fee_minimum",
+            "description": "Query `/neutron/globalfee/min_gas_prices` to fetch the minimum gas price required for the \"uusdc\" denom."
+        },
+        {
+            "step": 3,
+            "tool": "set_wallet_default_fee_denom",
+            "description": "Configure the local wallet/CLI to default to \"uusdc\" fees (e.g., `export NEUTRON_FEE_DENOM=uusdc`)."
+        },
+        {
+            "step": 4,
+            "tool": "construct_and_sign_next_tx",
+            "description": "When building the user\u2019s next transaction, set `--fees <amount>uusdc` where `<amount>` \u2265 Step 2\u2019s minimum threshold, then sign."
+        },
+        {
+            "step": 5,
+            "tool": "broadcast_tx",
+            "description": "Broadcast the signed transaction to Neutron and await inclusion in a block."
+        }
+    ],
+    "outcome_checks": [
+        "The transaction hash appears on-chain with a `fee.denom` of \"uusdc.\"",
+        "`gaiad query tx <hash>` (or equivalent) returns a successful code 0 result."
+    ]
+}

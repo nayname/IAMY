@@ -15,13 +15,6 @@
             "usage": "const minGasPrice = await getMinGasPrice('uusdc');"
         },
         {
-            "step": 3,
-            "label": "frontend",
-            "introduction": "Persists \"uusdc\" as the default fee denomination for future transactions.",
-            "function": "setDefaultFeeDenom(\"uusdc\")",
-            "usage": "setDefaultFeeDenom('uusdc');"
-        },
-        {
             "step": 4,
             "label": "backend",
             "introduction": "Builds and signs the next transaction, allowing the caller to supply a fee in \"uusdc\".",

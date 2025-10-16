@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "search_circuit_docs() sends a query string to the Cosmos documentation search API and returns the matched results, letting us gather code snippets for the upgrade handler.",
+            "function": "search_circuit_docs(query)",
+            "usage": "docs = search_circuit_docs(\"Cosmos SDK upgrade module SetUpgradeHandler example\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "create_preblocker_fn() programmatically injects new Go code into app/app.go, exemplifying how to edit the source file to register custom logic such as an upgrade handler.",
+            "function": "create_preblocker_fn(app_dir)",
+            "usage": "create_preblocker_fn(\"./cosmos-app\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "register_preblocker() edits the NewApp constructor in app.go to add a setter call, mirroring the addition of SetStoreLoader for upgrade migrations.",
+            "function": "register_preblocker(app_dir)",
+            "usage": "register_preblocker(\"./cosmos-app\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "compile_application() runs the build toolchain to re-compile the binary so the newly added upgrade handler code is included.",
+            "function": "compile_application()",
+            "usage": "compile_application()"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "start_local_chain() spins up a single-node test chain, enabling you to fast-forward to the upgrade height and observe log output to confirm the handler executed.",
+            "function": "start_local_chain(home='./data', chain_id='localnet', binary='appd')",
+            "usage": "start_local_chain(home=\"./upgrade-sim\", chain_id=\"upgrade-test\", binary=\"appd\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "docs = search_circuit_docs(\"Cosmos SDK upgrade module SetUpgradeHandler example\")#step: 1 Tool: SearchCosmosDocumentation Desciption: Query: \"Cosmos SDK upgrade module SetUpgradeHandler example\" to obtain code snippets and required store-loader logic.",
+        "create_preblocker_fn(\"./cosmos-app\")#step: 2 Tool: modify_source_code Desciption: In app.go, define a constant upgradeName and height, then call app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) { /* migrations */ }).",
+        "register_preblocker(\"./cosmos-app\")#step: 3 Tool: modify_source_code Desciption: Add `app.UpgradeKeeper.SetStoreLoader(upgradetypes.UpgradeStoreLoader(height, &plan))` so the binary knows when to perform the store migration.",
+        "compile_application()#step: 4 Tool: compile_application Desciption: Re-build the binary to include the new handler.",
+        "start_local_chain(home=\"./upgrade-sim\", chain_id=\"upgrade-test\", binary=\"appd\")#step: 5 Tool: simulate_upgrade Desciption: Start a single-node chain, fast-forward to the planned height, and confirm the handler executes by inspecting logs."
+    ],
+    "intent": "Register upgrade handlers",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "SearchCosmosDocumentation",
+            "description": "Query: \"Cosmos SDK upgrade module SetUpgradeHandler example\" to obtain code snippets and required store-loader logic."
+        },
+        {
+            "step": 2,
+            "tool": "modify_source_code",
+            "description": "In app.go, define a constant upgradeName and height, then call app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) { /* migrations */ })."
+        },
+        {
+            "step": 3,
+            "tool": "modify_source_code",
+            "description": "Add `app.UpgradeKeeper.SetStoreLoader(upgradetypes.UpgradeStoreLoader(height, &plan))` so the binary knows when to perform the store migration."
+        },
+        {
+            "step": 4,
+            "tool": "compile_application",
+            "description": "Re-build the binary to include the new handler."
+        },
+        {
+            "step": 5,
+            "tool": "simulate_upgrade",
+            "description": "Start a single-node chain, fast-forward to the planned height, and confirm the handler executes by inspecting logs."
+        }
+    ],
+    "outcome_checks": [
+        "Binary builds successfully.",
+        "At the target height, logs display \"upgrade handler executed\" with no panic.",
+        "Chain continues producing blocks after the upgrade."
+    ]
+}

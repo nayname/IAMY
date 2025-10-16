@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects to the user\u2019s wallet and returns their Neutron bech32 address.",
+            "function": "getNeutronAddress()",
+            "usage": "const address = await getNeutronAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Performs an HTTP GET to the bank REST endpoint to retrieve the raw balance data for a given address.",
+            "function": "fetchNtrnBalance(address)",
+            "usage": "const rawJson = await fetchNtrnBalance(address);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Parses the JSON bank-balance payload and extracts the balance for a specified denomination.",
+            "function": "parse_balance_response(raw_json, denom='untrn')",
+            "usage": "parsed = parse_balance_response(raw_json, denom='untrn')"
+        }
+    ],
+    "frontend": [
+        "const address = await getNeutronAddress();//step: 1 Tool: collect_target_address Desciption: Obtain the bech32 address whose balances you want to query.",
+        "const rawJson = await fetchNtrnBalance(address);//step: 2 Tool: rest_get_request Desciption: Send an HTTP GET to \"http://localhost:1317/cosmos/bank/v1beta1/balances/<address>\" using curl or any HTTP client."
+    ],
+    "backend": [
+        "parsed = parse_balance_response(raw_json, denom='untrn')#step: 3 Tool: parse_json_response Desciption: Decode the JSON payload to view the \"balances\" array containing denomination/amount pairs."
+    ],
+    "intent": "Query a wallet\u2019s bank balances via the REST API",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "collect_target_address",
+            "description": "Obtain the bech32 address whose balances you want to query."
+        },
+        {
+            "step": 2,
+            "tool": "rest_get_request",
+            "description": "Send an HTTP GET to \"http://localhost:1317/cosmos/bank/v1beta1/balances/<address>\" using curl or any HTTP client."
+        },
+        {
+            "step": 3,
+            "tool": "parse_json_response",
+            "description": "Decode the JSON payload to view the \"balances\" array containing denomination/amount pairs."
+        }
+    ],
+    "outcome_checks": [
+        "HTTP response code is 200.",
+        "Returned JSON contains a \"balances\" field with at least one entry or an empty array if the account is empty."
+    ]
+}

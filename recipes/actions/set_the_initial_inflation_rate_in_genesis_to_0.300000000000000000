@@ -1,0 +1,47 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 exposes a Python helper that returns the home directory used by your local `simd` node.  The function first checks an environment variable (SIMD_HOME) and falls back to a default of `~/.simd`.",
+            "code": "import os\nfrom pathlib import Path\n\nasync def get_chain_home(chain_id: str = \"simd\") -> dict:\n    \"\"\"Resolve and validate the chain's home directory.\"\"\"\n    env_var = f\"{chain_id.upper()}_HOME\"       # e.g.  SIMD_HOME\n    home_dir = os.getenv(env_var) or Path.home() / f\".{chain_id}\"\n\n    # Cast Path object to str to keep JSON-serialisable output\n    home_dir = str(home_dir)\n\n    if not os.path.isdir(home_dir):\n        raise FileNotFoundError(f\"Chain home directory not found at {home_dir}\")\n\n    return {\"chain_home\": home_dir}",
+            "usage": "GET  /api/get_chain_home?chain_id=simd\n// fetch(' /api/get_chain_home?chain_id=simd').then(r => r.json())"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 reads `config/genesis.json` and returns both its absolute path and the parsed JSON blob.",
+            "code": "import json\nfrom pathlib import Path\n\nasync def locate_genesis(chain_home: str) -> dict:\n    \"\"\"Locate and load config/genesis.json from the provided home directory.\"\"\"\n    genesis_path = Path(chain_home) / \"config\" / \"genesis.json\"\n\n    if not genesis_path.exists():\n        raise FileNotFoundError(f\"genesis.json not found at {genesis_path}\")\n\n    with genesis_path.open(\"r\", encoding=\"utf-8\") as f:\n        genesis_data = json.load(f)\n\n    return {\"genesis_path\": str(genesis_path), \"genesis_data\": genesis_data}",
+            "usage": "GET  /api/locate_genesis?chain_home=/full/path/to/.simd\n// fetch('/api/locate_genesis?chain_home=' + encodeURIComponent(chainHome))"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 creates a timestamped backup of the original `genesis.json` so you can easily roll back changes if needed.",
+            "code": "import shutil\nfrom datetime import datetime\nfrom pathlib import Path\n\nasync def backup_genesis(genesis_path: str) -> dict:\n    \"\"\"Copy genesis.json to genesis.json.bak.<timestamp>.\"\"\"\n    src = Path(genesis_path)\n    timestamp = datetime.utcnow().strftime(\"%Y%m%d%H%M%S\")\n    backup_path = src.with_suffix(f\".json.bak.{timestamp}\")\n    shutil.copy2(src, backup_path)  # copy2 keeps file metadata\n    return {\"backup_path\": str(backup_path)}",
+            "usage": "POST /api/backup_genesis  (body: {\"genesis_path\": \"/.../config/genesis.json\"})"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 mutates the in-memory JSON to set `mint.params.inflation` to the new value (`0.300000000000000000`).",
+            "code": "async def update_inflation(genesis_data: dict, new_inflation: str = \"0.300000000000000000\") -> dict:\n    \"\"\"Set app_state.mint.params.inflation to a new value.\"\"\"\n    try:\n        genesis_data[\"app_state\"][\"mint\"][\"params\"][\"inflation\"] = new_inflation\n    except KeyError as err:\n        raise KeyError(\"Unable to locate mint.params.inflation in genesis.json\") from err\n\n    return {\"updated_genesis\": genesis_data}",
+            "usage": "POST /api/update_inflation  (body: {\"genesis_data\": <object>, \"new_inflation\": \"0.300000000000000000\"})"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 writes the modified JSON structure back to `config/genesis.json`, preserving human-readable indentation.",
+            "code": "import json\nfrom pathlib import Path\n\nasync def save_genesis(genesis_path: str, updated_genesis: dict) -> dict:\n    \"\"\"Persist the updated genesis data to disk.\"\"\"\n    path = Path(genesis_path)\n    with path.open(\"w\", encoding=\"utf-8\") as f:\n        json.dump(updated_genesis, f, indent=2, ensure_ascii=False)\n        f.write(\"\\n\")  # POSIX-friendly newline at EOF\n\n    return {\"status\": \"saved\", \"path\": str(path)}",
+            "usage": "POST /api/save_genesis  (body: {\"genesis_path\": \"/.../config/genesis.json\", \"updated_genesis\": <object>})"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Step 6 shells out to `simd validate-genesis` to confirm the file is still syntactically and logically correct.",
+            "code": "import subprocess\n\nasync def validate_genesis(chain_home: str) -> dict:\n    \"\"\"Run `simd validate-genesis` and capture its output.\"\"\"\n    cmd = [\n        \"simd\",\n        \"validate-genesis\",\n        \"--home\",\n        chain_home\n    ]\n\n    proc = subprocess.run(cmd, capture_output=True, text=True)\n\n    if proc.returncode != 0:\n        return {\"validation\": \"failed\", \"stderr\": proc.stderr}\n\n    return {\"validation\": \"success\", \"stdout\": proc.stdout}",
+            "usage": "GET /api/validate_genesis?chain_home=/full/path/to/.simd\n// fetch('/api/validate_genesis?chain_home=' + encodeURIComponent(chainHome))"
+        }
+    ]
+}

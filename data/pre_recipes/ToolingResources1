@@ -1,0 +1,162 @@
+[
+    {
+        "intent": "Add a Cosmos EVM network to MetaMask",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_network_config_from_docs",
+                "description": "Retrieve the network\u2019s RPC URL, Chain ID, currency symbol, and block-explorer URL from Cosmos documentation."
+            },
+            {
+                "step": 2,
+                "tool": "open_metamask_network_settings",
+                "description": "Open MetaMask, navigate to \u2018Settings \u2192 Networks\u2019, and choose \u2018Add a network manually\u2019. "
+            },
+            {
+                "step": 3,
+                "tool": "fill_network_form",
+                "description": "Populate the form with the fetched RPC URL, Chain ID, network name, symbol, and block-explorer URL."
+            },
+            {
+                "step": 4,
+                "tool": "save_network_configuration",
+                "description": "Save the configuration and switch MetaMask to the newly added network."
+            }
+        ],
+        "outcome_checks": [
+            "MetaMask displays the network name and Chain ID exactly as specified.",
+            "The wallet connects without RPC errors and shows the correct account balance."
+        ]
+    },
+    {
+        "intent": "Query an account\u2019s balance with cast",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "verify_foundry_installation",
+                "description": "Ensure Foundry\u2019s CLI (cast) is installed and available in the PATH."
+            },
+            {
+                "step": 2,
+                "tool": "get_rpc_url",
+                "description": "Identify a healthy HTTPS RPC endpoint for the desired Cosmos EVM chain from the docs."
+            },
+            {
+                "step": 3,
+                "tool": "cast_balance_query",
+                "description": "Run: `cast balance <ADDRESS> --rpc-url <RPC_URL>` to fetch the account balance."
+            }
+        ],
+        "outcome_checks": [
+            "Command returns a numeric balance without error.",
+            "Cross-check the returned balance against a block-explorer for the same address."
+        ]
+    },
+    {
+        "intent": "Send a signed transaction with cast",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "verify_foundry_installation",
+                "description": "Confirm that cast is installed and configured."
+            },
+            {
+                "step": 2,
+                "tool": "get_rpc_url",
+                "description": "Select an RPC endpoint for the Cosmos EVM chain."
+            },
+            {
+                "step": 3,
+                "tool": "load_private_key",
+                "description": "Export or input the sender\u2019s private key as an environment variable (e.g., `export PRIVATE_KEY=\u2026`)."
+            },
+            {
+                "step": 4,
+                "tool": "construct_tx_params",
+                "description": "Define recipient address, amount, gas price, gas limit, and optional data payload."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_send_with_cast",
+                "description": "Execute: `cast send <RECIPIENT> <AMOUNT> --rpc-url <RPC_URL> --private-key $PRIVATE_KEY --gas-price <GAS_PRICE> --gas-limit <GAS_LIMIT>`."
+            },
+            {
+                "step": 6,
+                "tool": "await_tx_confirmation",
+                "description": "Wait for the transaction hash to be included in a block."
+            }
+        ],
+        "outcome_checks": [
+            "A transaction hash is returned immediately after broadcast.",
+            "The transaction appears as \u2018successful\u2019 in a block-explorer and the recipient\u2019s balance increases by the sent amount."
+        ]
+    },
+    {
+        "intent": "Fetch the current chain ID using cast",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "verify_foundry_installation",
+                "description": "Check that cast is installed."
+            },
+            {
+                "step": 2,
+                "tool": "get_rpc_url",
+                "description": "Locate a working RPC endpoint for the target Cosmos EVM chain."
+            },
+            {
+                "step": 3,
+                "tool": "cast_chain_id_query",
+                "description": "Run: `cast chain-id --rpc-url <RPC_URL>` to retrieve the numeric chain ID."
+            }
+        ],
+        "outcome_checks": [
+            "The command outputs an integer matching the Chain ID documented for the network.",
+            "No error or timeout occurs during the query."
+        ]
+    },
+    {
+        "intent": "Initialize a new Hardhat TypeScript project for Cosmos EVM",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "verify_node_npm_installation",
+                "description": "Ensure Node.js (\u226516) and npm are installed."
+            },
+            {
+                "step": 2,
+                "tool": "initialize_npm_project",
+                "description": "Run `npm init -y` in an empty directory to create a package.json."
+            },
+            {
+                "step": 3,
+                "tool": "install_hardhat",
+                "description": "Install Hardhat locally with `npm install --save-dev hardhat`."
+            },
+            {
+                "step": 4,
+                "tool": "create_hardhat_project",
+                "description": "Execute `npx hardhat` and select \u2018Create a TypeScript project\u2019 when prompted."
+            },
+            {
+                "step": 5,
+                "tool": "install_ethers_and_plugins",
+                "description": "Add Ethers and (optionally) a Cosmos EVM plugin: `npm install --save-dev @nomicfoundation/hardhat-ethers ethers`."
+            },
+            {
+                "step": 6,
+                "tool": "configure_hardhat_network",
+                "description": "Edit hardhat.config.ts to include the Cosmos EVM network with its RPC URL, Chain ID, gas price, and accounts."
+            },
+            {
+                "step": 7,
+                "tool": "compile_project",
+                "description": "Run `npx hardhat compile` to verify the configuration builds successfully."
+            }
+        ],
+        "outcome_checks": [
+            "The project directory contains hardhat.config.ts, tsconfig.json, and sample contracts/tests.",
+            "`npx hardhat compile` completes without errors on the Cosmos EVM network configuration."
+        ]
+    }
+]

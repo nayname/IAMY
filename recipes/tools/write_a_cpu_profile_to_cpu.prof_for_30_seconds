@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Uses an HTTP ping to confirm the local pprof server is listening before any profiling begins.",
+            "function": "_ping(base_url, path)",
+            "usage": "latency_ms = _ping('http://localhost:6060', '/debug/pprof')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No implemented function that triggers a 30-second pprof capture exists in the current codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Checks that cpu.prof was written and is greater than 0 bytes, returning the file size.",
+            "function": "verify_profile_file(profile_path='cpu.prof')",
+            "usage": "size = verify_profile_file('cpu.prof')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "latency_ms = _ping('http://localhost:6060', '/debug/pprof')#step: 1 Tool: check_pprof_port Desciption: Confirm the node was started with the built-in pprof HTTP server enabled (it listens on http://localhost:6060 by default). Restart the node with pprof enabled if necessary.",
+        "undef#step: 2 Tool: send_pprof_request Desciption: Run: `curl http://localhost:6060/debug/pprof/profile?seconds=30 --output cpu.prof` to start a 30-second CPU capture and write the binary data to cpu.prof.",
+        "size = verify_profile_file('cpu.prof')#step: 3 Tool: verify_profile_file Desciption: Ensure cpu.prof now exists and its size is greater than 0 bytes."
+    ],
+    "intent": "Write a CPU profile to cpu.prof for 30 seconds",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "check_pprof_port",
+            "description": "Confirm the node was started with the built-in pprof HTTP server enabled (it listens on http://localhost:6060 by default). Restart the node with pprof enabled if necessary."
+        },
+        {
+            "step": 2,
+            "tool": "send_pprof_request",
+            "description": "Run: `curl http://localhost:6060/debug/pprof/profile?seconds=30 --output cpu.prof` to start a 30-second CPU capture and write the binary data to cpu.prof."
+        },
+        {
+            "step": 3,
+            "tool": "verify_profile_file",
+            "description": "Ensure cpu.prof now exists and its size is greater than 0 bytes."
+        }
+    ],
+    "outcome_checks": [
+        "cpu.prof is present in the working directory.",
+        "File size > 0 bytes and `go tool pprof cpu.prof` opens without error."
+    ]
+}

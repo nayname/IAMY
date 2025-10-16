@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "This Node script checks that Node.js is v16 or newer and that npm is installed.",
+            "code": "/* checkEnv.js -- Verify that Node.js >=16 and npm are installed. */\nconst { execSync } = require('child_process');\n\nfunction getMajor(ver) {\n  const match = ver.match(/v?(\\d+)\\./);\n  return match ? parseInt(match[1], 10) : 0;\n}\n\ntry {\n  const nodeVersion = process.version; // e.g., v18.17.0\n  const npmVersion = execSync('npm -v').toString().trim(); // e.g., 9.6.1\n\n  if (getMajor(nodeVersion) < 16) {\n    throw new Error(`Node.js version ${nodeVersion} detected. v16 or newer is required.`);\n  }\n\n  console.log(`\u2705 Environment OK -> Node ${nodeVersion}, npm ${npmVersion}`);\n} catch (err) {\n  console.error('\u274c Environment check failed:', err.message);\n  process.exit(1);\n}",
+            "usage": "node checkEnv.js"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Creates a new project folder (if it doesn't exist) and runs `npm init -y` inside it.",
+            "code": "/* initProject.js -- Creates a new folder and runs `npm init -y` */\nconst { execSync } = require('child_process');\nconst fs = require('fs');\nconst path = require('path');\n\nfunction init(projectName = 'hardhat-project') {\n  const projectPath = path.resolve(process.cwd(), projectName);\n\n  if (!fs.existsSync(projectPath)) {\n    fs.mkdirSync(projectPath, { recursive: true });\n    console.log(`\ud83d\udcc1 Created directory: ${projectPath}`);\n  } else {\n    console.log(`\ud83d\udcc2 Using existing directory: ${projectPath}`);\n  }\n\n  // Change working directory to the project folder\n  process.chdir(projectPath);\n\n  console.log('\u2699\ufe0f  Initializing npm project...');\n  execSync('npm init -y', { stdio: 'inherit' });\n\n  console.log('\u2705 package.json generated.');\n}\n\n// Allow running from CLI: node initProject.js my-project-name\nif (require.main === module) {\n  const [, , projectNameArg] = process.argv;\n  init(projectNameArg);\n}\n\nmodule.exports = { init };",
+            "usage": "node initProject.js my-hardhat-project"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Installs Hardhat and the Nomic Foundation toolbox as dev-dependencies.",
+            "code": "/* installDeps.js -- Installs Hardhat and toolbox as devDependencies */\nconst { execSync } = require('child_process');\n\nfunction install() {\n  console.log('\u2b07\ufe0f  Installing Hardhat and toolbox...');\n  try {\n    execSync('npm install --save-dev hardhat @nomicfoundation/hardhat-toolbox', { stdio: 'inherit' });\n    console.log('\u2705 Dependencies installed.');\n  } catch (err) {\n    console.error('\u274c Failed to install dependencies:', err.message);\n    process.exit(1);\n  }\n}\n\nif (require.main === module) {\n  install();\n}\n\nmodule.exports = { install };",
+            "usage": "node installDeps.js   # run inside the project directory"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Runs the Hardhat CLI to scaffold a sample project (interactive).",
+            "code": "/* initHardhat.js -- Bootstraps a Hardhat project template */\nconst { execSync } = require('child_process');\n\nfunction initHardhat() {\n  console.log('\ud83d\ude80 Running Hardhat initializer...');\n  try {\n    // Execute Hardhat initialization (interactive)\n    execSync('npx hardhat', { stdio: 'inherit' });\n    console.log('\u2705 Hardhat project initialized.');\n  } catch (err) {\n    console.error('\u274c Hardhat initialization failed:', err.message);\n    process.exit(1);\n  }\n}\n\nif (require.main === module) {\n  initHardhat();\n}\n\nmodule.exports = { initHardhat };",
+            "usage": "node initHardhat.js   # run inside the project directory"
+        }
+    ]
+}

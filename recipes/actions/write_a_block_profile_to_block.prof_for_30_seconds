@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 restarts the Cosmos SDK node with Go block profiling enabled by exporting GODEBUG=blockprofilerate=1 before launching the binary.",
+            "code": "import os\nimport subprocess\nfrom typing import Dict\n\nNODE_BINARY = os.getenv(\"COSMOS_NODE_BINARY\", \"gaiad\")  # Override with your specific binary if different\nNODE_HOME = os.getenv(\"COSMOS_NODE_HOME\", os.path.expanduser(\"~/.gaia\"))\nLOG_FILE = \"/tmp/cosmos_node.log\"\n\ndef enable_block_profiling() -> Dict[str, str]:\n    \"\"\"Restart the node with block profiling turned on (pprof exposed on :6060).\"\"\"\n    # 1. Stop any running instance of the node (ignore errors if none running)\n    subprocess.run([\"pkill\", \"-f\", NODE_BINARY], check=False)\n\n    # 2. Prepare the new environment with profiling enabled\n    env = os.environ.copy()\n    env[\"GODEBUG\"] = \"blockprofilerate=1\"  # Instruct Go runtime to collect blocking events\n\n    # 3. Start the node\n    cmd = [NODE_BINARY, \"start\", \"--home\", NODE_HOME]\n    log_handle = open(LOG_FILE, \"w\")\n    try:\n        proc = subprocess.Popen(cmd, env=env, stdout=log_handle, stderr=subprocess.STDOUT)\n    except FileNotFoundError:\n        raise RuntimeError(f\"{NODE_BINARY} not found. Check COSMOS_NODE_BINARY environment variable.\")\n\n    return {\n        \"pid\": str(proc.pid),\n        \"log_file\": LOG_FILE,\n        \"message\": f\"Node restarted with block profiling. PID {proc.pid}. Logs at {LOG_FILE}.\"\n    }",
+            "usage": "response = enable_block_profiling()  # {'pid': '1234', 'log_file': '/tmp/cosmos_node.log', ...}"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 provides an async helper that simply sleeps, allowing the node to accumulate profiling samples for the desired duration.",
+            "code": "import asyncio\nfrom typing import Dict\n\nasync def wait_runtime(seconds: int = 30) -> Dict[str, str]:\n    \"\"\"Pause execution for `seconds` to let the node gather block-profile samples.\"\"\"\n    if seconds <= 0:\n        raise ValueError(\"seconds must be positive\")\n    await asyncio.sleep(seconds)\n    return {\"status\": \"ok\", \"waited_seconds\": seconds}",
+            "usage": "await wait_runtime(30)  # Waits 30 seconds"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 downloads the block profile from the node\u2019s pprof endpoint and stores it on disk.",
+            "code": "import requests\nfrom typing import Dict\n\nPPROF_URL = \"http://localhost:6060/debug/pprof/block?debug=0\"\nOUTPUT_FILE = \"/tmp/block.prof\"\n\ndef fetch_block_profile(url: str = PPROF_URL, output_path: str = OUTPUT_FILE) -> Dict[str, str]:\n    \"\"\"Retrieve the block profile and write it to `output_path`.\"\"\"\n    try:\n        response = requests.get(url, timeout=10)\n        response.raise_for_status()\n    except requests.RequestException as err:\n        raise RuntimeError(f\"Failed to fetch block profile: {err}\")\n\n    with open(output_path, \"wb\") as fp:\n        fp.write(response.content)\n\n    return {\n        \"output_path\": output_path,\n        \"size_bytes\": len(response.content),\n        \"message\": f\"Block profile saved to {output_path} ({len(response.content)} bytes)\"\n    }",
+            "usage": "profile_info = fetch_block_profile()  # {'output_path': '/tmp/block.prof', 'size_bytes': 12345, ...}"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 validates that the downloaded profile exists on disk and is not empty.",
+            "code": "import os\nfrom typing import Dict\n\nPROFILE_PATH = \"/tmp/block.prof\"\n\ndef verify_profile_file(profile_path: str = PROFILE_PATH) -> Dict[str, str]:\n    \"\"\"Check that `profile_path` exists and its size is greater than zero.\"\"\"\n    if not os.path.isfile(profile_path):\n        return {\"exists\": False, \"size_bytes\": 0, \"message\": f\"{profile_path} not found.\"}\n\n    size = os.path.getsize(profile_path)\n    if size == 0:\n        return {\"exists\": True, \"size_bytes\": 0, \"message\": f\"{profile_path} is empty.\"}\n\n    return {\"exists\": True, \"size_bytes\": size, \"message\": f\"{profile_path} verified with {size} bytes.\"}",
+            "usage": "verification = verify_profile_file()  # {'exists': True, 'size_bytes': 12345, ...}"
+        }
+    ]
+}

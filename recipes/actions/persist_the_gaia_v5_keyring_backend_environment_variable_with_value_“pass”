@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "This Python helper appends the environment variable `GAIA_V5_KEYRING_BACKEND=pass` to the user\u2019s default shell profile (e.g., ~/.bashrc or ~/.zshrc) if it is not already present.",
+            "code": "import os\nfrom pathlib import Path\n\nPROFILE_CANDIDATES = [\n    Path.home() / \".bashrc\",\n    Path.home() / \".zshrc\",\n]\n\nEXPORT_LINE = \"export GAIA_V5_KEYRING_BACKEND=pass\\n\"\n\ndef append_to_shell_profile():\n    \"\"\"Append the export line to the first existing shell profile found.\"\"\"\n    for profile in PROFILE_CANDIDATES:\n        if profile.exists():\n            # Read the file once to avoid duplicates\n            content = profile.read_text()\n            if \"GAIA_V5_KEYRING_BACKEND\" in content:\n                print(f\"[Info] Variable already present in {profile} \u2013 skipping append.\")\n                return str(profile)\n            try:\n                with profile.open(\"a\", encoding=\"utf-8\") as f:\n                    f.write(\"\\n\" + EXPORT_LINE)\n                print(f\"[Success] Added GAIA_V5_KEYRING_BACKEND to {profile}\")\n                return str(profile)\n            except Exception as e:\n                raise RuntimeError(f\"Unable to append to {profile}: {e}\")\n    # If no profile exists, create ~/.bashrc and append the line\n    default_profile = Path.home() / \".bashrc\"\n    try:\n        with default_profile.open(\"a\", encoding=\"utf-8\") as f:\n            f.write(EXPORT_LINE)\n        print(f\"[Success] Created {default_profile} and set GAIA_V5_KEYRING_BACKEND.\")\n        return str(default_profile)\n    except Exception as e:\n        raise RuntimeError(f\"Failed to create {default_profile}: {e}\")",
+            "usage": "python -c \"from my_env_tools import append_to_shell_profile; append_to_shell_profile()\""
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "This Python helper attempts to reload the user\u2019s shell profile in the current sub-process so subsequent Python calls see the new variable. NOTE: This cannot change the parent shell session; the user still needs to open a new terminal or run `source ~/.bashrc` manually.",
+            "code": "import os\nimport subprocess\nfrom pathlib import Path\n\n\ndef reload_shell_profile():\n    \"\"\"Source the active shell profile in a *sub-shell* and propagate variables to the Python process.\"\"\"\n    # Determine which profile exists\n    profile_path = next((p for p in (Path.home()/'.bashrc', Path.home()/'.zshrc') if p.exists()), None)\n    if not profile_path:\n        raise FileNotFoundError(\"No shell profile found to reload.\")\n\n    # Launch a bash subshell that sources the profile and prints the variable\n    try:\n        cmd = [\"bash\", \"-c\", f\"source {profile_path} && echo -n $GAIA_V5_KEYRING_BACKEND\"]\n        result = subprocess.check_output(cmd, text=True)\n        # Update current process environment so later Python code can see it\n        os.environ[\"GAIA_V5_KEYRING_BACKEND\"] = result.strip()\n        print(f\"[Success] Reloaded profile from {profile_path}. GAIA_V5_KEYRING_BACKEND={result.strip()}\")\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f\"Failed to source {profile_path}: {e}\")",
+            "usage": "python -c \"from my_env_tools import reload_shell_profile; reload_shell_profile()\""
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "This Python function verifies that the environment variable is set to `pass` and returns the value.",
+            "code": "import os\n\ndef verify_env_var():\n    value = os.environ.get(\"GAIA_V5_KEYRING_BACKEND\")\n    if value != \"pass\":\n        raise EnvironmentError(\"GAIA_V5_KEYRING_BACKEND is not set to 'pass'. Current value: {}\".format(value))\n    print(f\"[Verified] GAIA_V5_KEYRING_BACKEND={value}\")\n    return value",
+            "usage": "python -c \"from my_env_tools import verify_env_var; verify_env_var()\""
+        }
+    ]
+}

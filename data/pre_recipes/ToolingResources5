@@ -1,0 +1,132 @@
+[
+    {
+        "intent": "Create a shell alias for cast with a default RPC endpoint",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_rpc_endpoint",
+                "description": "Prompt the user for, or read from environment, the HTTP JSON-RPC URL of the Cosmos EVM node (e.g., http://localhost:8545)."
+            },
+            {
+                "step": 2,
+                "tool": "validate_rpc_endpoint",
+                "description": "Send an eth_blockNumber call to confirm the endpoint is reachable and returns a block height."
+            },
+            {
+                "step": 3,
+                "tool": "update_shell_alias",
+                "description": "Append the line `alias cast=\"cast --rpc-url <RPC_URL>\"` to the user\u2019s shell profile (such as ~/.bashrc or ~/.zshrc)."
+            },
+            {
+                "step": 4,
+                "tool": "reload_shell",
+                "description": "Reload the profile with `source ~/.bashrc` (or equivalent) so the alias becomes active in the current session."
+            }
+        ],
+        "outcome_checks": [
+            "Running `cast block-number` (with no --rpc-url flag) returns a valid block number.",
+            "Opening a new terminal and running the same command still works, confirming the alias persists."
+        ]
+    },
+    {
+        "intent": "Query transaction details with cast tx",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_tx_hash",
+                "description": "Collect and validate the 0x-prefixed transaction hash to inspect."
+            },
+            {
+                "step": 2,
+                "tool": "cast_tx",
+                "description": "Execute `cast tx <TX_HASH>` using the default RPC endpoint to retrieve raw transaction data."
+            },
+            {
+                "step": 3,
+                "tool": "format_tx_output",
+                "description": "Pretty-print or structure the returned fields (nonce, gas, type, to, value, input data, etc.) for the user."
+            }
+        ],
+        "outcome_checks": [
+            "The command returns a JSON blob that includes keys such as blockHash, nonce, and type.",
+            "If the transaction hash is unknown, an informative error message is delivered."
+        ]
+    },
+    {
+        "intent": "Fetch a transaction receipt with cast receipt",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_tx_hash",
+                "description": "Obtain and validate the 32-byte transaction hash for which a receipt is needed."
+            },
+            {
+                "step": 2,
+                "tool": "cast_receipt",
+                "description": "Run `cast receipt <TX_HASH>` to fetch the transaction receipt from the Cosmos EVM chain."
+            },
+            {
+                "step": 3,
+                "tool": "decode_receipt",
+                "description": "Interpret status, gasUsed, logs, contractAddress, and other receipt fields for readability."
+            }
+        ],
+        "outcome_checks": [
+            "The receipt object includes status (1 for success, 0 for revert) and a blockNumber.",
+            "gasUsed in the receipt is a positive integer consistent with block explorer data."
+        ]
+    },
+    {
+        "intent": "Make a raw JSON-RPC call with cast rpc",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "define_rpc_method",
+                "description": "Ask the user for the exact JSON-RPC method name and parameters (e.g., \"eth_getBalance\", [\"0x\u2026\",\"latest\"])."
+            },
+            {
+                "step": 2,
+                "tool": "cast_rpc",
+                "description": "Execute `cast rpc <METHOD> <PARAM_1> <PARAM_2> \u2026` against the configured RPC endpoint."
+            },
+            {
+                "step": 3,
+                "tool": "display_response",
+                "description": "Return the raw JSON result or error object to the user."
+            }
+        ],
+        "outcome_checks": [
+            "The response matches the output of the same call made via curl to the node\u2019s RPC endpoint.",
+            "Unsupported methods return a JSON error object with code and message."
+        ]
+    },
+    {
+        "intent": "Estimate gas fees for EIP-1559 transactions",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "collect_tx_fields",
+                "description": "Gather from-address, to-address, value, input data, gasLimit (optional), and ensure the EVM chainId matches the Cosmos EVM chain for EIP-155 replay protection."
+            },
+            {
+                "step": 2,
+                "tool": "cast_estimate_gas",
+                "description": "Run `cast estimate --from <FROM> --to <TO> --value <VALUE> --data <DATA> --max-fee-per-gas auto --max-priority-fee-per-gas auto` to request eth_estimateGas and EIP-1559 fee suggestions."
+            },
+            {
+                "step": 3,
+                "tool": "cast_gas_price",
+                "description": "Optionally execute `cast gas-price --blocks 5` to retrieve current baseFee and suggested priority fee over recent blocks."
+            },
+            {
+                "step": 4,
+                "tool": "calculate_total_fee",
+                "description": "Compute totalFee = estimatedGas \u00d7 effectiveGasPrice where effectiveGasPrice = min(baseFee + priorityFee, maxFeePerGas) as defined by the Cosmos EVM EIP-1559 fee market."
+            }
+        ],
+        "outcome_checks": [
+            "estimatedGas returned is greater than or equal to 21000.",
+            "The calculated totalFee meets or exceeds the chain\u2019s MinGasPrice parameter; if not, advise increasing maxPriorityFeePerGas."
+        ]
+    }
+]

@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Collects a user-supplied transaction hash and validates that it is a 0x-prefixed (or plain) 64-character hexadecimal string.",
+            "code": "export const getValidatedTxHash = (inputHash) => {\n  // Accept either `0x`-prefixed or plain 64-char hex\n  const pattern = /^0x?[0-9a-fA-F]{64}$/;\n  if (!pattern.test(inputHash)) {\n    throw new Error('Invalid transaction hash supplied.');\n  }\n  // Normalise to lowercase 0x-prefixed form before sending to backend\n  const cleaned = inputHash.toLowerCase();\n  return cleaned.startsWith('0x') ? cleaned : `0x${cleaned}`;\n};",
+            "usage": "const txHash = getValidatedTxHash(userProvidedHash);"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Fetches raw transaction data from a Cosmos LCD REST endpoint using the validated hash.",
+            "code": "import os, re, httpx\nfrom fastapi import APIRouter, HTTPException\n\nrouter = APIRouter()\nLCD_ENDPOINT = os.getenv('COSMOS_LCD', 'https://rest.cosmos.directory/neutron-1')\n\nasync def _fetch_raw_tx(tx_hash: str) -> dict:\n    \"\"\"Internal helper to retrieve raw tx data from the LCD\"\"\"\n    if not re.fullmatch(r'^(0x)?[0-9a-fA-F]{64}$', tx_hash):\n        raise ValueError('Invalid transaction hash')\n    # LCD expects plain hex (no 0x)\n    clean = tx_hash.lower().replace('0x', '')\n    url = f\"{LCD_ENDPOINT}/cosmos/tx/v1beta1/txs/{clean}\"\n    async with httpx.AsyncClient(timeout=10) as client:\n        resp = await client.get(url)\n        try:\n            resp.raise_for_status()\n        except httpx.HTTPStatusError as e:\n            raise HTTPException(status_code=resp.status_code, detail=str(e))\n        return resp.json()\n\n@router.get('/api/tx/{tx_hash}')\nasync def get_raw_tx_endpoint(tx_hash: str):\n    \"\"\"Public BFF route to obtain raw transaction JSON.\"\"\"\n    try:\n        return await _fetch_raw_tx(tx_hash)\n    except ValueError as err:\n        raise HTTPException(status_code=400, detail=str(err))",
+            "usage": "const rawTx = await fetch(`/api/tx/${txHash}`).then(r => r.json());"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Formats the raw LCD response into an easy-to-read object containing key transaction fields.",
+            "code": "from fastapi import APIRouter, HTTPException\nfrom typing import Dict, Any\n\nrouter = APIRouter()\n\n@router.get('/api/tx/{tx_hash}/formatted')\nasync def get_formatted_tx(tx_hash: str) -> Dict[str, Any]:\n    try:\n        raw = await _fetch_raw_tx(tx_hash)\n    except ValueError as err:\n        raise HTTPException(status_code=400, detail=str(err))\n\n    if 'tx_response' not in raw:\n        raise HTTPException(status_code=500, detail='Unexpected LCD response format')\n\n    r = raw['tx_response']\n    formatted = {\n        'height': r.get('height'),\n        'hash': r.get('txhash'),\n        'codespace': r.get('codespace'),\n        'code': r.get('code'),\n        'gas_wanted': r.get('gas_wanted'),\n        'gas_used': r.get('gas_used'),\n        'timestamp': r.get('timestamp'),\n        'fees': r.get('tx', {}).get('auth_info', {}).get('fee', {}),\n        'messages': r.get('tx', {}).get('body', {}).get('messages', []),\n        'raw_log': r.get('raw_log')\n    }\n    return formatted",
+            "usage": "const formattedTx = await fetch(`/api/tx/${txHash}/formatted`).then(r => r.json());"
+        }
+    ]
+}

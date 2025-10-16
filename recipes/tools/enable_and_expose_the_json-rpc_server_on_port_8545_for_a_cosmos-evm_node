@@ -1,0 +1,92 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Reads the evmd app.toml file from disk and returns its contents so it can be edited.",
+            "function": "load_app_toml(config_path=\"~/.evmd/config/app.toml\")",
+            "usage": "toml_data = load_app_toml()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Mutates app.toml in-place to enable the JSON-RPC server (and related settings).",
+            "function": "update_app_toml_parameter(config_path=\"~/.evmd/config/app.toml\")",
+            "usage": "update_app_toml_parameter()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No implemented function in the codebase directly sets the JSON-RPC HTTP address.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "No implemented function in the codebase directly sets the JSON-RPC WebSocket address.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Writes the modified configuration lines back to app.toml and closes the file safely.",
+            "function": "save_and_close_file(lines, config_path=\"~/.evmd/config/app.toml\")",
+            "usage": "save_and_close_file(edited_lines, \"~/.evmd/config/app.toml\")"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Restarts the evmd systemd service so the new JSON-RPC settings take effect.",
+            "function": "restart_node_service(daemon_name, wait_seconds=60)",
+            "usage": "restart_node_service(\"evmd\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "toml_data = load_app_toml()#step: 1 Tool: open_node_config_file Desciption: Open ~/.evmd/config/app.toml (or the chain\u2019s equivalent app.toml) in edit mode.",
+        "update_app_toml_parameter()#step: 2 Tool: set_json_rpc_enable Desciption: Within the [json-rpc] section, set enable = true to turn on the server.",
+        "undef#step: 3 Tool: set_json_rpc_address Desciption: Set address = \"0.0.0.0:8545\" (or 127.0.0.1:8545) to bind the HTTP JSON-RPC server to port 8545.",
+        "undef#step: 4 Tool: set_ws_address_optional Desciption: Optionally set ws-address = \"0.0.0.0:8546\" to expose WebSocket subscriptions.",
+        "save_and_close_file(edited_lines, \"~/.evmd/config/app.toml\")#step: 5 Tool: save_and_close_file Desciption: Save the changed app.toml file and exit the editor.",
+        "restart_node_service(\"evmd\")#step: 6 Tool: restart_node Desciption: Restart the Cosmos-EVM node so the new JSON-RPC settings take effect."
+    ],
+    "intent": "Enable and expose the JSON-RPC server on port 8545 for a Cosmos-EVM node",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "open_node_config_file",
+            "description": "Open ~/.evmd/config/app.toml (or the chain\u2019s equivalent app.toml) in edit mode."
+        },
+        {
+            "step": 2,
+            "tool": "set_json_rpc_enable",
+            "description": "Within the [json-rpc] section, set enable = true to turn on the server."
+        },
+        {
+            "step": 3,
+            "tool": "set_json_rpc_address",
+            "description": "Set address = \"0.0.0.0:8545\" (or 127.0.0.1:8545) to bind the HTTP JSON-RPC server to port 8545."
+        },
+        {
+            "step": 4,
+            "tool": "set_ws_address_optional",
+            "description": "Optionally set ws-address = \"0.0.0.0:8546\" to expose WebSocket subscriptions."
+        },
+        {
+            "step": 5,
+            "tool": "save_and_close_file",
+            "description": "Save the changed app.toml file and exit the editor."
+        },
+        {
+            "step": 6,
+            "tool": "restart_node",
+            "description": "Restart the Cosmos-EVM node so the new JSON-RPC settings take effect."
+        }
+    ],
+    "outcome_checks": [
+        "curl http://localhost:8545 returns a valid JSON-RPC error response (e.g., method not found) indicating the port is listening.",
+        "The node logs include \"JSON-RPC server started\" with address 0.0.0.0:8545."
+    ]
+}

@@ -1,0 +1,87 @@
+{
+    "tools": [
+		{
+			"step": 0,
+			"label": "frontend",
+			"introduction": "ensureWalletConnected connects to the user’s browser wallet (Keplr/Leap) and returns an OfflineSigner, confirming the wallet is ready.",
+			"function": "ensureWalletConnected()",
+			"usage": "const signer = await ensureWalletConnected();"
+		},
+		{
+			"step": 1,
+			"label": "frontend",
+			"introduction": "getWalletAddress obtains the sender’s bech32 Neutron address from the OfflineSigner.",
+			"function": "getWalletAddress(signer)",
+			"usage": "const sender = await getWalletAddress(signer);"
+		},
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Checks that the chosen wallet holds at least 0.2 WBTC and 12 000 USDC by querying on-chain CW20 balances.",
+            "function": "validate_balances(address)",
+            "usage": "await validate_balances(userAddress)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Returns the canonical contract address for the WBTC/USDC Supervault.",
+            "function": "supervault_address()",
+            "usage": "vault_addr = supervault_address()[\"address\"]"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Builds an unsigned transaction that deposits exactly 0.2 WBTC and 12 000 USDC into the identified Supervault.",
+            "function": "construct_supervault_deposit_tx(req)",
+            "usage": "tx_pkg = construct_supervault_deposit_tx({\"address\": userAddress, \"wbtc_amount\": 20000000, \"usdc_amount\": 12000000000})"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Signs (mock) and broadcasts the base-64 encoded Supervault deposit transaction, returning the resulting tx-hash.",
+            "function": "sign_and_broadcast_tx_(req)",
+            "usage": "tx_hash = await sign_and_broadcast_tx_({\"tx_base64\": tx_pkg[\"tx_base64\"]})"
+        }
+    ],
+    "frontend": [
+        "const userAddress = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Determine which wallet will fund the additional deposit."
+    ],
+    "backend": [
+        "await validate_balances(userAddress)#step: 2 Tool: validate_token_balances Desciption: Ensure the wallet has at least 0.2 WBTC and 12 000 USDC available.",
+        "vault_addr = supervault_address()[\"address\"]#step: 3 Tool: get_supervault_contract_address Desciption: Look up the contract address for the WBTC/USDC Supervault.",
+        "tx_pkg = construct_supervault_deposit_tx({\"address\": userAddress, \"wbtc_amount\": 20000000, \"usdc_amount\": 12000000000})#step: 4 Tool: construct_tx_supervault_deposit Desciption: Create the deposit message specifying 0.2 WBTC and 12 000 USDC as the amounts.",
+        "tx_hash = await sign_and_broadcast_tx_({\"tx_base64\": tx_pkg[\"tx_base64\"]})#step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the deposit transaction."
+    ],
+    "intent": "Increase the user's deposit in the WBTC/USDC Supervault by 0.2 WBTC and 12 000 USDC",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_wallet_address",
+            "description": "Determine which wallet will fund the additional deposit."
+        },
+        {
+            "step": 2,
+            "tool": "validate_token_balances",
+            "description": "Ensure the wallet has at least 0.2 WBTC and 12 000 USDC available."
+        },
+        {
+            "step": 3,
+            "tool": "get_supervault_contract_address",
+            "description": "Look up the contract address for the WBTC/USDC Supervault."
+        },
+        {
+            "step": 4,
+            "tool": "construct_tx_supervault_deposit",
+            "description": "Create the deposit message specifying 0.2 WBTC and 12 000 USDC as the amounts."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the deposit transaction."
+        }
+    ],
+    "outcome_checks": [
+        "A `Deposit` event from the Supervault contract shows the correct asset amounts.",
+        "The user\u2019s Supervault share balance increased proportionally while wallet balances decreased by 0.2 WBTC and 12 000 USDC."
+    ]
+}

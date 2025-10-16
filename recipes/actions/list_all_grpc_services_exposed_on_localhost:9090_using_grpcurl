@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "This backend endpoint checks whether the grpcurl binary is installed and accessible in the server\u2019s PATH by running `grpcurl -help`.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport subprocess\n\napp = FastAPI()\n\n@app.get(\"/api/grpcurl/verify\")\nasync def verify_grpcurl_installation():\n    \"\"\"Verify that `grpcurl` is installed on the host machine.\"\"\"\n    try:\n        # Attempt to execute `grpcurl -help` to confirm installation\n        completed_process = subprocess.run(\n            [\"grpcurl\", \"-help\"],\n            capture_output=True,\n            text=True,\n            check=True,\n        )\n        # Return the first 500 characters of stdout to avoid overly large payloads\n        return {\n            \"installed\": True,\n            \"output\": completed_process.stdout[:500],\n        }\n    except FileNotFoundError:\n        # grpcurl binary not found in PATH\n        raise HTTPException(\n            status_code=404,\n            detail=\"grpcurl is not installed or not found in PATH.\",\n        )\n    except subprocess.CalledProcessError as exc:\n        # grpcurl returned a non-zero exit code\n        raise HTTPException(\n            status_code=500,\n            detail=f\"grpcurl -help failed: {exc.stderr}\",\n        )",
+            "usage": "// Frontend example (JavaScript)\nconst response = await fetch('/api/grpcurl/verify');\nif (!response.ok) throw new Error('grpcurl verification failed');\nconst data = await response.json();\nconsole.log('grpcurl installed?', data.installed);"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "This endpoint wraps the `grpcurl list` command to query a server\u2019s gRPC reflection service and list all available services.",
+            "code": "from typing import Optional\nfrom fastapi import Query\n\n@app.get(\"/api/grpcurl/list\")\nasync def grpcurl_list_services(\n    host: str = Query(\"localhost:9090\", description=\"gRPC server host:port\"),\n    plaintext: bool = Query(True, description=\"Use plaintext (disable TLS).\"),\n    insecure: bool = Query(False, description=\"Allow insecure TLS without trusted certs.\"),\n):\n    \"\"\"List gRPC services exposed by the server via reflection.\"\"\"\n    # Build grpcurl command\n    cmd = [\"grpcurl\"]\n    if plaintext:\n        cmd.append(\"-plaintext\")\n    if insecure:\n        cmd.append(\"-insecure\")\n    cmd.extend([host, \"list\"])\n\n    try:\n        completed_process = subprocess.run(\n            cmd,\n            capture_output=True,\n            text=True,\n            check=True,\n        )\n        services = [line.strip() for line in completed_process.stdout.splitlines() if line.strip()]\n        return {\"host\": host, \"services\": services}\n    except subprocess.CalledProcessError as exc:\n        raise HTTPException(\n            status_code=500,\n            detail=f\"grpcurl list failed: {exc.stderr}\",\n        )",
+            "usage": "// Frontend example (JavaScript)\nconst url = '/api/grpcurl/list?host=localhost:9090&plaintext=true';\nconst resp = await fetch(url);\nif (!resp.ok) throw new Error('Failed to list services');\nconst data = await resp.json();\nconsole.log('Available services:', data.services);"
+        }
+    ]
+}

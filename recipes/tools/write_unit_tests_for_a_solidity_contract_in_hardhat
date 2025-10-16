@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No existing function that creates a new Hardhat test file could be identified in the provided codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No backend helper was found that deploys a contract fixture for Hardhat unit tests.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No function was located that performs Hardhat\u2010style assertions against a deployed Solidity contract.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "The codebase does not contain any implemented helper for running the Hardhat test suite.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: create_test_file Desciption: Add a new file in `test/`, e.g. `MyContract.t.ts` (TypeScript) or `MyContract.js`, importing `ethers` and `expect` from Hardhat.",
+        "undef#step: 2 Tool: deploy_fixture Desciption: Within a `beforeEach` hook, deploy the contract using `await ethers.deployContract(\"MyContract\", [constructorArgs])` or the built-in fixture helper.",
+        "undef#step: 3 Tool: write_assertions Desciption: Call contract methods and use `expect(await contract.someCall()).to.equal(expectedValue)` to check state changes or return values.",
+        "undef#step: 4 Tool: run_hardhat_tests Desciption: Execute `npx hardhat test` (optionally with `--network cosmos_evm` if configured) to run the suite."
+    ],
+    "intent": "Write unit tests for a Solidity contract in Hardhat",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "create_test_file",
+            "description": "Add a new file in `test/`, e.g. `MyContract.t.ts` (TypeScript) or `MyContract.js`, importing `ethers` and `expect` from Hardhat."
+        },
+        {
+            "step": 2,
+            "tool": "deploy_fixture",
+            "description": "Within a `beforeEach` hook, deploy the contract using `await ethers.deployContract(\"MyContract\", [constructorArgs])` or the built-in fixture helper."
+        },
+        {
+            "step": 3,
+            "tool": "write_assertions",
+            "description": "Call contract methods and use `expect(await contract.someCall()).to.equal(expectedValue)` to check state changes or return values."
+        },
+        {
+            "step": 4,
+            "tool": "run_hardhat_tests",
+            "description": "Execute `npx hardhat test` (optionally with `--network cosmos_evm` if configured) to run the suite."
+        }
+    ],
+    "outcome_checks": [
+        "All tests show a green status with 0 failures.",
+        "`npx hardhat coverage` (optional) reports meaningful coverage >90% for the contract\u2019s functions."
+    ]
+}

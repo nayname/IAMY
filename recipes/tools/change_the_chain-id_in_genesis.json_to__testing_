@@ -1,0 +1,92 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "get_chain_home() resolves and verifies the node\u2019s home directory for the given chain-id.",
+            "function": "get_chain_home(chain_id='simd')",
+            "usage": "home_info = get_chain_home('simd')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "locate_genesis() builds the full path to config/genesis.json inside the supplied chain home.",
+            "function": "locate_genesis(chain_home)",
+            "usage": "genesis_info = locate_genesis(home_info['chain_home'])"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "backup_genesis() copies genesis.json to a timestamped *.bak file for safekeeping.",
+            "function": "backup_genesis(genesis_path)",
+            "usage": "backup = backup_genesis(genesis_info['genesis_path'])"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "No implemented function directly updates the top-level \"chain_id\" field in genesis.json.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "save_genesis() writes the modified genesis data back to disk.",
+            "function": "save_genesis(genesis_path, updated_genesis)",
+            "usage": "await save_genesis(genesis_info['genesis_path'], new_genesis)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "validate_genesis() runs the CLI command `<chain_binary> validate-genesis` to confirm the file is valid.",
+            "function": "validate_genesis(chain_binary='simd', home='~/.simd')",
+            "usage": "validate_genesis(chain_binary='simd', home=home_info['chain_home'])"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "home_info = get_chain_home('simd')#step: 1 Tool: get_chain_home Desciption: Resolve the node\u2019s home directory.",
+        "genesis_info = locate_genesis(home_info['chain_home'])#step: 2 Tool: locate_file Desciption: Construct the path to config/genesis.json.",
+        "backup = backup_genesis(genesis_info['genesis_path'])#step: 3 Tool: backup_file Desciption: Save a copy of genesis.json as genesis.json.bak.",
+        "undef#step: 4 Tool: update_json_value Desciption: Set the top-level \"chain_id\" field to \"testing\".",
+        "await save_genesis(genesis_info['genesis_path'], new_genesis)#step: 5 Tool: save_file Desciption: Write the updated genesis.json.",
+        "validate_genesis(chain_binary='simd', home=home_info['chain_home'])#step: 6 Tool: validate_genesis Desciption: Run \"simd validate-genesis\" to be sure the new file is valid."
+    ],
+    "intent": "Change the chain-id in genesis.json to \"testing\"",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_chain_home",
+            "description": "Resolve the node\u2019s home directory."
+        },
+        {
+            "step": 2,
+            "tool": "locate_file",
+            "description": "Construct the path to config/genesis.json."
+        },
+        {
+            "step": 3,
+            "tool": "backup_file",
+            "description": "Save a copy of genesis.json as genesis.json.bak."
+        },
+        {
+            "step": 4,
+            "tool": "update_json_value",
+            "description": "Set the top-level \"chain_id\" field to \"testing\"."
+        },
+        {
+            "step": 5,
+            "tool": "save_file",
+            "description": "Write the updated genesis.json."
+        },
+        {
+            "step": 6,
+            "tool": "validate_genesis",
+            "description": "Run \"simd validate-genesis\" to be sure the new file is valid."
+        }
+    ],
+    "outcome_checks": [
+        "`simd validate-genesis` exits with \"Everything is okay!\"",
+        "`jq -r .chain_id ~/.simapp/config/genesis.json` returns \"testing\""
+    ]
+}

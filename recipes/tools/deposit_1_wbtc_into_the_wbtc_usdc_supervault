@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "getUserWalletAddress connects to the user\u2019s Keplr wallet on Neutron-1 and returns the bech32 address.",
+            "function": "getUserWalletAddress()",
+            "usage": "const userAddr = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "validate_token_balance queries on-chain balances and confirms the wallet owns the minimum WBTC and enough NTRN for fees.",
+            "function": "validate_token_balance(address, min_offer=100000000, min_fee=50000)",
+            "usage": "await validate_token_balance(userAddr, min_offer=100000000, min_fee=50000);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "supervault_address returns the configured contract address for the WBTC/USDC Supervault.",
+            "function": "supervault_address()",
+            "usage": "const vaultAddr = supervault_address().address;"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "constructTxWasmExecute builds a MsgExecuteContract containing the `{ deposit: {} }` payload and attaches the 1 WBTC funds.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds = [])",
+            "usage": "const execMsg = constructTxWasmExecute(sender, vaultAddr, { deposit: {} }, [{ denom: WBTC_DENOM, amount: '100000000' }]);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "signAndBroadcast signs the prepared transaction with the user\u2019s key and broadcasts it to the Neutron network.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo = '')",
+            "usage": "const txHash = await signAndBroadcast(signer, sender, [execMsg], 'auto');"
+        }
+    ],
+    "frontend": [
+        "const userAddr = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Retrieve the sender\u2019s Neutron wallet address.",
+        "const execMsg = constructTxWasmExecute(sender, vaultAddr, { deposit: {} }, [{ denom: WBTC_DENOM, amount: '100000000' }]);//step: 4 Tool: construct_wasm_execute_deposit Desciption: Build a wasm-execute message `{ \"deposit\": {} }` with `funds: 1 WBTC` to the Supervault contract.",
+        "const txHash = await signAndBroadcast(signer, sender, [execMsg], 'auto');//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign the transaction with the wallet\u2019s key and broadcast it to the Neutron network."
+    ],
+    "backend": [
+        "await validate_token_balance(userAddr, min_offer=100000000, min_fee=50000);#step: 2 Tool: validate_asset_balance Desciption: Ensure the wallet holds \u2265 1 WBTC (ICS-20 or CW20) and enough NTRN for fees.",
+        "const vaultAddr = supervault_address().address;#step: 3 Tool: get_supervault_contract Desciption: Fetch the contract address for the WBTC/USDC Supervault from the on-chain registry or Supervaults docs."
+    ],
+    "intent": "Deposit 1 WBTC into the WBTC/USDC Supervault",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_wallet_address",
+            "description": "Retrieve the sender\u2019s Neutron wallet address."
+        },
+        {
+            "step": 2,
+            "tool": "validate_asset_balance",
+            "description": "Ensure the wallet holds \u2265 1 WBTC (ICS-20 or CW20) and enough NTRN for fees."
+        },
+        {
+            "step": 3,
+            "tool": "get_supervault_contract",
+            "description": "Fetch the contract address for the WBTC/USDC Supervault from the on-chain registry or Supervaults docs."
+        },
+        {
+            "step": 4,
+            "tool": "construct_wasm_execute_deposit",
+            "description": "Build a wasm-execute message `{ \"deposit\": {} }` with `funds: 1 WBTC` to the Supervault contract."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the transaction with the wallet\u2019s key and broadcast it to the Neutron network."
+        }
+    ],
+    "outcome_checks": [
+        "Confirm the Tx hash is included in a finalized block.",
+        "Query the Supervault contract: `shares(user) > 0` and reflects ~1 WBTC deposited."
+    ]
+}

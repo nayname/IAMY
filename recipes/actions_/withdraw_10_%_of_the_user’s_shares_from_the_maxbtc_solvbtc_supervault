@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Fetches and returns the connected wallet\u2019s bech32 address so we know which account owns the Supervault shares.",
+            "function": "getUserWalletAddress()",
+            "usage": "const userAddress = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the Supervault smart-contract and returns the total number of shares held by the provided address.",
+            "function": "get_supervault_share_balance(address)",
+            "usage": "const { shares } = await get_supervault_share_balance(userAddress);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Calculates 10 % of the user\u2019s share balance to determine the exact amount to withdraw.",
+            "function": "calculateSharesToWithdraw(totalShares)",
+            "usage": "const sharesToWithdraw = calculateSharesToWithdraw(shares);"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Builds a MsgExecuteContract message that instructs the Supervault to withdraw the computed share amount.",
+            "function": "construct_wasm_execute_msg(sender, contract_address, shares_to_redeem)",
+            "usage": "const execMsg = construct_wasm_execute_msg(userAddress, SUPER_VAULT_CONTRACT, sharesToWithdraw);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Signs the previously-built withdraw transaction with Keplr and broadcasts it to the Neutron network.",
+            "function": "signAndBroadcastWithdrawTx({ address, signPayload })",
+            "usage": "const txHash = await signAndBroadcastWithdrawTx({ address: userAddress, signPayload });"
+        }
+    ],
+    "frontend": [
+        "const userAddress = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Identify the wallet holding the vault shares.",
+        "const sharesToWithdraw = calculateSharesToWithdraw(shares);//step: 3 Tool: calculate_shares_to_withdraw Desciption: Compute 10 % of the retrieved share balance to determine shares_to_withdraw.",
+        "const txHash = await signAndBroadcastWithdrawTx({ address: userAddress, signPayload });//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the withdrawal transaction."
+    ],
+    "backend": [
+        "const { shares } = await get_supervault_share_balance(userAddress);#step: 2 Tool: query_supervault_share_balance Desciption: Retrieve the total number of shares the user currently owns in the maxBTC/solvBTC Supervault.",
+        "const execMsg = construct_wasm_execute_msg(userAddress, SUPER_VAULT_CONTRACT, sharesToWithdraw);#step: 4 Tool: construct_tx_supervault_withdraw Desciption: Create the withdraw transaction using shares_to_withdraw as the parameter."
+    ],
+    "intent": "Withdraw 10 % of the user\u2019s shares from the maxBTC/solvBTC Supervault",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_wallet_address",
+            "description": "Identify the wallet holding the vault shares."
+        },
+        {
+            "step": 2,
+            "tool": "query_supervault_share_balance",
+            "description": "Retrieve the total number of shares the user currently owns in the maxBTC/solvBTC Supervault."
+        },
+        {
+            "step": 3,
+            "tool": "calculate_shares_to_withdraw",
+            "description": "Compute 10 % of the retrieved share balance to determine shares_to_withdraw."
+        },
+        {
+            "step": 4,
+            "tool": "construct_tx_supervault_withdraw",
+            "description": "Create the withdraw transaction using shares_to_withdraw as the parameter."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the withdrawal transaction."
+        }
+    ],
+    "outcome_checks": [
+        "A `Withdraw` event from the Supervault contract confirms the shares redeemed and the corresponding maxBTC/solvBTC tokens returned.",
+        "The user\u2019s vault share balance is reduced by ~10 %, and the wallet balance for maxBTC and solvBTC increases accordingly."
+    ]
+}

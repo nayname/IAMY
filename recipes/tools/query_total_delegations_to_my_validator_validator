@@ -1,0 +1,41 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Queries the blockchain for all delegations made to the specified validator.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Adds up each delegation\u2019s balance.amount value to compute the validator\u2019s total stake.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "undef//step: 2 Tool: calculate_total Desciption: Sum the `balance.amount` fields from the returned delegations list to obtain the total stake."
+    ],
+    "backend": [
+        "undef#step: 1 Tool: query_validator_delegations Desciption: Execute `<chain_binary> query staking delegations-to my_validator --output json` to retrieve all delegation objects."
+    ],
+    "intent": "Query total delegations to my_validator validator",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "query_validator_delegations",
+            "description": "Execute `<chain_binary> query staking delegations-to my_validator --output json` to retrieve all delegation objects."
+        },
+        {
+            "step": 2,
+            "tool": "calculate_total",
+            "description": "Sum the `balance.amount` fields from the returned delegations list to obtain the total stake."
+        }
+    ],
+    "outcome_checks": [
+        "The summed amount matches the chain state when cross-checking with an independent RPC or LCD query.",
+        "Returned value is non-negative and expressed in the expected denomination (stake)."
+    ]
+}

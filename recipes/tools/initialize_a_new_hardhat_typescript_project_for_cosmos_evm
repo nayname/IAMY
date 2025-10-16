@@ -1,0 +1,105 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Checks that Node.js \u226516 and npm are installed before any Hardhat commands run.",
+            "function": "main()",
+            "usage": "main();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Bootstraps a new npm package by executing `npm init -y` in the target directory.",
+            "function": "initProject(dir)",
+            "usage": "initProject(process.cwd());"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Installs Hardhat as a local development dependency via npm.",
+            "function": "installHardhat()",
+            "usage": "installHardhat();"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Creates a fully-scaffolded Hardhat TypeScript project using the official template.",
+            "function": "createHardhatProject()",
+            "usage": "createHardhatProject();"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Adds Ethers.js and the Hardhat-Ethers plugin to the project\u2019s dev-dependencies.",
+            "function": "installDeps()",
+            "usage": "installDeps();"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "No helper function exists in the codebase to automatically edit hardhat.config.ts.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Invokes `npx hardhat compile` to build and type-check the Hardhat project.",
+            "function": "compile()",
+            "usage": "compile();"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "main();#step: 1 Tool: verify_node_npm_installation Desciption: Ensure Node.js (\u226516) and npm are installed.",
+        "initProject(process.cwd());#step: 2 Tool: initialize_npm_project Desciption: Run `npm init -y` in an empty directory to create a package.json.",
+        "installHardhat();#step: 3 Tool: install_hardhat Desciption: Install Hardhat locally with `npm install --save-dev hardhat`.",
+        "createHardhatProject();#step: 4 Tool: create_hardhat_project Desciption: Execute `npx hardhat` and select \u2018Create a TypeScript project\u2019 when prompted.",
+        "installDeps();#step: 5 Tool: install_ethers_and_plugins Desciption: Add Ethers and (optionally) a Cosmos EVM plugin: `npm install --save-dev @nomicfoundation/hardhat-ethers ethers`.",
+        "undef#step: 6 Tool: configure_hardhat_network Desciption: Edit hardhat.config.ts to include the Cosmos EVM network with its RPC URL, Chain ID, gas price, and accounts.",
+        "compile();#step: 7 Tool: compile_project Desciption: Run `npx hardhat compile` to verify the configuration builds successfully."
+    ],
+    "intent": "Initialize a new Hardhat TypeScript project for Cosmos EVM",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "verify_node_npm_installation",
+            "description": "Ensure Node.js (\u226516) and npm are installed."
+        },
+        {
+            "step": 2,
+            "tool": "initialize_npm_project",
+            "description": "Run `npm init -y` in an empty directory to create a package.json."
+        },
+        {
+            "step": 3,
+            "tool": "install_hardhat",
+            "description": "Install Hardhat locally with `npm install --save-dev hardhat`."
+        },
+        {
+            "step": 4,
+            "tool": "create_hardhat_project",
+            "description": "Execute `npx hardhat` and select \u2018Create a TypeScript project\u2019 when prompted."
+        },
+        {
+            "step": 5,
+            "tool": "install_ethers_and_plugins",
+            "description": "Add Ethers and (optionally) a Cosmos EVM plugin: `npm install --save-dev @nomicfoundation/hardhat-ethers ethers`."
+        },
+        {
+            "step": 6,
+            "tool": "configure_hardhat_network",
+            "description": "Edit hardhat.config.ts to include the Cosmos EVM network with its RPC URL, Chain ID, gas price, and accounts."
+        },
+        {
+            "step": 7,
+            "tool": "compile_project",
+            "description": "Run `npx hardhat compile` to verify the configuration builds successfully."
+        }
+    ],
+    "outcome_checks": [
+        "The project directory contains hardhat.config.ts, tsconfig.json, and sample contracts/tests.",
+        "`npx hardhat compile` completes without errors on the Cosmos EVM network configuration."
+    ]
+}

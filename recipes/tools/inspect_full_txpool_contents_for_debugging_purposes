@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No implemented backend helper is limited to only crafting (without sending) a JSON-RPC payload for txpool inspection/content.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "json_rpc_call() builds the JSON-RPC body, performs the HTTP POST to the configured endpoint and returns the result.",
+            "function": "json_rpc_call(method: str = \"txpool_status\", params: list | None = None, endpoint: str = \"http://localhost:8545\")",
+            "usage": "result = json_rpc_call(\"txpool_content\", [])"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "decode_receipt() converts a raw JSON-RPC response object into a cleaner, structured dictionary for easier inspection.",
+            "function": "decode_receipt(receipt: dict)",
+            "usage": "parsed = decode_receipt(raw_response)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: prepare_json_rpc_payload Desciption: Choose depth: txpool_inspect (text summary) or txpool_content (full objects). Example payload: {\"jsonrpc\":\"2.0\",\"method\":\"txpool_inspect\",\"params\":[],\"id\":1}.",
+        "result = json_rpc_call(\"txpool_content\", [])#step: 2 Tool: http_post Desciption: Submit the payload to the JSON-RPC endpoint.",
+        "parsed = decode_receipt(raw_response)#step: 3 Tool: parse_json_rpc_response Desciption: For txpool_inspect: capture the textual map of accounts \u2192 nonces. For txpool_content: capture the structured JSON detailing each transaction."
+    ],
+    "intent": "Inspect full txpool contents for debugging purposes",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "prepare_json_rpc_payload",
+            "description": "Choose depth: txpool_inspect (text summary) or txpool_content (full objects). Example payload: {\"jsonrpc\":\"2.0\",\"method\":\"txpool_inspect\",\"params\":[],\"id\":1}."
+        },
+        {
+            "step": 2,
+            "tool": "http_post",
+            "description": "Submit the payload to the JSON-RPC endpoint."
+        },
+        {
+            "step": 3,
+            "tool": "parse_json_rpc_response",
+            "description": "For txpool_inspect: capture the textual map of accounts \u2192 nonces. For txpool_content: capture the structured JSON detailing each transaction."
+        }
+    ],
+    "outcome_checks": [
+        "Response returns either a text map (inspect) or structured JSON (content).",
+        "No RPC error returned.",
+        "Data lists at least zero or more transactions without mal-formed fields."
+    ]
+}

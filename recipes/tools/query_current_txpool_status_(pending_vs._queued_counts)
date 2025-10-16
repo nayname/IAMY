@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No implemented helper strictly dedicated to building the txpool_status JSON-RPC payload exists in the codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "json_rpc_call builds the txpool_status JSON-RPC body and sends it to the endpoint with an HTTP POST, returning the raw result object.",
+            "function": "json_rpc_call(method, params=None, endpoint='http://localhost:8545')",
+            "usage": "result_obj = json_rpc_call('txpool_status', [], 'http://localhost:8545')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "_strip_0x trims the leading \"0x\" from the pending and queued hex strings so they can be converted to integers.",
+            "function": "_strip_0x(hex_str)",
+            "usage": "pending = int(_strip_0x(result_obj['pending']), 16); queued = int(_strip_0x(result_obj['queued']), 16)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: prepare_json_rpc_payload Desciption: Create: {\"jsonrpc\":\"2.0\",\"method\":\"txpool_status\",\"params\":[],\"id\":1}",
+        "result_obj = json_rpc_call('txpool_status', [], 'http://localhost:8545')#step: 2 Tool: http_post Desciption: POST to the JSON-RPC endpoint.",
+        "pending = int(_strip_0x(result_obj['pending']), 16); queued = int(_strip_0x(result_obj['queued']), 16)#step: 3 Tool: parse_json_rpc_response Desciption: Read the \"result\" object; it should have hex strings for \"pending\" and \"queued\"."
+    ],
+    "intent": "Query current txpool status (pending vs. queued counts)",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "prepare_json_rpc_payload",
+            "description": "Create: {\"jsonrpc\":\"2.0\",\"method\":\"txpool_status\",\"params\":[],\"id\":1}"
+        },
+        {
+            "step": 2,
+            "tool": "http_post",
+            "description": "POST to the JSON-RPC endpoint."
+        },
+        {
+            "step": 3,
+            "tool": "parse_json_rpc_response",
+            "description": "Read the \"result\" object; it should have hex strings for \"pending\" and \"queued\"."
+        }
+    ],
+    "outcome_checks": [
+        "HTTP 200 response.",
+        "\"result.pending\" and \"result.queued\" exist.",
+        "Hex values convert to non-negative integers."
+    ]
+}

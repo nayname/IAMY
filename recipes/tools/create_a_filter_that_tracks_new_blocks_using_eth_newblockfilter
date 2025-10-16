@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "get_web3() opens an HTTP connection to the default JSON-RPC endpoint (http://localhost:8545) and returns a ready-to-use Web3 object.",
+            "function": "get_web3()",
+            "usage": "w3 = get_web3()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "json_rpc_call() performs a raw JSON-RPC request; calling it with \u201ceth_newBlockFilter\u201d creates a new block filter on the connected node.",
+            "function": "json_rpc_call(method, params, endpoint='http://localhost:8545')",
+            "usage": "filter_id = json_rpc_call('eth_newBlockFilter', [])"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No dedicated function for persisting an arbitrary filter-id exists in the codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "json_rpc_call() can be repeatedly invoked with \u201ceth_getFilterChanges\u201d and the stored filter-id to fetch hashes of newly mined blocks.",
+            "function": "json_rpc_call(method, params, endpoint='http://localhost:8545')",
+            "usage": "new_blocks = json_rpc_call('eth_getFilterChanges', [filter_id])"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "w3 = get_web3()#step: 1 Tool: establish_json_rpc_connection Desciption: Connect to the JSON-RPC HTTP endpoint (http://localhost:8545).",
+        "filter_id = json_rpc_call('eth_newBlockFilter', [])#step: 2 Tool: eth_newBlockFilter Desciption: Send {\"id\":1,\"method\":\"eth_newBlockFilter\",\"params\":[]} to create a block filter.",
+        "undef#step: 3 Tool: store_filter_id Desciption: Save the hexadecimal filter id returned by the call.",
+        "new_blocks = json_rpc_call('eth_getFilterChanges', [filter_id])#step: 4 Tool: eth_getFilterChanges_loop Desciption: Periodically poll eth_getFilterChanges with the stored filter id to obtain hashes of newly-mined blocks."
+    ],
+    "intent": "Create a filter that tracks new blocks using eth_newBlockFilter",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "establish_json_rpc_connection",
+            "description": "Connect to the JSON-RPC HTTP endpoint (http://localhost:8545)."
+        },
+        {
+            "step": 2,
+            "tool": "eth_newBlockFilter",
+            "description": "Send {\"id\":1,\"method\":\"eth_newBlockFilter\",\"params\":[]} to create a block filter."
+        },
+        {
+            "step": 3,
+            "tool": "store_filter_id",
+            "description": "Save the hexadecimal filter id returned by the call."
+        },
+        {
+            "step": 4,
+            "tool": "eth_getFilterChanges_loop",
+            "description": "Periodically poll eth_getFilterChanges with the stored filter id to obtain hashes of newly-mined blocks."
+        }
+    ],
+    "outcome_checks": [
+        "eth_newBlockFilter returns a valid non-null filter id.",
+        "Subsequent eth_getFilterChanges calls return an array of block hashes after new blocks are produced."
+    ]
+}

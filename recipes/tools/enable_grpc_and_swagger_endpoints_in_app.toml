@@ -1,0 +1,79 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "open_config_file() reads the node\u2019s app.toml file and returns its contents line-by-line so it can be inspected or modified.",
+            "function": "open_config_file(config_path: str | None = None)",
+            "usage": "lines = open_config_file('~/.gaia/config/app.toml')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "update_app_toml_parameter() rewrites the app.toml file, adding or replacing configuration keys\u2014ideal for enabling gRPC support.",
+            "function": "update_app_toml_parameter(config_path: str = \"~/.evmd/config/app.toml\")",
+            "usage": "update_app_toml_parameter('~/.gaia/config/app.toml')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "The same update_app_toml_parameter() helper can also toggle parameters in the [api] section, such as activating Swagger.",
+            "function": "update_app_toml_parameter(config_path: str = \"~/.evmd/config/app.toml\")",
+            "usage": "update_app_toml_parameter('~/.gaia/config/app.toml')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "restart_node_service() restarts the blockchain daemon via systemd and blocks until it reports an active state.",
+            "function": "restart_node_service(daemon_name: str, wait_seconds: int = 60)",
+            "usage": "restart_node_service('gaiad')"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "connect_rpc_endpoint() pings a given RPC (or gRPC) address to confirm the service is up, acting as a quick endpoint check.",
+            "function": "connect_rpc_endpoint(rpc_endpoint: str = 'https://rpc-kralum.neutron.org')",
+            "usage": "connect_rpc_endpoint('http://localhost:26657')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "lines = open_config_file('~/.gaia/config/app.toml')#step: 1 Tool: open_config_file Desciption: Open `$HOME/.<chain-id>/config/app.toml` for editing.",
+        "update_app_toml_parameter('~/.gaia/config/app.toml')#step: 2 Tool: update_config_param Desciption: Set `grpc.enable = true` and (optionally) `grpc.address = \":9090\"` in the `[grpc]` section.",
+        "update_app_toml_parameter('~/.gaia/config/app.toml')#step: 3 Tool: update_config_param Desciption: In the `[api]` section set `swagger = true` and confirm `address = \"tcp://0.0.0.0:1317\"`.",
+        "restart_node_service('gaiad')#step: 4 Tool: restart_node Desciption: Restart the full node so the new configuration is applied.",
+        "connect_rpc_endpoint('http://localhost:26657')#step: 5 Tool: check_endpoints Desciption: Use `grpcurl localhost:9090 list` to list gRPC services and open `http://localhost:1317/swagger/` in a browser to view the Swagger UI."
+    ],
+    "intent": "Enable gRPC and Swagger endpoints in app.toml",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "open_config_file",
+            "description": "Open `$HOME/.<chain-id>/config/app.toml` for editing."
+        },
+        {
+            "step": 2,
+            "tool": "update_config_param",
+            "description": "Set `grpc.enable = true` and (optionally) `grpc.address = \":9090\"` in the `[grpc]` section."
+        },
+        {
+            "step": 3,
+            "tool": "update_config_param",
+            "description": "In the `[api]` section set `swagger = true` and confirm `address = \"tcp://0.0.0.0:1317\"`."
+        },
+        {
+            "step": 4,
+            "tool": "restart_node",
+            "description": "Restart the full node so the new configuration is applied."
+        },
+        {
+            "step": 5,
+            "tool": "check_endpoints",
+            "description": "Use `grpcurl localhost:9090 list` to list gRPC services and open `http://localhost:1317/swagger/` in a browser to view the Swagger UI."
+        }
+    ],
+    "outcome_checks": [
+        "`grpcurl localhost:9090 list` returns a list of protobuf services.",
+        "Swagger UI loads in the browser and can query REST endpoints successfully."
+    ]
+}

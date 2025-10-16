@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Checks whether UFW is active by running \u201csudo ufw status\u201d and returning the result.",
+            "function": "get_ufw_status()",
+            "usage": "ufw_status = get_ufw_status()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Adds a firewall rule that allows incoming SSH traffic on TCP port 22.",
+            "function": "allow_ssh_via_ufw()",
+            "usage": "add_rule_result = allow_ssh_via_ufw()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Reloads UFW so that any newly added rules, including the SSH rule, take effect immediately.",
+            "function": "reload_ufw()",
+            "usage": "reload_result = reload_ufw()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Lists all active UFW rules in numbered form to confirm the SSH rule is present.",
+            "function": "list_ufw_rules_numbered()",
+            "usage": "rules_list = list_ufw_rules_numbered()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "ufw_status = get_ufw_status()#step: 1 Tool: run_shell_command Desciption: Confirm UFW is active: `sudo ufw status`.  If inactive, prompt user to enable it first.",
+        "add_rule_result = allow_ssh_via_ufw()#step: 2 Tool: run_shell_command Desciption: Allow SSH traffic: `sudo ufw allow 22/tcp comment 'Allow SSH'`.",
+        "reload_result = reload_ufw()#step: 3 Tool: run_shell_command Desciption: Reload UFW to apply rule set changes (optional on most systems): `sudo ufw reload`.",
+        "rules_list = list_ufw_rules_numbered()#step: 4 Tool: run_shell_command Desciption: List numbered rules to confirm insertion: `sudo ufw status numbered`."
+    ],
+    "intent": "Add a UFW rule to allow SSH on port 22",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "run_shell_command",
+            "description": "Confirm UFW is active: `sudo ufw status`.  If inactive, prompt user to enable it first."
+        },
+        {
+            "step": 2,
+            "tool": "run_shell_command",
+            "description": "Allow SSH traffic: `sudo ufw allow 22/tcp comment 'Allow SSH'`."
+        },
+        {
+            "step": 3,
+            "tool": "run_shell_command",
+            "description": "Reload UFW to apply rule set changes (optional on most systems): `sudo ufw reload`."
+        },
+        {
+            "step": 4,
+            "tool": "run_shell_command",
+            "description": "List numbered rules to confirm insertion: `sudo ufw status numbered`."
+        }
+    ],
+    "outcome_checks": [
+        "`sudo ufw status` shows a rule `22/tcp ALLOW` (or equivalent).",
+        "A remote SSH connection to the server on port 22 succeeds."
+    ]
+}

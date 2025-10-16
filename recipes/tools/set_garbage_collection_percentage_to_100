@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Exports an environment variable from Python so the node starts with the desired GC configuration.",
+            "function": "export_passphrase_env(passphrase, ttl=60)",
+            "usage": "export_passphrase_env('GOGC=100', ttl=3600)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Restarts a system-service daemon and waits until it is running again, ensuring the new settings are picked up.",
+            "function": "restart_node_service(daemon_name, wait_seconds=60)",
+            "usage": "restart_node_service('neutrond')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "undef",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "export_passphrase_env('GOGC=100', ttl=3600)#step: 1 Tool: update_environment Desciption: Add `Environment=\"GOGC=100\"` to the node\u2019s service file or export `GOGC=100` in the shell before starting the daemon. This sets `debug.SetGCPercent(100)` at launch.",
+        "restart_node_service('neutrond')#step: 2 Tool: restart_node Desciption: Restart the Cosmos SDK daemon so the new GC setting takes effect.",
+        "undef#step: 3 Tool: validate_gc_setting Desciption: Query `http://localhost:6060/debug/vars` and confirm the GCPercent value is 100, or inspect runtime metrics if enabled."
+    ],
+    "intent": "Set garbage collection percentage to 100",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "update_environment",
+            "description": "Add `Environment=\"GOGC=100\"` to the node\u2019s service file or export `GOGC=100` in the shell before starting the daemon. This sets `debug.SetGCPercent(100)` at launch."
+        },
+        {
+            "step": 2,
+            "tool": "restart_node",
+            "description": "Restart the Cosmos SDK daemon so the new GC setting takes effect."
+        },
+        {
+            "step": 3,
+            "tool": "validate_gc_setting",
+            "description": "Query `http://localhost:6060/debug/vars` and confirm the GCPercent value is 100, or inspect runtime metrics if enabled."
+        }
+    ],
+    "outcome_checks": [
+        "debug/vars endpoint reports `\"GCPercent\": 100`.",
+        "Node starts normally and exhibits expected memory behavior."
+    ]
+}

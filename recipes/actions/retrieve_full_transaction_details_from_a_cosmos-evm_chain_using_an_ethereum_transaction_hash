@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Validate that the user\u2013supplied value is a 0x-prefixed, 32-byte (64 hex chars) Ethereum transaction hash.",
+            "code": "/* utils/validateTxHash.js */\nexport const validateTxHash = (txHash) => {\n  // A valid hash looks like: 0x followed by exactly 64 hex characters\n  const HASH_REGEX = /^0x([A-Fa-f0-9]{64})$/;\n\n  if (typeof txHash !== 'string' || !HASH_REGEX.test(txHash)) {\n    throw new Error('Invalid transaction hash. Expecting a 0x-prefixed, 64-character hexadecimal string.');\n  }\n\n  // Return the normalized hash (lower-case) for consistency\n  return txHash.toLowerCase();\n};",
+            "usage": "// In your React/Vue/Svelte component, etc.\ntry {\n  const normalizedHash = validateTxHash(userInputHash);\n  // proceed with API calls using normalizedHash\n} catch (err) {\n  console.error(err.message);\n}"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Create a lightweight JSON-RPC client for talking to an Ethereum node over HTTP.",
+            "code": "# rpc_client.py\nimport os\nimport requests\nfrom typing import Any, List\n\nclass JSONRPCClient:\n    \"\"\"Minimal HTTP JSON-RPC client compatible with an Ethereum node (geth, erigon, etc.).\"\"\"\n\n    def __init__(self, endpoint: str | None = None):\n        # Allow the endpoint to be configured via env-var or default to localhost\n        self.endpoint = endpoint or os.getenv(\"ETH_RPC_ENDPOINT\", \"http://localhost:8545\")\n\n    def _post(self, method: str, params: List[Any] | None = None) -> Any:\n        payload = {\n            \"jsonrpc\": \"2.0\",\n            \"id\": 1,\n            \"method\": method,\n            \"params\": params or []\n        }\n        try:\n            resp = requests.post(self.endpoint, json=payload, timeout=10)\n            resp.raise_for_status()\n        except requests.RequestException as exc:\n            raise ConnectionError(f\"Unable to reach JSON-RPC endpoint {self.endpoint}: {exc}\") from exc\n\n        data = resp.json()\n        if \"error\" in data and data[\"error\"]:\n            raise RuntimeError(f\"JSON-RPC error: {data['error']}\")\n        return data.get(\"result\")\n\n    # Convenience wrappers\n    def get_transaction_by_hash(self, tx_hash: str) -> Any:\n        return self._post(\"eth_getTransactionByHash\", [tx_hash])\n\n    def get_transaction_receipt(self, tx_hash: str) -> Any:\n        return self._post(\"eth_getTransactionReceipt\", [tx_hash])",
+            "usage": "# Instantiate once per request / module\nrpc = JSONRPCClient(\"http://localhost:8545\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Provide a callable function (or FastAPI route) that returns the raw transaction object for a validated hash.",
+            "code": "# routes/tx.py\nfrom fastapi import APIRouter, HTTPException, Query\nfrom rpc_client import JSONRPCClient\n\nrouter = APIRouter()\nclient = JSONRPCClient()  # Uses ENV var ETH_RPC_ENDPOINT or default\n\n@router.get(\"/api/transaction\")\nasync def get_transaction(tx_hash: str = Query(..., description=\"0x-prefixed transaction hash\")):\n    try:\n        tx = client.get_transaction_by_hash(tx_hash)\n        if tx is None:\n            # Ethereum returns null when the hash is unknown\n            raise HTTPException(status_code=404, detail=\"Transaction not found\")\n        return {\"transaction\": tx}\n    except (ConnectionError, RuntimeError) as exc:\n        raise HTTPException(status_code=502, detail=str(exc)) from exc",
+            "usage": "// Frontend example\nconst res = await fetch(`/api/transaction?tx_hash=${normalizedHash}`);\nconst { transaction } = await res.json();"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Expose another endpoint that fetches the transaction receipt, giving status, gas used, logs, and block inclusion data.",
+            "code": "# routes/receipt.py\nfrom fastapi import APIRouter, HTTPException, Query\nfrom rpc_client import JSONRPCClient\n\nrouter = APIRouter()\nclient = JSONRPCClient()\n\n@router.get(\"/api/receipt\")\nasync def get_receipt(tx_hash: str = Query(..., description=\"0x-prefixed transaction hash\")):\n    try:\n        receipt = client.get_transaction_receipt(tx_hash)\n        if receipt is None:\n            raise HTTPException(status_code=404, detail=\"Receipt unavailable \u2013 the transaction may be pending or unknown\")\n        return {\"receipt\": receipt}\n    except (ConnectionError, RuntimeError) as exc:\n        raise HTTPException(status_code=502, detail=str(exc)) from exc",
+            "usage": "// Frontend example\nconst res = await fetch(`/api/receipt?tx_hash=${normalizedHash}`);\nconst { receipt } = await res.json();"
+        }
+    ]
+}

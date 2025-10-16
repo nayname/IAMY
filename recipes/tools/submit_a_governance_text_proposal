@@ -1,0 +1,81 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects to the user\u2019s wallet extension and returns the Neutron bech32 address that will act as the proposal\u2019s proposer.",
+            "function": "getNeutronAddress()",
+            "usage": "const proposer = await getNeutronAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Creates a JSON file containing the proposal\u2019s title, description and initial deposit, effectively collecting all required metadata in one place.",
+            "function": "create_json_proposal_file(msgs, title, description, deposit, outfile=\"proposal.json\")",
+            "usage": "file_path = create_json_proposal_file([], \"Upgrade Docs\", \"Improve Neutron docs\", \"10000000untrn\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Builds a MsgSubmitProposal object, wrapping the proposal metadata into a transaction-ready message.",
+            "function": "wrap_into_submit_proposal(schedule_msg, proposer, deposit)",
+            "usage": "submit_msg = wrap_into_submit_proposal({}, proposer, [{\"denom\": \"untrn\", \"amount\": 10000000}])"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the prepared transaction with the proposer\u2019s key and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "tx_result = sign_and_broadcast_tx(tx, wallet, client)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Continuously polls the chain for the given proposal ID until its status is determined (e.g., it has entered VotingPeriod).",
+            "function": "wait_for_voting_result(proposal_id, chain_id=\"neutron-1\")",
+            "usage": "status = wait_for_voting_result(proposal_id)"
+        }
+    ],
+    "frontend": [
+        "const proposer = await getNeutronAddress();//step: 1 Tool: get_proposer_address Desciption: Identify the wallet address that will be used as the proposal\u2019s proposer."
+    ],
+    "backend": [
+        "file_path = create_json_proposal_file([], \"Upgrade Docs\", \"Improve Neutron docs\", \"10000000untrn\")#step: 2 Tool: collect_proposal_metadata Desciption: Gather the proposal title, description, and any metadata (e.g., summary, forum link).",
+        "submit_msg = wrap_into_submit_proposal({}, proposer, [{\"denom\": \"untrn\", \"amount\": 10000000}])#step: 3 Tool: construct_msg_submit_text_proposal Desciption: Build a MsgSubmitProposal of type TextProposal with the collected metadata and the required initial deposit.",
+        "tx_result = sign_and_broadcast_tx(tx, wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the MsgSubmitProposal with the proposer\u2019s key and broadcast it to the network.",
+        "status = wait_for_voting_result(proposal_id)#step: 5 Tool: query_proposal_status Desciption: Fetch the proposal by ID once the transaction is confirmed to ensure it entered the VotingPeriod."
+    ],
+    "intent": "Submit a governance text proposal",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_proposer_address",
+            "description": "Identify the wallet address that will be used as the proposal\u2019s proposer."
+        },
+        {
+            "step": 2,
+            "tool": "collect_proposal_metadata",
+            "description": "Gather the proposal title, description, and any metadata (e.g., summary, forum link)."
+        },
+        {
+            "step": 3,
+            "tool": "construct_msg_submit_text_proposal",
+            "description": "Build a MsgSubmitProposal of type TextProposal with the collected metadata and the required initial deposit."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the MsgSubmitProposal with the proposer\u2019s key and broadcast it to the network."
+        },
+        {
+            "step": 5,
+            "tool": "query_proposal_status",
+            "description": "Fetch the proposal by ID once the transaction is confirmed to ensure it entered the VotingPeriod."
+        }
+    ],
+    "outcome_checks": [
+        "The transaction hash is included in a block and succeeds.",
+        "A new proposal ID is returned and visible via the governance query endpoint.",
+        "The proposal status is VotingPeriod (or DepositPeriod if minimum deposit not met)."
+    ]
+}

@@ -1,0 +1,79 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No existing backend helper is responsible for bumping the Cosmos-SDK version or running `go mod tidy`.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "The codebase contains no ready-made helper that amends the encoding configuration to register SignMode_TEXTUAL.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "There is no implemented function that propagates the `--sign-mode` flag to the CLI in the current codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "compile_binary rebuilds the Go application after code changes, ensuring the new encoding logic is included in the produced binary.",
+            "function": "compile_binary(app_dir='.')",
+            "usage": "compile_binary('/path/to/app')"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "No helper exists that signs a transaction in TEXTUAL mode via the CLI.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: update_go_mod Desciption: Bump Cosmos-SDK dependency to v0.47+ (where sign-mode TEXTUAL is available) and run `go mod tidy`.",
+        "undef#step: 2 Tool: update_encoding_config Desciption: In app/encoding.go, add `signing.RegisterSignModeHandler(signing.SignMode_SIGN_MODE_TEXTUAL, ...)` or use `tx.ConfigOptions{EnabledSignModes: []signing.SignMode{signing.SignMode_SIGN_MODE_TEXTUAL, ...}}` when creating the TxConfig.",
+        "undef#step: 3 Tool: expose_cli_flag Desciption: Ensure the CLI inherits the `--sign-mode` flag from Cosmos-SDK tx commands so users can pass `--sign-mode=textual`.",
+        "compile_binary('/path/to/app')#step: 4 Tool: compile_binary Desciption: Re-build the application to embed the new encoding configuration.",
+        "undef#step: 5 Tool: sign_textual_tx Desciption: Run `appd tx sign tx.json --from alice --sign-mode=textual` and inspect the human-readable representation."
+    ],
+    "intent": "Add transaction sign-mode TEXTUAL support",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "update_go_mod",
+            "description": "Bump Cosmos-SDK dependency to v0.47+ (where sign-mode TEXTUAL is available) and run `go mod tidy`."
+        },
+        {
+            "step": 2,
+            "tool": "update_encoding_config",
+            "description": "In app/encoding.go, add `signing.RegisterSignModeHandler(signing.SignMode_SIGN_MODE_TEXTUAL, ...)` or use `tx.ConfigOptions{EnabledSignModes: []signing.SignMode{signing.SignMode_SIGN_MODE_TEXTUAL, ...}}` when creating the TxConfig."
+        },
+        {
+            "step": 3,
+            "tool": "expose_cli_flag",
+            "description": "Ensure the CLI inherits the `--sign-mode` flag from Cosmos-SDK tx commands so users can pass `--sign-mode=textual`."
+        },
+        {
+            "step": 4,
+            "tool": "compile_binary",
+            "description": "Re-build the application to embed the new encoding configuration."
+        },
+        {
+            "step": 5,
+            "tool": "sign_textual_tx",
+            "description": "Run `appd tx sign tx.json --from alice --sign-mode=textual` and inspect the human-readable representation."
+        }
+    ],
+    "outcome_checks": [
+        "`appd tx sign --help` lists `textual` in the available sign modes.",
+        "A transaction signed with `--sign-mode=textual` is accepted by `appd tx broadcast` and included in a block."
+    ]
+}

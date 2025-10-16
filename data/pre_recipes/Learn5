@@ -1,0 +1,177 @@
+[
+    {
+        "intent": "Add a circuit breaker to the application BaseApp",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "SearchCosmosDocumentation",
+                "description": "Query: \"Cosmos SDK circuit breaker module integration BaseApp\" to locate official guide, keeper API, and ante-handler requirements."
+            },
+            {
+                "step": 2,
+                "tool": "modify_source_code",
+                "description": "In app.go, import \"github.com/cosmos/cosmos-sdk/x/circuit\" and add circuit.AppModuleBasic to ModuleBasics."
+            },
+            {
+                "step": 3,
+                "tool": "modify_source_code",
+                "description": "Instantiate the CircuitKeeper (with appCodec, keys[...]) and append it to the list of keepers passed into the AnteHandler options."
+            },
+            {
+                "step": 4,
+                "tool": "update_module_manager",
+                "description": "Append circuit.AppModule to the ModuleManager\u2019s order lists so it is initialized during begin-block."
+            },
+            {
+                "step": 5,
+                "tool": "compile_application",
+                "description": "Run `make build` (or `go build ./...`) to be sure the code compiles with the new module."
+            },
+            {
+                "step": 6,
+                "tool": "start_node",
+                "description": "Launch a local node; verify startup succeeds with circuit module registered."
+            }
+        ],
+        "outcome_checks": [
+            "Compilation finishes without errors.",
+            "`appd start` logs include \"module=circuit\" during initialization.",
+            "CLI call `appd query circuit disabled-list` returns an empty set, showing the keeper is live."
+        ]
+    },
+    {
+        "intent": "Register upgrade handlers",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "SearchCosmosDocumentation",
+                "description": "Query: \"Cosmos SDK upgrade module SetUpgradeHandler example\" to obtain code snippets and required store-loader logic."
+            },
+            {
+                "step": 2,
+                "tool": "modify_source_code",
+                "description": "In app.go, define a constant upgradeName and height, then call app.UpgradeKeeper.SetUpgradeHandler(upgradeName, func(ctx sdk.Context, plan upgradetypes.Plan, vm module.VersionMap) (module.VersionMap, error) { /* migrations */ })."
+            },
+            {
+                "step": 3,
+                "tool": "modify_source_code",
+                "description": "Add `app.UpgradeKeeper.SetStoreLoader(upgradetypes.UpgradeStoreLoader(height, &plan))` so the binary knows when to perform the store migration."
+            },
+            {
+                "step": 4,
+                "tool": "compile_application",
+                "description": "Re-build the binary to include the new handler."
+            },
+            {
+                "step": 5,
+                "tool": "simulate_upgrade",
+                "description": "Start a single-node chain, fast-forward to the planned height, and confirm the handler executes by inspecting logs."
+            }
+        ],
+        "outcome_checks": [
+            "Binary builds successfully.",
+            "At the target height, logs display \"upgrade handler executed\" with no panic.",
+            "Chain continues producing blocks after the upgrade."
+        ]
+    },
+    {
+        "intent": "Export app state and validators",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "SearchCosmosDocumentation",
+                "description": "Query: \"cosmosd export app state and validators command flags\" to get correct CLI syntax."
+            },
+            {
+                "step": 2,
+                "tool": "stop_node",
+                "description": "Gracefully stop any running node to guarantee database consistency."
+            },
+            {
+                "step": 3,
+                "tool": "run_cli_command",
+                "description": "Execute `<appd> export --home <node_home> --height <target_height> > state.json`."
+            },
+            {
+                "step": 4,
+                "tool": "validate_json_schema",
+                "description": "Check that state.json contains top-level keys `app_state` and `validators`."
+            }
+        ],
+        "outcome_checks": [
+            "state.json file is created and not empty.",
+            "JSON passes schema validation and includes expected keys.",
+            "File size roughly matches chain size expectations (sanity check)."
+        ]
+    },
+    {
+        "intent": "Load application at block height 1000",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "SearchCosmosDocumentation",
+                "description": "Query: \"Cosmos SDK replay switch load at height\" to confirm CLI flags (`--halt-height`, `--trace`, etc.)."
+            },
+            {
+                "step": 2,
+                "tool": "stop_node",
+                "description": "Terminate the running node so a replay can be started."
+            },
+            {
+                "step": 3,
+                "tool": "run_cli_command",
+                "description": "Start the node with `appd start --home <node_home> --recover --halt-height 1000` to load state up to block 1000 and stop."
+            },
+            {
+                "step": 4,
+                "tool": "verify_logs",
+                "description": "Ensure the last committed block in the output is height 1000 and the process exits/halts as expected."
+            }
+        ],
+        "outcome_checks": [
+            "Startup logs finish with `executed block height=1000`.",
+            "No further blocks are processed after height 1000.",
+            "`appd status` reports latest_height 1000."
+        ]
+    },
+    {
+        "intent": "Trigger PrepareProposal handler override",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "SearchCosmosDocumentation",
+                "description": "Query: \"Cosmos SDK PrepareProposal override BaseApp\" to locate the extended ABCI handler documentation."
+            },
+            {
+                "step": 2,
+                "tool": "implement_custom_prepare_proposal",
+                "description": "In app.go (or a new file), define `func (app *App) PrepareProposal(ctx sdk.Context, req *abci.RequestPrepareProposal) (*abci.ResponsePrepareProposal, error)` with custom logic."
+            },
+            {
+                "step": 3,
+                "tool": "modify_source_code",
+                "description": "Within NewApp constructor, call `app.SetPrepareProposal(app.PrepareProposal)` to register the override."
+            },
+            {
+                "step": 4,
+                "tool": "compile_application",
+                "description": "Rebuild the binary to include the new handler."
+            },
+            {
+                "step": 5,
+                "tool": "start_node",
+                "description": "Launch a validator node; produce at least one block."
+            },
+            {
+                "step": 6,
+                "tool": "monitor_logs",
+                "description": "Watch for custom debug statements emitted from the PrepareProposal function to confirm it is being called."
+            }
+        ],
+        "outcome_checks": [
+            "Compilation succeeds.",
+            "Validator logs show custom PrepareProposal execution on every block proposal.",
+            "No consensus errors occur after the override is active."
+        ]
+    }
+]

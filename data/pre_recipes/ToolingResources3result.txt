@@ -1,0 +1,139 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"ToolingResources\", \"query\": \"Configure Hardhat networks for Cosmos EVM in hardhat.config.ts\"}, {\"label\": \"ToolingResources\", \"query\": \"Get the latest block number with cast block-number\"}, {\"label\": \"ToolingResources\", \"query\": \"Get details of the latest block with cast block latest\"}, {\"label\": \"ToolingResources\", \"query\": \"Publish a raw signed transaction with cast publish\"}, {\"label\": \"ToolingResources\", \"query\": \"Run Hardhat tests with npx hardhat test\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "9da9e1af-ccbd-40d4-8672-f64bcca12f74",
+            "example": false
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "tool_calls": [
+                    {
+                        "id": "call_WNcJJB56AS9yU1TH1MDWvAsr",
+                        "function": {
+                            "arguments": "{\"query\":\"cast publish raw signed transaction\"}",
+                            "name": "SearchCosmosDocumentation"
+                        },
+                        "type": "function"
+                    }
+                ],
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 861,
+                    "prompt_tokens": 717,
+                    "total_tokens": 1578,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 832,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CPtdScIA1fPYqHDkTl2SFn2ad60OR",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--a0ba2cef-07ce-4984-9d10-e91d3fac418c-0",
+            "example": false,
+            "tool_calls": [
+                {
+                    "name": "SearchCosmosDocumentation",
+                    "args": {
+                        "query": "cast publish raw signed transaction"
+                    },
+                    "id": "call_WNcJJB56AS9yU1TH1MDWvAsr",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 717,
+                "output_tokens": 861,
+                "total_tokens": 1578,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 832
+                }
+            }
+        },
+        {
+            "content": "[\"Title: Transaction Commands\\nLink: https://evm.cosmos.network/docs/evm/next/documentation/getting-started/tooling-and-resources/foundry\\nContent: Command Purpose cast send Sign and publish a transaction. cast publish Publish a raw, signed transaction. cast receipt Fetch the receipt for a transaction hash. cast tx Query transaction details (status, logs, etc.). cast rpc Invoke any raw JSON-RPC method. Sign and Send (using a private key or local keystore): Publish Raw Transaction (hex-encoded): cast publish 0xf86b808504a817c80082520894...\\n\\nCommand Purpose cast send Sign and publish a transaction. cast publish Publish a raw, signed transaction. cast receipt Fetch the receipt for a transaction hash. cast tx Query transaction details (status, logs, etc.). cast rpc Invoke any raw JSON-RPC method. Sign and Send (using a private key or local keystore): Publish Raw Transaction (hex-encoded): Generic RPC Call:\\n\\nCommand Purpose cast send Sign and publish a transaction. cast publish Publish a raw, signed transaction. cast receipt Fetch the receipt for a transaction hash. cast tx Query transaction details (status, logs, etc.). cast rpc Invoke any raw JSON-RPC method. Sign and Send (using a private key or local keystore): Publish Raw Transaction (hex-encoded): Generic RPC Call: cast rpc eth_sendRawTransaction 0xf86b8085...\\n\\n\", \"Title: Transaction Commands\\nLink: https://evm.cosmos.network/docs/evm/v0.4.x/documentation/getting-started/tooling-and-resources/foundry\\nContent: Command Purpose cast send Sign and publish a transaction. cast publish Publish a raw, signed transaction. cast receipt Fetch the receipt for a transaction hash. cast tx Query transaction details (status, logs, etc.). cast rpc Invoke any raw JSON-RPC method. Sign and Send (using a private key or local keystore): Publish Raw Transaction (hex-encoded): cast publish 0xf86b808504a817c80082520894...\\n\\nCommand Purpose cast send Sign and publish a transaction. cast publish Publish a raw, signed transaction. cast receipt Fetch the receipt for a transaction hash. cast tx Query transaction details (status, logs, etc.). cast rpc Invoke any raw JSON-RPC method. Sign and Send (using a private key or local keystore): Publish Raw Transaction (hex-encoded): Generic RPC Call:\\n\\nCommand Purpose cast send Sign and publish a transaction. cast publish Publish a raw, signed transaction. cast receipt Fetch the receipt for a transaction hash. cast tx Query transaction details (status, logs, etc.). cast rpc Invoke any raw JSON-RPC method. Sign and Send (using a private key or local keystore): Publish Raw Transaction (hex-encoded): Generic RPC Call: cast rpc eth_sendRawTransaction 0xf86b8085...\\n\\n\", \"Title: Require signing over the TxBody and AuthInfo raw bytes\\nLink: https://evm.cosmos.network/docs/sdk/v0.47/build/architecture/adr-050-sign-mode-textual\\nContent: Recall that the transaction bytes merklelized on chain are the Protobuf binary serialization of TxRaw , which contains the body_bytes and auth_info_bytes . Moreover, the transaction hash is defined as the SHA256 hash of the TxRaw bytes. We require that the user signs over these bytes in SIGN_MODE_TEXTUAL, more specifically over the following string: *Hash of raw bytes: <HEX(sha256(len(body_bytes) ++ body_bytes ++ len(auth_info_bytes) ++ auth_info_bytes))>\\n\\nRecall that the transaction bytes merklelized on chain are the Protobuf binary serialization of TxRaw , which contains the body_bytes and auth_info_bytes . Moreover, the transaction hash is defined as the SHA256 hash of the TxRaw bytes. We require that the user signs over these bytes in SIGN_MODE_TEXTUAL, more specifically over the following string: where: ++ denotes concatenation, HEX is the hexadecimal representation of the bytes, all in capital letters, no 0x prefix, and len() is encoded as a Big-Endian uint64. This is to prevent transaction hash malleability. The point #1 about invertiblity assures that transaction body and auth_info values are not malleable, but the transaction hash still might be malleable with point #1 only, because the SIGN_MODE_TEXTUAL strings don't follow the byte ordering defined in body_bytes and auth_info_bytes . Without this hash, a malicious validator or exchange could intercept a transaction, modify its transaction hash after the user signed it using SIGN_MODE_TEXTUAL (by tweaking the byte ordering inside body_bytes or auth_info_bytes ), and then submit it to Tendermint. By including this hash in the SIGN_MODE_TEXTUAL signing payload, we keep the same level of guarantees as SIGN_MODE_DIRECT. These bytes are only shown in expert mode, hence the leading *.\\n\\nSignature and Security\\nFor security, transaction signatures should have three properties: Given the transaction, signatures, and chain state, it must be possible to validate that the signatures matches the transaction,\\nto verify that the signers must have known their respective secret keys. It must be computationally infeasible to find a substantially different transaction for which the given signatures are valid, given the same chain state. The user should be able to give informed consent to the signed data via a simple, secure device with limited display capabilities. The correctness and security of SIGN_MODE_TEXTUAL is guaranteed by demonstrating an inverse function from the rendering to transaction protos.\\nThis means that it is impossible for a different protocol buffer message to render to the same text.\\n\\n\", \"Title: Require signing over the TxBody and AuthInfo raw bytes\\nLink: https://evm.cosmos.network/docs/sdk/v0.53/build/architecture/adr-050-sign-mode-textual\\nContent: Recall that the transaction bytes merklelized on chain are the Protobuf binary serialization of TxRaw , which contains the body_bytes and auth_info_bytes . Moreover, the transaction hash is defined as the SHA256 hash of the TxRaw bytes. We require that the user signs over these bytes in SIGN_MODE_TEXTUAL, more specifically over the following string: *Hash of raw bytes: <HEX(sha256(len(body_bytes) ++ body_bytes ++ len(auth_info_bytes) ++ auth_info_bytes))>\\n\\nRecall that the transaction bytes merklelized on chain are the Protobuf binary serialization of TxRaw , which contains the body_bytes and auth_info_bytes . Moreover, the transaction hash is defined as the SHA256 hash of the TxRaw bytes. We require that the user signs over these bytes in SIGN_MODE_TEXTUAL, more specifically over the following string: where: ++ denotes concatenation, HEX is the hexadecimal representation of the bytes, all in capital letters, no 0x prefix, and len() is encoded as a Big-Endian uint64. This is to prevent transaction hash malleability. The point #1 about invertiblity assures that transaction body and auth_info values are not malleable, but the transaction hash still might be malleable with point #1 only, because the SIGN_MODE_TEXTUAL strings don't follow the byte ordering defined in body_bytes and auth_info_bytes . Without this hash, a malicious validator or exchange could intercept a transaction, modify its transaction hash after the user signed it using SIGN_MODE_TEXTUAL (by tweaking the byte ordering inside body_bytes or auth_info_bytes ), and then submit it to Tendermint. By including this hash in the SIGN_MODE_TEXTUAL signing payload, we keep the same level of guarantees as SIGN_MODE_DIRECT. These bytes are only shown in expert mode, hence the leading *.\\n\\nSignature and Security\\nFor security, transaction signatures should have three properties: Given the transaction, signatures, and chain state, it must be possible to validate that the signatures matches the transaction,\\nto verify that the signers must have known their respective secret keys. It must be computationally infeasible to find a substantially different transaction for which the given signatures are valid, given the same chain state. The user should be able to give informed consent to the signed data via a simple, secure device with limited display capabilities. The correctness and security of SIGN_MODE_TEXTUAL is guaranteed by demonstrating an inverse function from the rendering to transaction protos.\\nThis means that it is impossible for a different protocol buffer message to render to the same text.\\n\\n\", \"Title: Require signing over the TxBody and AuthInfo raw bytes\\nLink: https://evm.cosmos.network/docs/sdk/v0.50/build/architecture/adr-050-sign-mode-textual\\nContent: Recall that the transaction bytes merklelized on chain are the Protobuf binary serialization of TxRaw , which contains the body_bytes and auth_info_bytes . Moreover, the transaction hash is defined as the SHA256 hash of the TxRaw bytes. We require that the user signs over these bytes in SIGN_MODE_TEXTUAL, more specifically over the following string: *Hash of raw bytes: <HEX(sha256(len(body_bytes) ++ body_bytes ++ len(auth_info_bytes) ++ auth_info_bytes))>\\n\\nRecall that the transaction bytes merklelized on chain are the Protobuf binary serialization of TxRaw , which contains the body_bytes and auth_info_bytes . Moreover, the transaction hash is defined as the SHA256 hash of the TxRaw bytes. We require that the user signs over these bytes in SIGN_MODE_TEXTUAL, more specifically over the following string: where: ++ denotes concatenation, HEX is the hexadecimal representation of the bytes, all in capital letters, no 0x prefix, and len() is encoded as a Big-Endian uint64. This is to prevent transaction hash malleability. The point #1 about invertiblity assures that transaction body and auth_info values are not malleable, but the transaction hash still might be malleable with point #1 only, because the SIGN_MODE_TEXTUAL strings don't follow the byte ordering defined in body_bytes and auth_info_bytes . Without this hash, a malicious validator or exchange could intercept a transaction, modify its transaction hash after the user signed it using SIGN_MODE_TEXTUAL (by tweaking the byte ordering inside body_bytes or auth_info_bytes ), and then submit it to Tendermint. By including this hash in the SIGN_MODE_TEXTUAL signing payload, we keep the same level of guarantees as SIGN_MODE_DIRECT. These bytes are only shown in expert mode, hence the leading *.\\n\\nSignature and Security\\nFor security, transaction signatures should have three properties: Given the transaction, signatures, and chain state, it must be possible to validate that the signatures matches the transaction,\\nto verify that the signers must have known their respective secret keys. It must be computationally infeasible to find a substantially different transaction for which the given signatures are valid, given the same chain state. The user should be able to give informed consent to the signed data via a simple, secure device with limited display capabilities. The correctness and security of SIGN_MODE_TEXTUAL is guaranteed by demonstrating an inverse function from the rendering to transaction protos.\\nThis means that it is impossible for a different protocol buffer message to render to the same text.\\n\\n\", \"Title: Generating, Signing and Broadcasting Transactions\\nLink: https://evm.cosmos.network/docs/sdk/v0.53/user/run-node/txs\\nContent: Synopsis This document describes how to generate an (unsigned) transaction, signing it (with one or multiple keys), and broadcasting it to the network.\\n\\nGenerating, Signing and Broadcasting Transactions\\nSynopsis This document describes how to generate an (unsigned) transaction, signing it (with one or multiple keys), and broadcasting it to the network.\\n\\nSigning a Transaction\\nSigning a transaction using the CLI requires the unsigned transaction to be saved in a file. Let's assume the unsigned transaction is in a file called unsigned_tx.json in the current directory (see previous paragraph on how to do that). Then, simply run the following command: This command will decode the unsigned transaction and sign it with SIGN_MODE_DIRECT with $MY_VALIDATOR_ADDRESS 's key, which we already set up in the keyring. The signed transaction will be output as JSON to the console, and, as above, we can save it to a file by appending --output-document signed_tx.json. Some useful flags to consider in the tx sign command: --sign-mode : you may use amino-json to sign the transaction using SIGN_MODE_LEGACY_AMINO_JSON, --offline : sign in offline mode. This means that the tx sign command doesn't connect to the node to retrieve the signer's account number and sequence, both needed for signing. In this case, you must manually supply the --account-number and --sequence flags. This is useful for offline signing, i.e. signing in a secure environment which doesn't have access to the internet.\\n\\n\", \"Title: Generating, Signing and Broadcasting Transactions\\nLink: https://evm.cosmos.network/docs/sdk/v0.47/user/run-node/txs\\nContent: Synopsis This document describes how to generate an (unsigned) transaction, signing it (with one or multiple keys), and broadcasting it to the network.\\n\\nGenerating, Signing and Broadcasting Transactions\\nSynopsis This document describes how to generate an (unsigned) transaction, signing it (with one or multiple keys), and broadcasting it to the network.\\n\\nSigning a Transaction\\nSigning a transaction using the CLI requires the unsigned transaction to be saved in a file. Let's assume the unsigned transaction is in a file called unsigned_tx.json in the current directory (see previous paragraph on how to do that). Then, simply run the following command: This command will decode the unsigned transaction and sign it with SIGN_MODE_DIRECT with $MY_VALIDATOR_ADDRESS 's key, which we already set up in the keyring. The signed transaction will be output as JSON to the console, and, as above, we can save it to a file by appending --output-document signed_tx.json. Some useful flags to consider in the tx sign command: --sign-mode : you may use amino-json to sign the transaction using SIGN_MODE_LEGACY_AMINO_JSON, --offline : sign in offline mode. This means that the tx sign command doesn't connect to the node to retrieve the signer's account number and sequence, both needed for signing. In this case, you must manually supply the --account-number and --sequence flags. This is useful for offline signing, i.e. signing in a secure environment which doesn't have access to the internet.\\n\\n\", \"Title: Generating, Signing and Broadcasting Transactions\\nLink: https://evm.cosmos.network/docs/sdk/v0.50/user/run-node/txs\\nContent: Synopsis This document describes how to generate an (unsigned) transaction, signing it (with one or multiple keys), and broadcasting it to the network.\\n\\nGenerating, Signing and Broadcasting Transactions\\nSynopsis This document describes how to generate an (unsigned) transaction, signing it (with one or multiple keys), and broadcasting it to the network.\\n\\nSigning a Transaction\\nSigning a transaction using the CLI requires the unsigned transaction to be saved in a file. Let's assume the unsigned transaction is in a file called unsigned_tx.json in the current directory (see previous paragraph on how to do that). Then, simply run the following command: This command will decode the unsigned transaction and sign it with SIGN_MODE_DIRECT with $MY_VALIDATOR_ADDRESS 's key, which we already set up in the keyring. The signed transaction will be output as JSON to the console, and, as above, we can save it to a file by appending --output-document signed_tx.json. Some useful flags to consider in the tx sign command: --sign-mode : you may use amino-json to sign the transaction using SIGN_MODE_LEGACY_AMINO_JSON, --offline : sign in offline mode. This means that the tx sign command doesn't connect to the node to retrieve the signer's account number and sequence, both needed for signing. In this case, you must manually supply the --account-number and --sequence flags. This is useful for offline signing, i.e. signing in a secure environment which doesn't have access to the internet.\\n\\n\", \"Title: Transactions\\nLink: https://evm.cosmos.network/docs/sdk/v0.50/learn/advanced/transactions\\nContent: Transactions are comprised of metadata held in contexts and sdk.Msg s that trigger state changes within a module through the module's Protobuf Msg service. When users want to interact with an application and make state changes (e.g. sending coins), they create transactions. Each of a transaction's sdk.Msg must be signed using the private key associated with the appropriate account(s), before the transaction is broadcasted to the network. A transaction must then be included in a block, validated, and approved by the network through the consensus process. To read more about the lifecycle of a transaction, click here.\\n\\nSigning \\nEvery message in a transaction must be signed by the addresses specified by its GetSigners . The Cosmos SDK currently allows signing transactions in two different ways.\\n\\nSynopsis Transactions are objects created by end-users to trigger state changes in the application. Pre-requisite Readings Anatomy of a Cosmos SDK Application\\n\\n\", \"Title: Transactions\\nLink: https://evm.cosmos.network/docs/sdk/v0.53/learn/advanced/transactions\\nContent: Transactions are comprised of metadata held in contexts and sdk.Msg s that trigger state changes within a module through the module's Protobuf Msg service. When users want to interact with an application and make state changes (e.g. sending coins), they create transactions. Each of a transaction's sdk.Msg must be signed using the private key associated with the appropriate account(s), before the transaction is broadcasted to the network. A transaction must then be included in a block, validated, and approved by the network through the consensus process. To read more about the lifecycle of a transaction, click here.\\n\\nSigning \\nEvery message in a transaction must be signed by the addresses specified by its GetSigners . The Cosmos SDK currently allows signing transactions in two different ways.\\n\\nSynopsis Transactions are objects created by end-users to trigger state changes in the application. Pre-requisite Readings Anatomy of a Cosmos SDK Application\\n\\n\"]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "SearchCosmosDocumentation",
+            "id": "91d54f64-98f9-4313-930f-893be572b687",
+            "tool_call_id": "call_WNcJJB56AS9yU1TH1MDWvAsr",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Configure Hardhat networks for Cosmos EVM in hardhat.config.ts\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"open_file\",\n        \"description\": \"Open hardhat.config.ts so the Cosmos EVM network definition can be added.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"update_file\",\n        \"description\": \"Inside the exported HardhatUserConfig object, append a new entry under networks:\\n\\nnetworks: {\\n  cosmos: {\\n    url: process.env.COSMOS_RPC || \\\"https://rpc.cosmos.network\\\",   // RPC endpoint for the target Cosmos-SDK EVM chain\\n    chainId: Number(process.env.COSMOS_CHAIN_ID) || 118,           // Replace with the chain\u2019s EVM chainId\\n    accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []\\n  },\\n  /* existing networks \u2026 */\\n}\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"install_npm_packages\",\n        \"description\": \"Install any missing dependencies used in the config (e.g. dotenv and Hardhat toolbox):\\n  npm i -D @nomicfoundation/hardhat-toolbox dotenv\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"run_command\",\n        \"description\": \"Compile the workspace to confirm the config is syntactically correct:\\n  npx hardhat compile\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"run_command\",\n        \"description\": \"Ping the configured network to ensure Hardhat can reach it:\\n  npx hardhat --network cosmos block-number\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Compilation finishes with no errors.\",\n      \"The command in step 5 returns a positive block number, confirming connectivity to the Cosmos EVM RPC.\"\n    ]\n  },\n  {\n    \"intent\": \"Get the latest block number with cast block-number\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"run_command\",\n        \"description\": \"Execute Foundry\u2019s CLI query against the desired RPC endpoint:\\n  cast block-number --rpc-url $COSMOS_RPC_URL\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"STDOUT is a single integer > 0 (e.g. 101234), representing the most recent block height.\"\n    ]\n  },\n  {\n    \"intent\": \"Get details of the latest block with cast block latest\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"run_command\",\n        \"description\": \"Request the latest block and return it as JSON:\\n  cast block latest --rpc-url $COSMOS_RPC_URL --json\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The JSON payload contains fields such as number, hash, parentHash, gasUsed, and timestamp.\",\n      \"number matches the value retrieved in the previous recipe (or block-number \u00b11 if the chain advanced).\"\n    ]\n  },\n  {\n    \"intent\": \"Publish a raw signed transaction with cast publish\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"input_raw_tx\",\n        \"description\": \"Obtain (or prompt the user for) the 0x-prefixed RLP-encoded signed transaction string.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"run_command\",\n        \"description\": \"Broadcast the raw transaction:\\n  cast publish $RAW_TX_HEX --rpc-url $COSMOS_RPC_URL\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"capture_output\",\n        \"description\": \"Store the transaction hash returned by cast.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"run_command\",\n        \"description\": \"Confirm inclusion by fetching the receipt:\\n  cast receipt $TX_HASH --rpc-url $COSMOS_RPC_URL --json\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Receipt status equals 1 (success) and includes a blockNumber field.\",\n      \"gasUsed and logs fields are present, confirming the tx was fully processed.\"\n    ]\n  },\n  {\n    \"intent\": \"Run Hardhat tests with npx hardhat test\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"run_command\",\n        \"description\": \"Execute the project\u2019s test suite:\\n  npx hardhat test\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The summary shows 0 failing tests.\",\n      \"Hardhat exits with status code 0.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2424,
+                    "prompt_tokens": 5026,
+                    "total_tokens": 7450,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1408,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CPtdfKvoJo6ZuvDtvXIbvnGsfk7Nk",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--a9131f50-146d-4bc5-9e18-cf21e41cab1a-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 5026,
+                "output_tokens": 2424,
+                "total_tokens": 7450,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1408
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,97 @@
+[
+    {
+        "intent": "Convert an Ether value to Wei (cast to-wei)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prompt_user",
+                "description": "Request the decimal Ether amount to convert (e.g., \"0.42\")."
+            },
+            {
+                "step": 2,
+                "tool": "cast_cli",
+                "description": "Execute `cast to-wei <amount>` to convert the supplied Ether value into Wei units."
+            }
+        ],
+        "outcome_checks": [
+            "The command returns a single integer with no decimal point.",
+            "Verify that the integer equals <amount> \u00d7 10^18 (standard 18-decimal conversion)."
+        ]
+    },
+    {
+        "intent": "Convert a Wei value to Ether (cast from-wei)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prompt_user",
+                "description": "Request the Wei amount to convert (e.g., \"420000000000000000\")."
+            },
+            {
+                "step": 2,
+                "tool": "cast_cli",
+                "description": "Execute `cast from-wei <wei_amount>` to convert the supplied Wei value into Ether units."
+            }
+        ],
+        "outcome_checks": [
+            "The command returns a decimal number with up to 18 digits of precision.",
+            "Multiplying the result by 10^18 yields the original Wei amount."
+        ]
+    },
+    {
+        "intent": "Hash arbitrary data using Keccak-256 (cast keccak)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prompt_user",
+                "description": "Ask the user for the raw data string or hex bytes they wish to hash."
+            },
+            {
+                "step": 2,
+                "tool": "cast_cli",
+                "description": "Run `cast keccak <data>` to obtain the Keccak-256 hash."
+            }
+        ],
+        "outcome_checks": [
+            "Output is a 32-byte (64-hex-character) string prefixed with 0x.",
+            "Re-running the command with identical input yields the same hash."
+        ]
+    },
+    {
+        "intent": "Compute a CREATE2 contract address (cast compute-address)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prompt_user",
+                "description": "Collect the deployer (factory) address, salt (32-byte hex), and the contract\u2019s init code hash."
+            },
+            {
+                "step": 2,
+                "tool": "cast_cli",
+                "description": "Execute `cast compute-address --deployer <address> --salt <salt> --init-code-hash <hash>` to derive the deterministic CREATE2 address."
+            }
+        ],
+        "outcome_checks": [
+            "Returned address begins with 0x and is 42 characters long.",
+            "If the same parameters are re-used, the command outputs the identical address."
+        ]
+    },
+    {
+        "intent": "Find the block number closest to a given timestamp (cast find-block)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prompt_user",
+                "description": "Ask the user for the target UNIX timestamp or RFC-3339 date/time string and an RPC endpoint URL for the desired (Cosmos-EVM) chain."
+            },
+            {
+                "step": 2,
+                "tool": "cast_cli",
+                "description": "Run `cast find-block --timestamp <ts> --rpc-url <url>` to locate the nearest block."
+            }
+        ],
+        "outcome_checks": [
+            "Command returns a valid integer block height.",
+            "Querying the block via the same RPC endpoint shows a timestamp within \u00b115 seconds of the requested value."
+        ]
+    }
+]

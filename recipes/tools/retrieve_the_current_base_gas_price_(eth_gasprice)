@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No standalone function exists that only constructs the eth_gasPrice JSON-RPC payload without also sending it.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "json_rpc_call builds the JSON-RPC request for a given method (here eth_gasPrice), sends it to the default endpoint (http://localhost:8545), and returns the raw result field.",
+            "function": "json_rpc_call(method: str = \"txpool_status\", params: list | None = None, endpoint: str = \"http://localhost:8545\")",
+            "usage": "gas_hex = json_rpc_call(\"eth_gasPrice\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No dedicated helper is available to convert the returned hex-encoded wei value to a human-readable decimal number.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: prepare_json_rpc_payload Desciption: Create the request body: {\"jsonrpc\":\"2.0\",\"method\":\"eth_gasPrice\",\"params\":[],\"id\":1}",
+        "gas_hex = json_rpc_call(\"eth_gasPrice\")#step: 2 Tool: http_post Desciption: Send the request to the JSON-RPC endpoint (default http://localhost:8545).",
+        "undef#step: 3 Tool: parse_json_rpc_response Desciption: Extract the hex-encoded wei value from the \"result\" field and convert it to a decimal number for readability."
+    ],
+    "intent": "Retrieve the current base gas price (eth_gasPrice)",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "prepare_json_rpc_payload",
+            "description": "Create the request body: {\"jsonrpc\":\"2.0\",\"method\":\"eth_gasPrice\",\"params\":[],\"id\":1}"
+        },
+        {
+            "step": 2,
+            "tool": "http_post",
+            "description": "Send the request to the JSON-RPC endpoint (default http://localhost:8545)."
+        },
+        {
+            "step": 3,
+            "tool": "parse_json_rpc_response",
+            "description": "Extract the hex-encoded wei value from the \"result\" field and convert it to a decimal number for readability."
+        }
+    ],
+    "outcome_checks": [
+        "HTTP status 200 with a valid JSON body.",
+        "\"result\" is a valid hex string.",
+        "Converted gas price is a positive integer (wei > 0)."
+    ]
+}

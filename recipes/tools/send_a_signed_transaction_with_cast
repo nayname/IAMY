@@ -1,0 +1,92 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Adds a shell alias for Foundry\u2019s cast command, ensuring the tool is present and pre-configured with an RPC endpoint.",
+            "function": "add_cast_alias(rpc_url, profile_path=None)",
+            "usage": "add_cast_alias(\"https://rpc-kralum.neutron.org\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Checks that the chosen Neutron RPC endpoint is reachable and returns the working URL.",
+            "function": "connect_rpc_endpoint(rpc_endpoint='https://rpc-kralum.neutron.org')",
+            "usage": "rpc_url = connect_rpc_endpoint(\"https://rpc-kralum.neutron.org\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Loads the sender\u2019s private key from the NEUTRON_MNEMONIC environment variable for signing transactions.",
+            "function": "load_signing_key()",
+            "usage": "signing_key = load_signing_key()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Creates an unsigned send-transaction file with the desired recipient, amount, gas and fee parameters.",
+            "function": "build_send_tx(sender, recipient, amount='1000stake', fee='200stake', chain_id='my-test-chain', outfile='unsigned_tx.json')",
+            "usage": "tx_path = build_send_tx(sender, \"neutron1dest...\", \"500000untrn\", \"2500untrn\")"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Signs the prepared transaction with the backend key and broadcasts it, returning the resulting hash.",
+            "function": "sign_and_broadcast_tx__(execute_msg, gas=350_000)",
+            "usage": "result = sign_and_broadcast_tx__(execute_msg)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Polls the network until the broadcasted transaction has sufficient confirmations to be considered final.",
+            "function": "wait_for_confirmations(tx_hash, confirmations=12, poll=15)",
+            "usage": "confirmation = wait_for_confirmations(result['tx_hash'])"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "add_cast_alias(\"https://rpc-kralum.neutron.org\")#step: 1 Tool: verify_foundry_installation Desciption: Confirm that cast is installed and configured.",
+        "rpc_url = connect_rpc_endpoint(\"https://rpc-kralum.neutron.org\")#step: 2 Tool: get_rpc_url Desciption: Select an RPC endpoint for the Cosmos EVM chain.",
+        "signing_key = load_signing_key()#step: 3 Tool: load_private_key Desciption: Export or input the sender\u2019s private key as an environment variable (e.g., `export PRIVATE_KEY=\u2026`).",
+        "tx_path = build_send_tx(sender, \"neutron1dest...\", \"500000untrn\", \"2500untrn\")#step: 4 Tool: construct_tx_params Desciption: Define recipient address, amount, gas price, gas limit, and optional data payload.",
+        "result = sign_and_broadcast_tx__(execute_msg)#step: 5 Tool: sign_and_send_with_cast Desciption: Execute: `cast send <RECIPIENT> <AMOUNT> --rpc-url <RPC_URL> --private-key $PRIVATE_KEY --gas-price <GAS_PRICE> --gas-limit <GAS_LIMIT>`.",
+        "confirmation = wait_for_confirmations(result['tx_hash'])#step: 6 Tool: await_tx_confirmation Desciption: Wait for the transaction hash to be included in a block."
+    ],
+    "intent": "Send a signed transaction with cast",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "verify_foundry_installation",
+            "description": "Confirm that cast is installed and configured."
+        },
+        {
+            "step": 2,
+            "tool": "get_rpc_url",
+            "description": "Select an RPC endpoint for the Cosmos EVM chain."
+        },
+        {
+            "step": 3,
+            "tool": "load_private_key",
+            "description": "Export or input the sender\u2019s private key as an environment variable (e.g., `export PRIVATE_KEY=\u2026`)."
+        },
+        {
+            "step": 4,
+            "tool": "construct_tx_params",
+            "description": "Define recipient address, amount, gas price, gas limit, and optional data payload."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_send_with_cast",
+            "description": "Execute: `cast send <RECIPIENT> <AMOUNT> --rpc-url <RPC_URL> --private-key $PRIVATE_KEY --gas-price <GAS_PRICE> --gas-limit <GAS_LIMIT>`."
+        },
+        {
+            "step": 6,
+            "tool": "await_tx_confirmation",
+            "description": "Wait for the transaction hash to be included in a block."
+        }
+    ],
+    "outcome_checks": [
+        "A transaction hash is returned immediately after broadcast.",
+        "The transaction appears as \u2018successful\u2019 in a block-explorer and the recipient\u2019s balance increases by the sent amount."
+    ]
+}

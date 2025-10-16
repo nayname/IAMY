@@ -1,0 +1,40 @@
+{
+    "label": "send",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 provides a small helper that prompts the user for a 0x-prefixed, RLP-encoded signed transaction string.",
+            "code": "export const promptRawTx = () => {\n  // Ask the user to paste a raw, signed transaction.\n  const rawTx = prompt('Paste the 0x-prefixed RLP-encoded signed transaction:');\n\n  // Basic validation.\n  if (!rawTx || !rawTx.trim().startsWith('0x')) {\n    throw new Error('Invalid raw transaction hex string.');\n  }\n\n  return rawTx.trim();\n};",
+            "usage": "const rawTx = promptRawTx();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 creates a FastAPI endpoint that broadcasts the raw transaction to an EVM-compatible Cosmos RPC node and returns the resulting tx-hash.",
+            "code": "from fastapi import FastAPI, HTTPException, Request\nimport os\nimport requests\n\napp = FastAPI()\n\n# RPC endpoint for an EVM-compatible Cosmos chain (e.g., Evmos, Cronos, etc.)\nRPC_URL = os.getenv('COSMOS_RPC_URL', 'https://evmos-evm.publicnode.com')\n\n@app.post('/api/broadcast_raw_tx')\nasync def broadcast_raw_tx(request: Request):\n    \"\"\"Broadcast an already-signed RLP-encoded transaction and return its tx-hash.\"\"\"\n    body = await request.json()\n    raw_tx = body.get('raw_tx')\n\n    # Basic validation.\n    if not raw_tx or not raw_tx.startswith('0x'):\n        raise HTTPException(status_code=400, detail='Invalid raw transaction hex string.')\n\n    # Compose the JSON-RPC payload.\n    payload = {\n        'jsonrpc': '2.0',\n        'method': 'eth_sendRawTransaction',\n        'params': [raw_tx],\n        'id': 1\n    }\n\n    try:\n        rpc_resp = requests.post(RPC_URL, json=payload, timeout=30)\n        rpc_resp.raise_for_status()\n        data = rpc_resp.json()\n\n        # Handle any RPC-level error returned by the node.\n        if 'error' in data:\n            raise HTTPException(status_code=500, detail=data['error']['message'])\n\n        # Success: return the tx-hash to the caller.\n        return {'tx_hash': data['result']}\n    except requests.RequestException as exc:\n        # Network-level failure.\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "POST /api/broadcast_raw_tx  { \"raw_tx\": \"0x...\" }  \u279c  { \"tx_hash\": \"0xABC123...\" }"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 adds a helper that calls the backend endpoint from Step 2 and stores the returned tx-hash.",
+            "code": "export const broadcastRawTx = async (rawTx) => {\n  const response = await fetch('/api/broadcast_raw_tx', {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ raw_tx: rawTx })\n  });\n\n  if (!response.ok) {\n    // Attempt to surface any backend-provided error message.\n    let detail = 'Failed to broadcast transaction';\n    try {\n      const err = await response.json();\n      detail = err.detail || detail;\n    } catch (_) {}\n    throw new Error(detail);\n  }\n\n  const { tx_hash } = await response.json();\n  return tx_hash; // <- Store or display as needed.\n};",
+            "usage": "const txHash = await broadcastRawTx(rawTx);"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 supplies an endpoint that queries the transaction receipt until it is available.",
+            "code": "from fastapi import HTTPException\nimport time\n\n@app.get('/api/tx_receipt/{tx_hash}')\nasync def tx_receipt(tx_hash: str):\n    \"\"\"Return the transaction receipt (or null if not yet mined).\"\"\"\n    if not tx_hash or not tx_hash.startswith('0x'):\n        raise HTTPException(status_code=400, detail='Invalid transaction hash.')\n\n    payload = {\n        'jsonrpc': '2.0',\n        'method': 'eth_getTransactionReceipt',\n        'params': [tx_hash],\n        'id': 1\n    }\n\n    try:\n        rpc_resp = requests.post(RPC_URL, json=payload, timeout=30)\n        rpc_resp.raise_for_status()\n        data = rpc_resp.json()\n\n        if 'error' in data:\n            raise HTTPException(status_code=500, detail=data['error']['message'])\n\n        # data['result'] is either the receipt object or null if the tx is pending.\n        return {'receipt': data['result']}\n    except requests.RequestException as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "GET /api/tx_receipt/0xABC123\u2026  \u279c  { \"receipt\": { \u2026 } }"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Step 5 implements a convenience polling helper that keeps asking the backend for the receipt until it is available, then resolves with the final receipt.",
+            "code": "export const waitForTxReceipt = async (txHash, interval = 5000) => {\n  /*\n   * Poll `/api/tx_receipt/:txHash` every `interval` ms.  When the node\n   * returns a non-null receipt we resolve with that receipt.\n   */\n  while (true) {\n    const resp = await fetch(`/api/tx_receipt/${txHash}`);\n\n    if (!resp.ok) {\n      let detail = 'Unable to fetch transaction receipt';\n      try {\n        const err = await resp.json();\n        detail = err.detail || detail;\n      } catch (_) {}\n      throw new Error(detail);\n    }\n\n    const { receipt } = await resp.json();\n\n    if (receipt) {\n      return receipt; // \ud83c\udf89  The transaction is now finalized on-chain.\n    }\n\n    // Wait before the next attempt.\n    await new Promise((resolve) => setTimeout(resolve, interval));\n  }\n};",
+            "usage": "const receipt = await waitForTxReceipt(txHash);"
+        }
+    ]
+}

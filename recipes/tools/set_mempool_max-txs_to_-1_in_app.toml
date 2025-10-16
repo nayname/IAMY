@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Reads the node\u2019s app.toml file and returns its contents so it can be modified in-memory.",
+            "function": "open_config_file(config_path=None)",
+            "usage": "lines = open_config_file(config_path='~/.neutrond/config/app.toml')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Updates the mempool.max_txs field of an already-parsed TOML configuration object to the desired value (\u22121).",
+            "function": "update_mempool_max_txs(config_dict, new_value=-1)",
+            "usage": "cfg = update_mempool_max_txs(cfg, new_value=-1)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Writes the modified configuration back to app.toml, atomically replacing the old file.",
+            "function": "save_config_file(path, config_dict)",
+            "usage": "save_config_file('~/.neutrond/config/app.toml', cfg)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Restarts the specified daemon with systemd and waits until the service is active again.",
+            "function": "restart_node_service(daemon_name, wait_seconds=60)",
+            "usage": "restart_node_service('neutrond')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "lines = open_config_file(config_path='~/.neutrond/config/app.toml')#step: 1 Tool: open_config_file Desciption: Open `$HOME/.<daemon>/config/app.toml` for editing.",
+        "cfg = update_mempool_max_txs(cfg, new_value=-1)#step: 2 Tool: update_toml_value Desciption: Under the `[mempool]` section change `max_txs = 5000` (or whatever it is) to `max_txs = -1` to disable the cap.",
+        "save_config_file('~/.neutrond/config/app.toml', cfg)#step: 3 Tool: save_and_close_file Desciption: Write the file and exit the editor.",
+        "restart_node_service('neutrond')#step: 4 Tool: restart_node_service Desciption: Restart the node service, e.g., `sudo systemctl restart <daemon>`. Wait until the node is fully synced again."
+    ],
+    "intent": "Set mempool max-txs to -1 in app.toml",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "open_config_file",
+            "description": "Open `$HOME/.<daemon>/config/app.toml` for editing."
+        },
+        {
+            "step": 2,
+            "tool": "update_toml_value",
+            "description": "Under the `[mempool]` section change `max_txs = 5000` (or whatever it is) to `max_txs = -1` to disable the cap."
+        },
+        {
+            "step": 3,
+            "tool": "save_and_close_file",
+            "description": "Write the file and exit the editor."
+        },
+        {
+            "step": 4,
+            "tool": "restart_node_service",
+            "description": "Restart the node service, e.g., `sudo systemctl restart <daemon>`. Wait until the node is fully synced again."
+        }
+    ],
+    "outcome_checks": [
+        "Run `grep -A2 \"\\[mempool\\]\" $HOME/.<daemon>/config/app.toml` and verify `max_txs = -1` is persisted.",
+        "Node starts without configuration errors and resumes block production."
+    ]
+}

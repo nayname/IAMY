@@ -1,0 +1,47 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 reads the existing app.toml file from disk and returns the parsed configuration object together with the absolute file path.",
+            "code": "import os\nimport toml\n\n\ndef load_app_toml(config_path: str = \"~/.evmd/config/app.toml\"):\n    \"\"\"Open and parse the app.toml file located at `config_path`.\"\"\"\n    full_path = os.path.expanduser(config_path)\n\n    # Ensure the file exists before attempting to open it\n    if not os.path.isfile(full_path):\n        raise FileNotFoundError(f\"Config file not found at {full_path}\")\n\n    # Parse TOML contents into a Python dictionary\n    with open(full_path, \"r\", encoding=\"utf-8\") as fp:\n        config_data = toml.load(fp)\n\n    return config_data, full_path",
+            "usage": "# Example usage\nconfig, path = load_app_toml()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 ensures that the `[json-rpc]` section exists and sets `enable = true` so that the JSON-RPC server will be started on node boot.",
+            "code": "def set_json_rpc_enable(config: dict, enable: bool = True) -> dict:\n    \"\"\"Set the `enable` flag in the `[json-rpc]` section.\"\"\"\n    # Create the section if it does not yet exist\n    config.setdefault(\"json-rpc\", {})\n\n    # Update the flag\n    config[\"json-rpc\"][\"enable\"] = enable\n\n    return config",
+            "usage": "# Example usage\nconfig = set_json_rpc_enable(config, True)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 assigns the HTTP bind address for the JSON-RPC server (defaulting to 0.0.0.0:8545).",
+            "code": "def set_json_rpc_address(config: dict, address: str = \"0.0.0.0:8545\") -> dict:\n    \"\"\"Set the HTTP address where the JSON-RPC server will listen.\"\"\"\n    config.setdefault(\"json-rpc\", {})\n    config[\"json-rpc\"][\"address\"] = address\n    return config",
+            "usage": "# Example usage\nconfig = set_json_rpc_address(config, \"0.0.0.0:8545\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 optionally sets the WebSocket bind address so that clients can subscribe to events (e.g. 0.0.0.0:8546).",
+            "code": "def set_ws_address_optional(\n    config: dict,\n    ws_address: str = \"0.0.0.0:8546\",\n    enable_ws: bool = True,\n) -> dict:\n    \"\"\"Add or remove the `ws-address` key inside `[json-rpc]`.\"\"\"\n    config.setdefault(\"json-rpc\", {})\n\n    if enable_ws:\n        config[\"json-rpc\"][\"ws-address\"] = ws_address\n    else:\n        # Remove the key if present and WebSocket is disabled\n        config[\"json-rpc\"].pop(\"ws-address\", None)\n\n    return config",
+            "usage": "# Example usage (enable WS address)\nconfig = set_ws_address_optional(config)\n\n# Example usage (disable WS address)\n# config = set_ws_address_optional(config, enable_ws=False)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 writes the mutated configuration back to disk, persisting all the changes made in previous steps.",
+            "code": "def save_app_toml(config: dict, file_path: str) -> None:\n    \"\"\"Persist the updated configuration dictionary to disk.\"\"\"\n    # Write atomically by first dumping to a temporary file\n    tmp_path = file_path + \".tmp\"\n    with open(tmp_path, \"w\", encoding=\"utf-8\") as fp:\n        toml.dump(config, fp)\n\n    # Replace the original file only after successful write\n    os.replace(tmp_path, file_path)\n    print(f\"Configuration saved to {file_path}\")",
+            "usage": "# Example usage\nsave_app_toml(config, path)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Step 6 restarts the Cosmos-EVM node so that the new JSON-RPC settings take effect. The example assumes a systemd service called `evmd` but can be adjusted for Docker or other supervisors.",
+            "code": "import subprocess\n\n\ndef restart_node(service_name: str = \"evmd\") -> None:\n    \"\"\"Restart the node process via systemctl (or fall back to a manual command).\"\"\"\n    try:\n        # Attempt a systemd restart\n        subprocess.run([\"systemctl\", \"restart\", service_name], check=True)\n        print(f\"Service '{service_name}' restarted successfully.\")\n\n    except FileNotFoundError:\n        # systemctl not available (e.g. macOS or containers)\n        raise EnvironmentError(\n            \"systemctl not found. Please restart the node manually or adapt this function.\"\n        )\n\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(\n            f\"Failed to restart '{service_name}'. Systemctl returned: {err}\"\n        )",
+            "usage": "# Example usage\nrestart_node(service_name=\"evmd\")"
+        }
+    ]
+}

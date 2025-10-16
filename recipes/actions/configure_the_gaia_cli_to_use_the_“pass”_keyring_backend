@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 exposes a FastAPI endpoint that verifies the presence of GNU pass on the host by checking its binary path and returning its version.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport shutil\nimport subprocess\n\nrouter = APIRouter()\n\n@router.get(\"/api/check_dependency\")\nasync def check_dependency():\n    \"\"\"Return installation status and version of the `pass` utility.\"\"\"\n    # Locate the binary first\n    pass_path = shutil.which(\"pass\")\n    if pass_path is None:\n        raise HTTPException(status_code=404, detail=\"`pass` utility is not installed on this host.\")\n\n    # Obtain version information\n    try:\n        version_output = subprocess.check_output([\"pass\", \"--version\"], text=True).strip()\n    except subprocess.CalledProcessError as exc:\n        raise HTTPException(status_code=500, detail=f\"Failed to execute 'pass --version': {exc}\")\n\n    return {\"installed\": True, \"path\": pass_path, \"version\": version_output}",
+            "usage": "// In your frontend or docs live snippet\nfetch('/api/check_dependency')\n  .then(r => r.json())\n  .then(console.log)\n  .catch(console.error);"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 executes `gaiad config keyring-backend pass` so that the Gaia client stores keys in the system password-store.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport subprocess\nimport shlex\n\nrouter = APIRouter()\n\n@router.post(\"/api/config_keyring_pass\")\nasync def config_keyring_backend():\n    \"\"\"Run `gaiad config keyring-backend pass` and return the CLI response.\"\"\"\n    cmd = shlex.split(\"gaiad config keyring-backend pass\")\n    try:\n        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, text=True)\n    except subprocess.CalledProcessError as exc:\n        raise HTTPException(status_code=500, detail=f\"gaiad exited with code {exc.returncode}: {exc.output}\")\n\n    return {\"success\": True, \"output\": output.strip()}",
+            "usage": "// Frontend POST request example\nfetch('/api/config_keyring_pass', { method: 'POST' })\n  .then(r => r.json())\n  .then(console.log)\n  .catch(console.error);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 validates that `$HOME/.gaia/config/client.toml` now includes the line `keyring-backend = \"pass\"`.",
+            "code": "from fastapi import APIRouter, HTTPException\nfrom pathlib import Path\n\nrouter = APIRouter()\n\n@router.get(\"/api/validate_keyring_pass\")\nasync def validate_keyring_setting():\n    \"\"\"Confirm that client.toml contains the correct keyring-backend setting.\"\"\"\n    client_toml_path = Path.home() / \".gaia\" / \"config\" / \"client.toml\"\n    if not client_toml_path.exists():\n        raise HTTPException(status_code=404, detail=f\"{client_toml_path} not found. Make sure Gaia is initialized.\")\n\n    try:\n        content = client_toml_path.read_text()\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=f\"Unable to read {client_toml_path}: {exc}\")\n\n    expected_line = 'keyring-backend = \"pass\"'\n    valid = expected_line in content\n    return {\n        \"file\": str(client_toml_path),\n        \"contains_setting\": valid,\n        \"expected_line\": expected_line\n    }",
+            "usage": "// Validate from the frontend\nfetch('/api/validate_keyring_pass')\n  .then(r => r.json())\n  .then(console.log)\n  .catch(console.error);"
+        }
+    ]
+}

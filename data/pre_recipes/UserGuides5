@@ -1,0 +1,137 @@
+[
+    {
+        "intent": "Configure the Gaia CLI to use the \u201cpass\u201d keyring backend",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "check_dependency_installed",
+                "description": "Run `which pass` (or `pass --version`) to confirm that the GNU pass password-store utility is installed on the host."
+            },
+            {
+                "step": 2,
+                "tool": "gaiad_config",
+                "description": "Execute `gaiad config keyring-backend pass` to write the keyring-backend setting into $HOME/.gaia/config/client.toml."
+            },
+            {
+                "step": 3,
+                "tool": "validate_file_change",
+                "description": "Open $HOME/.gaia/config/client.toml and confirm the line `keyring-backend = \"pass\"` now exists."
+            }
+        ],
+        "outcome_checks": [
+            "Running `gaiad keys list` no longer prompts for an OS or file password; instead it interacts with the pass store.",
+            "client.toml persists the value keyring-backend = \"pass\"."
+        ]
+    },
+    {
+        "intent": "Persist the GAIA_V5_KEYRING_BACKEND environment variable with value \u201cpass\u201d",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "append_to_shell_profile",
+                "description": "Add `export GAIA_V5_KEYRING_BACKEND=pass` to the user\u2019s default shell profile (e.g., ~/.bashrc or ~/.zshrc)."
+            },
+            {
+                "step": 2,
+                "tool": "reload_shell_profile",
+                "description": "Source the profile with `source ~/.bashrc` (or open a new terminal) so the variable is loaded into the environment."
+            },
+            {
+                "step": 3,
+                "tool": "verify_env_var",
+                "description": "Run `echo $GAIA_V5_KEYRING_BACKEND` and ensure the output is `pass`."
+            }
+        ],
+        "outcome_checks": [
+            "The command `printenv GAIA_V5_KEYRING_BACKEND` returns `pass` in new terminal sessions.",
+            "Subsequent Gaia CLI commands respect the pass keyring backend without additional flags."
+        ]
+    },
+    {
+        "intent": "Initialize the GNU pass password store for Gaia with a GPG key",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "check_gpg_key",
+                "description": "List existing keys via `gpg --list-keys` and note the <GPG_KEY_ID> that will encrypt the store."
+            },
+            {
+                "step": 2,
+                "tool": "run_shell_command",
+                "description": "Execute `pass init <GPG_KEY_ID>` to create ~/.password-store and set its encryption key."
+            },
+            {
+                "step": 3,
+                "tool": "verify_pass_store",
+                "description": "Run `pass ls` to confirm the password store initializes without errors (should return an empty list)."
+            }
+        ],
+        "outcome_checks": [
+            "The directory ~/.password-store exists and contains a .gpg-id file referencing <GPG_KEY_ID>.",
+            "`pass insert test` allows entry and retrieval, showing the store is functional."
+        ]
+    },
+    {
+        "intent": "Set minimum-gas-prices to 0stake in Gaia\u2019s app.toml",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_config_file",
+                "description": "Open $HOME/.gaia/config/app.toml for editing."
+            },
+            {
+                "step": 2,
+                "tool": "modify_parameter",
+                "description": "Locate the `minimum-gas-prices` field (in the `[api]` / `[baseapp]` section depending on Gaia version) and change its value to `0stake`."
+            },
+            {
+                "step": 3,
+                "tool": "save_and_close_file",
+                "description": "Write the changes to disk and exit the editor."
+            },
+            {
+                "step": 4,
+                "tool": "validate_file_change",
+                "description": "Search the file or run `grep -i \"minimum-gas-prices\" $HOME/.gaia/config/app.toml` to verify the line now reads `minimum-gas-prices = \"0stake\"`."
+            }
+        ],
+        "outcome_checks": [
+            "On node restart, Gaia logs show `minimum gas prices set to 0stake`.",
+            "Transactions broadcast without specifying gas prices are accepted (subject to other mempool settings)."
+        ]
+    },
+    {
+        "intent": "Enable unsafe CORS on Gaia\u2019s REST (API) server",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_config_file",
+                "description": "Edit $HOME/.gaia/config/app.toml."
+            },
+            {
+                "step": 2,
+                "tool": "modify_parameter",
+                "description": "In the `[api]` section, set `unsafe-cors = true` (or, for older versions, in the `[rpc]` or `[grpc-web]` section depending on where the flag resides)."
+            },
+            {
+                "step": 3,
+                "tool": "save_and_close_file",
+                "description": "Persist the modification."
+            },
+            {
+                "step": 4,
+                "tool": "restart_gaiad",
+                "description": "Restart the Gaia daemon so the REST server picks up the new CORS configuration."
+            },
+            {
+                "step": 5,
+                "tool": "verify_cors_header",
+                "description": "Curl a REST endpoint with `-H \"Origin: http://example.com\"` and inspect the response headers; it should include `Access-Control-Allow-Origin: *`."
+            }
+        ],
+        "outcome_checks": [
+            "REST responses now contain the \u201cAccess-Control-Allow-Origin\u201d header with a value of `*`.",
+            "Front-end applications served from a different origin can successfully perform REST calls without browser CORS errors."
+        ]
+    }
+]

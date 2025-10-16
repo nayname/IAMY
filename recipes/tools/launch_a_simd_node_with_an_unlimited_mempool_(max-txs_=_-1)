@@ -1,0 +1,92 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Verifies that the `simd` executable is present and runnable, returning its path and version details.",
+            "function": "_check_simd_binary()",
+            "usage": "simd_info = _check_simd_binary()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Determines the home directory that the node should use, defaulting to ~/.simd or the SIMD_HOME environment variable.",
+            "function": "get_node_home()",
+            "usage": "home_dir = get_node_home()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Builds the exact start command `simd start --mempool.max-txs=-1 --home=<home>` for the provided home directory.",
+            "function": "_construct_start_command(home_dir)",
+            "usage": "start_cmd = _construct_start_command(home_dir)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Launches the previously constructed `simd` start command as a long-running subprocess and stores its PID.",
+            "function": "_start_simd_process(start_cmd)",
+            "usage": "proc_info = _start_simd_process(start_cmd)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Streams real-time stdout lines from the running `simd` process so logs can be inspected for healthy block production.",
+            "function": "_log_streamer()",
+            "usage": "async for line in _log_streamer(): print(line)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Executes `simd status` to fetch and return the node\u2019s current status JSON, confirming it is live.",
+            "function": "_cli_status()",
+            "usage": "status_json = _cli_status()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "simd_info = _check_simd_binary()#step: 1 Tool: check_binary_available Desciption: Ensure the `simd` binary is installed and accessible in the system PATH.",
+        "home_dir = get_node_home()#step: 2 Tool: get_node_home Desciption: Determine (or prompt for) the node\u2019s home directory, e.g., ~/.simapp.",
+        "start_cmd = _construct_start_command(home_dir)#step: 3 Tool: construct_simd_start_command Desciption: Build the CLI command `simd start --mempool.max-txs=-1 --home=<home>`.",
+        "proc_info = _start_simd_process(start_cmd)#step: 4 Tool: execute_shell_command Desciption: Execute the constructed start command as a long-running process.",
+        "async for line in _log_streamer(): print(line)#step: 5 Tool: monitor_logs Desciption: Stream node logs and look for healthy block production or sync messages.",
+        "status_json = _cli_status()#step: 6 Tool: query_node_status Desciption: Call `simd status` or hit the RPC endpoint to confirm the node is live."
+    ],
+    "intent": "Launch a simd node with an unlimited mempool (max-txs = -1)",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "check_binary_available",
+            "description": "Ensure the `simd` binary is installed and accessible in the system PATH."
+        },
+        {
+            "step": 2,
+            "tool": "get_node_home",
+            "description": "Determine (or prompt for) the node\u2019s home directory, e.g., ~/.simapp."
+        },
+        {
+            "step": 3,
+            "tool": "construct_simd_start_command",
+            "description": "Build the CLI command `simd start --mempool.max-txs=-1 --home=<home>`."
+        },
+        {
+            "step": 4,
+            "tool": "execute_shell_command",
+            "description": "Execute the constructed start command as a long-running process."
+        },
+        {
+            "step": 5,
+            "tool": "monitor_logs",
+            "description": "Stream node logs and look for healthy block production or sync messages."
+        },
+        {
+            "step": 6,
+            "tool": "query_node_status",
+            "description": "Call `simd status` or hit the RPC endpoint to confirm the node is live."
+        }
+    ],
+    "outcome_checks": [
+        "RPC endpoint returns a valid JSON status.",
+        "Logs show height increasing with no mempool errors."
+    ]
+}

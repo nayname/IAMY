@@ -1,0 +1,19 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 defines a JavaScript helper that queries the chain\u2019s REST endpoint to fetch **all** delegations made to a specific validator, automatically following pagination links.",
+            "code": "/*\n * fetchValidatorDelegations\n * -------------------------\n * @param {string}  validatorAddress  Bech32 validator operator address (e.g. \"cosmosvaloper1...\")\n * @param {string}  restEndpoint      Fully-qualified REST/LCD endpoint of the chain (defaults to Cosmos Hub main-net)\n * @returns {Promise<Array>}          Promise resolving to an array of delegation objects\n */\nexport const fetchValidatorDelegations = async (\n  validatorAddress,\n  restEndpoint = 'https://lcd.cosmos.directory/cosmoshub'\n) => {\n  if (!validatorAddress) {\n    throw new Error('validatorAddress is required');\n  }\n\n  // Strip trailing slash for safe concatenation\n  const baseUrl = restEndpoint.replace(/\\/$/, '');\n\n  const allDelegations = [];\n  let nextKey = null;\n\n  try {\n    do {\n      // Build URL with pagination key when present\n      const params = new URLSearchParams();\n      if (nextKey) params.append('pagination.key', nextKey);\n\n      const url = `${baseUrl}/cosmos/staking/v1beta1/validators/${validatorAddress}/delegations?${params}`;\n      const res = await fetch(url);\n\n      if (!res.ok) {\n        throw new Error(`Failed to fetch delegations: ${res.status} ${res.statusText}`);\n      }\n\n      const json = await res.json();\n      const pageDelegations = json.delegation_responses || [];\n      allDelegations.push(...pageDelegations);\n\n      // Continue if the API returned a non-null pagination key\n      nextKey = json.pagination && json.pagination.next_key;\n    } while (nextKey);\n\n    return allDelegations;\n  } catch (err) {\n    console.error('fetchValidatorDelegations error:', err);\n    throw err; // Propagate so callers can handle it\n  }\n};",
+            "usage": "const delegations = await fetchValidatorDelegations('cosmosvaloper1abc...');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 supplies a utility that receives the delegation array from Step 1, sums every `balance.amount`, and returns both micro-denom and human-readable totals.",
+            "code": "/*\n * calculateTotalStake\n * -------------------\n * @param {Array}  delegations  Array returned by fetchValidatorDelegations()\n * @param {string} denom        Base denom to filter on (defaults to \"uatom\")\n * @param {number} microFactor  Conversion factor from micro-denom to main denom (1_000_000 for most chains)\n * @returns {{ denom: string, micro: string, human: string }}\n */\nexport const calculateTotalStake = (\n  delegations,\n  denom = 'uatom',\n  microFactor = 1_000_000\n) => {\n  if (!Array.isArray(delegations)) {\n    throw new TypeError('delegations must be an array');\n  }\n\n  // Aggregate the micro amounts\n  const totalMicro = delegations.reduce((acc, d) => {\n    const bal = d.balance;\n    if (bal && bal.denom === denom) {\n      return acc + Number(bal.amount || 0);\n    }\n    return acc;\n  }, 0);\n\n  // Convert to main denom (e.g. ATOM)\n  const totalHuman = totalMicro / microFactor;\n\n  return {\n    denom,\n    micro: totalMicro.toString(),\n    human: totalHuman.toLocaleString(undefined, { maximumFractionDigits: 6 })\n  };\n};",
+            "usage": "const totalStake = calculateTotalStake(delegations);\n// totalStake => { denom: 'uatom', micro: '123456789', human: '123.456789' }"
+        }
+    ]
+}

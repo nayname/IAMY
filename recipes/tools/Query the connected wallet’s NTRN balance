@@ -37,7 +37,7 @@
         "response = sign_and_broadcast_tx(tx, wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the store-code transaction.",
         "code_id = extract_code_id_from_tx(response)#step: 5 Tool: extract_code_id_from_tx Desciption: Parse the transaction logs to retrieve the newly assigned `code_id`."
     ],
-    "intent": "Upload the example contract WASM code",
+    "intent": "Query the connected wallet’s NTRN balance",
     "workflow": [
         {
             "step": 1,

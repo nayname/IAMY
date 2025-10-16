@@ -1,0 +1,26 @@
+{
+    "label": "query_balance",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Python helper that checks if Foundry\u2019s cast CLI is installed and returns its version.",
+            "code": "import subprocess\n\n\ndef verify_foundry_installation():\n    '''\n    Ensures Foundry's cast CLI is installed and returns its version.\n    '''\n    try:\n        result = subprocess.run(['cast', '--version'], capture_output=True, text=True, check=True)\n        return result.stdout.strip()\n    except FileNotFoundError:\n        raise EnvironmentError('Foundry cast CLI is not installed or not in PATH.')\n    except subprocess.CalledProcessError as e:\n        raise EnvironmentError(f'Error executing cast --version: {e.stderr}')",
+            "usage": "from verify_foundry import verify_foundry_installation\nversion = verify_foundry_installation()"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "JavaScript utility that returns a healthy HTTPS RPC endpoint for a given Cosmos EVM chain.",
+            "code": "export const getRpcUrl = (chainName) => {\n  /*\n   * Returns a pre-defined HTTPS RPC endpoint for popular Cosmos EVM chains.\n   */\n  const RPC_ENDPOINTS = {\n    evmos: 'https://evmos-evm.publicnode.com',\n    cronos: 'https://evm.cronos.org',\n    kava: 'https://evm.kava.io'\n  };\n\n  const endpoint = RPC_ENDPOINTS[chainName.toLowerCase()];\n  if (!endpoint) {\n    throw new Error(`No RPC endpoint configured for chain: ${chainName}`);\n  }\n  return endpoint;\n};",
+            "usage": "const rpcUrl = getRpcUrl('evmos');"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "FastAPI route that invokes Foundry\u2019s cast CLI to query an account balance at the selected RPC endpoint, returning both wei and ether units.",
+            "code": "from fastapi import FastAPI, HTTPException, Query\nfrom decimal import Decimal\nimport subprocess\n\nfrom verify_foundry import verify_foundry_installation  # Step 1 helper\n\napp = FastAPI()\n\n@app.get('/api/balance')\nasync def get_account_balance(\n    address: str = Query(..., description='EVM account address starting with 0x'),\n    rpc_url: str = Query(..., description='HTTPS JSON-RPC endpoint for the target chain')\n):\n    '''\n    Uses Foundry's cast CLI to fetch an EVM account balance and returns both wei and ether values.\n    '''\n    # Ensure Foundry is installed\n    try:\n        verify_foundry_installation()\n    except EnvironmentError as e:\n        raise HTTPException(status_code=500, detail=str(e))\n\n    # Simple address validation\n    if not address.startswith('0x') or len(address) != 42:\n        raise HTTPException(status_code=400, detail='Invalid Ethereum address format')\n\n    try:\n        result = subprocess.run(\n            ['cast', 'balance', address, '--rpc-url', rpc_url],\n            capture_output=True,\n            text=True,\n            check=True\n        )\n        balance_wei = result.stdout.strip()\n        balance_ether = str(Decimal(balance_wei) / Decimal(10 ** 18))\n\n        return {\n            'address': address,\n            'balance_wei': balance_wei,\n            'balance_ether': balance_ether,\n            'rpc_url': rpc_url\n        }\n    except subprocess.CalledProcessError as e:\n        raise HTTPException(status_code=500, detail=f'Cast query failed: {e.stderr}')",
+            "usage": "fetch(`/api/balance?address=${address}&rpc_url=${encodeURIComponent(rpcUrl)}`)\n  .then((res) => res.json())\n  .then(console.log);"
+        }
+    ]
+}

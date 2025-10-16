@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Locates and validates the presence of app/app.go inside a given project directory so later code edits can be performed safely.",
+            "function": "create_preblocker_fn(app_dir: str)",
+            "usage": "create_preblocker_fn(\"./my_cosmos_app\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "undef",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Adds a line to NewApp that registers a custom handler (via app.SetPreBlocker) in app/app.go after all keepers are wired up.",
+            "function": "register_preblocker(app_dir: str)",
+            "usage": "register_preblocker(\"./my_cosmos_app\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Executes `go vet` followed by `go test ./...` across the repository to confirm the code compiles and the test-suite passes.",
+            "function": "compile_generated_code(repo_root: str = \".\")",
+            "usage": "compile_generated_code(\".\")"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Bootstraps a single-node localnet with the specified home directory and binary, providing an environment to send sample transactions.",
+            "function": "start_local_chain(home: str = \"./data\", chain_id: str = \"localnet\", binary: str = \"appd\")",
+            "usage": "start_local_chain(\"./localnet\", \"localnet\", \"appd\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "create_preblocker_fn(\"./my_cosmos_app\")#step: 1 Tool: locate_app_go_file Desciption: Open app/app.go (or main application file) where the baseapp is instantiated.",
+        "undef#step: 2 Tool: implement_custom_ante_handler Desciption: Create a new function that satisfies sdk.AnteHandler and contains the desired custom logic (e.g., fee checks, signature limits).",
+        "register_preblocker(\"./my_cosmos_app\")#step: 3 Tool: set_app_ante_handler Desciption: In app.go, call app.SetAnteHandler(customAnteHandler) after module keepers are initialized.",
+        "compile_generated_code(\".\")#step: 4 Tool: go_build_and_test Desciption: Run `go test ./...` and `make install` (or `go build`) to ensure the application compiles and tests pass.",
+        "start_local_chain(\"./localnet\", \"localnet\", \"appd\")#step: 5 Tool: run_localnet_tx_simulation Desciption: Start a local node, broadcast sample transactions, and verify the custom ante handler logic is triggered."
+    ],
+    "intent": "Set custom ante handler for my app",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "locate_app_go_file",
+            "description": "Open app/app.go (or main application file) where the baseapp is instantiated."
+        },
+        {
+            "step": 2,
+            "tool": "implement_custom_ante_handler",
+            "description": "Create a new function that satisfies sdk.AnteHandler and contains the desired custom logic (e.g., fee checks, signature limits)."
+        },
+        {
+            "step": 3,
+            "tool": "set_app_ante_handler",
+            "description": "In app.go, call app.SetAnteHandler(customAnteHandler) after module keepers are initialized."
+        },
+        {
+            "step": 4,
+            "tool": "go_build_and_test",
+            "description": "Run `go test ./...` and `make install` (or `go build`) to ensure the application compiles and tests pass."
+        },
+        {
+            "step": 5,
+            "tool": "run_localnet_tx_simulation",
+            "description": "Start a local node, broadcast sample transactions, and verify the custom ante handler logic is triggered."
+        }
+    ],
+    "outcome_checks": [
+        "The application builds without compilation errors.",
+        "Unit tests covering the custom ante logic pass.",
+        "Runtime logs (or debug statements) confirm custom ante handler execution on incoming transactions."
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Backend Python utility that checks whether a key named `my_validator` exists in the local key-ring by shelling out to the Cosmos CLI.",
+            "code": "import subprocess\nimport json\nfrom typing import Dict\n\n\ndef ensure_key_exists(key_name: str, keyring_backend: str = \"test\") -> Dict[str, str]:\n    \"\"\"Return basic key information if the key exists, otherwise raise an error.\"\"\"\n    try:\n        # --output json yields a machine-readable response we can parse\n        result = subprocess.run(\n            [\n                \"cosmos\",\n                \"keys\",\n                \"show\",\n                key_name,\n                \"--keyring-backend\",\n                keyring_backend,\n                \"--output\",\n                \"json\",\n            ],\n            capture_output=True,\n            text=True,\n            check=True,\n        )\n        key_info = json.loads(result.stdout)\n        return {\n            \"key_name\": key_info.get(\"name\", key_name),\n            \"address\": key_info.get(\"address\"),\n        }\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(\n            f\"Key '{key_name}' was not found in key-ring '{keyring_backend}'. CLI stderr: {err.stderr}\"\n        ) from err\n\n\n# Example FastAPI route (optional, integrate into your BFF of choice)\n# from fastapi import APIRouter, HTTPException\n# router = APIRouter()\n#\n# @router.get(\"/api/keys/show\")\n# async def api_key_show(key_name: str):\n#     try:\n#         return ensure_key_exists(key_name)\n#     except Exception as exc:\n#         raise HTTPException(status_code=400, detail=str(exc))",
+            "usage": "await fetch('/api/keys/show?key_name=my_validator').then(r => r.json())"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Signs an unsigned transaction JSON file using the previously verified key, replicating `cosmos tx sign`. The signed document is written to `tx_signed.json` (or a custom path).",
+            "code": "import subprocess\nfrom pathlib import Path\nfrom typing import Dict\n\n\ndef sign_transaction(\n    unsigned_tx_path: str,\n    from_key: str,\n    chain_id: str,\n    output_tx_path: str = \"tx_signed.json\",\n    keyring_backend: str = \"test\",\n) -> Dict[str, str]:\n    \"\"\"Sign an existing transaction file via the Cosmos CLI and return the output path.\"\"\"\n    unsigned_tx = Path(unsigned_tx_path).expanduser()\n    output_tx = Path(output_tx_path).expanduser()\n\n    if not unsigned_tx.exists():\n        raise FileNotFoundError(f\"Unsigned tx file not found: {unsigned_tx}\")\n\n    cmd = [\n        \"cosmos\",\n        \"tx\",\n        \"sign\",\n        str(unsigned_tx),\n        \"--from\",\n        from_key,\n        \"--chain-id\",\n        chain_id,\n        \"--keyring-backend\",\n        keyring_backend,\n        \"--output-document\",\n        str(output_tx),\n    ]\n\n    try:\n        subprocess.run(cmd, check=True, capture_output=True, text=True)\n        return {\"signed_tx_path\": str(output_tx)}\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"Failed to sign transaction. CLI stderr: {err.stderr}\") from err\n\n\n# Example FastAPI route (optional)\n# @router.post(\"/api/tx/sign\")\n# async def api_tx_sign(body: dict):\n#     return sign_transaction(**body)",
+            "usage": "await fetch('/api/tx/sign', {method: 'POST', body: JSON.stringify({ unsigned_tx_path: 'unsigned_tx.json', from_key: 'my_validator', chain_id: 'YOUR_CHAIN_ID' })}).then(r => r.json())"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Reads `tx_signed.json` and confirms that the `signatures` array contains at least one non-empty element.",
+            "code": "import json\nfrom pathlib import Path\nfrom typing import Dict\n\n\ndef verify_signed_tx(signed_tx_path: str = \"tx_signed.json\") -> Dict[str, bool]:\n    \"\"\"Validate that the signed transaction file contains a signature.\"\"\"\n    tx_file = Path(signed_tx_path).expanduser()\n    if not tx_file.exists():\n        raise FileNotFoundError(f\"Signed transaction file not found: {tx_file}\")\n\n    with tx_file.open() as fp:\n        tx_data = json.load(fp)\n\n    signatures = tx_data.get(\"signatures\", [])\n    if not signatures or not signatures[0]:\n        raise ValueError(\"Signature array is empty \u2014 transaction appears unsigned.\")\n\n    return {\"valid\": True, \"signature_count\": len(signatures)}\n\n\n# Example FastAPI route (optional)\n# @router.get(\"/api/tx/verify\")\n# async def api_tx_verify(path: str = \"tx_signed.json\"):\n#     return verify_signed_tx(path)",
+            "usage": "await fetch('/api/tx/verify?signed_tx_path=tx_signed.json').then(r => r.json())"
+        }
+    ]
+}

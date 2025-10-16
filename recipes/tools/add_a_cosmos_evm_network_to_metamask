@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Uses Cosmos-docs search to pull raw information (RPC URL, Chain ID, etc.) from public documentation.",
+            "function": "search_circuit_docs(query)",
+            "usage": "const docs = search_circuit_docs(\"Neutron EVM RPC URL\");"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "The MetaMask settings page must be opened manually \u2013 no supporting function exists in the codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Builds a full Neutron chain-config object and asks the wallet to add it, effectively filling the network form for the user.",
+            "function": "suggestNeutronChain(wallet)",
+            "usage": "await suggestNeutronChain(window.keplr);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Enables (and automatically switches to) the newly-added Neutron network in the user\u2019s wallet.",
+            "function": "ensureNeutronNetwork()",
+            "usage": "await ensureNeutronNetwork();"
+        }
+    ],
+    "frontend": [
+        "undef//step: 2 Tool: open_metamask_network_settings Desciption: Open MetaMask, navigate to \u2018Settings \u2192 Networks\u2019, and choose \u2018Add a network manually\u2019. ",
+        "await suggestNeutronChain(window.keplr);//step: 3 Tool: fill_network_form Desciption: Populate the form with the fetched RPC URL, Chain ID, network name, symbol, and block-explorer URL.",
+        "await ensureNeutronNetwork();//step: 4 Tool: save_network_configuration Desciption: Save the configuration and switch MetaMask to the newly added network."
+    ],
+    "backend": [
+        "const docs = search_circuit_docs(\"Neutron EVM RPC URL\");#step: 1 Tool: get_network_config_from_docs Desciption: Retrieve the network\u2019s RPC URL, Chain ID, currency symbol, and block-explorer URL from Cosmos documentation."
+    ],
+    "intent": "Add a Cosmos EVM network to MetaMask",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_network_config_from_docs",
+            "description": "Retrieve the network\u2019s RPC URL, Chain ID, currency symbol, and block-explorer URL from Cosmos documentation."
+        },
+        {
+            "step": 2,
+            "tool": "open_metamask_network_settings",
+            "description": "Open MetaMask, navigate to \u2018Settings \u2192 Networks\u2019, and choose \u2018Add a network manually\u2019. "
+        },
+        {
+            "step": 3,
+            "tool": "fill_network_form",
+            "description": "Populate the form with the fetched RPC URL, Chain ID, network name, symbol, and block-explorer URL."
+        },
+        {
+            "step": 4,
+            "tool": "save_network_configuration",
+            "description": "Save the configuration and switch MetaMask to the newly added network."
+        }
+    ],
+    "outcome_checks": [
+        "MetaMask displays the network name and Chain ID exactly as specified.",
+        "The wallet connects without RPC errors and shows the correct account balance."
+    ]
+}

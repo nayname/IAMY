@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 adds a UFW rule that opens TCP port 26656 for Cosmos peer-to-peer traffic.",
+            "code": "import subprocess\n\n\ndef allow_cosmos_p2p_port() -> dict:\n    \"\"\"Allow TCP/26656 through UFW with the comment 'Cosmos P2P'.\n    NOTE: This function must be executed with root privileges (e.g. the\n    backend process itself runs as root or via sudo in a privileged\n    execution environment).\"\"\"\n\n    cmd = [\n        \"sudo\",          # ensure the command runs with elevated privileges\n        \"ufw\",\n        \"allow\",\n        \"26656/tcp\",\n        \"comment\",\n        \"Cosmos P2P\"\n    ]\n\n    try:\n        # capture_output=True lets us read stdout/stderr for debugging\n        result = subprocess.run(\n            cmd,\n            capture_output=True,\n            text=True,\n            check=True  # raises CalledProcessError when return code != 0\n        )\n        return {\n            \"status\": \"success\",\n            \"message\": result.stdout.strip() or \"Port 26656 opened successfully.\"\n        }\n\n    except subprocess.CalledProcessError as err:\n        # Standardized error structure for the frontend to consume\n        raise RuntimeError(\n            f\"Failed to add UFW rule: {err.stderr.strip()}\"\n        )",
+            "usage": "/* Frontend example */\nawait fetch('/api/allow_cosmos_p2p_port', { method: 'POST' });"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 reloads the UFW firewall so the new rule from Step 1 takes effect.",
+            "code": "import subprocess\n\n\ndef reload_ufw() -> dict:\n    \"\"\"Reload UFW to apply pending firewall rule changes.\n    Must be executed with root privileges.\"\"\"\n\n    cmd = [\"sudo\", \"ufw\", \"reload\"]\n\n    try:\n        result = subprocess.run(\n            cmd,\n            capture_output=True,\n            text=True,\n            check=True\n        )\n        return {\n            \"status\": \"success\",\n            \"message\": result.stdout.strip() or \"UFW reloaded successfully.\"\n        }\n\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(\n            f\"Failed to reload UFW: {err.stderr.strip()}\"\n        )",
+            "usage": "/* Frontend example */\nawait fetch('/api/reload_ufw', { method: 'POST' });"
+        }
+    ]
+}

@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Builds and returns the Basic Auth headers required to authenticate subsequent RPC calls to the node.",
+            "function": "get_rpc_auth_header()",
+            "usage": "headers = get_rpc_auth_header()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Sends a JSON-RPC request that invokes debug_setMutexProfileFraction(1), enabling full mutex contention sampling on the node.",
+            "function": "enable_mutex_profiling()",
+            "usage": "response = enable_mutex_profiling()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "headers = get_rpc_auth_header()#step: 1 Tool: authenticate_rpc Desciption: Authenticate with the node; debug_setMutexProfileFraction is private.",
+        "response = enable_mutex_profiling()#step: 2 Tool: debug_setMutexProfileFraction Desciption: Call debug_setMutexProfileFraction(1) to enable mutex contention sampling on every operation."
+    ],
+    "intent": "Set the mutex profile sampling rate to 1 (enable full sampling)",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "authenticate_rpc",
+            "description": "Authenticate with the node; debug_setMutexProfileFraction is private."
+        },
+        {
+            "step": 2,
+            "tool": "debug_setMutexProfileFraction",
+            "description": "Call debug_setMutexProfileFraction(1) to enable mutex contention sampling on every operation."
+        }
+    ],
+    "outcome_checks": [
+        "RPC call succeeds and returns the previous sampling fraction.",
+        "A subsequent call to debug_setMutexProfileFraction with no arguments or to retrieve the fraction reports the new value as 1."
+    ]
+}

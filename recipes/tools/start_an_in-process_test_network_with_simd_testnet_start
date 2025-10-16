@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Verifies that the chosen home directory already contains the genesis file and per-validator configs produced by `simd testnet init-files`.",
+            "function": "verify_generated_artifacts(output_dir, validators=1)",
+            "usage": "verify_generated_artifacts('~/.simapp', validators=4)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Starts the multi-validator test network by spawning a background process that runs `simd testnet start --home <dir>`.",
+            "function": "_start_simd_process(command)",
+            "usage": "_start_simd_process('simd testnet start --home ~/.simapp')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Streams the live stdout of the running `simd` process so you can watch for fast-sync completion and new block production.",
+            "function": "_log_streamer()",
+            "usage": "async for ln in _log_streamer(): print(ln.strip())"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "verify_generated_artifacts('~/.simapp', validators=4)#step: 1 Tool: ensure_testnet_files_exist Desciption: Check that the target directory (default `$HOME/.simapp`) already contains testnet config produced by `simd testnet init-files`; prompt the user if initialization is required.",
+        "_start_simd_process('simd testnet start --home ~/.simapp')#step: 2 Tool: simd_testnet_start Desciption: Run `simd testnet start --home <dir>` to launch the multi-validator network in one process.",
+        "async for ln in _log_streamer(): print(ln.strip())#step: 3 Tool: monitor_startup_logs Desciption: Stream the process output until fast-sync is complete and blocks are being produced."
+    ],
+    "intent": "Start an in-process test network with simd testnet start",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "ensure_testnet_files_exist",
+            "description": "Check that the target directory (default `$HOME/.simapp`) already contains testnet config produced by `simd testnet init-files`; prompt the user if initialization is required."
+        },
+        {
+            "step": 2,
+            "tool": "simd_testnet_start",
+            "description": "Run `simd testnet start --home <dir>` to launch the multi-validator network in one process."
+        },
+        {
+            "step": 3,
+            "tool": "monitor_startup_logs",
+            "description": "Stream the process output until fast-sync is complete and blocks are being produced."
+        }
+    ],
+    "outcome_checks": [
+        "`simd testnet start` process stays alive and prints `finalizing commit of block 1` (or higher).",
+        "RPC endpoint (default http://localhost:26657/status) returns a JSON status with `latest_block_height` \u2265 1.",
+        "gRPC port (9090 by default) is accepting connections."
+    ]
+}

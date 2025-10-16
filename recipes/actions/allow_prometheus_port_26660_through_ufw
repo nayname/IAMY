@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Adds a UFW rule that allows incoming TCP traffic on port 26660 for Cosmos Prometheus monitoring.",
+            "code": "import subprocess\n\n\ndef allow_cosmos_prometheus_port():\n    \"\"\"Allow TCP traffic on port 26660 with a descriptive comment.\"\"\"\n    cmd = [\n        \"sudo\",\n        \"ufw\",\n        \"allow\",\n        \"26660/tcp\",\n        \"comment\",\n        \"Cosmos Prometheus\"\n    ]\n\n    try:\n        # Run the UFW command and capture output\n        result = subprocess.run(cmd, capture_output=True, text=True, check=True)\n        return {\n            \"status\": \"success\",\n            \"output\": result.stdout.strip() or \"Rule applied successfully.\"\n        }\n    except subprocess.CalledProcessError as exc:\n        # Return error information without crashing the application\n        return {\n            \"status\": \"error\",\n            \"error\": exc.stderr.strip(),\n            \"code\": exc.returncode\n        }\n",
+            "usage": "# Example usage in a FastAPI route\n# from fastapi import APIRouter\n# router = APIRouter()\n#\n# @router.post('/firewall/allow_prometheus')\n# async def allow_port_endpoint():\n#     return allow_cosmos_prometheus_port()\n"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Reloads the firewall so the newly added UFW rule becomes active.",
+            "code": "import subprocess\n\n\ndef reload_firewall():\n    \"\"\"Reload the UFW firewall to activate any pending rule changes.\"\"\"\n    cmd = [\"sudo\", \"ufw\", \"reload\"]\n\n    try:\n        # Run the UFW reload command and capture output\n        result = subprocess.run(cmd, capture_output=True, text=True, check=True)\n        return {\n            \"status\": \"success\",\n            \"output\": result.stdout.strip() or \"Firewall reloaded successfully.\"\n        }\n    except subprocess.CalledProcessError as exc:\n        # Return error details for debugging\n        return {\n            \"status\": \"error\",\n            \"error\": exc.stderr.strip(),\n            \"code\": exc.returncode\n        }\n",
+            "usage": "# Example usage in a FastAPI route\n# from fastapi import APIRouter\n# router = APIRouter()\n#\n# @router.post('/firewall/reload')\n# async def reload_firewall_endpoint():\n#     return reload_firewall()\n"
+        }
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 creates a reusable, authenticated JSON-RPC session so that privileged methods like `debug_mutexProfile` can be invoked securely from the server-side.",
+            "code": "# backend/rpc_client.py\nimport os\nimport requests\nimport uuid\n\n\ndef _get_env_or_raise(var_name: str) -> str:\n    \"\"\"Return the value of an env-var or raise an explicit error.\"\"\"\n    value = os.getenv(var_name)\n    if value is None:\n        raise EnvironmentError(f\"Environment variable '{var_name}' is not set.\")\n    return value\n\n\ndef get_authenticated_session() -> requests.Session:\n    \"\"\"Instantiate a requests.Session configured with Basic-Auth creds.\"\"\"\n    session = requests.Session()\n\n    # Credentials are loaded from environment variables so secrets never\n    # leave the backend.\n    rpc_user = _get_env_or_raise(\"RPC_ADMIN_USER\")\n    rpc_pass = _get_env_or_raise(\"RPC_ADMIN_PASSWORD\")\n    session.auth = (rpc_user, rpc_pass)\n\n    # JSON-RPC always uses application/json.\n    session.headers.update({\"Content-Type\": \"application/json\"})\n\n    return session\n\n\n# A module-level session & endpoint can be shared across requests.\nRPC_ENDPOINT = os.getenv(\"RPC_ADMIN_URL\", \"http://127.0.0.1:8545\")\nSESSION = get_authenticated_session()\n\n\ndef rpc_call(method: str, params=None, id_: str | None = None):\n    \"\"\"Utility that performs a JSON-RPC request and returns `result`.\"\"\"\n    payload = {\n        \"jsonrpc\": \"2.0\",\n        \"id\": id_ or str(uuid.uuid4()),\n        \"method\": method,\n        \"params\": params or [],\n    }\n\n    # Perform HTTP POST with a 30-second timeout for safety.\n    resp = SESSION.post(RPC_ENDPOINT, json=payload, timeout=30)\n    resp.raise_for_status()  # Raises on non-200 HTTP codes.\n\n    data = resp.json()\n    if \"error\" in data:\n        raise RuntimeError(f\"RPC error: {data['error']}\")\n\n    return data.get(\"result\")",
+            "usage": "# Example backend usage\nfrom rpc_client import rpc_call\nnode_version = rpc_call(\"web3_clientVersion\")\nprint(node_version)"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 bundles the duration and output path into a single object that can be POSTed to the backend.",
+            "code": "/* frontend/profileParams.js */\n\n/**\n * Prepare the parameters needed for the mutex profiler.\n * Values are hard-coded per the workflow but could be made dynamic.\n */\nexport const prepareProfileParameters = () => ({\n  duration: 10,          // seconds\n  outputPath: 'mutex.prof'\n});",
+            "usage": "const params = prepareProfileParameters();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 exposes a FastAPI route that triggers `debug_mutexProfile` on the node using the authenticated session from Step 1.",
+            "code": "# backend/api.py\nfrom fastapi import FastAPI, HTTPException\nfrom rpc_client import rpc_call\n\napp = FastAPI()\n\n\n@app.post('/api/debug/mutex-profile')\nasync def debug_mutex_profile(payload: dict):\n    \"\"\"Invoke the node's `debug_mutexProfile` RPC method.\"\"\"\n    duration = payload.get('duration', 10)\n    output_path = payload.get('outputPath', 'mutex.prof')\n\n    try:\n        # In geth, the parameter order is [fileName, durationSeconds].\n        result = rpc_call('debug_mutexProfile', [output_path, duration])\n        return {\n            'status': 'ok',\n            'file': output_path,\n            'rpc_result': result  # Typically `null` if everything went fine.\n        }\n    except Exception as exc:\n        # Convert any Python/requests errors into an HTTP 500 for the client.\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "import { prepareProfileParameters } from './profileParams.js';\n\nconst params = prepareProfileParameters();\nconst res = await fetch('/api/debug/mutex-profile', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify(params)\n});\nconst data = await res.json();\nconsole.log('Profiling result:', data);"
+        }
+    ]
+}

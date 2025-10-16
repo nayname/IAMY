@@ -1,0 +1,26 @@
+{
+    "label": "send",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 generates an unsigned transaction JSON by shelling out to the Cosmos SDK CLI (`<appd> tx \u2026 --generate-only`).",
+            "code": "import subprocess, json\nfrom typing import List, Dict, Optional\n\n\ndef construct_unsigned_tx_cli(tx_args: List[str], chain_id: str, node: str = 'tcp://localhost:26657', home_path: Optional[str] = None) -> Dict:\n    '''\n    Generate an unsigned transaction via `<appd> tx ... --generate-only`.\n\n    Parameters\n    ----------\n    tx_args : list[str]\n        Portion after `appd tx`, e.g. ['bank', 'send', '{from}', '{to}', '100uatom'].\n    chain_id : str\n        Target chain-id.\n    node : str\n        RPC endpoint of the node (defaults to local node).\n    home_path : str | None\n        Optional `$HOME` for the CLI.\n\n    Returns\n    -------\n    dict\n        Parsed JSON of the unsigned transaction.\n    '''\n    cmd = ['appd', 'tx'] + tx_args + ['--generate-only', '--chain-id', chain_id, '--node', node, '--output', 'json']\n    if home_path:\n        cmd += ['--home', home_path]\n\n    try:\n        completed = subprocess.run(cmd, capture_output=True, text=True, check=True)\n        return json.loads(completed.stdout)\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f'Failed to construct unsigned tx: {e.stderr}') from e",
+            "usage": "unsigned_tx = construct_unsigned_tx_cli(['bank', 'send', FROM_ADDR, TO_ADDR, '100uatom'], chain_id='localnet')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 signs the unsigned transaction with the CLI (`<appd> tx sign`) and extracts the base64-encoded `tx_bytes`.",
+            "code": "import subprocess, json, os\nfrom tempfile import NamedTemporaryFile\nfrom typing import Dict, Optional\n\n\ndef sign_tx_cli(unsigned_tx: Dict, signer_key: str, chain_id: str, home_path: Optional[str] = None) -> str:\n    '''Sign an unsigned transaction using `<appd> tx sign` and return base64 `tx_bytes`.'''\n    with NamedTemporaryFile('w', delete=False, suffix='.json') as tmp:\n        json.dump(unsigned_tx, tmp)\n        tmp.flush()\n        tmp_name = tmp.name\n\n    cmd = ['appd', 'tx', 'sign', tmp_name, '--from', signer_key, '--chain-id', chain_id, '--output', 'json']\n    if home_path:\n        cmd += ['--home', home_path]\n\n    try:\n        completed = subprocess.run(cmd, capture_output=True, text=True, check=True)\n        signed_tx = json.loads(completed.stdout)\n        tx_bytes = signed_tx.get('tx_bytes') or signed_tx.get('body', {}).get('tx_bytes')\n        if not tx_bytes:\n            raise KeyError('tx_bytes not found in signing output')\n        return tx_bytes\n    finally:\n        os.remove(tmp_name)",
+            "usage": "tx_bytes = sign_tx_cli(unsigned_tx, signer_key='mykey', chain_id='localnet')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 broadcasts the signed transaction either via the gRPC-gateway REST endpoint or with `grpcurl`.",
+            "code": "import requests, json, subprocess\nfrom typing import Dict\n\n\ndef broadcast_tx_rest(tx_bytes_b64: str, rest_endpoint: str = 'http://localhost:1317', mode: str = 'BROADCAST_MODE_SYNC') -> Dict:\n    '''Broadcast the signed transaction using the REST (gRPC-gateway) endpoint.'''    \n    url = f'{rest_endpoint}/cosmos/tx/v1beta1/txs'\n    payload = {'tx_bytes': tx_bytes_b64, 'mode': mode}\n    resp = requests.post(url, json=payload, timeout=10)\n    if not resp.ok:\n        raise RuntimeError(f'REST broadcast failed: {resp.status_code} {resp.text}')\n    return resp.json()\n\n\ndef broadcast_tx_grpcurl(tx_bytes_b64: str, grpc_host: str = 'localhost:9090', mode: str = 'BROADCAST_MODE_SYNC') -> Dict:\n    '''Alternative: broadcast the signed transaction via the low-level gRPC method using `grpcurl`.'''\n    data = json.dumps({'tx_bytes': tx_bytes_b64, 'mode': mode})\n    cmd = ['grpcurl', '-plaintext', '-d', data, grpc_host, 'cosmos.tx.v1beta1.Service/BroadcastTx']\n    completed = subprocess.run(cmd, capture_output=True, text=True, check=True)\n    return json.loads(completed.stdout)",
+            "usage": "result = broadcast_tx_rest(tx_bytes)  # or broadcast_tx_grpcurl(tx_bytes)"
+        }
+    ]
+}

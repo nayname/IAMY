@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Retrieves the connected user\u2019s Neutron wallet address from the browser-injected Keplr extension.",
+            "function": "getUserWalletAddress()",
+            "usage": "const userAddress = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the Amber Finance smart-contract backend endpoint to obtain all open positions for the provided address.",
+            "function": "amber_positions(address)",
+            "usage": "const positions = await amber_positions(userAddress);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Calculates (or normalises) the health factor, collateral and debt for every retrieved position.",
+            "function": "calculateHealthFactor(positions)",
+            "usage": "const computed = calculateHealthFactor(positions);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Generates a human-readable summary that maps each position ID to its health factor, collateral and debt values.",
+            "function": "presentResults(computedPositions)",
+            "usage": "const summary = presentResults(computed);"
+        }
+    ],
+    "frontend": [
+        "const userAddress = await getUserWalletAddress();//step: 1 Tool: get_user_address Desciption: Determine the wallet whose health factor is requested.",
+        "const computed = calculateHealthFactor(positions);//step: 3 Tool: calculate_health_factor Desciption: Compute or read the health factor metric returned by Amber for each position.",
+        "const summary = presentResults(computed);//step: 4 Tool: present_results Desciption: Return a formatted summary: position ID \u2192 health factor, collateral, debt."
+    ],
+    "backend": [
+        "const positions = await amber_positions(userAddress);#step: 2 Tool: query_amber_position Desciption: Fetch all active positions for the address from the Amber contract."
+    ],
+    "intent": "Check my health factor on Amber Finance",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_address",
+            "description": "Determine the wallet whose health factor is requested."
+        },
+        {
+            "step": 2,
+            "tool": "query_amber_position",
+            "description": "Fetch all active positions for the address from the Amber contract."
+        },
+        {
+            "step": 3,
+            "tool": "calculate_health_factor",
+            "description": "Compute or read the health factor metric returned by Amber for each position."
+        },
+        {
+            "step": 4,
+            "tool": "present_results",
+            "description": "Return a formatted summary: position ID \u2192 health factor, collateral, debt."
+        }
+    ],
+    "outcome_checks": [
+        "Health factor values are non-null and within expected numeric ranges.",
+        "Output clearly associates each position ID with its health factor."
+    ]
+}

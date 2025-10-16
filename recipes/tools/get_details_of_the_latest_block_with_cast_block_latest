@@ -1,0 +1,27 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Uses the Neutrond CLI to fetch the node\u2019s status, which includes information about the most recent block, and returns it as JSON.",
+            "function": "neutrond_status(rpc_endpoint)",
+            "usage": "latest_block_json = neutrond_status(os.environ[\"COSMOS_RPC_URL\"])"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "latest_block_json = neutrond_status(os.environ[\"COSMOS_RPC_URL\"])#step: 1 Tool: run_command Desciption: Request the latest block and return it as JSON:\n  cast block latest --rpc-url $COSMOS_RPC_URL --json"
+    ],
+    "intent": "Get details of the latest block with cast block latest",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "run_command",
+            "description": "Request the latest block and return it as JSON:\n  cast block latest --rpc-url $COSMOS_RPC_URL --json"
+        }
+    ],
+    "outcome_checks": [
+        "The JSON payload contains fields such as number, hash, parentHash, gasUsed, and timestamp.",
+        "number matches the value retrieved in the previous recipe (or block-number \u00b11 if the chain advanced)."
+    ]
+}

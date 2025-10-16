@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Connects to the Ethereum JSON-RPC endpoint and returns a Web3 instance.",
+            "code": "from web3 import Web3\nimport os\n\n# Function: get_web3\n# Purpose : Establish a connection to an Ethereum JSON-RPC node.\n# Notes   : Reads the RPC URL from the environment variable `RPC_URL` or defaults to\n#           `http://localhost:8545`. Raises an error if the node is unreachable.\n\ndef get_web3():\n    rpc_url = os.getenv(\"RPC_URL\", \"http://localhost:8545\")\n    try:\n        w3 = Web3(Web3.HTTPProvider(rpc_url))\n        if not w3.isConnected():\n            raise ConnectionError(f\"Unable to connect to JSON-RPC at {rpc_url}\")\n        return w3\n    except Exception as e:\n        raise RuntimeError(f\"get_web3 error: {str(e)}\")",
+            "usage": "w3 = get_web3()"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Converts a UTF-8 string into a 0x-prefixed hexadecimal string usable by eth_sign.",
+            "code": "export const toHexMessage = (message) => {\n  if (typeof message !== 'string') {\n    throw new Error('Message must be a string');\n  }\n  // Convert each character to its UTF-8 char code, then to a two-digit hex value\n  const hexBody = Array.from(message)\n    .map(char => char.charCodeAt(0).toString(16).padStart(2, '0'))\n    .join('');\n\n  return '0x' + hexBody;\n};",
+            "usage": "const hexMsg = toHexMessage('Hello, Ethereum!');"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Invokes the eth_sign RPC method for an unlocked account on the connected node.",
+            "code": "import os\nimport requests\n\n# Function: eth_sign\n# Params  : from_address (str)  \u2014 the address doing the signing (must be unlocked on the node)\n#           message_hex (str)   \u2014 0x-prefixed hex string produced in Step 2\n# Returns : signature (str)     \u2014 0x-prefixed ECDSA signature\n\ndef eth_sign(from_address: str, message_hex: str) -> str:\n    rpc_url = os.getenv(\"RPC_URL\", \"http://localhost:8545\")\n    payload = {\n        \"jsonrpc\": \"2.0\",\n        \"id\": 1,\n        \"method\": \"eth_sign\",\n        \"params\": [from_address, message_hex]\n    }\n\n    try:\n        response = requests.post(rpc_url, json=payload, timeout=10)\n        response.raise_for_status()\n        data = response.json()\n        if 'error' in data:\n            raise RuntimeError(data['error'])\n        return data['result']  # 0x-signature\n    except Exception as e:\n        raise RuntimeError(f\"eth_sign failed: {e}\")",
+            "usage": "signature = eth_sign('0xYourUnlockedAddress', hexMsg)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Recovers the signer\u2019s address from the message and signature to verify authenticity.",
+            "code": "from eth_account.messages import encode_defunct\nfrom web3 import Web3, HTTPProvider\nimport os\n\n# Function: verify_signature\n# Purpose : Ensure that the provided signature was produced by the expected address.\n# Returns : True if valid, False otherwise.\n\ndef verify_signature(message: str, signature: str, expected_address: str, w3: Web3 | None = None) -> bool:\n    try:\n        # Use existing Web3 instance or create a new one\n        if w3 is None:\n            w3 = Web3(HTTPProvider(os.getenv('RPC_URL', 'http://localhost:8545')))\n        msg = encode_defunct(text=message)\n        recovered = w3.eth.account.recover_message(msg, signature=signature)\n        return recovered.lower() == expected_address.lower()\n    except Exception as e:\n        raise RuntimeError(f\"verify_signature error: {e}\")",
+            "usage": "is_valid = verify_signature('Hello, Ethereum!', signature, '0xYourUnlockedAddress')"
+        }
+    ]
+}

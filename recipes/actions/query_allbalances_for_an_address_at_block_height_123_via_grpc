@@ -1,0 +1,26 @@
+{
+    "label": "query_balance",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 adds a small helper that checks whether a supplied string is a valid Bech32 account address for the expected prefix (defaults to \u201ccosmos\u201d). Because Mintlify pages cannot import external JS libs, the function relies on a lightweight regex-based structural check.",
+            "code": "/* utils/address.js */\nexport const validateBech32Address = (address, prefix = 'cosmos') => {\n  if (typeof address !== 'string') return false;\n\n  // Bech32 addresses are conventionally lowercase\n  if (address !== address.toLowerCase()) return false;\n\n  // Basic structural rule: <prefix>1<38 bech32 chars (excluding \"1\", \"b\", \"i\", \"o\")\n  const regex = new RegExp('^' + prefix + '1[ac-hj-np-z02-9]{38}$');\n  return regex.test(address);\n};",
+            "usage": "// Example usage in any React / Vanilla JS component\nif (!validateBech32Address(userAddress)) {\n  alert('Invalid Bech32 address');\n  return;\n}"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 provides a small FastAPI BFF along with a helper that instantiates a gRPC client and calls cosmos.bank.v1beta1.Query/AllBalances. It supports the optional \"x-cosmos-block-height\" metadata header.",
+            "code": "# backend/bank_client.py\nimport os\nfrom typing import Optional\n\nimport grpc\nfrom google.protobuf.json_format import MessageToDict\n\n# Cosmos-SDK protobuf stubs (install with `pip install cosmos-sdk-proto`)\nfrom cosmos.bank.v1beta1 import query_pb2 as bank_query_pb2\nfrom cosmos.bank.v1beta1 import query_pb2_grpc as bank_query_grpc\n\nGRPC_ENDPOINT = os.getenv('GRPC_ENDPOINT', 'localhost:9090')\n\ndef grpc_bank_all_balances(address: str, height: Optional[int] = None) -> dict:\n    \"\"\"Return the gRPC QueryAllBalancesResponse as a plain Python dict.\"\"\"\n    channel = grpc.insecure_channel(GRPC_ENDPOINT)\n    stub = bank_query_grpc.QueryStub(channel)\n\n    request = bank_query_pb2.QueryAllBalancesRequest(address=address)\n\n    metadata = []\n    if height is not None:\n        metadata.append(('x-cosmos-block-height', str(height)))\n\n    try:\n        response_proto = stub.AllBalances(request, metadata=metadata, timeout=10)\n        return MessageToDict(response_proto, preserving_proto_field_name=True)\n    except grpc.RpcError as rpc_err:\n        # Convert low-level gRPC errors into generic exceptions for the HTTP layer\n        raise RuntimeError(f'gRPC query failed: {rpc_err.details()} (code={rpc_err.code()})') from rpc_err\n\n# -----------------------------------------------------------------------------\n# FastAPI wrapper so the frontend can fetch with a simple HTTP call\n# -----------------------------------------------------------------------------\nfrom fastapi import FastAPI, HTTPException, Query\n\napp = FastAPI()\n\n@app.get('/api/balances')\ndef api_all_balances(\n    address: str = Query(..., description='Bech32 account address'),\n    height: Optional[int] = Query(None, description='Optional block height')):\n    try:\n        return grpc_bank_all_balances(address, height)\n    except RuntimeError as err:\n        raise HTTPException(status_code=500, detail=str(err))",
+            "usage": "/* Frontend call */\nconst res = await fetch(`/api/balances?address=${address}&height=123`);\nconst rawBalances = await res.json();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 defines a helper that takes the dict returned by Step 2 and converts the Coin objects into a minimal `[ { denom, amount } ]` array that is easier for the UI to display.",
+            "code": "# backend/parsers.py\ndef parse_balances_response(response: dict):\n    \"\"\"Extracts a simple list of {denom, amount} from the gRPC response dict.\"\"\"\n    try:\n        balances = response.get('balances', [])\n        return [{'denom': coin['denom'], 'amount': coin['amount']} for coin in balances]\n    except (AttributeError, KeyError, TypeError) as err:\n        raise ValueError('Malformed balances response') from err",
+            "usage": "parsed = parse_balances_response(rawBalances)\n# -> [ { denom: 'uatom', amount: '12345' }, ... ]"
+        }
+    ]
+}

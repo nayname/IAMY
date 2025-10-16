@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Stops the running evmd node so its configuration file can be edited safely.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport subprocess\nimport logging\n\nrouter = APIRouter(prefix=\"/api/evmd\")\n\n@router.post(\"/stop\")\nasync def stop_evmd():\n    \"\"\"\n    Attempt to stop the evmd process gracefully. If systemd is not being used,\n    fall back to killing the process by name.\n    \"\"\"\n    try:\n        # Preferred: managed by systemd\n        subprocess.run([\"systemctl\", \"stop\", \"evmd\"], check=True)\n        return {\"status\": \"evmd stopped via systemctl\"}\n    except subprocess.CalledProcessError:\n        try:\n            # Fallback for non-systemd environments\n            subprocess.run([\"pkill\", \"-f\", \"evmd\"], check=True)\n            return {\"status\": \"evmd stopped via pkill\"}\n        except subprocess.CalledProcessError as err:\n            logging.exception(\"Unable to stop evmd: %s\", err)\n            raise HTTPException(status_code=500, detail=\"Unable to stop evmd process\")",
+            "usage": "await fetch('/api/evmd/stop', { method: 'POST' });"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Reads the current ~/.evmd/config/app.toml file and returns it as JSON so the frontend can view or diff the existing settings.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport os\nimport toml\n\nrouter = APIRouter(prefix=\"/api/evmd/config\")\nAPP_TOML_PATH = os.path.expanduser(\"~/.evmd/config/app.toml\")\n\n@router.get(\"/\")\nasync def read_app_toml():\n    \"\"\"Return the full app.toml contents so it can be inspected in the UI.\"\"\"\n    try:\n        with open(APP_TOML_PATH, \"r\") as file:\n            cfg = toml.load(file)\n        return cfg\n    except FileNotFoundError:\n        raise HTTPException(status_code=404, detail=f\"app.toml not found at {APP_TOML_PATH}\")\n    except Exception as err:\n        raise HTTPException(status_code=500, detail=str(err))",
+            "usage": "const config = await fetch('/api/evmd/config').then(r => r.json());"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Updates the json-rpc.api field in app.toml so only the desired namespaces (eth, web3, net, txpool) are exposed.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport os\nimport toml\nfrom pydantic import BaseModel, Field\n\nrouter = APIRouter(prefix=\"/api/evmd/config\")\nAPP_TOML_PATH = os.path.expanduser(\"~/.evmd/config/app.toml\")\n\nclass Namespaces(BaseModel):\n    namespaces: list[str] = Field(..., description=\"JSON-RPC namespaces to expose, e.g. ['eth','web3','net','txpool']\")\n\n@router.post(\"/json-rpc\")\nasync def update_json_rpc(namespaces: Namespaces):\n    \"\"\"\n    Overwrite the `api` field under the [json-rpc] section with a comma-separated\n    list of namespaces supplied by the caller.\n    \"\"\"\n    try:\n        with open(APP_TOML_PATH, \"r\") as file:\n            cfg = toml.load(file)\n\n        # Ensure the section exists and update it\n        cfg.setdefault(\"json-rpc\", {})[\"api\"] = \",\".join(namespaces.namespaces)\n\n        with open(APP_TOML_PATH, \"w\") as file:\n            toml.dump(cfg, file)\n\n        return {\"status\": \"updated\", \"api\": cfg[\"json-rpc\"][\"api\"]}\n    except Exception as err:\n        raise HTTPException(status_code=500, detail=str(err))",
+            "usage": "await fetch('/api/evmd/config/json-rpc', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ namespaces: ['eth','web3','net','txpool'] })\n});"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Returns the current json-rpc.api value so the frontend can verify that the file was saved correctly.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport os\nimport toml\n\nrouter = APIRouter(prefix=\"/api/evmd/config\")\nAPP_TOML_PATH = os.path.expanduser(\"~/.evmd/config/app.toml\")\n\n@router.get(\"/json-rpc\")\nasync def get_json_rpc_api():\n    \"\"\"Read back the api field to verify that the previous write persisted.\"\"\"\n    try:\n        with open(APP_TOML_PATH, \"r\") as file:\n            cfg = toml.load(file)\n        return {\"api\": cfg.get(\"json-rpc\", {}).get(\"api\", \"\")}\n    except Exception as err:\n        raise HTTPException(status_code=500, detail=str(err))",
+            "usage": "const { api } = await fetch('/api/evmd/config/json-rpc').then(r => r.json());"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Restarts the evmd node so the new JSON-RPC namespace list takes effect.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport subprocess\nimport logging\n\nrouter = APIRouter(prefix=\"/api/evmd\")\n\n@router.post(\"/start\")\nasync def start_evmd():\n    \"\"\"\n    Start (or restart) the evmd process after configuration changes.\n    \"\"\"\n    try:\n        subprocess.run([\"systemctl\", \"start\", \"evmd\"], check=True)\n        return {\"status\": \"evmd restarted\"}\n    except subprocess.CalledProcessError as err:\n        logging.exception(\"Unable to start evmd: %s\", err)\n        raise HTTPException(status_code=500, detail=\"Unable to start evmd\")",
+            "usage": "await fetch('/api/evmd/start', { method: 'POST' });"
+        }
+    ]
+}

@@ -1,0 +1,47 @@
+{
+    "label": "upload",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Checks that MetaMask is installed, unlocked, and returns the user\u2019s first account address.",
+            "code": "export const ensureMetaMaskInstalledAndUnlocked = async () => {\n  // Verify MetaMask extension is present\n  if (typeof window === 'undefined' || !window.ethereum || !window.ethereum.isMetaMask) {\n    throw new Error('MetaMask is not installed. Please install it from https://metamask.io/');\n  }\n\n  // Request account access (prompts unlock if locked)\n  const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' }).catch((err) => {\n    console.error(err);\n    throw new Error('User denied account authorization or MetaMask is locked.');\n  });\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No MetaMask accounts found.');\n  }\n\n  return accounts[0]; // Return the active address\n};",
+            "usage": "const address = await ensureMetaMaskInstalledAndUnlocked();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Adds the Evmos (Cosmos EVM) network to MetaMask if it is not already present.",
+            "code": "export const addCosmosEvmNetwork = async () => {\n  if (!window.ethereum) throw new Error('MetaMask is not available');\n\n  const evmosChain = {\n    chainId: '0x2329', // 9001 in hex\n    chainName: 'Evmos',\n    nativeCurrency: {\n      name: 'EVMOS',\n      symbol: 'EVMOS',\n      decimals: 18\n    },\n    rpcUrls: ['https://eth.bd.evmos.org:8545'],\n    blockExplorerUrls: ['https://escan.live']\n  };\n\n  try {\n    await window.ethereum.request({\n      method: 'wallet_addEthereumChain',\n      params: [evmosChain]\n    });\n  } catch (error) {\n    console.error(error);\n    throw new Error('Failed to add the Evmos network to MetaMask.');\n  }\n};",
+            "usage": "await addCosmosEvmNetwork();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Opens the Remix IDE in a new browser tab so the injected MetaMask provider can be used there.",
+            "code": "export const openRemixIde = () => {\n  const remixUrl = 'https://remix.ethereum.org';\n  // Open Remix; MetaMask will prompt for connection in the new tab\n  window.open(remixUrl, '_blank', 'noopener,noreferrer');\n};",
+            "usage": "openRemixIde();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Verifies that MetaMask is connected to the expected Evmos chain and returns the current chainId.",
+            "code": "export const verifyInjectedProvider = async () => {\n  if (!window.ethereum) {\n    throw new Error('MetaMask provider not found.');\n  }\n\n  const chainId = await window.ethereum.request({ method: 'eth_chainId' });\n  console.log(`Connected to chainId: ${chainId}`);\n\n  // Warn if user is on a different network\n  if (chainId !== '0x2329') {\n    console.warn('MetaMask is not connected to the expected Evmos network.');\n  }\n\n  return chainId;\n};",
+            "usage": "const chainId = await verifyInjectedProvider();"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Python FastAPI endpoint that compiles a Solidity contract and returns its ABI and bytecode.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport solcx\n\napp = FastAPI()\n\n# Install or ensure the required Solidity compiler version is present\nSOLC_VERSION = '0.8.20'\ntry:\n    solcx.install_solc(SOLC_VERSION)\nexcept Exception:\n    # Already installed or network unavailable; compilation will raise if version missing\n    pass\n\nclass CompilePayload(BaseModel):\n    source: str          # Solidity source code\n    contract_name: str   # Contract name to compile\n\n@app.post('/api/compile_contract')\nasync def compile_contract(payload: CompilePayload):\n    # Compile Solidity source\n    try:\n        compiled = solcx.compile_source(\n            payload.source,\n            output_values=['abi', 'bin'],\n            solc_version=SOLC_VERSION,\n        )\n    except solcx.exceptions.SolcError as e:\n        raise HTTPException(status_code=400, detail=f'Compilation error: {e}')\n\n    identifier = f\"<stdin>:{payload.contract_name}\"\n    if identifier not in compiled:\n        raise HTTPException(status_code=400, detail='Contract name not found after compilation.')\n\n    contract_interface = compiled[identifier]\n    abi = contract_interface['abi']\n    bytecode = '0x' + contract_interface['bin']  # Prefix bytecode with 0x for deployment\n\n    return {'abi': abi, 'bytecode': bytecode}",
+            "usage": "const { abi, bytecode } = await fetch('/api/compile_contract', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ source: contractSource, contract_name: 'MyContract' })\n}).then(r => r.json());"
+        },
+        {
+            "step": 6,
+            "label": "frontend",
+            "introduction": "Deploys the compiled contract bytecode via MetaMask and returns the transaction hash.",
+            "code": "export const deployContract = async ({ bytecode }) => {\n  if (!window.ethereum) throw new Error('MetaMask not found in browser.');\n\n  // Request the active account\n  const [from] = await window.ethereum.request({ method: 'eth_requestAccounts' });\n\n  // Raw deployment transaction parameters\n  const txParams = {\n    from,\n    data: bytecode\n  };\n\n  // Estimate gas for deployment\n  try {\n    txParams.gas = await window.ethereum.request({\n      method: 'eth_estimateGas',\n      params: [txParams]\n    });\n  } catch (error) {\n    console.warn('Gas estimation failed, defaulting to 3,000,000.', error);\n    txParams.gas = '0x2DC6C0'; // 3,000,000 in hex\n  }\n\n  // Send deployment transaction (MetaMask will prompt for confirmation)\n  const txHash = await window.ethereum.request({\n    method: 'eth_sendTransaction',\n    params: [txParams]\n  });\n\n  console.log('Deployment transaction hash:', txHash);\n  return txHash;\n};",
+            "usage": "const txHash = await deployContract({ bytecode });"
+        }
+    ]
+}

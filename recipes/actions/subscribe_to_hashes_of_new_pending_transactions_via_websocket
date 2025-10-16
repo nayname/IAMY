@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 establishes a WebSocket connection to the local Ethereum JSON-RPC endpoint and returns the opened socket instance.",
+            "code": "export const openWebsocketConnection = (url = 'ws://localhost:8546') => {\n  return new Promise((resolve, reject) => {\n    try {\n      const ws = new WebSocket(url);\n\n      // Resolve when the connection opens successfully\n      ws.onopen = () => {\n        console.log(`WebSocket connected to ${url}`);\n        resolve(ws);\n      };\n\n      // Reject if an error occurs while connecting\n      ws.onerror = (err) => {\n        console.error('WebSocket connection error:', err);\n        reject(new Error(`Unable to connect to ${url}`));\n      };\n    } catch (error) {\n      reject(error);\n    }\n  });\n};",
+            "usage": "const ws = await openWebsocketConnection();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 sends an eth_subscribe request to receive hashes of new pending transactions.",
+            "code": "export const ethSubscribePendingTxs = (ws, requestId = 1) => {\n  if (!ws || ws.readyState !== WebSocket.OPEN) {\n    throw new Error('WebSocket is not open.');\n  }\n\n  const payload = {\n    id: requestId,\n    method: 'eth_subscribe',\n    params: ['newPendingTransactions']\n  };\n\n  ws.send(JSON.stringify(payload));\n\n  return requestId; // Return the request id used\n};",
+            "usage": "ethSubscribePendingTxs(ws);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 listens for the subscription acknowledgement, extracts the subscription id returned by the node, and stores it (in localStorage for persistence across reloads).",
+            "code": "export const storeSubscriptionId = (ws, callback) => {\n  const handler = (event) => {\n    try {\n      const msg = JSON.parse(event.data);\n\n      // The response to our subscription request will have the same id we sent (1 by default) and a 'result' field.\n      if (msg.id === 1 && msg.result) {\n        const subscriptionId = msg.result;\n        console.log('Received subscription id:', subscriptionId);\n\n        // Persist for later use\n        localStorage.setItem('pendingTxSubscriptionId', subscriptionId);\n\n        // Stop listening for the acknowledgement once received\n        ws.removeEventListener('message', handler);\n\n        if (typeof callback === 'function') {\n          callback(subscriptionId);\n        }\n      }\n    } catch (err) {\n      console.error('Failed to parse subscription response:', err);\n    }\n  };\n\n  ws.addEventListener('message', handler);\n};",
+            "usage": "storeSubscriptionId(ws, (subId) => console.log('Subscription ready:', subId));"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 continuously listens for push notifications that contain the subscription id and the hash of each pending transaction, invoking a user-supplied callback whenever a new hash is received.",
+            "code": "export const listenForPendingTxNotifications = (ws, callback) => {\n  ws.addEventListener('message', (event) => {\n    try {\n      const msg = JSON.parse(event.data);\n\n      // A notification will contain the method 'eth_subscription'\n      if (msg.method === 'eth_subscription' && msg.params) {\n        const { subscription, result: txHash } = msg.params;\n\n        if (typeof callback === 'function') {\n          callback({ subscriptionId: subscription, txHash });\n        }\n      }\n    } catch (err) {\n      // Non-JSON or unrelated messages can be safely ignored\n    }\n  });\n};",
+            "usage": "listenForPendingTxNotifications(ws, ({ subscriptionId, txHash }) => console.log(`(${subscriptionId}) pending tx:`, txHash));"
+        }
+    ]
+}

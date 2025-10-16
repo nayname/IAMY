@@ -1,0 +1,61 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"ToolingResources\", \"query\": \"Use viem to read contract state\"}, {\"label\": \"ToolingResources\", \"query\": \"Configure EIP-1559 gas parameters in ethers.js\"}, {\"label\": \"ToolingResources\", \"query\": \"Add a Blockscout explorer URL to the network settings\"}, {\"label\": \"ToolingResources\", \"query\": \"Query the client version of the node with cast client\"}, {\"label\": \"ToolingResources\", \"query\": \"Verify the Foundry installation versions\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "0ab4727f-48be-4023-a0b7-40d92b566c8e",
+            "example": false
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Read a smart-contract\u2019s state on a Cosmos-SDK/Ethermint chain using the viem library\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"select_rpc_endpoint\",\n        \"description\": \"Choose a public or self-hosted JSON-RPC endpoint for the target Ethermint-based (EVM) Cosmos chain (e.g., Evmos, Cronos, etc.).\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"import_viem\",\n        \"description\": \"Add viem (or update to the latest version) in the project: `npm install viem`.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"instantiate_public_client\",\n        \"description\": \"Create a `publicClient` with viem, passing the selected RPC URL and chain ID that matches the network.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"define_contract_abi\",\n        \"description\": \"Provide the ABI fragment that contains the read-only function(s) you wish to call.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"call_read_function\",\n        \"description\": \"Use `publicClient.readContract({ address, abi, functionName, args })` to retrieve on-chain data.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Confirm the returned value matches the expected on-chain state via a block-explorer or another RPC query.\",\n      \"Ensure no JSON-RPC errors (e.g., `execution reverted`) were thrown by viem.\"\n    ]\n  },\n  {\n    \"intent\": \"Configure EIP-1559 gas parameters when sending a transaction with ethers.js\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"instantiate_wallet\",\n        \"description\": \"Create an `ethers.Wallet` (or `JsonRpcSigner`) connected to the desired Cosmos EVM RPC endpoint.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"fetch_fee_data\",\n        \"description\": \"Call `provider.getFeeData()` (or `provider.send('eth_feeHistory', ...)`) to obtain current `maxPriorityFeePerGas` and `maxFeePerGas` suggestions.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"build_tx_object\",\n        \"description\": \"Construct the transaction object including `to`, `value`, `data`, `gasLimit`, plus EIP-1559 fields `maxFeePerGas` and `maxPriorityFeePerGas`.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_send_tx\",\n        \"description\": \"Use `wallet.sendTransaction(txObject)` to sign and broadcast the EIP-1559 transaction.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Verify the transaction\u2019s `type` is `0x2` (EIP-1559) in a block explorer.\",\n      \"Ensure the transaction was mined without being dropped for insufficient fees.\"\n    ]\n  },\n  {\n    \"intent\": \"Add a Blockscout block-explorer URL to a local or dApp network configuration\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"identify_network_config_file\",\n        \"description\": \"Locate the configuration file or environment section (e.g., `chain-registry`, `walletConnect`, or dApp network list) that defines network metadata.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"insert_blockscout_url\",\n        \"description\": \"Add or update the `explorer` field with the Blockscout base URL, e.g., `https://blockscout.evmos.org`.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"propagate_config\",\n        \"description\": \"Reload or redeploy the application so the new explorer link is picked up (restart dev server, clear cache, etc.).\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Clicking the explorer link in the UI opens the Blockscout page for the network.\",\n      \"Blockscout successfully returns blocks and transactions, confirming the URL is correct.\"\n    ]\n  },\n  {\n    \"intent\": \"Query the node\u2019s client version using Foundry\u2019s `cast` CLI\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"select_rpc_endpoint\",\n        \"description\": \"Export or pass the JSON-RPC URL for the target node through the `--rpc-url` flag or `FOUNDRY_RPC_URL` env variable.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"cast_client_version\",\n        \"description\": \"Run `cast client --rpc-url $RPC_URL` or `cast client` if the env variable is set.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The command prints the client version string (e.g., `Ethermint/v0.x.x` or `geth/v1.x.x`).\",\n      \"Exit status is 0 (no error).\"\n    ]\n  },\n  {\n    \"intent\": \"Verify the installed versions of Foundry components (forge, cast, anvil)\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"foundryup_update\",\n        \"description\": \"Optionally run `foundryup` to ensure you\u2019re on the latest release.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"check_forge_version\",\n        \"description\": \"Run `forge --version` to display the current version.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"check_cast_version\",\n        \"description\": \"Run `cast --version` to display the current version.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"check_anvil_version\",\n        \"description\": \"Run `anvil --version` to display the current version.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Each command outputs a semantic version string.\",\n      \"All versions are within the expected range for your project (e.g., match the CI toolchain).\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 1909,
+                    "prompt_tokens": 713,
+                    "total_tokens": 2622,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 576,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CPtm5BJkNOSQ6GZ6HhAL7NFFIQAee",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--76cc53cf-9e55-4b76-b1b1-4f55bc6920a3-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 713,
+                "output_tokens": 1909,
+                "total_tokens": 2622,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 576
+                }
+            }
+        }
+    ]
+}

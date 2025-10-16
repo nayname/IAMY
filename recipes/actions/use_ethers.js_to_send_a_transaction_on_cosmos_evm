@@ -1,0 +1,54 @@
+{
+    "label": "send",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 verifies that your Python backend has the required dependencies (`web3` and `python-dotenv`). If any dependency is missing, an informative error is raised so you can install it with `pip install web3 python-dotenv`.",
+            "code": "def check_dependencies():\n    \"\"\"Make sure the backend has the libraries we need.\"\"\"\n    try:\n        import web3  # noqa: F401\n        import dotenv  # noqa: F401\n    except ImportError as err:\n        raise ImportError(\n            f\"Missing dependency: {err.name}. Install with `pip install web3 python-dotenv`.\"\n        )",
+            "usage": "check_dependencies()  # Call once at application start-up"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 creates a Web3 JSON-RPC provider that connects to a Cosmos-SDK EVM chain (e.g. Evmos, Cronos).",
+            "code": "from web3 import Web3\n\n\ndef create_json_rpc_provider(rpc_url: str) -> Web3:\n    \"\"\"Return a connected `Web3` instance or raise if the RPC is unreachable.\"\"\"\n    provider = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={\"timeout\": 60}))\n    if not provider.isConnected():\n        raise ConnectionError(f\"Unable to connect to RPC endpoint at {rpc_url}\")\n    return provider",
+            "usage": "provider = create_json_rpc_provider(\"https://rpc.your-chain.org\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 loads a wallet (an `eth_account.Account` instance) from a private key. The key can be supplied directly or read from the `PRIVATE_KEY` environment variable so that secrets stay server-side.",
+            "code": "import os\nfrom eth_account import Account\nfrom web3 import Web3\n\n\ndef initialize_wallet(provider: Web3, private_key: str | None = None):\n    \"\"\"Return an `Account` object that will sign transactions.\"\"\"\n    pk = private_key or os.getenv(\"PRIVATE_KEY\")\n    if not pk:\n        raise ValueError(\"Private key not provided. Pass it explicitly or set the PRIVATE_KEY env var.\")\n    account = Account.from_key(pk)\n    return account",
+            "usage": "account = initialize_wallet(provider, private_key=\"0xYOUR_PRIVATE_KEY\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 builds a raw transaction dictionary containing `to`, `value`, `nonce`, and `chainId`.  You can pass an optional `gas_limit`; otherwise it will be estimated in the next step.",
+            "code": "from web3 import Web3\n\n\ndef build_transaction(account, to_address: str, value_ether: float, provider: Web3, gas_limit: int | None = None):\n    \"\"\"Prepare an unsigned transaction.\"\"\"\n    nonce = provider.eth.get_transaction_count(account.address)\n    chain_id = provider.eth.chain_id\n    value_wei = Web3.toWei(value_ether, \"ether\")\n\n    tx = {\n        \"nonce\": nonce,\n        \"to\": Web3.to_checksum_address(to_address),\n        \"value\": value_wei,\n        \"chainId\": chain_id,\n    }\n    if gas_limit:\n        tx[\"gas\"] = gas_limit  # will be replaced during estimation if omitted\n    return tx",
+            "usage": "tx = build_transaction(account, \"0xRecipientAddress\", 0.1, provider)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 asks the node for an accurate gas estimate and sets either EIP-1559 or legacy fee fields as supported by the chain.",
+            "code": "from web3 import Web3\n\n\ndef estimate_gas_with_web3(tx: dict, provider: Web3) -> dict:\n    \"\"\"Populate `gas`, `maxFeePerGas` & `maxPriorityFeePerGas` OR `gasPrice`.\"\"\"\n    gas_estimate = provider.eth.estimate_gas(tx)\n    tx[\"gas\"] = gas_estimate\n\n    try:\n        # Prefer EIP-1559 style if supported\n        base_fee = provider.eth.fee_history(1, \"latest\")[\"baseFeePerGas\"][-1]\n        max_priority = Web3.toWei(2, \"gwei\")  # configurable tip\n        tx[\"maxFeePerGas\"] = base_fee + max_priority\n        tx[\"maxPriorityFeePerGas\"] = max_priority\n    except Exception:\n        # Fallback to legacy `gasPrice`\n        tx[\"gasPrice\"] = provider.eth.gas_price\n\n    return tx",
+            "usage": "tx = estimate_gas_with_web3(tx, provider)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Step 6 signs the fully-populated transaction with the wallet\u2019s private key and broadcasts it to the network.",
+            "code": "def sign_and_send_transaction(account, tx: dict, provider: Web3) -> str:\n    \"\"\"Sign the transaction and return its hash.\"\"\"\n    signed_tx = account.sign_transaction(tx)\n    tx_hash = provider.eth.send_raw_transaction(signed_tx.rawTransaction)\n    return tx_hash.hex()",
+            "usage": "tx_hash = sign_and_send_transaction(account, tx, provider)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Step 7 waits for on-chain confirmation and returns the full transaction receipt.  Extra confirmations can be required for added safety.",
+            "code": "import time\n\n\ndef await_transaction_receipt(provider: Web3, tx_hash: str, confirmations: int = 1, poll_interval: int = 5, timeout: int = 300):\n    \"\"\"Block until the txn is mined + `confirmations` blocks and return its receipt.\"\"\"\n    receipt = provider.eth.wait_for_transaction_receipt(tx_hash, timeout=timeout)\n\n    if confirmations > 1:\n        target_block = receipt.blockNumber + confirmations - 1\n        while provider.eth.block_number < target_block:\n            time.sleep(poll_interval)\n    return dict(receipt)",
+            "usage": "receipt = await_transaction_receipt(provider, tx_hash, confirmations=2)"
+        }
+    ]
+}

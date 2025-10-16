@@ -1,0 +1,127 @@
+[
+    {
+        "intent": "Decode protobuf transaction bytes to JSON",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_base64_input",
+                "description": "Ensure the user-supplied transaction bytes are valid base64 (the format expected by Cosmos CLI and gRPC endpoints)."
+            },
+            {
+                "step": 2,
+                "tool": "simd_tx_decode",
+                "description": "Run `simd tx decode <base64-bytes>` to convert the protobuf-encoded TxRaw bytes into a JSON representation."
+            },
+            {
+                "step": 3,
+                "tool": "pretty_print_json",
+                "description": "Format the decoded JSON for readable output or save it to a file if requested."
+            }
+        ],
+        "outcome_checks": [
+            "The CLI exits with code 0 (no decoding errors).",
+            "The resulting JSON contains expected top-level fields: body, auth_info, signatures.",
+            "If a file path was supplied, verify that the JSON file now exists and is non-empty."
+        ]
+    },
+    {
+        "intent": "Simulate the signed transaction to estimate gas",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_signed_tx_bytes",
+                "description": "Confirm that the provided transaction is already signed and base64-encoded."
+            },
+            {
+                "step": 2,
+                "tool": "simd_tx_simulate",
+                "description": "Invoke `simd tx simulate <base64-bytes>` (or gRPC `cosmos.tx.v1beta1.Service/Simulate`) to run a state-less check that returns gas_info."
+            },
+            {
+                "step": 3,
+                "tool": "extract_gas_info",
+                "description": "Parse the simulation response and extract `gas_used` and `gas_wanted` values for the caller."
+            }
+        ],
+        "outcome_checks": [
+            "Simulation request returns an HTTP/gRPC status of OK or CLI exit code 0.",
+            "`gas_used` is a positive integer ( > 0 ).",
+            "No execution errors are reported in the `result` field."
+        ]
+    },
+    {
+        "intent": "Query AllBalances for an address at block height 123 via gRPC",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_bech32_address",
+                "description": "Verify the supplied account string conforms to Bech32 encoding for the target chain (e.g., `cosmos1...`)."
+            },
+            {
+                "step": 2,
+                "tool": "grpc_bank_all_balances",
+                "description": "Create a gRPC client and call `cosmos.bank.v1beta1.Query/AllBalances` with `address` set and metadata `x-cosmos-block-height: 123` (or the per-client height field if supported)."
+            },
+            {
+                "step": 3,
+                "tool": "parse_balances_response",
+                "description": "Decode the `balances` array of Coin objects (denom / amount) from the gRPC response."
+            }
+        ],
+        "outcome_checks": [
+            "gRPC response status is OK (no `code` errors).",
+            "The `balances` list is returned (can be empty but must be present).",
+            "Response headers confirm `height` equals 123."
+        ]
+    },
+    {
+        "intent": "Start an in-process test network with simd testnet start",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "ensure_testnet_files_exist",
+                "description": "Check that the target directory (default `$HOME/.simapp`) already contains testnet config produced by `simd testnet init-files`; prompt the user if initialization is required."
+            },
+            {
+                "step": 2,
+                "tool": "simd_testnet_start",
+                "description": "Run `simd testnet start --home <dir>` to launch the multi-validator network in one process."
+            },
+            {
+                "step": 3,
+                "tool": "monitor_startup_logs",
+                "description": "Stream the process output until fast-sync is complete and blocks are being produced."
+            }
+        ],
+        "outcome_checks": [
+            "`simd testnet start` process stays alive and prints `finalizing commit of block 1` (or higher).",
+            "RPC endpoint (default http://localhost:26657/status) returns a JSON status with `latest_block_height` \u2265 1.",
+            "gRPC port (9090 by default) is accepting connections."
+        ]
+    },
+    {
+        "intent": "Initialize testnet files with simd testnet init-files",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "select_output_directory",
+                "description": "Determine (or create) the directory where validator configs and genesis will be generated."
+            },
+            {
+                "step": 2,
+                "tool": "simd_testnet_init_files",
+                "description": "Execute `simd testnet init-files --home <dir> --chain-id <id> --v 1` (adjust flags for validator count, keyring backend, etc.)."
+            },
+            {
+                "step": 3,
+                "tool": "verify_generated_artifacts",
+                "description": "Confirm that `genesis.json`, `node_id` files, and validator key material exist in each validator sub-folder."
+            }
+        ],
+        "outcome_checks": [
+            "`simd testnet init-files` exits with code 0 and prints the path to the generated files.",
+            "`genesis.json` validates via `simd validate-genesis`.",
+            "Each validator directory contains `config`, `data`, and `keyring-test` folders."
+        ]
+    }
+]

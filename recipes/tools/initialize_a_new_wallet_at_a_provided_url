@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "connect_rpc_endpoint pings the supplied RPC endpoint\u2019s /status route to confirm the remote URL is reachable and valid before any wallet operations begin.",
+            "function": "connect_rpc_endpoint(rpc_endpoint)",
+            "usage": "validated_url = connect_rpc_endpoint('https://rpc.my-node.example.com')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "get_rpc_auth_header builds the HTTP Basic-Auth header required to perform authenticated RPC calls against the node\u2019s private methods.",
+            "function": "get_rpc_auth_header()",
+            "usage": "auth_headers = get_rpc_auth_header()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "generate_key uses the backend to create a brand-new key pair in the keyring, returning the newly-initialised wallet information.",
+            "function": "generate_key(key_name, keyring_backend='test')",
+            "usage": "wallet_details = await generate_key('my_new_wallet')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "validated_url = connect_rpc_endpoint('https://rpc.my-node.example.com')#step: 1 Tool: get_wallet_url Desciption: Collect and validate the remote URL where the wallet keystore will be created.",
+        "auth_headers = get_rpc_auth_header()#step: 2 Tool: authenticate_rpc Desciption: Authenticate to the node because personal_initializeWallet is a private method.",
+        "wallet_details = await generate_key('my_new_wallet')#step: 3 Tool: personal_initializeWallet Desciption: Call personal_initializeWallet(url) to generate a new private key and create a wallet at the specified location. Capture the returned key details."
+    ],
+    "intent": "Initialize a new wallet at a provided URL",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_wallet_url",
+            "description": "Collect and validate the remote URL where the wallet keystore will be created."
+        },
+        {
+            "step": 2,
+            "tool": "authenticate_rpc",
+            "description": "Authenticate to the node because personal_initializeWallet is a private method."
+        },
+        {
+            "step": 3,
+            "tool": "personal_initializeWallet",
+            "description": "Call personal_initializeWallet(url) to generate a new private key and create a wallet at the specified location. Capture the returned key details."
+        }
+    ],
+    "outcome_checks": [
+        "RPC response includes the newly\u2013generated private key or wallet identifier with no error.",
+        "A follow-up personal_listWallets or key-listing command shows the newly initialized wallet or its accounts."
+    ]
+}

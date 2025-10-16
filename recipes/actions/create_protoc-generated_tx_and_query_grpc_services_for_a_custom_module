@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 validates that `protoc` and all required Cosmos SDK protobuf plugins are installed and reachable on `$PATH`.",
+            "code": "# file: scripts/verify_protoc_plugins.py\nimport shutil\nimport subprocess\nimport sys\nfrom typing import Dict\n\nREQUIRED_TOOLS = [\n    \"protoc\",\n    \"protoc-gen-go\",\n    \"protoc-gen-go-grpc\",\n    \"protoc-gen-go_cosmos\",\n]\n\ndef verify_protoc_plugins() -> Dict[str, str]:\n    \"\"\"Check presence & version of each required protobuf tool.\"\"\"\n    missing = []\n    versions = {}\n    for tool in REQUIRED_TOOLS:\n        path = shutil.which(tool)\n        if path is None:\n            missing.append(tool)\n            continue\n        try:\n            res = subprocess.run([tool, \"--version\"], capture_output=True, text=True, check=False)\n            versions[tool] = res.stdout.strip() or res.stderr.strip() or f\"found at {path}\"\n        except Exception as e:\n            versions[tool] = f\"found at {path} (version check failed: {e})\"\n    if missing:\n        raise EnvironmentError(f\"Missing required protobuf tools: {', '.join(missing)}\")\n    return versions\n\nif __name__ == \"__main__\":\n    try:\n        info = verify_protoc_plugins()\n        print(\"\u2705 Protobuf environment looks good:\")\n        for name, ver in info.items():\n            print(f\"  - {name}: {ver}\")\n    except EnvironmentError as err:\n        print(f\"\u274c {err}\")\n        sys.exit(1)",
+            "usage": "python scripts/verify_protoc_plugins.py  # exits non-zero if any tool is missing"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 creates (or leaves untouched) canonical Msg and Query `.proto` files so that subsequent code-gen always has valid inputs.",
+            "code": "# file: scripts/ensure_proto_files.py\nfrom pathlib import Path\n\nPROTO_BASE = Path(\"proto/myapp/mymodule\")\nMSG_PROTO = PROTO_BASE / \"tx.proto\"\nQUERY_PROTO = PROTO_BASE / \"query.proto\"\n\nMSG_TEMPLATE = \"\"\"syntax = \\\"proto3\\\";\npackage myapp.mymodule.v1;\n\noption go_package = \\\"github.com/myorg/myapp/x/mymodule/types\\\";\n\nimport \\\"gogoproto/gogo.proto\\\";\nimport \\\"cosmos/msg/v1/msg.proto\\\";\n\nservice Msg {\n  rpc SendExampleMsg(ExampleMsgRequest) returns (ExampleMsgResponse) {\n    option (cosmos.msg.v1.signer) = \\\"creator\\\";\n  }\n}\n\nmessage ExampleMsgRequest {\n  string creator = 1;\n  string payload = 2;\n}\n\nmessage ExampleMsgResponse {}\n\"\"\"\n\nQUERY_TEMPLATE = \"\"\"syntax = \\\"proto3\\\";\npackage myapp.mymodule.v1;\n\noption go_package = \\\"github.com/myorg/myapp/x/mymodule/types\\\";\n\nimport \\\"cosmos/base/query/v1beta1/pagination.proto\\\";\nimport \\\"cosmos/query/v1/query.proto\\\";\n\nservice Query {\n  rpc Example(QueryExampleRequest) returns (QueryExampleResponse) {\n    option (cosmos.query.v1.query) = {\n      path: \\\"/myapp/mymodule/v1/example/{creator}\\\"\n    };\n  }\n}\n\nmessage QueryExampleRequest {\n  string creator = 1;\n}\n\nmessage QueryExampleResponse {\n  string payload = 1;\n}\n\"\"\"\n\ndef ensure_proto_files():\n    \"\"\"Generate stub .proto files if they are not present.\"\"\"\n    PROTO_BASE.mkdir(parents=True, exist_ok=True)\n    created = []\n    if not MSG_PROTO.exists():\n        MSG_PROTO.write_text(MSG_TEMPLATE)\n        created.append(str(MSG_PROTO))\n    if not QUERY_PROTO.exists():\n        QUERY_PROTO.write_text(QUERY_TEMPLATE)\n        created.append(str(QUERY_PROTO))\n    return {\"created\": created or \"none\", \"location\": str(PROTO_BASE)}\n\nif __name__ == \"__main__\":\n    print(ensure_proto_files())",
+            "usage": "python scripts/ensure_proto_files.py  # prints paths of new files or \"none\""
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 runs `buf generate` (or equivalent `make proto-gen`) to transform the .proto definitions into Go code.",
+            "code": "# file: scripts/buf_generate.py\nimport subprocess\nfrom pathlib import Path\nimport sys\n\ndef buf_generate(repo_root: str = \".\") -> str:\n    \"\"\"Execute `buf generate` inside the repo root.\"\"\"\n    root = Path(repo_root).resolve()\n    if not root.joinpath(\"buf.yaml\").exists():\n        raise FileNotFoundError(f\"buf.yaml not found in {root}\")\n    proc = subprocess.run([\"buf\", \"generate\"], cwd=root, capture_output=True, text=True)\n    if proc.returncode != 0:\n        raise RuntimeError(f\"buf generate failed:\\n{proc.stderr}\")\n    return proc.stdout\n\nif __name__ == \"__main__\":\n    try:\n        print(buf_generate())\n    except Exception as e:\n        print(f\"\u274c {e}\")\n        sys.exit(1)",
+            "usage": "python scripts/buf_generate.py  # invokes buf and shows stdout"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 compiles the newly generated Go files by running `go vet` and `go test`, ensuring that nothing is broken.",
+            "code": "# file: scripts/compile_generated_code.py\nimport subprocess\nfrom pathlib import Path\nimport sys\n\ndef compile_generated_code(repo_root: str = \".\") -> str:\n    \"\"\"Run `go vet ./...` and `go test ./...` to validate compilation.\"\"\"\n    root = Path(repo_root).resolve()\n    commands = [\n        [\"go\", \"vet\", \"./...\"],\n        [\"go\", \"test\", \"./...\"]\n    ]\n    for cmd in commands:\n        proc = subprocess.run(cmd, cwd=root, capture_output=True, text=True)\n        if proc.returncode != 0:\n            raise RuntimeError(f\"{' '.join(cmd)} failed:\\n{proc.stderr}\")\n    return \"Go vet and go test executed successfully.\"\n\nif __name__ == \"__main__\":\n    try:\n        print(compile_generated_code())\n    except Exception as e:\n        print(f\"\u274c {e}\")\n        sys.exit(1)",
+            "usage": "python scripts/compile_generated_code.py  # exits non-zero if vet/test fail"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 double-checks that the expected `MsgServer` / `QueryServer` stubs and related gRPC files were actually emitted.",
+            "code": "# file: scripts/verify_generated_services.py\nfrom pathlib import Path\nimport sys\n\ndef verify_generated_services(module_path: str = \"x/mymodule/types\") -> str:\n    \"\"\"Ensure generated gRPC files exist after code-gen.\"\"\"\n    expected = [\n        \"tx.pb.go\",\n        \"tx_grpc.pb.go\",\n        \"query.pb.go\",\n        \"query_grpc.pb.go\",\n    ]\n    base = Path(module_path).resolve()\n    missing = [f for f in expected if not base.joinpath(f).exists()]\n    if missing:\n        raise FileNotFoundError(f\"Missing generated files: {', '.join(missing)}\")\n    return \"All required gRPC stubs are present.\"\n\nif __name__ == \"__main__\":\n    try:\n        print(verify_generated_services())\n    except Exception as e:\n        print(f\"\u274c {e}\")\n        sys.exit(1)",
+            "usage": "python scripts/verify_generated_services.py  # prints success or lists missing files"
+        }
+    ]
+}

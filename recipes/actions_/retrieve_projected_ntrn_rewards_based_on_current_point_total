@@ -1,0 +1,81 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Obtains the user\u2019s Neutron wallet address from the connected signer so later queries know which account to use.",
+            "function": "getWalletAddress(signer)",
+            "usage": "const neutronAddress = await getWalletAddress(signer);"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Calls the Points smart-contract and returns the current point total for a given address.",
+            "function": "await get_user_points(address)",
+            "usage": "points_data = await get_user_points(neutronAddress)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Fetches the campaign\u2019s static parameters such as total NTRN allocation, phase duration and per-point emission rate.",
+            "function": "get_reward_params()",
+            "usage": "reward_params = get_reward_params()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Computes the projected NTRN reward for the address by multiplying its points by the per-point rate and any applicable multipliers.",
+            "function": "projected_rewards(address)",
+            "usage": "projection = projected_rewards(neutronAddress)"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Requests the backend projection for the user and renders a human-readable message explaining the expected NTRN payout.",
+            "function": "fetchProjectionAndDisplay(address)",
+            "usage": "const message = await fetchProjectionAndDisplay(neutronAddress);"
+        }
+    ],
+    "frontend": [
+        "const neutronAddress = await getWalletAddress(signer);//step: 1 Tool: get_wallet_address Desciption: Determine which address (Neutron or linked Ethereum) should be queried.",
+        "const message = await fetchProjectionAndDisplay(neutronAddress);//step: 5 Tool: display_projection Desciption: Return the projected NTRN amount with explanation of all assumptions."
+    ],
+    "backend": [
+        "points_data = await get_user_points(neutronAddress)#step: 2 Tool: query_points_contract Desciption: Call the Points contract (neutron1yu55umrtnna36vyjvhexp6q2ktljunukzxp9vptsfnylequg7gvqrcqf42) to fetch the user\u2019s current point total.",
+        "reward_params = get_reward_params()#step: 3 Tool: fetch_phase_reward_params Desciption: Read on-chain or hard-coded campaign parameters to get total NTRN allocated, phase length, and per-point emission formula.",
+        "projection = projected_rewards(neutronAddress)#step: 4 Tool: calculate_projected_rewards Desciption: Multiply point_total \u00d7 per_point_rate \u00d7 active multipliers to predict end-of-phase NTRN rewards."
+    ],
+    "intent": "Retrieve projected NTRN rewards based on current point total",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_wallet_address",
+            "description": "Determine which address (Neutron or linked Ethereum) should be queried."
+        },
+        {
+            "step": 2,
+            "tool": "query_points_contract",
+            "description": "Call the Points contract (neutron1yu55umrtnna36vyjvhexp6q2ktljunukzxp9vptsfnylequg7gvqrcqf42) to fetch the user\u2019s current point total."
+        },
+        {
+            "step": 3,
+            "tool": "fetch_phase_reward_params",
+            "description": "Read on-chain or hard-coded campaign parameters to get total NTRN allocated, phase length, and per-point emission formula."
+        },
+        {
+            "step": 4,
+            "tool": "calculate_projected_rewards",
+            "description": "Multiply point_total \u00d7 per_point_rate \u00d7 active multipliers to predict end-of-phase NTRN rewards."
+        },
+        {
+            "step": 5,
+            "tool": "display_projection",
+            "description": "Return the projected NTRN amount with explanation of all assumptions."
+        }
+    ],
+    "outcome_checks": [
+        "Successfully retrieved a non-zero point total from the contract or returned an explicit zero.",
+        "Displayed a numeric reward estimate along with the formula and current phase parameters.",
+        "Highlighted that final rewards depend on phase completion and global participation levels."
+    ]
+}

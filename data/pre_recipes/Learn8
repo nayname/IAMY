@@ -1,0 +1,183 @@
+[
+    {
+        "intent": "Grant fee allowance to a specified address",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_granter_address",
+                "description": "Ask the user for the on-chain address that will pay the fees (granter)."
+            },
+            {
+                "step": 2,
+                "tool": "get_grantee_address",
+                "description": "Ask the user for the address that will be allowed to use the allowance (grantee)."
+            },
+            {
+                "step": 3,
+                "tool": "get_fee_allowance_parameters",
+                "description": "Collect spend-limit, optional expiration or periodic parameters from the user."
+            },
+            {
+                "step": 4,
+                "tool": "construct_tx_feegrant_grant",
+                "description": "Build the fee-grant transaction: `simd tx feegrant grant <granter> <grantee> --spend-limit <amountDenom> [--expiration <RFC3339Time> | --period <seconds> --period-limit <amountDenom>] --from <granter>`."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the transaction with the granter\u2019s key and broadcast it to the network."
+            },
+            {
+                "step": 6,
+                "tool": "query_feegrant_allowance",
+                "description": "After the tx is finalized, query `simd q feegrant allowances-by-grantee <grantee>` to confirm the allowance exists."
+            }
+        ],
+        "outcome_checks": [
+            "The transaction hash is included in a block without error.",
+            "Querying the feegrant module returns an allowance object linking the granter and grantee with the expected spend-limit/period values."
+        ]
+    },
+    {
+        "intent": "Enable inter-block cache for a validator/full node",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "stop_node",
+                "description": "Safely shut down the running node service."
+            },
+            {
+                "step": 2,
+                "tool": "edit_app_toml",
+                "description": "Open `$HOME/.<chain-id>/config/app.toml` and set `inter_block_cache = true`."
+            },
+            {
+                "step": 3,
+                "tool": "start_node",
+                "description": "Restart the node with `simd start` (no extra CLI flags are required when the value is present in `app.toml`)."
+            },
+            {
+                "step": 4,
+                "tool": "verify_log_entry",
+                "description": "Tail the node log and look for a line similar to `Inter-Block Cache: enabled` to ensure the cache is active."
+            }
+        ],
+        "outcome_checks": [
+            "Node starts without error and begins syncing blocks.",
+            "Startup logs explicitly show that inter-block cache is enabled."
+        ]
+    },
+    {
+        "intent": "Launch a node while skipping on-chain upgrades at heights 100 and 200",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "stop_node",
+                "description": "Stop the node if it is currently running."
+            },
+            {
+                "step": 2,
+                "tool": "start_node_with_skip_heights",
+                "description": "Execute `simd start --unsafe-skip-upgrade 100,200` (or append the same flag to the systemd service definition) to bypass scheduled upgrades at those heights."
+            },
+            {
+                "step": 3,
+                "tool": "monitor_node_height",
+                "description": "Follow the log output to ensure the chain continues past heights 100 and 200 without halting."
+            }
+        ],
+        "outcome_checks": [
+            "The node does not panic or exit at the specified heights.",
+            "Logs show blocks higher than 200 being committed."
+        ]
+    },
+    {
+        "intent": "Add and register the x/nft module in an existing Cosmos SDK application",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "modify_go_mod",
+                "description": "Run `go get github.com/cosmos/ibc-go/vX/modules/nft@<version>` (replace <version>) to add the dependency."
+            },
+            {
+                "step": 2,
+                "tool": "update_app_imports",
+                "description": "Import the module\u2019s packages in `app.go` (e.g., `github.com/cosmos/ibc-go/vX/modules/nft`)."
+            },
+            {
+                "step": 3,
+                "tool": "register_module_basic",
+                "description": "Add `nft.AppModuleBasic{}` to the `ModuleBasics` slice so encoding/CLI support is wired."
+            },
+            {
+                "step": 4,
+                "tool": "register_module",
+                "description": "Insert `nft.NewAppModule(appCodec, app.NFTKeeper)` into the module manager and set its order in `SetOrderBeginBlockers`, `SetOrderEndBlockers`, and `SetOrderInitGenesis`."
+            },
+            {
+                "step": 5,
+                "tool": "create_nft_keeper",
+                "description": "Instantiate an `NFTKeeper` in `app.go` with the required store keys and dependencies (bankKeeper, accountKeeper, etc.)."
+            },
+            {
+                "step": 6,
+                "tool": "register_store_keys",
+                "description": "Append `nft.StoreKey` to the `keys` map so the module\u2019s KVStore is mounted."
+            },
+            {
+                "step": 7,
+                "tool": "compile_application",
+                "description": "Run `make install` or `go build ./...` to ensure the application compiles."
+            },
+            {
+                "step": 8,
+                "tool": "update_genesis_with_module",
+                "description": "When starting a fresh chain, ensure `genesis.json` contains an `nft` section with the default genesis state produced by `app.ModuleManager.InitGenesis()`."
+            }
+        ],
+        "outcome_checks": [
+            "The binary builds successfully with no unresolved imports.",
+            "Running the node starts without missing-module errors.",
+            "`simd q nft classes` returns an empty list instead of an unknown query error, indicating the module is registered."
+        ]
+    },
+    {
+        "intent": "Change the gov module parameter `MaxMetadataLen` to 10000 via a parameter-change proposal",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "create_param_change_json",
+                "description": "Generate a JSON file (`max_metadata_len.json`) with:\n{\n  \"title\": \"Raise gov max metadata length to 10k\",\n  \"description\": \"Allows longer metadata for proposals and votes.\",\n  \"changes\": [{\n    \"subspace\": \"gov\",\n    \"key\": \"MaxMetadataLen\",\n    \"value\": \"10000\"\n  }]\n}"
+            },
+            {
+                "step": 2,
+                "tool": "submit_gov_proposal",
+                "description": "Run `simd tx gov submit-proposal param-change max_metadata_len.json --deposit 10000000stake --from <proposer>`."
+            },
+            {
+                "step": 3,
+                "tool": "confirm_proposal_on_chain",
+                "description": "Query `simd q gov proposal <id>` until the proposal shows status `VotingPeriod`."
+            },
+            {
+                "step": 4,
+                "tool": "vote_on_proposal",
+                "description": "Cast votes with `simd tx gov vote <id> yes --from <voter>` until quorum is reached."
+            },
+            {
+                "step": 5,
+                "tool": "wait_for_proposal_pass",
+                "description": "Monitor the proposal until it reaches status `Passed`, after which the change is automatically applied."
+            },
+            {
+                "step": 6,
+                "tool": "query_gov_params",
+                "description": "Verify the new value with `simd q gov params` and confirm `max_metadata_len` is now 10000."
+            }
+        ],
+        "outcome_checks": [
+            "The proposal passes and is shown as `Passed` or `Applied`.",
+            "`simd q gov params` returns `max_metadata_len: 10000`."
+        ]
+    }
+]

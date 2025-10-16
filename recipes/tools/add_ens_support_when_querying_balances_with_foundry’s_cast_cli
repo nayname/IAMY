@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No fully-implemented function in the codebase converts an ENS name to a checksummed Ethereum address.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "get_web3 establishes a Web3 connection to the configured Ethereum RPC endpoint, which can then be used to retrieve an account\u2019s ETH balance.",
+            "function": "get_web3()",
+            "usage": "w3 = get_web3(); balance_wei = w3.eth.get_balance(resolved_address)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: cast_ens_resolve Desciption: Run `cast resolve-name <ensName>` to convert the provided ENS name into a checksummed Ethereum address.",
+        "w3 = get_web3(); balance_wei = w3.eth.get_balance(resolved_address)#step: 2 Tool: cast_balance Desciption: Invoke `cast balance <resolvedAddress> --rpc-url <rpc>` (or `cast balance <ensName>` if the CLI version auto-resolves) to fetch the account\u2019s ETH balance from the specified RPC endpoint."
+    ],
+    "intent": "Add ENS support when querying balances with Foundry\u2019s cast CLI",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "cast_ens_resolve",
+            "description": "Run `cast resolve-name <ensName>` to convert the provided ENS name into a checksummed Ethereum address."
+        },
+        {
+            "step": 2,
+            "tool": "cast_balance",
+            "description": "Invoke `cast balance <resolvedAddress> --rpc-url <rpc>` (or `cast balance <ensName>` if the CLI version auto-resolves) to fetch the account\u2019s ETH balance from the specified RPC endpoint."
+        }
+    ],
+    "outcome_checks": [
+        "The CLI prints a hexadecimal or decimal ETH balance instead of an error.",
+        "If the ENS name resolves incorrectly, an explicit \u2018name not found\u2019 error is thrown, triggering user correction."
+    ]
+}

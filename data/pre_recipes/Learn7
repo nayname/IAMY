@@ -1,0 +1,187 @@
+[
+    {
+        "intent": "Scaffold a new module keeper with persistent and memory store keys",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prompt_user_for_module_details",
+                "description": "Ask the developer for the module name and the desired KVStore key names (e.g. persistent StoreKey and in-memory MemKey)."
+            },
+            {
+                "step": 2,
+                "tool": "generate_keeper_go_file",
+                "description": "Create keeper/keeper.go containing the Keeper struct with codec, storeKey, memKey, and (optional) references to other module keepers."
+            },
+            {
+                "step": 3,
+                "tool": "insert_newkeeper_constructor",
+                "description": "Add a NewKeeper constructor that accepts codec.BinaryCodec, runtime.KVStoreService (created from the StoreKey), the MemKey, and any dependent keepers, and returns an initialized Keeper instance."
+            },
+            {
+                "step": 4,
+                "tool": "register_store_keys_in_app",
+                "description": "In app.go, add the persistent key to keys[...] and the memory key to memKeys[...], then create runtime.NewKVStoreService keys for each."
+            },
+            {
+                "step": 5,
+                "tool": "instantiate_keeper_in_app_constructor",
+                "description": "Inside the app\u2019s constructor, call modulekeeper.NewKeeper(...) and assign the result to app.<Module>Keeper."
+            },
+            {
+                "step": 6,
+                "tool": "run_go_build_and_tests",
+                "description": "Compile the chain (`make build`) and run unit tests to ensure the keeper and store keys are wired correctly."
+            }
+        ],
+        "outcome_checks": [
+            "`go test ./...` completes with no failures.",
+            "The chain boots with `appd start` and the new store keys are visible in the multistore.",
+            "Keeper getters/setters successfully read and write state in an integration test."
+        ]
+    },
+    {
+        "intent": "Register module interfaces and message service descriptions in the global InterfaceRegistry",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prompt_user_for_interface_list",
+                "description": "Collect the list of interfaces (e.g. sdk.Msg, sdk.Query) and their concrete implementations that must be unpacked from Any."
+            },
+            {
+                "step": 2,
+                "tool": "open_types_codec_file",
+                "description": "Open or create types/codec.go (or types/registry.go) for the target module."
+            },
+            {
+                "step": 3,
+                "tool": "write_registerinterfaces_method",
+                "description": "Implement `func (am AppModule) RegisterInterfaces(reg codectypes.InterfaceRegistry)` with `reg.RegisterImplementations(...)` calls for each interface and `reg.RegisterMsgServiceDesc(reg, &_Msg_serviceDesc)` for Msg services."
+            },
+            {
+                "step": 4,
+                "tool": "run_make_proto_or_buf_generate",
+                "description": "Regenerate protobuf + gRPC bindings so that Any resolution code is updated."
+            },
+            {
+                "step": 5,
+                "tool": "run_go_build_and_tests",
+                "description": "Compile and execute unit tests that marshal/unmarshal messages using Any to confirm successful unpacking."
+            }
+        ],
+        "outcome_checks": [
+            "`go vet` shows no missing interface registrations.",
+            "Marshalling a message to Any and then Unmarshalling via codec successfully returns the original concrete type.",
+            "Application boots without \"interface not registered\" panics."
+        ]
+    },
+    {
+        "intent": "Define a deterministic InitGenesis execution order for all modules",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prompt_user_for_module_dependency_graph",
+                "description": "Ask the developer to specify each module\u2019s dependencies (e.g. gov depends on auth, bank)."
+            },
+            {
+                "step": 2,
+                "tool": "open_app_module_manager_section",
+                "description": "Navigate to the section in app/app.go where `mm := module.NewManager(...)` is created."
+            },
+            {
+                "step": 3,
+                "tool": "update_setorderinitgenesis_call",
+                "description": "Call `mm.SetOrderInitGenesis(<ordered-module-list>)` so that upstream dependencies come first, followed by dependent modules."
+            },
+            {
+                "step": 4,
+                "tool": "run_simapp_init",
+                "description": "Run `appd init test` (or `simd init`) to generate a genesis file and verify no dependency-order panics occur."
+            },
+            {
+                "step": 5,
+                "tool": "start_single_node",
+                "description": "Start the node (`appd start`) to ensure InitGenesis executes in the defined order without errors."
+            }
+        ],
+        "outcome_checks": [
+            "The chain starts without \"missing dependency\" or \"nil keeper\" errors.",
+            "State exported after a height > 0 matches the expected module ordering.",
+            "Integration tests that rely on module initialization pass."
+        ]
+    },
+    {
+        "intent": "Expose REST/HTTP endpoints using grpc-gateway annotations on protobuf services",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prompt_user_for_service_and_http_mapping",
+                "description": "Ask which gRPC service/method should be reachable via REST and gather the desired HTTP verb and path."
+            },
+            {
+                "step": 2,
+                "tool": "edit_proto_file",
+                "description": "Add `google.api.http` annotations to the method options in the .proto definition (e.g. `option (google.api.http) = { get: \"/cosmos/<module>/v1/<resource>\" };`)."
+            },
+            {
+                "step": 3,
+                "tool": "run_proto_generation",
+                "description": "Execute `make proto-gen` or `buf generate` so that *_gw.go files are regenerated with the new mapping."
+            },
+            {
+                "step": 4,
+                "tool": "register_http_handlers_in_app",
+                "description": "Ensure the app\u2019s gRPC router registers HTTP gateway handlers (e.g. via `RegisterGRPCGatewayRoutes` in cmd/server)."
+            },
+            {
+                "step": 5,
+                "tool": "restart_node_with_api",
+                "description": "Run `appd start --grpc.address=:9090 --api.enable` (or equivalent) to serve the new REST route."
+            },
+            {
+                "step": 6,
+                "tool": "curl_endpoint",
+                "description": "Send an HTTP request (curl/Postman) to the new path to verify the JSON response mirrors the gRPC output."
+            }
+        ],
+        "outcome_checks": [
+            "`curl http://localhost:1317/<custom-path>` returns HTTP 200 and expected JSON.",
+            "Swagger (if enabled) shows the newly annotated endpoint.",
+            "No unknown service or unmapped route errors appear in node logs."
+        ]
+    },
+    {
+        "intent": "Create a new on-chain group using the x/group module\u2019s GroupKeeper",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_creator_address",
+                "description": "Prompt the user for the creator/admin account address that will sign the transaction."
+            },
+            {
+                "step": 2,
+                "tool": "gather_group_members",
+                "description": "Collect member addresses, weights, and optional metadata for each prospective group member."
+            },
+            {
+                "step": 3,
+                "tool": "build_msg_create_group",
+                "description": "Construct `MsgCreateGroup{ Admin: creator, Members: members, Metadata: ... }`."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the message with the creator\u2019s key (`appd tx group create-group ...`) and broadcast it to the network."
+            },
+            {
+                "step": 5,
+                "tool": "query_group_by_id",
+                "description": "After the transaction is included in a block, query `appd q group groups-by-admin <creator>` (or `group group-info <id>`) to obtain and confirm the new group ID."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction log contains `\"@type\":\"/cosmos.group.v1.MsgCreateGroupResponse\"` with a non-zero group_id.",
+            "Querying the group returns the correct admin and member list.",
+            "Subsequent proposals or policy creation using the group_id succeed."
+        ]
+    }
+]

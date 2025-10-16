@@ -1,0 +1,80 @@
+{
+    "tools": [
+		{
+			"step": 0,
+			"label": "frontend",
+			"introduction": "ensureWalletConnected connects to the user’s browser wallet (Keplr/Leap) and returns an OfflineSigner, confirming the wallet is ready.",
+			"function": "ensureWalletConnected()",
+			"usage": "const signer = await ensureWalletConnected();"
+		},
+		{
+			"step": 1,
+			"label": "frontend",
+			"introduction": "getWalletAddress obtains the sender’s bech32 Neutron address from the OfflineSigner.",
+			"function": "getWalletAddress(signer)",
+			"usage": "const sender = await getWalletAddress(signer);"
+		},
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects to the user\u2019s Keplr wallet on Neutron and returns the bech32 address that owns the Amber positions.",
+            "function": "getUserWalletAddress()",
+            "usage": "const userAddress = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the Amber Finance smart-contract for every position owned by the supplied wallet address.",
+            "function": "amber_positions(user_address)",
+            "usage": "const positions = await amber_positions(userAddress);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Builds a MsgExecuteContract object that calls Amber\u2019s emergency_withdraw with the chosen position_id.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds)",
+            "usage": "const txMsg = constructTxWasmExecute(userAddress, AMBER_CONTRACT, { emergency_withdraw: { position_id } }, []);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Uses Keplr to sign the emergency-withdraw SignDoc and forwards the signed payload to the backend for broadcasting.",
+            "function": "signAndBroadcastEmergencyWithdraw(signDocFromBackend, chainId)",
+            "usage": "const txHash = await signAndBroadcastEmergencyWithdraw(signDocFromBackend, 'neutron-1');"
+        }
+    ],
+    "frontend": [
+        "const userAddress = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Retrieve the wallet address that owns the Amber position.",
+        "const txMsg = constructTxWasmExecute(userAddress, AMBER_CONTRACT, { emergency_withdraw: { position_id } }, []);//step: 3 Tool: construct_tx_amber_emergency_withdraw Desciption: Build the emergency_withdraw transaction message with the selected position_id.",
+        "const txHash = await signAndBroadcastEmergencyWithdraw(signDocFromBackend, 'neutron-1');//step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the emergency withdrawal transaction and broadcast it to the network."
+    ],
+    "backend": [
+        "const positions = await amber_positions(userAddress);#step: 2 Tool: query_amber_contract_positions Desciption: Fetch all active Amber positions for the wallet to obtain the specific position_id to withdraw."
+    ],
+    "intent": "Execute an emergency withdrawal for the user's Amber trading position",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_wallet_address",
+            "description": "Retrieve the wallet address that owns the Amber position."
+        },
+        {
+            "step": 2,
+            "tool": "query_amber_contract_positions",
+            "description": "Fetch all active Amber positions for the wallet to obtain the specific position_id to withdraw."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_amber_emergency_withdraw",
+            "description": "Build the emergency_withdraw transaction message with the selected position_id."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the emergency withdrawal transaction and broadcast it to the network."
+        }
+    ],
+    "outcome_checks": [
+        "Confirm the transaction was included in a block and emitted an `EmergencyWithdrawal` event from the Amber contract.",
+        "Verify the position_id no longer appears in the wallet\u2019s list of active Amber positions and the withdrawn tokens are returned to the user\u2019s balance."
+    ]
+}

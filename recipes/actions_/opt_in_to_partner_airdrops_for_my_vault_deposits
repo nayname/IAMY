@@ -1,0 +1,79 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Fetches the connected wallet\u2019s bech32 address from the user\u2019s browser extension.",
+            "function": "getUserWalletAddress()",
+            "usage": "const userAddress = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Queries the vault registry and returns the specific vault contract address associated with the user.",
+            "function": "getVaultContractAddress(userAddress)",
+            "usage": "const vaultAddress = await getVaultContractAddress(userAddress);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Builds the CosmWasm execute payload `{ opt_in_airdrops: { partner_id } }` required by the vault contract.",
+            "function": "buildOptInAirdropsMsg(partnerId)",
+            "usage": "const execMsg = buildOptInAirdropsMsg(); // defaults to partner_id=\"all\""
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Signs the execute message with the user\u2019s OfflineSigner and submits the signed transaction through the backend relayer.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo)",
+            "usage": "const txHash = await signAndBroadcast(signer, userAddress, [execMsg], \"auto\");"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Performs a smart-contract query to confirm that the airdrop opt-in flag is now true for the user.",
+            "function": "queryAirdropStatus(contractAddress, userAddress, lcdEndpoint)",
+            "usage": "const result = await queryAirdropStatus(vaultAddress, userAddress);"
+        }
+    ],
+    "frontend": [
+        "const userAddress = await getUserWalletAddress();//step: 1 Tool: get_user_address Desciption: Identify the wallet address that controls the vault deposit.",
+        "const vaultAddress = await getVaultContractAddress(userAddress);//step: 2 Tool: get_contract_address Desciption: Retrieve the specific vault contract address involved.",
+        "const execMsg = buildOptInAirdropsMsg(); // defaults to partner_id=\"all\"//step: 3 Tool: construct_execute_msg Desciption: Build an execute message `{ opt_in_airdrops: { partner_id: \"all\" } }` (or protocol-specific field) for the vault contract.",
+        "const txHash = await signAndBroadcast(signer, userAddress, [execMsg], \"auto\");//step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the execute message with the user\u2019s key and broadcast it.",
+        "const result = await queryAirdropStatus(vaultAddress, userAddress);//step: 5 Tool: query_contract_state Desciption: After confirmation, query `{ airdrop_status: { address: <USER_ADDR> } }` to verify opt-in flag is true."
+    ],
+    "backend": [],
+    "intent": "Opt in to partner airdrops for my vault deposits",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_address",
+            "description": "Identify the wallet address that controls the vault deposit."
+        },
+        {
+            "step": 2,
+            "tool": "get_contract_address",
+            "description": "Retrieve the specific vault contract address involved."
+        },
+        {
+            "step": 3,
+            "tool": "construct_execute_msg",
+            "description": "Build an execute message `{ opt_in_airdrops: { partner_id: \"all\" } }` (or protocol-specific field) for the vault contract."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the execute message with the user\u2019s key and broadcast it."
+        },
+        {
+            "step": 5,
+            "tool": "query_contract_state",
+            "description": "After confirmation, query `{ airdrop_status: { address: <USER_ADDR> } }` to verify opt-in flag is true."
+        }
+    ],
+    "outcome_checks": [
+        "The execute transaction returns code 0.",
+        "`airdrop_status` query shows `is_opted_in = true` for the user address."
+    ]
+}

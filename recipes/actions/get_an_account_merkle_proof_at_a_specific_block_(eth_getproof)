@@ -1,0 +1,40 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 supplies a utility that validates a 0x-prefixed, 20-byte EVM address.",
+            "code": "// utils/validateEthAddress.js\n// Validates that the supplied string is a proper 0x-prefixed, 40-hex-character (20-byte) EVM address.\nexport const validateEthAddress = (address) => {\n  // Basic format check: 0x followed by exactly 40 hexadecimal characters\n  const regex = /^0x[a-fA-F0-9]{40}$/;\n  if (!regex.test(address)) {\n    throw new Error(\n      'Invalid Ethereum address: expected 0x-prefixed, 40-character hexadecimal string.'\n    );\n  }\n  return true; // Return true if the address is valid\n};",
+            "usage": "validateEthAddress('0x0123456789abcdef0123456789abcdef01234567');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 validates a hexadecimal block height and ensures it is \u2265 0x1 (decimal 1).",
+            "code": "// utils/validateBlockHeight.js\n// Ensures the block height is a non-zero, positive hexadecimal string (e.g. '0x1').\nexport const validateBlockHeight = (blockHeight) => {\n  if (typeof blockHeight !== 'string' || !/^0x[0-9a-fA-F]+$/.test(blockHeight)) {\n    throw new Error('Block height must be a hex string like 0x1.');\n  }\n\n  const numericHeight = parseInt(blockHeight, 16);\n  if (Number.isNaN(numericHeight) || numericHeight < 1) {\n    throw new Error('Cosmos EVM rejects block heights < 1.');\n  }\n  return true; // Valid block height\n};",
+            "usage": "validateBlockHeight('0x1');"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 constructs the JSON-RPC payload for an eth_getProof query given an account and block height.",
+            "code": "// utils/constructJsonRpcPayload.js\n// Builds the JSON-RPC request body for eth_getProof.\nexport const constructJsonRpcPayload = (\n  account,\n  blockHeight = '0x1', // Default block height\n  storageKeys = []     // Optional array of storage keys; defaults to an empty list\n) => {\n  // Input validation (reuse Step 1 & Step 2 helpers)\n  validateEthAddress(account);\n  validateBlockHeight(blockHeight);\n\n  return {\n    jsonrpc: '2.0',\n    method: 'eth_getProof',\n    params: [account, storageKeys, blockHeight],\n    id: 1\n  };\n};",
+            "usage": "const payload = constructJsonRpcPayload('0x0123456789abcdef0123456789abcdef01234567', '0x1');"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 sends the JSON-RPC payload to the node\u2019s HTTP endpoint and returns the raw response.",
+            "code": "// utils/httpPostRpc.js\n// Executes a POST request against the JSON-RPC endpoint.\nexport const httpPostRpc = async (\n  payload,\n  endpoint = 'http://localhost:8545',\n  timeoutMs = 10_000 // 10 second timeout\n) => {\n  const controller = new AbortController();\n  const timeout = setTimeout(() => controller.abort(), timeoutMs);\n\n  try {\n    const res = await fetch(endpoint, {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(payload),\n      signal: controller.signal\n    });\n\n    if (!res.ok) {\n      throw new Error(`HTTP error ${res.status}: ${res.statusText}`);\n    }\n\n    const json = await res.json();\n    return json; // Raw JSON-RPC response\n  } catch (err) {\n    if (err.name === 'AbortError') {\n      throw new Error('RPC request timed out.');\n    }\n    throw err;\n  } finally {\n    clearTimeout(timeout);\n  }\n};",
+            "usage": "const rpcResponse = await httpPostRpc(payload, 'http://localhost:8545');"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Step 5 parses the JSON-RPC response and extracts balance, nonce, storageHash, codeHash, and the proof array.",
+            "code": "// utils/parseRpcResponse.js\n// Parses the JSON-RPC response from eth_getProof and extracts useful fields.\nexport const parseRpcResponse = (rpcResponse) => {\n  if (!rpcResponse) {\n    throw new Error('Empty RPC response.');\n  }\n\n  if (rpcResponse.error) {\n    // Forward the RPC error message to the caller\n    throw new Error(`RPC Error: ${rpcResponse.error.message}`);\n  }\n\n  const { result } = rpcResponse;\n  if (!result) {\n    throw new Error('RPC result field is missing.');\n  }\n\n  const { balance, nonce, storageHash, codeHash, proof } = result;\n  return {\n    balance,\n    nonce,\n    storageHash,\n    codeHash,\n    proof\n  };\n};",
+            "usage": "const parsed = parseRpcResponse(rpcResponse);\nconsole.log('Account balance at block 0x1 is', parsed.balance);"
+        }
+    ]
+}

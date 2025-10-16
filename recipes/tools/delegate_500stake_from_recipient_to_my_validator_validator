@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Uses bech-32 decoding to verify that a given address (delegator or validator) matches the expected prefix and checksum.",
+            "function": "validate_recipient_address(address: str, expected_prefix: str = \"cosmos\")",
+            "usage": "validate_recipient_address(recipient_addr, expected_prefix=\"cosmos\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the bank module and returns the balance for the specified denom so we can confirm the delegator has at least 500stake.",
+            "function": "query_balance(address: str, denom: str = \"untrn\")",
+            "usage": "amount = query_balance(recipient_addr, denom=\"stake\")[\"amount\"]"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No implemented helper for building a MsgDelegate / `tx staking delegate` command exists in the codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the provided Transaction with the given wallet key and broadcasts it to the network, raising on failure.",
+            "function": "sign_and_broadcast_tx(tx: Transaction, wallet: LocalWallet, client: LedgerClient)",
+            "usage": "tx_hash = sign_and_broadcast_tx(tx, delegator_wallet, ledger_client)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "validate_recipient_address(recipient_addr, expected_prefix=\"cosmos\")#step: 1 Tool: validate_addresses Desciption: Check that both recipient (delegator) and my_validator (validator) addresses are valid Bech32 strings.",
+        "amount = query_balance(recipient_addr, denom=\"stake\")[\"amount\"]#step: 2 Tool: check_balance Desciption: Query the delegator's account to ensure at least 500stake is available (after fees).",
+        "undef#step: 3 Tool: construct_tx_delegate Desciption: Build the staking delegation transaction: `<chain_binary> tx staking delegate my_validator 500stake --from <delegator>`.",
+        "tx_hash = sign_and_broadcast_tx(tx, delegator_wallet, ledger_client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the delegation with the delegator\u2019s key and broadcast it to the network."
+    ],
+    "intent": "Delegate 500stake from recipient to my_validator validator",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_addresses",
+            "description": "Check that both recipient (delegator) and my_validator (validator) addresses are valid Bech32 strings."
+        },
+        {
+            "step": 2,
+            "tool": "check_balance",
+            "description": "Query the delegator's account to ensure at least 500stake is available (after fees)."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_delegate",
+            "description": "Build the staking delegation transaction: `<chain_binary> tx staking delegate my_validator 500stake --from <delegator>`."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the delegation with the delegator\u2019s key and broadcast it to the network."
+        }
+    ],
+    "outcome_checks": [
+        "Transaction hash included in a block with `code=0` (success).",
+        "`query staking delegation <delegator> my_validator` shows 500stake (plus any previous) delegated."
+    ]
+}

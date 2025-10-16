@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects to the user\u2019s Keplr wallet on Neutron and returns the bech32 address that owns the locked stake.",
+            "function": "getUserWalletAddress()",
+            "usage": "const userAddress = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the lock contract and returns whether the specified lock_id is now unlockable (vesting period finished).",
+            "function": "lock_status(address, lock_id)",
+            "usage": "const status = await lock_status(userAddress, lockId);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Builds a cancel_lock (unlock) MsgExecuteContract and produces a signDoc ready for signing.",
+            "function": "constructUnlockTx({ chainId, senderAddress, contractAddress, lockId })",
+            "usage": "const { signDoc } = await constructUnlockTx({ senderAddress: userAddress, contractAddress, lockId });"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Signs the prepared unlock transaction with Keplr and broadcasts it to the Neutron network.",
+            "function": "signAndBroadcastTx({ chainId, signDoc, offlineSigner })",
+            "usage": "const txResult = await signAndBroadcastTx({ chainId: 'neutron-1', signDoc, offlineSigner });"
+        }
+    ],
+    "frontend": [
+        "const userAddress = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Identify the wallet that holds the locked NTRN stake.",
+        "const { signDoc } = await constructUnlockTx({ senderAddress: userAddress, contractAddress, lockId });//step: 3 Tool: construct_tx_unlock_stake Desciption: Create the unlock or cancel_lock transaction for the specific lock_id.",
+        "const txResult = await signAndBroadcastTx({ chainId: 'neutron-1', signDoc, offlineSigner });//step: 4 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the unlock transaction."
+    ],
+    "backend": [
+        "const status = await lock_status(userAddress, lockId);#step: 2 Tool: query_stake_lock_status Desciption: Check the lock record to ensure the vesting period has completed and the lock is eligible for cancellation."
+    ],
+    "intent": "Cancel (unlock) the user\u2019s NTRN stake lock once the vesting period has ended",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_wallet_address",
+            "description": "Identify the wallet that holds the locked NTRN stake."
+        },
+        {
+            "step": 2,
+            "tool": "query_stake_lock_status",
+            "description": "Check the lock record to ensure the vesting period has completed and the lock is eligible for cancellation."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_unlock_stake",
+            "description": "Create the unlock or cancel_lock transaction for the specific lock_id."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the unlock transaction."
+        }
+    ],
+    "outcome_checks": [
+        "The unlock transaction is successfully committed in a block.",
+        "The previously locked NTRN tokens are now freely transferable in the user\u2019s wallet balance."
+    ]
+}

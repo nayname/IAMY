@@ -1,0 +1,26 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that builds a valid JSON-RPC payload for an eth_getStorageAt call.",
+            "code": "def construct_json_rpc_request(contract_address: str, slot: str = \"0x0\", request_id: int = 1) -> dict:\n    \"\"\"\n    Construct a JSON-RPC request body for eth_getStorageAt.\n\n    Args:\n        contract_address (str): Target contract address (0x-prefixed).\n        slot (str): Storage slot to read, default is \"0x0\" (slot 0).\n        request_id (int): Arbitrary JSON-RPC id.\n\n    Returns:\n        dict: A JSON-serialisable request object.\n    \"\"\"\n    if not contract_address.startswith(\"0x\"):\n        raise ValueError(\"contract_address must start with 0x\")\n\n    return {\n        \"jsonrpc\": \"2.0\",\n        \"method\": \"eth_getStorageAt\",\n        \"params\": [contract_address, slot, \"latest\"],\n        \"id\": request_id\n    }\n",
+            "usage": "request_body = construct_json_rpc_request(\"0xABCDEF0123456789abcdef0123456789ABCDEF01\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 posts the JSON-RPC request to the local Ethereum node and returns the decoded JSON response.",
+            "code": "import requests\n\n\ndef send_http_post(request_body: dict, endpoint: str = \"http://localhost:8545\", timeout: int = 10) -> dict:\n    \"\"\"\n    Send a JSON-RPC POST request to an Ethereum node.\n\n    Args:\n        request_body (dict): JSON-RPC request created in Step 1.\n        endpoint (str): URL of the JSON-RPC server.\n        timeout (int): Network timeout (seconds).\n\n    Returns:\n        dict: Parsed JSON response from the node.\n\n    Raises:\n        RuntimeError: For network or HTTP-status errors.\n        ValueError:  For malformed JSON responses.\n    \"\"\"\n    headers = {\"Content-Type\": \"application/json\"}\n    try:\n        resp = requests.post(endpoint, headers=headers, json=request_body, timeout=timeout)\n        resp.raise_for_status()\n    except requests.RequestException as e:\n        raise RuntimeError(f\"Failed to POST to {endpoint}: {e}\") from e\n\n    try:\n        return resp.json()\n    except ValueError as e:\n        raise ValueError(f\"Response is not valid JSON: {e}\") from e\n",
+            "usage": "response_json = send_http_post(request_body)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 safely extracts the 32-byte hex string stored at the requested slot from the JSON-RPC response.",
+            "code": "def parse_json_rpc_response(response_json: dict) -> str:\n    \"\"\"\n    Parse eth_getStorageAt response and return the storage value.\n\n    Args:\n        response_json (dict): JSON returned by Step 2.\n\n    Returns:\n        str: 32-byte hex string (e.g., \"0x000...42\").\n\n    Raises:\n        RuntimeError: If the node returned an error.\n        KeyError:     If the 'result' field is missing.\n        ValueError:   If the result format looks wrong.\n    \"\"\"\n    if \"error\" in response_json:\n        raise RuntimeError(f\"JSON-RPC error: {response_json['error']}\")\n\n    if \"result\" not in response_json:\n        raise KeyError(\"'result' field missing in response\")\n\n    result = response_json[\"result\"]\n    if not (isinstance(result, str) and result.startswith(\"0x\")):\n        raise ValueError(\"Unexpected 'result' format\")\n\n    return result\n",
+            "usage": "storage_hex = parse_json_rpc_response(response_json)\nprint(f\"Slot 0 value: {storage_hex}\")"
+        }
+    ]
+}

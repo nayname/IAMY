@@ -1,0 +1,47 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 adds a small Python helper that searches the official Cosmos documentation for the Circuit Breaker module and related integration material.",
+            "code": "#!/usr/bin/env python3\n\"\"\"\nsearch_circuit_docs.py\nSimple helper script to search the official Cosmos documentation for any term.\n\"\"\"\nimport json\nimport sys\nimport urllib.parse\nimport requests\n\nBASE_URL = \"https://docs.cosmos.network/api/search\"\n\ndef search_circuit_docs(query: str) -> dict:\n    \"\"\"Return search results from the Cosmos docs search API.\"\"\"\n    try:\n        url = f\"{BASE_URL}?q={urllib.parse.quote_plus(query)}\"\n        resp = requests.get(url, timeout=10)\n        resp.raise_for_status()\n        return resp.json()\n    except requests.RequestException as exc:\n        print(f\"[ERROR] Documentation search failed: {exc}\")\n        return {}\n\nif __name__ == \"__main__\":\n    query = \" \".join(sys.argv[1:]) if len(sys.argv) > 1 else \"Cosmos SDK circuit breaker module integration BaseApp\"\n    results = search_circuit_docs(query)\n    print(json.dumps(results, indent=2))",
+            "usage": "python search_circuit_docs.py \"Cosmos SDK circuit breaker\""
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 shows the Go-code diff required to import the Circuit module and register its AppModuleBasic inside app.go.",
+            "code": "diff --git a/app/app.go b/app/app.go\n@@\n-import (\n-    // existing imports\n-)\n+import (\n+    // existing imports\n+    circuitmodule \"github.com/cosmos/cosmos-sdk/x/circuit\"\n+)\n@@\n-app.ModuleBasics = module.NewBasicManager(\n-    /* other module basics */\n-)\n+app.ModuleBasics = module.NewBasicManager(\n+    /* other module basics */\n+    circuitmodule.AppModuleBasic{},\n+)\n",
+            "usage": "Apply the diff to app/app.go and run `go vet ./...` to ensure the import compiles."
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 instantiates the CircuitKeeper and injects it into the AnteHandler so that transactions respect circuit-breaker checks.",
+            "code": "diff --git a/app/app.go b/app/app.go\n@@\n type App struct {\n     // existing keepers ...\n+    CircuitKeeper circuitkeeper.Keeper\n }\n@@\n func NewApp(/* params */) *App {\n     // existing keeper initialisations...\n+\n+    // --- Circuit Keeper ------------------------------------\n+    circuitKeeper := circuitkeeper.NewKeeper(\n+        appCodec,\n+        keys[circuittypes.StoreKey],\n+        subspaces[circuittypes.ModuleName],\n+    )\n+    app.CircuitKeeper = *circuitKeeper\n+    // --------------------------------------------------------\n@@\n-    anteHandler, err := ante.NewAnteHandler(ante.HandlerOptions{\n-        AccountKeeper: app.AccountKeeper,\n-        BankKeeper:    app.BankKeeper,\n-        // ...\n-    })\n+    anteHandler, err := ante.NewAnteHandler(ante.HandlerOptions{\n+        AccountKeeper:        app.AccountKeeper,\n+        BankKeeper:           app.BankKeeper,\n+        // ... other keepers ...\n+        CircuitBreakerKeeper: &app.CircuitKeeper,\n+    })\n     if err != nil {\n         panic(err)\n     }\n }\n",
+            "usage": "Implement the diff, then run `go test ./...` to confirm successful compilation."
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 wires the Circuit module into the ModuleManager and ensures its begin-block logic executes.",
+            "code": "diff --git a/app/app.go b/app/app.go\n@@\n app.mm = module.NewManager(\n     // existing modules...\n+    circuitmodule.NewAppModule(appCodec, app.CircuitKeeper),\n )\n@@\n app.mm.SetOrderBeginBlockers(\n     upgradetypes.ModuleName,\n+    circuittypes.ModuleName,\n     // existing modules...\n )\n",
+            "usage": "Apply the patch and rerun `go vet ./...` to confirm ordering is valid."
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 compiles the codebase to guarantee the new module links correctly.",
+            "code": "#!/usr/bin/env bash\nset -euo pipefail\n\n# Compile the application; fails fast on compilation errors.\nmake build  # alternatively: go build ./...\n\necho \"\u2705 Application builds successfully with circuit module.\"\n",
+            "usage": "chmod +x build.sh && ./build.sh"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Step 6 launches a local node so you can verify the Circuit module is registered at runtime.",
+            "code": "#!/usr/bin/env bash\nset -euo pipefail\n\n# Initialize data directory if it doesn't exist yet\nif [ ! -d \\\"$HOME/.myapp\\\" ]; then\n  myappd init local --chain-id localnet\nfi\n\n# Start the node\nmyappd start --home $HOME/.myapp --log_level info 2>&1 | tee node.log\n",
+            "usage": "chmod +x start_node.sh && ./start_node.sh"
+        }
+    ]
+}

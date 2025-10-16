@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates a new key called \"my_validator\" in the specified simd test keyring by invoking the CLI under the hood.",
+            "function": "generate_key(key_name, keyring_backend='test')",
+            "usage": "await generate_key('my_validator', 'test')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Verifies that the newly-created key now exists in the test keyring and returns its address.",
+            "function": "verify_key(key_name, keyring_backend='test')",
+            "usage": "await verify_key('my_validator', 'test')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "await generate_key('my_validator', 'test')#step: 1 Tool: generate_key Desciption: Run `simd keys add my_validator --keyring-backend test` to create a new key pair.",
+        "await verify_key('my_validator', 'test')#step: 2 Tool: save_key_to_keyring Desciption: Ensure the generated key is stored in the test keyring backend."
+    ],
+    "intent": "Add a new key named my_validator to the test keyring",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "generate_key",
+            "description": "Run `simd keys add my_validator --keyring-backend test` to create a new key pair."
+        },
+        {
+            "step": 2,
+            "tool": "save_key_to_keyring",
+            "description": "Ensure the generated key is stored in the test keyring backend."
+        }
+    ],
+    "outcome_checks": [
+        "Running `simd keys list --keyring-backend test` shows `my_validator` in the output.",
+        "The key entry includes a valid bech32 address and public key."
+    ]
+}

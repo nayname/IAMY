@@ -1,0 +1,162 @@
+[
+    {
+        "intent": "Stake tokens in the LiquidStakingVault contract via the stake function",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "connect_web3_provider",
+                "description": "Connect to an Ethereum JSON-RPC endpoint (e.g., Infura, Alchemy, local node)."
+            },
+            {
+                "step": 2,
+                "tool": "load_wallet_credentials",
+                "description": "Load the private key or hardware-wallet signer that will submit the stake transaction."
+            },
+            {
+                "step": 3,
+                "tool": "get_contract_instance",
+                "description": "Instantiate the LiquidStakingVault contract with its address and ABI."
+            },
+            {
+                "step": 4,
+                "tool": "construct_tx_stake",
+                "description": "Populate the transaction data for vault.stake(amount, recipient) with the desired staking amount."
+            },
+            {
+                "step": 5,
+                "tool": "estimate_and_set_gas",
+                "description": "Estimate gas limits and set a suitable gas price (or maxFeePerGas / maxPriorityFeePerGas)."
+            },
+            {
+                "step": 6,
+                "tool": "sign_and_send_transaction",
+                "description": "Sign the transaction with the wallet credentials and broadcast it to the network."
+            }
+        ],
+        "outcome_checks": [
+            "Wait for the transaction receipt and confirm it was mined without revert.",
+            "Verify the contract emitted the expected Stake event with the correct amount and recipient.",
+            "Confirm the user\u2019s staking balance in LiquidStakingVault increased by the staked amount."
+        ]
+    },
+    {
+        "intent": "Generate a Solidity coverage report using Hardhat Coverage",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "install_hardhat_coverage",
+                "description": "Add hardhat-coverage to the project: npm install --save-dev hardhat-coverage."
+            },
+            {
+                "step": 2,
+                "tool": "configure_hardhat",
+                "description": "Require 'hardhat-coverage' at the top of hardhat.config.js to activate the plugin."
+            },
+            {
+                "step": 3,
+                "tool": "run_hardhat_coverage",
+                "description": "Execute npx hardhat coverage to compile contracts, run tests, and collect coverage data."
+            },
+            {
+                "step": 4,
+                "tool": "open_coverage_report",
+                "description": "Open coverage/lcov-report/index.html (or the generated text summary) to inspect line and branch coverage."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm that the coverage command exits with code 0.",
+            "Ensure the HTML report loads and displays coverage percentages for each contract file.",
+            "Validate that overall coverage meets team-defined thresholds (e.g., \u226590%)."
+        ]
+    },
+    {
+        "intent": "Run Slither static analysis on a Solidity project",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "install_slither",
+                "description": "Install Slither globally with pipx or pip: pipx install slither-analyzer."
+            },
+            {
+                "step": 2,
+                "tool": "compile_project_for_slither",
+                "description": "Ensure the project compiles with solc or Hardhat; Slither will trigger compilation if needed."
+            },
+            {
+                "step": 3,
+                "tool": "run_slither",
+                "description": "Execute slither . in the project root to analyze all contracts."
+            },
+            {
+                "step": 4,
+                "tool": "generate_slither_report",
+                "description": "Optionally run slither . --json slither-report.json to save findings programmatically."
+            }
+        ],
+        "outcome_checks": [
+            "Verify Slither finishes without crashes and outputs a summary of detectors run.",
+            "Review the report to ensure no high-severity issues remain unresolved.",
+            "Store or share the JSON report for audit records."
+        ]
+    },
+    {
+        "intent": "Decode binary data to hexadecimal using Foundry\u2019s cast from-bin",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "install_foundry",
+                "description": "Ensure Foundry is installed and available in PATH (e.g., curl -L https://foundry.paradigm.xyz | bash)."
+            },
+            {
+                "step": 2,
+                "tool": "prepare_binary_input",
+                "description": "Obtain or create the binary file/string that needs decoding."
+            },
+            {
+                "step": 3,
+                "tool": "run_cast_from_bin",
+                "description": "Execute cast from-bin <path-or-\"-\"> to convert the binary data to hex."
+            },
+            {
+                "step": 4,
+                "tool": "capture_output",
+                "description": "Save or copy the resulting 0x-prefixed hex string for downstream use."
+            }
+        ],
+        "outcome_checks": [
+            "Ensure the command exits with code 0 and prints a hex string starting with 0x.",
+            "Validate that the hex length matches the expected size of the original binary data * 2.",
+            "Optionally re-encode the hex back to binary and compare hashes to confirm fidelity."
+        ]
+    },
+    {
+        "intent": "Manipulate large integers using ethers.js BigNumber",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "import_ethers",
+                "description": "Import { BigNumber } from ethers in the JavaScript/TypeScript file."
+            },
+            {
+                "step": 2,
+                "tool": "create_bignumber_instances",
+                "description": "Instantiate BigNumber objects from strings or numbers: const amount = BigNumber.from(\"1000000000000000000\");"
+            },
+            {
+                "step": 3,
+                "tool": "perform_bignumber_operations",
+                "description": "Use BigNumber methods (add, sub, mul, div, pow) to manipulate values without precision loss."
+            },
+            {
+                "step": 4,
+                "tool": "format_results",
+                "description": "Convert results to human-readable strings or ethers.utils.formatUnits for display."
+            }
+        ],
+        "outcome_checks": [
+            "All arithmetic operations return BigNumber instances (not native JS numbers).",
+            "toString() outputs correctly formatted base-10 strings.",
+            "No \u2018overflow\u2019 or \u2018underflow\u2019 errors are thrown during calculations."
+        ]
+    }
+]

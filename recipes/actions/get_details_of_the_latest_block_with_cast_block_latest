@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Exposes a BFF endpoint that proxies the CometBFT RPC `/block` call, returning the latest block as JSON and keeping the RPC URL and CORS handling on the server.",
+            "code": "import os\nfrom fastapi import FastAPI, HTTPException\nimport requests\n\napp = FastAPI()\n\n# Read the RPC URL from an environment variable or fallback to local default\nCOSMOS_RPC_URL = os.getenv(\"COSMOS_RPC_URL\", \"http://localhost:26657\")\n\n@app.get(\"/api/latest_block\")\nasync def get_latest_block():\n    \"\"\"Fetch the latest block from the configured Cosmos RPC node.\"\"\"\n    try:\n        rpc_endpoint = f\"{COSMOS_RPC_URL.rstrip('/')}/block\"  # no height param = latest\n        response = requests.get(rpc_endpoint, timeout=10)\n        response.raise_for_status()\n        return response.json()  # CometBFT returns `{ \"result\": { \"block\": {...} } }`\n    except requests.exceptions.RequestException as err:\n        raise HTTPException(status_code=502, detail=f\"Failed to fetch latest block: {err}\")",
+            "usage": "Run your FastAPI app (e.g. `uvicorn main:app --host 0.0.0.0 --port 8000`) and hit GET /api/latest_block."
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Adds a small utility to call the BFF and retrieve the latest block inside any React/Mintlify page without external libraries.",
+            "code": "export const fetchLatestBlock = async () => {\n  const res = await fetch('/api/latest_block');\n  if (!res.ok) {\n    throw new Error(`Request failed with status ${res.status}`);\n  }\n  const json = await res.json();\n  return json.result?.block ?? json; // fallback if structure differs\n};",
+            "usage": "const latestBlock = await fetchLatestBlock();\nconsole.log(latestBlock);"
+        }
+    ]
+}

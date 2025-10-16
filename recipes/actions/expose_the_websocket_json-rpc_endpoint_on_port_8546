@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Gracefully stop the evmd node so its configuration file can be edited safely.",
+            "code": "import subprocess\n\nSERVICE_NAME = \"evmd\"\n\ndef stop_node(service_name: str = SERVICE_NAME):\n    \"\"\"Stops the evmd node via systemd (or falls back to pkill).\"\"\"\n    try:\n        # Attempt to stop via systemd first\n        result = subprocess.run([\n            \"systemctl\",\n            \"stop\",\n            service_name\n        ], check=True, capture_output=True)\n        print(result.stdout.decode() or f\"{service_name} stopped via systemd.\")\n    except subprocess.CalledProcessError as sysd_err:\n        print(\"systemctl stop failed, attempting pkill \u2026\")\n        try:\n            subprocess.run([\"pkill\", \"-f\", service_name], check=True)\n            print(f\"{service_name} killed via pkill.\")\n        except subprocess.CalledProcessError as pkill_err:\n            raise RuntimeError(\n                f\"Unable to stop {service_name}. systemd error: {sysd_err}. pkill error: {pkill_err}.\"\n            )\n\nif __name__ == \"__main__\":\n    stop_node()",
+            "usage": "python stop_node.py  # or import stop_node and call stop_node() inside your BFF service"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Load ~/.evmd/config/app.toml into a Python dict so we can modify it programmatically.",
+            "code": "import os\nimport toml\n\nDEFAULT_APP_TOML = os.path.expanduser(\"~/.evmd/config/app.toml\")\n\ndef open_app_toml(path: str = DEFAULT_APP_TOML):\n    \"\"\"Returns the app.toml contents as a Python dict and the resolved path.\"\"\"\n    if not os.path.isfile(path):\n        raise FileNotFoundError(f\"app.toml not found at {path}. Did you install evmd?\")\n    try:\n        with open(path, \"r\", encoding=\"utf-8\") as fh:\n            cfg = toml.load(fh)\n        return cfg, path\n    except Exception as err:\n        raise RuntimeError(f\"Unable to load app.toml: {err}\")\n\nif __name__ == \"__main__\":\n    cfg, _ = open_app_toml()\n    print(\"[json-rpc] section before edit:\")\n    print(cfg.get(\"json-rpc\", {}))",
+            "usage": "cfg, path = open_app_toml()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Modify the [json-rpc] section so that JSON-RPC is enabled and ws-address is set to 0.0.0.0:8546 (or any custom value passed in).",
+            "code": "def modify_json_rpc_field(cfg: dict, ws_address: str = \"0.0.0.0:8546\") -> dict:\n    \"\"\"Updates the JSON-RPC settings in-memory.\"\"\"\n    if \"json-rpc\" not in cfg:\n        cfg[\"json-rpc\"] = {}\n    cfg[\"json-rpc\"][\"enable\"] = True\n    cfg[\"json-rpc\"][\"ws-address\"] = ws_address\n    return cfg\n\nif __name__ == \"__main__\":\n    from pprint import pprint\n    cfg, _ = open_app_toml()\n    cfg = modify_json_rpc_field(cfg)\n    pprint(cfg[\"json-rpc\"])",
+            "usage": "cfg = modify_json_rpc_field(cfg, ws_address=\"0.0.0.0:8546\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Persist the updated configuration back to disk, keeping a .bak backup just in case.",
+            "code": "import shutil\n\ndef save_and_close_file(cfg: dict, path: str):\n    \"\"\"Saves the modified app.toml, creating a .bak backup first.\"\"\"\n    backup_path = f\"{path}.bak\"\n    try:\n        shutil.copy2(path, backup_path)\n        with open(path, \"w\", encoding=\"utf-8\") as fh:\n            toml.dump(cfg, fh)\n        print(f\"Configuration saved to {path}. Backup stored at {backup_path}.\")\n    except Exception as err:\n        raise RuntimeError(f\"Failed to write app.toml: {err}\")\n\nif __name__ == \"__main__\":\n    cfg, path = open_app_toml()\n    cfg = modify_json_rpc_field(cfg)\n    save_and_close_file(cfg, path)",
+            "usage": "save_and_close_file(cfg, path)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Restart the evmd node so the JSON-RPC WebSocket server binds to port 8546 with the new settings.",
+            "code": "import subprocess\n\nSERVICE_NAME = \"evmd\"\n\ndef restart_node(service_name: str = SERVICE_NAME):\n    \"\"\"Start (or restart) the evmd systemd service to apply the new configuration.\"\"\"\n    try:\n        subprocess.run([\"systemctl\", \"start\", service_name], check=True, capture_output=True)\n        print(f\"{service_name} started successfully.\")\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"Failed to start {service_name}: {err.stderr.decode()}\")\n\nif __name__ == \"__main__\":\n    restart_node()",
+            "usage": "python restart_node.py  # or import restart_node and call restart_node()"
+        }
+    ]
+}

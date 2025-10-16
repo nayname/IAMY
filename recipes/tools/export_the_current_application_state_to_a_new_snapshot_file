@@ -1,0 +1,78 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "get_node_home() resolves and returns the absolute filesystem path to the simd node\u2019s home directory.",
+            "function": "get_node_home(env_var='SIMD_HOME', default_path='~/.simd')",
+            "usage": "home_dir = get_node_home()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "verify_local_chain_running() contacts the node\u2019s RPC status endpoint and returns the latest block height once the chain is reachable.",
+            "function": "verify_local_chain_running(rpc_url='http://localhost:26657/status', timeout=60)",
+            "usage": "latest_height = verify_local_chain_running()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "run_timeboxed_script() executes an arbitrary simd CLI command\u2014in this case the snapshot-creation command\u2014within a controlled shell context.",
+            "function": "run_timeboxed_script(cmd: List[str])",
+            "usage": "run_timeboxed_script([\"simd\", \"snapshot\", \"create\", f\"--home={home_dir}\"])"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "monitor_logs() tails the node log file and waits until the expected log line (such as confirmation of snapshot creation) appears.",
+            "function": "monitor_logs()",
+            "usage": "monitor_logs()"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "list_snapshots() invokes 'simd snapshot list' and returns a structured list of snapshots so the new file can be verified.",
+            "function": "list_snapshots(home_dir)",
+            "usage": "snapshots = list_snapshots(home_dir)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "home_dir = get_node_home()#step: 1 Tool: get_node_home Desciption: Locate the node\u2019s home directory.",
+        "latest_height = verify_local_chain_running()#step: 2 Tool: query_node_status Desciption: Fetch the latest block height so the snapshot can be tagged correctly.",
+        "run_timeboxed_script([\"simd\", \"snapshot\", \"create\", f\"--home={home_dir}\"])#step: 3 Tool: execute_shell_command Desciption: Run `simd snapshot create --home=<home>` to generate a snapshot at the current height.",
+        "monitor_logs()#step: 4 Tool: monitor_logs Desciption: Wait until the CLI reports the snapshot was created.",
+        "snapshots = list_snapshots(home_dir)#step: 5 Tool: execute_shell_command Desciption: Run `simd snapshot list --home=<home>` to verify the new snapshot appears."
+    ],
+    "intent": "Export the current application state to a new snapshot file",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_node_home",
+            "description": "Locate the node\u2019s home directory."
+        },
+        {
+            "step": 2,
+            "tool": "query_node_status",
+            "description": "Fetch the latest block height so the snapshot can be tagged correctly."
+        },
+        {
+            "step": 3,
+            "tool": "execute_shell_command",
+            "description": "Run `simd snapshot create --home=<home>` to generate a snapshot at the current height."
+        },
+        {
+            "step": 4,
+            "tool": "monitor_logs",
+            "description": "Wait until the CLI reports the snapshot was created."
+        },
+        {
+            "step": 5,
+            "tool": "execute_shell_command",
+            "description": "Run `simd snapshot list --home=<home>` to verify the new snapshot appears."
+        }
+    ],
+    "outcome_checks": [
+        "A new snapshot archive exists in <home>/data/snapshots at the expected height."
+    ]
+}

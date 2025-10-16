@@ -1,0 +1,12 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a FastAPI endpoint that triggers the Hardhat test suite (\"npx hardhat test\") on the server and returns the results.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport subprocess\nimport shlex\n\napp = FastAPI()\n\n@app.post(\"/api/run-tests\")\nasync def run_tests():\n    \"\"\"Run the project's Hardhat test suite and return stdout or an error.\"\"\"\n    command = \"npx hardhat test\"  # Assumes Hardhat is installed and in PATH\n    try:\n        # Run the command with a 15-minute timeout to prevent hanging.\n        process = subprocess.run(\n            shlex.split(command),\n            capture_output=True,\n            text=True,\n            timeout=900,\n            check=False  # We'll handle non-zero exit codes ourselves.\n        )\n\n        # If tests failed, surface the stderr so the caller can debug.\n        if process.returncode != 0:\n            raise HTTPException(status_code=400, detail=process.stderr)\n\n        # Tests passed; return the captured stdout.\n        return {\"output\": process.stdout}\n\n    except subprocess.TimeoutExpired:\n        raise HTTPException(status_code=408, detail=\"Test execution timed out.\")\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "// Frontend example (e.g., in a React component)\ntry {\n  const res = await fetch('/api/run-tests', { method: 'POST' });\n  const data = await res.json();\n  console.log('Hardhat test results:', data.output);\n} catch (err) {\n  console.error('Error running tests:', err);\n}"
+        }
+    ]
+}

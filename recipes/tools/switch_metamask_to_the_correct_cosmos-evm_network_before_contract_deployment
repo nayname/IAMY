@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No implemented backend function for querying the Cosmos chain-registry exists in the provided codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "No implemented frontend function is available to read the current MetaMask chain ID.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "No implemented frontend function is available to switch or add a Cosmos-EVM network in MetaMask.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "No implemented frontend function is available to re-query MetaMask and verify the active chain ID.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "undef//step: 2 Tool: metamask_get_current_chain_id Desciption: Read the currently-selected chain ID from MetaMask to check whether the wallet is already on the desired network.",
+        "undef//step: 3 Tool: metamask_switch_network Desciption: If the current chain ID does not match, call MetaMask\u2019s wallet_addEthereumChain (if the network is not added) followed by wallet_switchEthereumChain to add and select the correct Cosmos EVM network using the parameters from Step 1.",
+        "undef//step: 4 Tool: metamask_verify_chain_id Desciption: Re-query MetaMask to confirm that the active chain ID now equals the intended Cosmos EVM chain ID."
+    ],
+    "backend": [
+        "undef#step: 1 Tool: query_cosmos_chain_registry Desciption: Fetch the RPC URL, chain ID, currency symbol, and explorer link for the target Cosmos EVM chain (e.g., Evmos, Canto) from the Cosmos chain-registry."
+    ],
+    "intent": "Switch MetaMask to the correct Cosmos-EVM network before contract deployment",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "query_cosmos_chain_registry",
+            "description": "Fetch the RPC URL, chain ID, currency symbol, and explorer link for the target Cosmos EVM chain (e.g., Evmos, Canto) from the Cosmos chain-registry."
+        },
+        {
+            "step": 2,
+            "tool": "metamask_get_current_chain_id",
+            "description": "Read the currently-selected chain ID from MetaMask to check whether the wallet is already on the desired network."
+        },
+        {
+            "step": 3,
+            "tool": "metamask_switch_network",
+            "description": "If the current chain ID does not match, call MetaMask\u2019s wallet_addEthereumChain (if the network is not added) followed by wallet_switchEthereumChain to add and select the correct Cosmos EVM network using the parameters from Step 1."
+        },
+        {
+            "step": 4,
+            "tool": "metamask_verify_chain_id",
+            "description": "Re-query MetaMask to confirm that the active chain ID now equals the intended Cosmos EVM chain ID."
+        }
+    ],
+    "outcome_checks": [
+        "MetaMask shows the correct network name and chain ID.",
+        "A test read (e.g., eth_blockNumber) against the configured RPC endpoint succeeds without error."
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Validate that the user\u2013supplied transaction hash is a 32-byte hex string with a 0x-prefix.",
+            "code": "export const getValidatedTxHash = (rawHash) => {\n  // Ensure the input is non-empty and a string\n  if (!rawHash || typeof rawHash !== 'string') {\n    throw new Error('Transaction hash is required.');\n  }\n\n  // Remove leading / trailing whitespace\n  const txHash = rawHash.trim();\n\n  // A 32-byte hash is 64 hex chars + the 0x prefix \u21d2 66 chars total\n  const regex = /^0x([A-Fa-f0-9]{64})$/;\n  if (!regex.test(txHash)) {\n    throw new Error('Invalid transaction hash. Expected 32-byte hex string with a 0x prefix.');\n  }\n\n  return txHash;\n};",
+            "usage": "const txHash = getValidatedTxHash(userInput);"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Expose a FastAPI endpoint that calls `eth_getTransactionReceipt` on a Cosmos-EVM JSON-RPC node and returns the raw receipt.",
+            "code": "\"\"\"\nFastAPI backend endpoint to fetch an Ethereum-style transaction receipt from a Cosmos EVM chain.\n\"\"\"\n\nimport os\nimport httpx\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\n# Configure your chain RPC in an environment variable, e.g.:\n#   export EVM_RPC=\"https://rpc.evmos.org:8545\"\nRPC_ENDPOINT = os.getenv(\"EVM_RPC\", \"https://rpc.evmos.org:8545\")\n\nasync def fetch_receipt(tx_hash: str) -> dict | None:\n    \"\"\"Low-level helper that wraps the JSON-RPC request.\"\"\"\n    payload = {\n        \"jsonrpc\": \"2.0\",\n        \"method\": \"eth_getTransactionReceipt\",\n        \"params\": [tx_hash],\n        \"id\": 1,\n    }\n\n    try:\n        async with httpx.AsyncClient() as client:\n            resp = await client.post(RPC_ENDPOINT, json=payload, timeout=10)\n            resp.raise_for_status()\n    except httpx.RequestError as e:\n        raise HTTPException(status_code=502, detail=f\"RPC connection error: {str(e)}\")\n    except httpx.HTTPStatusError as e:\n        raise HTTPException(status_code=e.response.status_code, detail=f\"RPC returned {e.response.status_code}\")\n\n    body = resp.json()\n\n    # Handle RPC-level errors\n    if body.get(\"error\"):\n        raise HTTPException(status_code=500, detail=body[\"error\"])\n\n    return body.get(\"result\")\n\n@app.get(\"/api/tx_receipt\")\nasync def tx_receipt(tx_hash: str):\n    \"\"\"REST: GET /api/tx_receipt?tx_hash=0x\u2026\"\"\"\n    receipt = await fetch_receipt(tx_hash)\n    if receipt is None:\n        raise HTTPException(status_code=404, detail=\"Receipt not found\")\n    return receipt",
+            "usage": "const rawReceipt = await fetch(`/api/tx_receipt?tx_hash=${txHash}`).then(r => r.json());"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Provide another FastAPI route that prettifies the receipt\u2014status, gas, contract address, and basic log stats\u2014making it human-readable.",
+            "code": "\"\"\"\nHelpers for decoding and prettifying a raw EVM transaction receipt.\n\"\"\"\n\nfrom fastapi import HTTPException\n\n# Re-use fetch_receipt from Step 2 (assumed to be in scope)\n\ndef _human_readable_status(status_hex: str) -> str:\n    \"\"\"Convert 0x0 / 0x1 \u21d2 Failed / Success.\"\"\"\n    try:\n        return \"Success\" if int(status_hex, 16) == 1 else \"Failed\"\n    except ValueError:\n        return \"Unknown\"\n\ndef decode_receipt(receipt: dict) -> dict:\n    \"\"\"Transform the RPC receipt into a cleaner JSON structure.\"\"\"\n    if receipt is None:\n        raise HTTPException(status_code=400, detail=\"Empty receipt supplied\")\n\n    return {\n        \"transactionHash\": receipt.get(\"transactionHash\"),\n        \"blockNumber\": int(receipt.get(\"blockNumber\", \"0x0\"), 16),\n        \"status\": _human_readable_status(receipt.get(\"status\", \"0x0\")),\n        \"gasUsed\": int(receipt.get(\"gasUsed\", \"0x0\"), 16),\n        \"contractAddress\": receipt.get(\"contractAddress\"),\n        \"logsCount\": len(receipt.get(\"logs\", [])),\n        \"logs\": receipt.get(\"logs\", []),\n    }\n\n@app.get(\"/api/decode_receipt\")\nasync def decode_receipt_endpoint(tx_hash: str):\n    \"\"\"REST: GET /api/decode_receipt?tx_hash=0x\u2026\"\"\"\n    receipt = await fetch_receipt(tx_hash)\n    if receipt is None:\n        raise HTTPException(status_code=404, detail=\"Receipt not found\")\n    return decode_receipt(receipt)",
+            "usage": "const decoded = await fetch(`/api/decode_receipt?tx_hash=${txHash}`).then(r => r.json());"
+        }
+    ]
+}

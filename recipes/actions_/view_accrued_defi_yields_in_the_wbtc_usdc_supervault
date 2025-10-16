@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "getUserWalletAddress() connects to the user\u2019s Keplr (or compatible) wallet on Neutron and returns the bech32 address that will be used for all subsequent queries.",
+            "function": "getUserWalletAddress()",
+            "usage": "const address = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "queryContractSmart(contractAddress, queryMsg) performs a smart-query against the given contract through the backend API, returning the Supervault\u2019s pending-yield data for the supplied address.",
+            "function": "queryContractSmart(contractAddress, queryMsg)",
+            "usage": "const yieldInfo = await queryContractSmart(CONTRACT_ADDRESS_SUPERVAULT, { pending_yield: { address } });"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "No fully-implemented helper for formatting micro-denominated amounts was found in the provided codebase.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "const address = await getUserWalletAddress();//step: 1 Tool: get_sender_address Desciption: Identify the wallet address whose yield is being queried.",
+        "const yieldInfo = await queryContractSmart(CONTRACT_ADDRESS_SUPERVAULT, { pending_yield: { address } });//step: 2 Tool: query_contract Desciption: Call the WBTC/USDC Supervault contract (CONTRACT_ADDRESS_SUPERVAULT) with `{ \"pending_yield\": { \"address\": <sender> } }` to return tokens and amounts accrued.",
+        "undef//step: 3 Tool: format_amounts Desciption: Convert raw micro-denominated amounts into display units (e.g., WBTC, USDC) and aggregate if multiple denominations are returned."
+    ],
+    "backend": [],
+    "intent": "View accrued DeFi yields in the WBTC/USDC Supervault",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_address",
+            "description": "Identify the wallet address whose yield is being queried."
+        },
+        {
+            "step": 2,
+            "tool": "query_contract",
+            "description": "Call the WBTC/USDC Supervault contract (CONTRACT_ADDRESS_SUPERVAULT) with `{ \"pending_yield\": { \"address\": <sender> } }` to return tokens and amounts accrued."
+        },
+        {
+            "step": 3,
+            "tool": "format_amounts",
+            "description": "Convert raw micro-denominated amounts into display units (e.g., WBTC, USDC) and aggregate if multiple denominations are returned."
+        }
+    ],
+    "outcome_checks": [
+        "The displayed yield matches the raw contract response.",
+        "Amounts are shown in user-friendly denominations (e.g., 0.0034 WBTC, 12.5 USDC)."
+    ]
+}

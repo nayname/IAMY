@@ -1,0 +1,181 @@
+[
+    {
+        "intent": "Get recent changes (logs / tx hashes) for an existing JSON-RPC filter ID",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "collect_filter_id",
+                "description": "Prompt or read the hexadecimal filter ID (e.g. \"0x3503de5f\u2026\") that was returned by a previous eth_newFilter / eth_newBlockFilter / eth_newPendingTransactionFilter call."
+            },
+            {
+                "step": 2,
+                "tool": "validate_filter_id_format",
+                "description": "Ensure the filter ID is a non-empty 0x-prefixed hex string; reject if it does not match /^0x[0-9a-fA-F]+$/."
+            },
+            {
+                "step": 3,
+                "tool": "construct_rpc_eth_getFilterChanges",
+                "description": "Build the JSON-RPC body {\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_getFilterChanges\",\"params\":[<filterId>]}."
+            },
+            {
+                "step": 4,
+                "tool": "send_json_rpc_request",
+                "description": "POST the body to the node\u2019s HTTP endpoint (default http://localhost:8545) or over WebSocket if already connected."
+            },
+            {
+                "step": 5,
+                "tool": "parse_filter_changes_response",
+                "description": "Read the result array. Depending on the original filter type it returns log objects, block hashes, or tx hashes."
+            }
+        ],
+        "outcome_checks": [
+            "HTTP status 200 and JSON-RPC \"error\" field is null / absent.",
+            "\"result\" is an array (possibly empty).",
+            "For log filters, each element contains topics[], data, blockNumber, txHash, etc."
+        ]
+    },
+    {
+        "intent": "Uninstall / remove a JSON-RPC filter by ID",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "collect_filter_id",
+                "description": "Obtain the hexadecimal filter ID to be removed."
+            },
+            {
+                "step": 2,
+                "tool": "validate_filter_id_format",
+                "description": "Reject if the supplied ID is not a valid 0x-prefixed hex string."
+            },
+            {
+                "step": 3,
+                "tool": "construct_rpc_eth_uninstallFilter",
+                "description": "Create the JSON-RPC body {\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_uninstallFilter\",\"params\":[<filterId>]}."
+            },
+            {
+                "step": 4,
+                "tool": "send_json_rpc_request",
+                "description": "POST the request to the node."
+            },
+            {
+                "step": 5,
+                "tool": "confirm_uninstall_response",
+                "description": "Expect the result field to be the boolean true."
+            }
+        ],
+        "outcome_checks": [
+            "Response result === true.",
+            "Subsequent eth_getFilterChanges calls with the same ID return an error (filter not found)."
+        ]
+    },
+    {
+        "intent": "Get logs from the latest block that match a specific topic",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "collect_topic_hash",
+                "description": "Ask the user for the 32-byte topic hash they want to filter on (0x\u2026 format)."
+            },
+            {
+                "step": 2,
+                "tool": "validate_topic_hash",
+                "description": "Verify the topic is a 0x-prefixed 64-hex-character string."
+            },
+            {
+                "step": 3,
+                "tool": "construct_filter_object",
+                "description": "Create the filter object {\"fromBlock\":\"latest\",\"toBlock\":\"latest\",\"topics\":[[<topicHash>]]}."
+            },
+            {
+                "step": 4,
+                "tool": "construct_rpc_eth_getLogs",
+                "description": "Wrap the filter object in {\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_getLogs\",\"params\":[<filterObject>]}."
+            },
+            {
+                "step": 5,
+                "tool": "send_json_rpc_request",
+                "description": "POST to the Ethereum JSON-RPC endpoint."
+            },
+            {
+                "step": 6,
+                "tool": "parse_logs_array",
+                "description": "Extract the array of log objects from the result field."
+            }
+        ],
+        "outcome_checks": [
+            "HTTP 200 and no JSON-RPC error.",
+            "\"result\" is an array of zero or more log objects.",
+            "Each returned log\u2019s topics[0] equals the requested topic hash."
+        ]
+    },
+    {
+        "intent": "Retrieve all transaction receipts for the latest block",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "construct_rpc_eth_blockNumber",
+                "description": "Prepare {\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_blockNumber\",\"params\":[]} to find the current latest block height."
+            },
+            {
+                "step": 2,
+                "tool": "send_json_rpc_request",
+                "description": "POST the eth_blockNumber request and parse the hex block number (e.g. \"0x10fb34\")."
+            },
+            {
+                "step": 3,
+                "tool": "construct_rpc_eth_getBlockReceipts",
+                "description": "Build {\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"eth_getBlockReceipts\",\"params\":[<blockNumberHex>]} using the value from Step 2."
+            },
+            {
+                "step": 4,
+                "tool": "send_json_rpc_request",
+                "description": "POST the eth_getBlockReceipts call."
+            },
+            {
+                "step": 5,
+                "tool": "parse_receipts_array",
+                "description": "Read the result array containing receipt objects for every tx in that block."
+            }
+        ],
+        "outcome_checks": [
+            "No JSON-RPC error field in either call.",
+            "\"result\" from eth_getBlockReceipts is an array whose length equals the block\u2019s transaction count.",
+            "Each receipt object contains status, gasUsed, logs[], etc."
+        ]
+    },
+    {
+        "intent": "Get the logs emitted by a specific transaction",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "collect_transaction_hash",
+                "description": "Receive the 0x-prefixed transaction hash from the user."
+            },
+            {
+                "step": 2,
+                "tool": "validate_tx_hash",
+                "description": "Ensure the hash is a 66-character 0x-prefixed hex string."
+            },
+            {
+                "step": 3,
+                "tool": "construct_rpc_eth_getTransactionReceipt",
+                "description": "Create {\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"eth_getTransactionReceipt\",\"params\":[<txHash>]}."
+            },
+            {
+                "step": 4,
+                "tool": "send_json_rpc_request",
+                "description": "POST the request to the node."
+            },
+            {
+                "step": 5,
+                "tool": "extract_logs_from_receipt",
+                "description": "From the returned receipt object, read the logs[] array."
+            }
+        ],
+        "outcome_checks": [
+            "Receipt object exists (non-null).",
+            "Receipt.logs is an array (possibly empty).",
+            "Each log\u2019s transactionHash matches the requested hash."
+        ]
+    }
+]

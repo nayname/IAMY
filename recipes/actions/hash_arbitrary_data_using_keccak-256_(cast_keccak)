@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 prompts the user for an input string (plain-text or 0x-prefixed hex) and sends it to a backend endpoint that returns the Keccak-256 hash.",
+            "code": "export const getKeccakHashFromInput = async () => {\n  try {\n    // Ask the user for the data to hash\n    const data = window.prompt(\n      \"Enter data (plain text or 0x-prefixed hex) to hash with Keccak-256:\"\n    );\n\n    if (!data) {\n      throw new Error(\"No input provided.\");\n    }\n\n    // Call the backend\n    const response = await fetch(\"/api/keccak\", {\n      method: \"POST\",\n      headers: {\n        \"Content-Type\": \"application/json\"\n      },\n      body: JSON.stringify({ data })\n    });\n\n    if (!response.ok) {\n      // Surface backend error details if available\n      const err = await response.json().catch(() => ({ error: \"Unknown error\" }));\n      throw new Error(err.error || \"Failed to compute Keccak hash.\");\n    }\n\n    const { hash } = await response.json();\n    return hash; // e.g., 0x\u2026\n  } catch (error) {\n    console.error(error);\n    alert(`Error: ${error.message}`);\n    return null;\n  }\n};",
+            "usage": "const hash = await getKeccakHashFromInput();\nconsole.log(\"Keccak-256 hash:\", hash);"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 exposes a FastAPI route that calculates the Keccak-256 digest using the `pysha3` library, mirroring the behavior of `cast keccak`.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport binascii\n\n# `pysha3` provides the Ethereum-style Keccak implementation.\n# Install with:  pip install pysha3 fastapi uvicorn\ntry:\n    from sha3 import keccak_256  # noqa: E402\nexcept ImportError as err:\n    raise ImportError(\"pysha3 is required: pip install pysha3\") from err\n\napp = FastAPI()\n\nclass KeccakRequest(BaseModel):\n    data: str  # raw text or 0x-prefixed hex\n\n@app.post(\"/api/keccak\")\nasync def keccak_hash(req: KeccakRequest):\n    \"\"\"Return Keccak-256 hash for the given input.\"\"\"\n    data_str = req.data\n\n    # Detect hex vs text\n    try:\n        if data_str.startswith((\"0x\", \"0X\")):\n            hex_body = data_str[2:]\n            # If hex has odd length, left-pad with a zero\n            if len(hex_body) % 2:\n                hex_body = \"0\" + hex_body\n            raw_bytes = binascii.unhexlify(hex_body)\n        else:\n            raw_bytes = data_str.encode(\"utf-8\")\n    except (binascii.Error, ValueError) as exc:\n        raise HTTPException(status_code=400, detail=f\"Invalid hex input: {exc}\") from exc\n\n    digest = keccak_256(raw_bytes).hexdigest()\n    return {\"hash\": \"0x\" + digest}",
+            "usage": "Run the backend (e.g., `uvicorn main:app --reload`) and POST to `/api/keccak`.\nExample curl:\n  curl -X POST -H \"Content-Type: application/json\" \\\n       -d '{\"data\":\"hello\"}' \\\n       http://localhost:8000/api/keccak"
+        }
+    ]
+}

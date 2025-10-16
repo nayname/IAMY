@@ -1,0 +1,107 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "installDeps() runs an npm command that installs Ethers.js (and related Hardhat tooling) into the current project.",
+            "function": "installDeps()",
+            "usage": "installDeps();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "get_web3() initialises and returns a Web3 JSON-RPC provider, acting like `new ethers.JsonRpcProvider(...)` for Cosmos EVM.",
+            "function": "get_web3()",
+            "usage": "provider = get_web3()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "get_admin_wallet() builds a LocalWallet from the configured mnemonic, equivalent to creating an ethers Wallet bound to the provider.",
+            "function": "get_admin_wallet()",
+            "usage": "wallet = get_admin_wallet()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "build_send_tx(sender, recipient, ...) produces an unsigned raw transaction that specifies the destination address, amount and gas/fee limits.",
+            "function": "build_send_tx(sender, recipient, amount='1000stake', fee='200stake', chain_id='my-test-chain', outfile='unsigned_tx.json')",
+            "usage": "unsigned_tx_path = build_send_tx(sender_addr, to_addr)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "construct_supervault_deposit_tx(req) prepares the execute-contract transaction bytes and returns a numeric gas_estimate for the call.",
+            "function": "construct_supervault_deposit_tx(req)",
+            "usage": "gas_needed = construct_supervault_deposit_tx(my_req)['gas_estimate']"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "sign_and_broadcast_tx(tx, wallet, client) signs the prepared transaction with the wallet\u2019s key and broadcasts it to the Cosmos EVM network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "tx_result = sign_and_broadcast_tx(tx, wallet, client)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "wait_for_confirmations(tx_hash, confirmations) blocks until the transaction is mined and the desired number of confirmations have passed, returning a receipt-like summary.",
+            "function": "wait_for_confirmations(tx_hash, confirmations=12, poll=15)",
+            "usage": "receipt = wait_for_confirmations(tx_hash, confirmations=1)"
+        }
+    ],
+    "frontend": [
+        "installDeps();//step: 1 Tool: install_ethers Desciption: Run `npm install ethers` (or `yarn add ethers`) inside your project."
+    ],
+    "backend": [
+        "provider = get_web3()#step: 2 Tool: create_json_rpc_provider Desciption: Instantiate a provider with `new ethers.JsonRpcProvider('<RPC_URL>', { chainId: <id>, name: 'CosmosEVM' })`.",
+        "wallet = get_admin_wallet()#step: 3 Tool: initialize_wallet Desciption: Create a wallet object with `new ethers.Wallet('<privateKey>', provider)`.",
+        "unsigned_tx_path = build_send_tx(sender_addr, to_addr)#step: 4 Tool: build_transaction Desciption: Form a raw transaction object specifying `to`, `value`, `gasLimit`, and `gasPrice` (or `maxFeePerGas` + `maxPriorityFeePerGas`).",
+        "gas_needed = construct_supervault_deposit_tx(my_req)['gas_estimate']#step: 5 Tool: estimate_gas_with_ethers Desciption: Call `wallet.estimateGas(tx)` to get an accurate gas estimate from the Cosmos EVM node.",
+        "tx_result = sign_and_broadcast_tx(tx, wallet, client)#step: 6 Tool: sign_and_send_transaction Desciption: Send the transaction with `wallet.sendTransaction(tx)` and store the returned transaction response.",
+        "receipt = wait_for_confirmations(tx_hash, confirmations=1)#step: 7 Tool: await_transaction_receipt Desciption: Wait for confirmation using `provider.waitForTransaction(tx.hash, confirmations)` and capture the receipt."
+    ],
+    "intent": "Use ethers.js to send a transaction on Cosmos EVM",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "install_ethers",
+            "description": "Run `npm install ethers` (or `yarn add ethers`) inside your project."
+        },
+        {
+            "step": 2,
+            "tool": "create_json_rpc_provider",
+            "description": "Instantiate a provider with `new ethers.JsonRpcProvider('<RPC_URL>', { chainId: <id>, name: 'CosmosEVM' })`."
+        },
+        {
+            "step": 3,
+            "tool": "initialize_wallet",
+            "description": "Create a wallet object with `new ethers.Wallet('<privateKey>', provider)`."
+        },
+        {
+            "step": 4,
+            "tool": "build_transaction",
+            "description": "Form a raw transaction object specifying `to`, `value`, `gasLimit`, and `gasPrice` (or `maxFeePerGas` + `maxPriorityFeePerGas`)."
+        },
+        {
+            "step": 5,
+            "tool": "estimate_gas_with_ethers",
+            "description": "Call `wallet.estimateGas(tx)` to get an accurate gas estimate from the Cosmos EVM node."
+        },
+        {
+            "step": 6,
+            "tool": "sign_and_send_transaction",
+            "description": "Send the transaction with `wallet.sendTransaction(tx)` and store the returned transaction response."
+        },
+        {
+            "step": 7,
+            "tool": "await_transaction_receipt",
+            "description": "Wait for confirmation using `provider.waitForTransaction(tx.hash, confirmations)` and capture the receipt."
+        }
+    ],
+    "outcome_checks": [
+        "Transaction receipt has status `1` (success).",
+        "Explorer shows the balance change for both sender and recipient addresses.",
+        "Nonce for the sender wallet increments by one."
+    ]
+}

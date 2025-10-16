@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Retrieves the user\u2019s Neutron bech32 wallet address from the connected browser wallet.",
+            "function": "getNeutronAddress()",
+            "usage": "const address = await getNeutronAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the on-chain bank module to obtain the untrn balance for the specified address.",
+            "function": "query_bank_balance(address, denom=\"untrn\")",
+            "usage": "balance = query_bank_balance(\"neutron1...\", \"untrn\")"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Builds the Boost contract lock message for 500 000 000 untrn with a 24-month duration.",
+            "function": "constructBoostLockMsg(amount=\"500000000\", durationMonths=24)",
+            "usage": "const lockMsg = constructBoostLockMsg(\"500000000\", 24);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Signs the lock transaction with Keplr and broadcasts it to the Neutron network.",
+            "function": "signAndBroadcastTx({ chainId, signDoc, offlineSigner })",
+            "usage": "const txRes = await signAndBroadcastTx({ chainId: \"neutron-1\", signDoc, offlineSigner });"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Continuously polls Neutron until the submitted transaction is included in a block.",
+            "function": "wait_for_tx_commit(tx_hash, client, timeout=120, poll=2.0)",
+            "usage": "status = wait_for_tx_commit(tx_hash, client)"
+        },
+        {
+            "step": 6,
+            "label": "frontend",
+            "introduction": "Queries the Boost contract to confirm the new 500 NTRN lock in the user\u2019s position.",
+            "function": "queryBoostPosition(address)",
+            "usage": "const position = await queryBoostPosition(address);"
+        }
+    ],
+    "frontend": [
+        "const address = await getNeutronAddress();//step: 1 Tool: get_neutron_address Desciption: Identify the user\u2019s Neutron wallet address.",
+        "const lockMsg = constructBoostLockMsg(\"500000000\", 24);//step: 3 Tool: construct_boost_lock_msg Desciption: Build a `lock` message for the Boost contract with parameters `{ amount: 500000000untrn, duration: 24_months }`.",
+        "const txRes = await signAndBroadcastTx({ chainId: \"neutron-1\", signDoc, offlineSigner });//step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the lock transaction and broadcast it to Neutron.",
+        "const position = await queryBoostPosition(address);//step: 6 Tool: query_boost_position Desciption: Fetch the user\u2019s boost position to confirm the new 500 NTRN lock has been added."
+    ],
+    "backend": [
+        "balance = query_bank_balance(\"neutron1...\", \"untrn\")#step: 2 Tool: bank_query_balance Desciption: Verify the wallet holds at least 500 NTRN (500000000 untrn).",
+        "status = wait_for_tx_commit(tx_hash, client)#step: 5 Tool: wait_for_tx_commit Desciption: Monitor the transaction until it is included in a block."
+    ],
+    "intent": "Lock an additional 500 NTRN for 24 months (boost)",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_neutron_address",
+            "description": "Identify the user\u2019s Neutron wallet address."
+        },
+        {
+            "step": 2,
+            "tool": "bank_query_balance",
+            "description": "Verify the wallet holds at least 500 NTRN (500000000 untrn)."
+        },
+        {
+            "step": 3,
+            "tool": "construct_boost_lock_msg",
+            "description": "Build a `lock` message for the Boost contract with parameters `{ amount: 500000000untrn, duration: 24_months }`."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the lock transaction and broadcast it to Neutron."
+        },
+        {
+            "step": 5,
+            "tool": "wait_for_tx_commit",
+            "description": "Monitor the transaction until it is included in a block."
+        },
+        {
+            "step": 6,
+            "tool": "query_boost_position",
+            "description": "Fetch the user\u2019s boost position to confirm the new 500 NTRN lock has been added."
+        }
+    ],
+    "outcome_checks": [
+        "The lock transaction is confirmed with `code == 0`.",
+        "`query_boost_position` shows the locked amount increased by exactly 500 NTRN.",
+        "Lock expiration height corresponds to ~24 months from the current block."
+    ]
+}

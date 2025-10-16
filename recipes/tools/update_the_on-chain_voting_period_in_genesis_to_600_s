@@ -1,0 +1,92 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Resolves the node\u2019s home directory and returns its absolute path.",
+            "function": "get_chain_home(chain_id=\"simd\")",
+            "usage": "home_dir = get_chain_home()[\"chain_home\"]"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Finds config/genesis.json inside the home directory and loads it into memory.",
+            "function": "locate_genesis(chain_home)",
+            "usage": "genesis_meta = locate_genesis(home_dir)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Creates a timestamped backup copy of the current genesis.json file.",
+            "function": "backup_genesis(genesis_path)",
+            "usage": "backup_genesis(genesis_meta[\"genesis_path\"])"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Mutates a field inside the loaded genesis object; it can be repurposed to set gov.params.voting_period to \"600s\".",
+            "function": "update_inflation(genesis_data, new_inflation)",
+            "usage": "updated = await update_inflation(genesis_meta[\"genesis_data\"], \"600s\")[\"updated_genesis\"]"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Persists the modified genesis structure back to disk, replacing the original file.",
+            "function": "save_genesis(genesis_path, updated_genesis)",
+            "usage": "await save_genesis(genesis_meta[\"genesis_path\"], updated)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Runs the simd validate-genesis command to confirm the new genesis file is structurally correct.",
+            "function": "validate_genesis(chain_binary=\"simd\", home=home)",
+            "usage": "validate_genesis(chain_binary=\"simd\", home=home_dir)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "home_dir = get_chain_home()[\"chain_home\"]#step: 1 Tool: get_chain_home Desciption: Resolve the node\u2019s home directory.",
+        "genesis_meta = locate_genesis(home_dir)#step: 2 Tool: locate_file Desciption: Open config/genesis.json.",
+        "backup_genesis(genesis_meta[\"genesis_path\"])#step: 3 Tool: backup_file Desciption: Create genesis.json.bak.",
+        "updated = await update_inflation(genesis_meta[\"genesis_data\"], \"600s\")[\"updated_genesis\"]#step: 4 Tool: update_json_value Desciption: Navigate to gov.params.voting_period (or gov.params.voting_params.voting_period depending on SDK version) and set the value to \"600s\".",
+        "await save_genesis(genesis_meta[\"genesis_path\"], updated)#step: 5 Tool: save_file Desciption: Persist the modified genesis.json.",
+        "validate_genesis(chain_binary=\"simd\", home=home_dir)#step: 6 Tool: validate_genesis Desciption: Run \"simd validate-genesis\" to confirm structural correctness."
+    ],
+    "intent": "Update the on-chain voting period in genesis to 600 s",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_chain_home",
+            "description": "Resolve the node\u2019s home directory."
+        },
+        {
+            "step": 2,
+            "tool": "locate_file",
+            "description": "Open config/genesis.json."
+        },
+        {
+            "step": 3,
+            "tool": "backup_file",
+            "description": "Create genesis.json.bak."
+        },
+        {
+            "step": 4,
+            "tool": "update_json_value",
+            "description": "Navigate to gov.params.voting_period (or gov.params.voting_params.voting_period depending on SDK version) and set the value to \"600s\"."
+        },
+        {
+            "step": 5,
+            "tool": "save_file",
+            "description": "Persist the modified genesis.json."
+        },
+        {
+            "step": 6,
+            "tool": "validate_genesis",
+            "description": "Run \"simd validate-genesis\" to confirm structural correctness."
+        }
+    ],
+    "outcome_checks": [
+        "`jq '.gov.params.voting_period' ~/.simapp/config/genesis.json` outputs \"600s\"",
+        "`simd validate-genesis` reports success"
+    ]
+}

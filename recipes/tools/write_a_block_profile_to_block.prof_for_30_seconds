@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "enable_mutex_profiling() issues a JSON-RPC call that turns on Go runtime mutex profiling, serving as the closest available helper for activating run-time profiling on the node.",
+            "function": "enable_mutex_profiling()",
+            "usage": "enable_mutex_profiling()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No implemented helper that simply waits for an arbitrary period could be located in the codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No implemented helper that downloads the block profile into block.prof exists in the provided source files.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "verify_profile_file() checks that a profiling output file exists on disk and is larger than zero bytes, throwing if the file is missing or empty.",
+            "function": "verify_profile_file(profile_path='block.prof')",
+            "usage": "size_bytes = verify_profile_file('block.prof')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "enable_mutex_profiling()#step: 1 Tool: enable_block_profiling Desciption: Restart the node with the environment variable `GODEBUG=blockprofilerate=1` so the Go runtime records blocking events.",
+        "undef#step: 2 Tool: wait_runtime Desciption: Allow the node to run under normal load for 30 seconds to accumulate samples.",
+        "undef#step: 3 Tool: fetch_block_profile Desciption: Execute `curl http://localhost:6060/debug/pprof/block?debug=0 --output block.prof` to download the collected block profile.",
+        "size_bytes = verify_profile_file('block.prof')#step: 4 Tool: verify_profile_file Desciption: Confirm block.prof exists and is non-zero in size."
+    ],
+    "intent": "Write a block profile to block.prof for 30 seconds",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "enable_block_profiling",
+            "description": "Restart the node with the environment variable `GODEBUG=blockprofilerate=1` so the Go runtime records blocking events."
+        },
+        {
+            "step": 2,
+            "tool": "wait_runtime",
+            "description": "Allow the node to run under normal load for 30 seconds to accumulate samples."
+        },
+        {
+            "step": 3,
+            "tool": "fetch_block_profile",
+            "description": "Execute `curl http://localhost:6060/debug/pprof/block?debug=0 --output block.prof` to download the collected block profile."
+        },
+        {
+            "step": 4,
+            "tool": "verify_profile_file",
+            "description": "Confirm block.prof exists and is non-zero in size."
+        }
+    ],
+    "outcome_checks": [
+        "block.prof exists and its size is > 0 bytes.",
+        "`go tool pprof block.prof` loads successfully."
+    ]
+}

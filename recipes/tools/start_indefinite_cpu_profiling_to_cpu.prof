@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "build_simd_start_cmd() assembles a full simd start command, letting you append custom flags such as \"--cpu-profile cpu.prof\".",
+            "function": "build_simd_start_cmd(home_dir, additional_flags='')",
+            "usage": "cmd = build_simd_start_cmd('/var/simd', '--cpu-profile cpu.prof')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "restart_node_service() restarts the given systemd daemon and waits until it is running again.",
+            "function": "restart_node_service(daemon_name, wait_seconds=60)",
+            "usage": "restart_node_service('neutrond')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "verify_profile_file() confirms that cpu.prof exists and is non-empty, indicating the profile is being written.",
+            "function": "verify_profile_file(profile_path='cpu.prof')",
+            "usage": "size_bytes = verify_profile_file('cpu.prof')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "cmd = build_simd_start_cmd('/var/simd', '--cpu-profile cpu.prof')#step: 1 Tool: update_node_start_flags Desciption: Edit the node start command or systemd service to add `--cpu-profile cpu.prof`, leveraging the Cosmos SDK\u2019s `wrapCPUProfile` helper.",
+        "restart_node_service('neutrond')#step: 2 Tool: restart_node Desciption: Restart (or start) the node so continuous CPU profiling begins immediately.",
+        "size_bytes = verify_profile_file('cpu.prof')#step: 3 Tool: check_profile_growth Desciption: After a few seconds run `ls -lh cpu.prof` (or similar) to verify the file is being written and growing."
+    ],
+    "intent": "Start indefinite CPU profiling to cpu.prof",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "update_node_start_flags",
+            "description": "Edit the node start command or systemd service to add `--cpu-profile cpu.prof`, leveraging the Cosmos SDK\u2019s `wrapCPUProfile` helper."
+        },
+        {
+            "step": 2,
+            "tool": "restart_node",
+            "description": "Restart (or start) the node so continuous CPU profiling begins immediately."
+        },
+        {
+            "step": 3,
+            "tool": "check_profile_growth",
+            "description": "After a few seconds run `ls -lh cpu.prof` (or similar) to verify the file is being written and growing."
+        }
+    ],
+    "outcome_checks": [
+        "cpu.prof is present and its size increases over time.",
+        "Node logs contain the line `starting CPU profiler`."
+    ]
+}

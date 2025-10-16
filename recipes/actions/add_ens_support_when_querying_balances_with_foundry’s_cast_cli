@@ -1,0 +1,19 @@
+{
+    "label": "query_balance",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "This Python backend endpoint resolves a given ENS name into a checksummed Ethereum address. It uses `web3.py` and a configurable RPC URL, making it suitable for Mintlify\u2019s BFF pattern.",
+            "code": "import os\nfrom flask import Flask, request, jsonify\nfrom web3 import Web3\n\napp = Flask(__name__)\n\n# RPC endpoint; set ENV var ETH_RPC_URL or fallback to a public one\nRPC_URL = os.getenv(\"ETH_RPC_URL\", \"https://eth.llamarpc.com\")\nw3 = Web3(Web3.HTTPProvider(RPC_URL))\n\n@app.route('/api/resolve_ens', methods=['GET'])\ndef resolve_ens():\n    \"\"\"Resolve an ENS name to a checksummed Ethereum address.\"\"\"\n    ens_name = request.args.get('ens')\n    if not ens_name:\n        return jsonify({\"error\": \"Query param 'ens' is required.\"}), 400\n\n    try:\n        address = w3.ens.address(ens_name)\n        if address is None:\n            return jsonify({\"error\": f\"ENS name '{ens_name}' not found.\"}), 404\n        return jsonify({\"address\": Web3.toChecksumAddress(address)})\n    except Exception as e:\n        # Catch anything unexpected (e.g., network issues)\n        return jsonify({\"error\": str(e)}), 500\n\n# Allow this file to be run directly for local dev\nautostart = os.getenv(\"FLASK_AUTOSTART\", \"true\").lower() == \"true\"\nif __name__ == '__main__' and autostart:\n    app.run(host='0.0.0.0', port=8000, debug=True)",
+            "usage": "GET /api/resolve_ens?ens=vitalik.eth  \u2192  { \"address\": \"0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045\" }"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "This second backend route returns the ETH balance (in Ether) for a checksummed address obtained from Step 1. It can also accept an ENS name directly.",
+            "code": "import os\nfrom flask import Flask, request, jsonify\nfrom web3 import Web3\n\napp = Flask(__name__)\n\nRPC_URL = os.getenv(\"ETH_RPC_URL\", \"https://eth.llamarpc.com\")\nw3 = Web3(Web3.HTTPProvider(RPC_URL))\n\n@app.route('/api/eth_balance', methods=['GET'])\ndef eth_balance():\n    \"\"\"Return balance for an address OR ENS name provided via ?value.\"\"\"\n    value = request.args.get('value')  # can be address or ENS name\n    if not value:\n        return jsonify({\"error\": \"Query param 'value' is required.\"}), 400\n\n    # Resolve ENS if necessary\n    try:\n        if \".\" in value:  # na\u00efve ENS check\n            resolved = w3.ens.address(value)\n            if resolved is None:\n                return jsonify({\"error\": f\"ENS name '{value}' not found.\"}), 404\n            address = Web3.toChecksumAddress(resolved)\n        else:\n            address = Web3.toChecksumAddress(value)\n    except Exception as e:\n        return jsonify({\"error\": str(e)}), 400\n\n    # Query balance\n    try:\n        balance_wei = w3.eth.get_balance(address)\n        balance_eth = w3.fromWei(balance_wei, 'ether')\n        return jsonify({\"address\": address, \"balance\": str(balance_eth)})\n    except Exception as e:\n        return jsonify({\"error\": str(e)}), 500\n\n# Allow this file to be run directly for local dev\nautostart = os.getenv(\"FLASK_AUTOSTART\", \"true\").lower() == \"true\"\nif __name__ == '__main__' and autostart:\n    app.run(host='0.0.0.0', port=8000, debug=True)",
+            "usage": "GET /api/eth_balance?value=0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045   \u2192  { \"address\": \"0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045\", \"balance\": \"123.456789\" }"
+        }
+    ]
+}

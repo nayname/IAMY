@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "ensure_output_directory creates (or confirms) the folder where all validator configuration files and the genesis JSON will be written.",
+            "function": "ensure_output_directory(path)",
+            "usage": "output_dir = ensure_output_directory('/tmp/localnet')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "simd_testnet_init_files invokes `simd testnet init-files` using the chosen directory, chain-id and other flags to generate the validator configs and genesis.",
+            "function": "simd_testnet_init_files(output_dir, chain_id=\"localnet-1\", validators=1, keyring_backend=\"test\")",
+            "usage": "simd_testnet_init_files(output_dir, chain_id='localnet-1', validators=1)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "verify_generated_artifacts inspects the output directory to ensure genesis.json and all validator key materials were successfully created.",
+            "function": "verify_generated_artifacts(output_dir, validators=1)",
+            "usage": "ready = verify_generated_artifacts(output_dir, validators=1)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "output_dir = ensure_output_directory('/tmp/localnet')#step: 1 Tool: select_output_directory Desciption: Determine (or create) the directory where validator configs and genesis will be generated.",
+        "simd_testnet_init_files(output_dir, chain_id='localnet-1', validators=1)#step: 2 Tool: simd_testnet_init_files Desciption: Execute `simd testnet init-files --home <dir> --chain-id <id> --v 1` (adjust flags for validator count, keyring backend, etc.).",
+        "ready = verify_generated_artifacts(output_dir, validators=1)#step: 3 Tool: verify_generated_artifacts Desciption: Confirm that `genesis.json`, `node_id` files, and validator key material exist in each validator sub-folder."
+    ],
+    "intent": "Initialize testnet files with simd testnet init-files",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "select_output_directory",
+            "description": "Determine (or create) the directory where validator configs and genesis will be generated."
+        },
+        {
+            "step": 2,
+            "tool": "simd_testnet_init_files",
+            "description": "Execute `simd testnet init-files --home <dir> --chain-id <id> --v 1` (adjust flags for validator count, keyring backend, etc.)."
+        },
+        {
+            "step": 3,
+            "tool": "verify_generated_artifacts",
+            "description": "Confirm that `genesis.json`, `node_id` files, and validator key material exist in each validator sub-folder."
+        }
+    ],
+    "outcome_checks": [
+        "`simd testnet init-files` exits with code 0 and prints the path to the generated files.",
+        "`genesis.json` validates via `simd validate-genesis`.",
+        "Each validator directory contains `config`, `data`, and `keyring-test` folders."
+    ]
+}

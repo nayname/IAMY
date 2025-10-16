@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 delivers a small Python helper that makes sure Foundry\u2019s CLI tools (particularly `cast`) are installed and reachable from PATH. It attempts an automatic install when the binary is missing.",
+            "code": "import shutil\nimport subprocess\nimport logging\n\n\ndef ensure_foundry_installed() -> bool:\n    \"\"\"Check for Foundry and install it if absent.\n\n    Returns:\n        bool: True when the tooling is confirmed present.\n    Raises:\n        RuntimeError: if installation fails.\n    \"\"\"\n    logger = logging.getLogger(__name__)\n\n    # Fast-exit when Foundry is already on PATH\n    if shutil.which(\"cast\") is not None:\n        logger.info(\"Foundry detected\u2014skipping installation.\")\n        return True\n\n    try:\n        logger.info(\"Foundry not detected. Bootstrapping via official script\u2026\")\n        # Download & run installer\n        subprocess.run(\n            \"curl -L https://foundry.paradigm.xyz | bash\",\n            shell=True,\n            check=True,\n            stdout=subprocess.PIPE,\n            stderr=subprocess.PIPE,\n        )\n        # Pull latest binaries\n        subprocess.run(\"foundryup\", shell=True, check=True)\n        logger.info(\"Foundry installation completed successfully.\")\n        return True\n    except subprocess.CalledProcessError as exc:\n        logger.error(\"Foundry installation failed: %s\", exc)\n        raise RuntimeError(\"Unable to install Foundry. Consult logs for details.\")",
+            "usage": "# Call once during server start-up\nensure_foundry_installed()"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 adds a browser-side helper that packages a user-selected binary file (or any `Blob`) and POSTs it to the backend endpoint that performs the actual conversion.",
+            "code": "export const prepareBinaryInput = async (file) => {\n  if (!file) {\n    throw new Error('No file supplied for conversion.');\n  }\n\n  const formData = new FormData();\n  formData.append('file', file);\n\n  const response = await fetch('/api/cast/from-bin', {\n    method: 'POST',\n    body: formData,\n  });\n\n  if (!response.ok) {\n    const errorText = await response.text();\n    throw new Error(`Backend error: ${errorText}`);\n  }\n\n  const { hex } = await response.json();\n  return hex; // Forward to the caller for further handling\n};",
+            "usage": "// Inside an <input type=\"file\"/> change-handler\nconst file = event.target.files[0];\nconst hex = await prepareBinaryInput(file);\nconsole.log('Received hex:', hex);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 exposes a FastAPI route that stores the uploaded bytes in a temporary file and invokes `cast from-bin` to obtain the `0x`-prefixed hex representation.",
+            "code": "from fastapi import FastAPI, UploadFile, File, HTTPException\nimport subprocess\nimport tempfile\nimport os\nfrom foundry_setup import ensure_foundry_installed\n\napp = FastAPI()\n\n\n@app.post('/api/cast/from-bin')\nasync def cast_from_bin(file: UploadFile = File(...)):\n    # Make sure Foundry exists before proceeding\n    ensure_foundry_installed()\n\n    tmp_path = None\n    try:\n        # Persist request body to a temp file\n        with tempfile.NamedTemporaryFile(delete=False) as tmp:\n            tmp.write(await file.read())\n            tmp_path = tmp.name\n\n        # Run the conversion using Foundry\u2019s cast\n        hex_output = subprocess.check_output(\n            ['cast', 'from-bin', tmp_path],\n            text=True,\n        ).strip()\n\n        return {'hex': hex_output}\n    except subprocess.CalledProcessError as exc:\n        raise HTTPException(status_code=500, detail=f'cast failed: {exc}')\n    finally:\n        # House-keeping: delete the temp file (if created)\n        if tmp_path and os.path.exists(tmp_path):\n            os.remove(tmp_path)",
+            "usage": "# This endpoint is consumed by the Step 2 fetch call; no manual use required."
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 offers an ergonomic utility to copy the resulting hexadecimal string to the user\u2019s clipboard, completing the conversion pipeline.",
+            "code": "export const captureOutput = async (hex) => {\n  if (typeof hex !== 'string' || !hex.startsWith('0x')) {\n    throw new Error('Invalid hex string supplied.');\n  }\n  try {\n    await navigator.clipboard.writeText(hex);\n    console.log('Hex string copied to clipboard');\n  } catch (err) {\n    console.error('Clipboard write failed:', err);\n  }\n  return hex; // Return for optional chaining\n};",
+            "usage": "await captureOutput(hex); // where `hex` comes from Step 2"
+        }
+    ]
+}

@@ -1,0 +1,177 @@
+[
+    {
+        "intent": "Submit a governance text proposal",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_proposer_address",
+                "description": "Identify the wallet address that will be used as the proposal\u2019s proposer."
+            },
+            {
+                "step": 2,
+                "tool": "collect_proposal_metadata",
+                "description": "Gather the proposal title, description, and any metadata (e.g., summary, forum link)."
+            },
+            {
+                "step": 3,
+                "tool": "construct_msg_submit_text_proposal",
+                "description": "Build a MsgSubmitProposal of type TextProposal with the collected metadata and the required initial deposit."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the MsgSubmitProposal with the proposer\u2019s key and broadcast it to the network."
+            },
+            {
+                "step": 5,
+                "tool": "query_proposal_status",
+                "description": "Fetch the proposal by ID once the transaction is confirmed to ensure it entered the VotingPeriod."
+            }
+        ],
+        "outcome_checks": [
+            "The transaction hash is included in a block and succeeds.",
+            "A new proposal ID is returned and visible via the governance query endpoint.",
+            "The proposal status is VotingPeriod (or DepositPeriod if minimum deposit not met)."
+        ]
+    },
+    {
+        "intent": "Vote yes on proposal 5",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_voter_address",
+                "description": "Identify the voter\u2019s wallet address that will cast the vote."
+            },
+            {
+                "step": 2,
+                "tool": "validate_proposal_id",
+                "description": "Query the chain to confirm that proposal ID 5 exists and is in the VotingPeriod."
+            },
+            {
+                "step": 3,
+                "tool": "construct_msg_vote_yes",
+                "description": "Create a MsgVote with option YES for proposal ID 5 from the voter address."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the vote transaction with the voter\u2019s key and broadcast it."
+            },
+            {
+                "step": 5,
+                "tool": "query_vote_record",
+                "description": "Query the chain for the voter\u2019s ballot on proposal 5 to confirm it was recorded as YES."
+            }
+        ],
+        "outcome_checks": [
+            "Vote transaction is committed in a block with success code 0.",
+            "The voter\u2019s ballot for proposal 5 shows option YES.",
+            "The proposal\u2019s tally now reflects the new YES vote weight."
+        ]
+    },
+    {
+        "intent": "Set custom ante handler for my app",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "locate_app_go_file",
+                "description": "Open app/app.go (or main application file) where the baseapp is instantiated."
+            },
+            {
+                "step": 2,
+                "tool": "implement_custom_ante_handler",
+                "description": "Create a new function that satisfies sdk.AnteHandler and contains the desired custom logic (e.g., fee checks, signature limits)."
+            },
+            {
+                "step": 3,
+                "tool": "set_app_ante_handler",
+                "description": "In app.go, call app.SetAnteHandler(customAnteHandler) after module keepers are initialized."
+            },
+            {
+                "step": 4,
+                "tool": "go_build_and_test",
+                "description": "Run `go test ./...` and `make install` (or `go build`) to ensure the application compiles and tests pass."
+            },
+            {
+                "step": 5,
+                "tool": "run_localnet_tx_simulation",
+                "description": "Start a local node, broadcast sample transactions, and verify the custom ante handler logic is triggered."
+            }
+        ],
+        "outcome_checks": [
+            "The application builds without compilation errors.",
+            "Unit tests covering the custom ante logic pass.",
+            "Runtime logs (or debug statements) confirm custom ante handler execution on incoming transactions."
+        ]
+    },
+    {
+        "intent": "Enable state sync snapshots with interval 1000",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "stop_node_service",
+                "description": "Gracefully stop the running Cosmos SDK node to modify configuration."
+            },
+            {
+                "step": 2,
+                "tool": "edit_app_toml_snapshot_section",
+                "description": "Open `$HOME/.<chain-id>/config/app.toml` and set `snapshot-interval = 1000` and ensure `snapshot-keep-recent` is appropriately configured."
+            },
+            {
+                "step": 3,
+                "tool": "start_node_service",
+                "description": "Restart the node so the new snapshot settings take effect."
+            },
+            {
+                "step": 4,
+                "tool": "verify_snapshot_creation",
+                "description": "Monitor the node logs or check the `$HOME/.<chain-id>/data/snapshots` directory to confirm a snapshot is created every 1000 blocks."
+            },
+            {
+                "step": 5,
+                "tool": "serve_snapshot_rpc",
+                "description": "Ensure the node\u2019s RPC endpoint exposes the `snapshot` info (e.g., via `/snapshot/info`) for state-syncing peers."
+            }
+        ],
+        "outcome_checks": [
+            "Snapshots appear in the snapshots directory at the expected 1000-block cadence.",
+            "RPC endpoint returns valid snapshot metadata.",
+            "Peers can successfully state-sync using the produced snapshots."
+        ]
+    },
+    {
+        "intent": "Set custom inflation minting function",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "fork_mint_module",
+                "description": "Copy `x/mint` module into the application\u2019s local modules directory (e.g., `x/custommint`)."
+            },
+            {
+                "step": 2,
+                "tool": "implement_custom_inflation_logic",
+                "description": "Modify `inflation.go` (or equivalent) to replace `CalculateInflation` with the desired formula."
+            },
+            {
+                "step": 3,
+                "tool": "register_custom_module",
+                "description": "In `app.go`, replace the standard mint keeper with the custom module\u2019s keeper and add it to the module manager."
+            },
+            {
+                "step": 4,
+                "tool": "go_build_and_unit_test",
+                "description": "Compile the application and add unit tests ensuring the new inflation function returns expected values across epochs."
+            },
+            {
+                "step": 5,
+                "tool": "launch_devnet_and_monitor",
+                "description": "Start a local devnet, let several blocks pass, and query the `minting/inflation` and `minting/annual_provisions` endpoints to verify the custom rates."
+            }
+        ],
+        "outcome_checks": [
+            "Application compiles and passes unit tests.",
+            "On-chain inflation queries reflect the custom inflation curve.",
+            "Minted supply over time matches expectations derived from the custom function."
+        ]
+    }
+]

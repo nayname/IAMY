@@ -1,0 +1,81 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "getNeutronAddress() connects to the browser wallet and returns the user\u2019s Neutron bech32 address that will be used to vote.",
+            "function": "getNeutronAddress()",
+            "usage": "const voter = await getNeutronAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "wait_for_voting_result() queries the on-chain governance module for the specified proposal and reports its current status, allowing us to verify that proposal 5 exists.",
+            "function": "wait_for_voting_result(proposal_id, chain_id=\"neutron-1\", node=\"https://rpc-kralum.neutron.org:443\", poll_interval=15, max_attempts=800)",
+            "usage": "const status = wait_for_voting_result(5, max_attempts=1);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "construct_msg_vote_yes() builds a MsgVote protobuf with option YES for proposal 5 from the voter\u2019s address.",
+            "function": "construct_msg_vote_yes(voter, proposal_id)",
+            "usage": "const msg = construct_msg_vote_yes(voter, 5);"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "sign_and_broadcast_tx() signs the prepared transaction with the voter\u2019s key and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "const result = sign_and_broadcast_tx(tx, wallet, client);"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "No implemented function was found that queries an individual ballot for a proposal.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "const voter = await getNeutronAddress();//step: 1 Tool: get_voter_address Desciption: Identify the voter\u2019s wallet address that will cast the vote."
+    ],
+    "backend": [
+        "const status = wait_for_voting_result(5, max_attempts=1);#step: 2 Tool: validate_proposal_id Desciption: Query the chain to confirm that proposal ID 5 exists and is in the VotingPeriod.",
+        "const msg = construct_msg_vote_yes(voter, 5);#step: 3 Tool: construct_msg_vote_yes Desciption: Create a MsgVote with option YES for proposal ID 5 from the voter address.",
+        "const result = sign_and_broadcast_tx(tx, wallet, client);#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the vote transaction with the voter\u2019s key and broadcast it.",
+        "undef#step: 5 Tool: query_vote_record Desciption: Query the chain for the voter\u2019s ballot on proposal 5 to confirm it was recorded as YES."
+    ],
+    "intent": "Vote yes on proposal 5",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_voter_address",
+            "description": "Identify the voter\u2019s wallet address that will cast the vote."
+        },
+        {
+            "step": 2,
+            "tool": "validate_proposal_id",
+            "description": "Query the chain to confirm that proposal ID 5 exists and is in the VotingPeriod."
+        },
+        {
+            "step": 3,
+            "tool": "construct_msg_vote_yes",
+            "description": "Create a MsgVote with option YES for proposal ID 5 from the voter address."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the vote transaction with the voter\u2019s key and broadcast it."
+        },
+        {
+            "step": 5,
+            "tool": "query_vote_record",
+            "description": "Query the chain for the voter\u2019s ballot on proposal 5 to confirm it was recorded as YES."
+        }
+    ],
+    "outcome_checks": [
+        "Vote transaction is committed in a block with success code 0.",
+        "The voter\u2019s ballot for proposal 5 shows option YES.",
+        "The proposal\u2019s tally now reflects the new YES vote weight."
+    ]
+}

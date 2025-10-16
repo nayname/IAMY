@@ -1,0 +1,61 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Locate or derive the simd node's home directory on the host machine.",
+            "code": "import os\n\n\ndef get_node_home(env_var='SIMD_HOME', default_path='~/.simd'):\n    # Return absolute path to the simd home directory.\n    home = os.getenv(env_var, default_path)\n    return os.path.abspath(os.path.expanduser(home))\n",
+            "usage": "home_dir = get_node_home()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Run `simd snapshot list` and parse the output to obtain available snapshot IDs and heights.",
+            "code": "import subprocess\n\n\ndef list_snapshots(home_dir):\n    '''Return a list of snapshot dictionaries: {'id': str, 'height': int}.'''\n    cmd = ['simd', 'snapshot', 'list', f'--home={home_dir}']\n    try:\n        result = subprocess.run(cmd, check=True, capture_output=True, text=True)\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f'Error listing snapshots: {e.stderr}')\n\n    snapshots = []\n    for line in result.stdout.splitlines():\n        parts = line.strip().split()\n        if len(parts) >= 2 and parts[0].isdigit():\n            snapshots.append({'id': parts[0], 'height': int(parts[1])})\n    return snapshots\n",
+            "usage": "snapshots = list_snapshots(home_dir)\nselected_id = snapshots[-1]['id']  # pick latest or prompt user"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Gracefully stop the running simd process (tries systemd first, then falls back to pkill).",
+            "code": "import subprocess\n\n\ndef stop_simd_service(service_name='simd'):\n    '''Stop the simd daemon via systemctl or pkill.'''\n    try:\n        subprocess.run(['systemctl', 'stop', service_name], check=True)\n        return 'Stopped via systemctl'\n    except Exception:\n        pass\n    try:\n        subprocess.run(['pkill', '-f', service_name], check=True)\n        return 'Stopped via pkill'\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f'Failed to stop simd: {e}')\n",
+            "usage": "stop_simd_service()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Back up the existing data directory and clear it to make room for the new snapshot.",
+            "code": "import shutil\nimport datetime\nimport os\n\n\ndef backup_and_clear_data(home_dir, data_subdir='data'):\n    '''Back up the current data directory to <home>/backup/data_<timestamp>.'''\n    data_path = os.path.join(home_dir, data_subdir)\n    if not os.path.isdir(data_path):\n        raise FileNotFoundError(f'Data dir not found: {data_path}')\n    timestamp = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')\n    backup_root = os.path.join(home_dir, 'backup')\n    os.makedirs(backup_root, exist_ok=True)\n    backup_path = os.path.join(backup_root, f'data_{timestamp}')\n    shutil.move(data_path, backup_path)\n    return backup_path\n",
+            "usage": "backup_path = backup_and_clear_data(home_dir)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Restore the snapshot chosen in Step 2 into the cleared home directory.",
+            "code": "import subprocess\n\n\ndef restore_snapshot(home_dir, snapshot_id):\n    '''Run simd snapshot restore for the provided snapshot ID.'''\n    cmd = ['simd', 'snapshot', 'restore', f'--home={home_dir}', snapshot_id]\n    try:\n        subprocess.run(cmd, check=True)\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f'Snapshot restore failed: {e}')\n",
+            "usage": "restore_snapshot(home_dir, selected_id)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Generate the exact `simd start` command that will be executed after restoration.",
+            "code": "def build_simd_start_cmd(home_dir, additional_flags=''):\n    '''Return a ready-to-run simd start command string.'''\n    return f'simd start --home={home_dir} {additional_flags}'.strip()\n",
+            "usage": "start_cmd = build_simd_start_cmd(home_dir)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Start the simd daemon, optionally detaching it so it continues running in the background.",
+            "code": "import subprocess\n\n\ndef start_simd(home_dir, additional_flags='', detach=True):\n    '''Start simd in foreground or background based on `detach`.'''\n    cmd = ['simd', 'start', f'--home={home_dir}'] + additional_flags.split()\n    if detach:\n        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)\n        return 'Started simd in background'\n    subprocess.run(cmd, check=True)\n    return 'Started simd in foreground'\n",
+            "usage": "start_simd(home_dir)"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Poll the RPC `/status` endpoint to confirm that the node is running and advancing beyond the snapshot height.",
+            "code": "import requests\nimport time\n\n\ndef check_node_sync(expected_height, rpc_url='http://localhost:26657', timeout=300):\n    '''Wait until the node's block height is >= expected_height.'''\n    start_time = time.time()\n    while time.time() - start_time < timeout:\n        try:\n            resp = requests.get(f'{rpc_url}/status', timeout=5)\n            resp.raise_for_status()\n            height = int(resp.json()['result']['sync_info']['latest_block_height'])\n            if height >= expected_height:\n                print(f'Node synced at height {height}')\n                return True\n            print(f'Current height {height}; waiting for {expected_height}...')\n        except Exception as err:\n            print('RPC error:', err)\n        time.sleep(5)\n    raise TimeoutError('Node did not reach expected height within timeout.')\n",
+            "usage": "check_node_sync(expected_height=int(snapshots[-1]['height']))"
+        }
+    ]
+}

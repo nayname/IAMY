@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Uses the getVersion utility to run the CLI with the --version flag and therefore confirms that Foundry\u2019s cast binary is available in the system PATH.",
+            "function": "getVersion(cmd)",
+            "usage": "castVersion = getVersion('cast');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Extracts the contract address from a DOM input element, supplying one of the key parameters required to build the cast estimate call.",
+            "function": "getContractAddress(elementId = 'contract-address-input')",
+            "usage": "const contractAddr = getContractAddress();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "undef",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Multiplies the raw gas-unit estimate by the current gas-price value to derive the final gas cost in wei (or another denomination).",
+            "function": "BigNumber.mul(other)",
+            "usage": "const gasCostWei = new BigNumber(gasUnits).mul(new BigNumber(gasPriceWei));"
+        }
+    ],
+    "frontend": [
+        "const contractAddr = getContractAddress();//step: 2 Tool: gather_call_parameters Desciption: Collect the RPC URL, contract address, function signature, and any ABI-encoded arguments required for the call."
+    ],
+    "backend": [
+        "castVersion = getVersion('cast');#step: 1 Tool: verify_foundry_installation Desciption: Ensure Foundry\u2019s `cast` CLI is installed by running `cast --help`.",
+        "undef#step: 3 Tool: run_cast_estimate Desciption: Execute `cast estimate --rpc-url <RPC_URL> <contractAddress> \"<functionSignature>\" <arg1> <arg2>` to get the gas estimate.",
+        "const gasCostWei = new BigNumber(gasUnits).mul(new BigNumber(gasPriceWei));#step: 4 Tool: interpret_output Desciption: Read the returned integer value (gas units) and translate it into gas cost using current gas price."
+    ],
+    "intent": "Estimate gas for a contract call with cast estimate",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "verify_foundry_installation",
+            "description": "Ensure Foundry\u2019s `cast` CLI is installed by running `cast --help`."
+        },
+        {
+            "step": 2,
+            "tool": "gather_call_parameters",
+            "description": "Collect the RPC URL, contract address, function signature, and any ABI-encoded arguments required for the call."
+        },
+        {
+            "step": 3,
+            "tool": "run_cast_estimate",
+            "description": "Execute `cast estimate --rpc-url <RPC_URL> <contractAddress> \"<functionSignature>\" <arg1> <arg2>` to get the gas estimate."
+        },
+        {
+            "step": 4,
+            "tool": "interpret_output",
+            "description": "Read the returned integer value (gas units) and translate it into gas cost using current gas price."
+        }
+    ],
+    "outcome_checks": [
+        "`cast estimate` returns a positive integer.",
+        "A subsequent call using that gas limit succeeds without running out of gas."
+    ]
+}

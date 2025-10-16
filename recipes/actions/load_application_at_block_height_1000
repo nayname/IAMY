@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 exposes an HTTP GET endpoint that lets the frontend search the Cosmos documentation for node-replay CLI flags such as `--halt-height` or `--trace`.",
+            "code": "# backend/search_cosmos_docs.py\nfrom fastapi import FastAPI, HTTPException\nimport requests\nimport urllib.parse\n\napp = FastAPI()\n\n@app.get('/api/search_cosmos_docs')\nasync def search_cosmos_docs(q: str):\n    # Searches Cosmos documentation for the supplied query string and\n    # returns raw HTML of the top results.\n    try:\n        encoded_q = urllib.parse.quote_plus(f'site:docs.cosmos.network {q}')\n        url = f'https://duckduckgo.com/html/?q={encoded_q}'\n        response = requests.get(url, timeout=10)\n        response.raise_for_status()\n        return {'html': response.text}\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "await fetch('/api/search_cosmos_docs?q=--halt-height').then(r => r.json());"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 offers a POST endpoint that cleanly terminates any running `appd` process so a replay can start.",
+            "code": "# backend/stop_node.py\nfrom fastapi import FastAPI, HTTPException\nimport subprocess\n\napp = FastAPI()\n\n@app.post('/api/stop_node')\nasync def stop_node(process_name: str = 'appd'):\n    # Terminates any running process matching the provided name.\n    try:\n        completed = subprocess.run(\n            ['pkill', '-f', process_name],\n            check=False,\n            capture_output=True,\n            text=True\n        )\n        return {\n            'returncode': completed.returncode,\n            'stdout': completed.stdout,\n            'stderr': completed.stderr\n        }\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "await fetch('/api/stop_node', { method: 'POST' }).then(r => r.json());"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 starts the Cosmos-SDK node in replay mode with `--recover` and `--halt-height`, loading state up to the specified block and then halting.",
+            "code": "# backend/replay_node.py\nfrom fastapi import FastAPI, HTTPException\nimport subprocess\nimport shlex\nimport tempfile\n\napp = FastAPI()\n\n@app.post('/api/replay_node')\nasync def replay_node(node_home: str, halt_height: int = 1000):\n    # Runs `appd start` with --recover and --halt-height flags and waits\n    # for the process to exit automatically at the requested height.\n    cmd = f'appd start --home {shlex.quote(node_home)} --recover --halt-height {halt_height}'\n    try:\n        result = subprocess.run(\n            shlex.split(cmd),\n            capture_output=True,\n            text=True,\n            check=False\n        )\n        # Persist stdout so it can be inspected in the next step.\n        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.log', mode='w')\n        temp_file.write(result.stdout)\n        temp_file.close()\n        return {\n            'returncode': result.returncode,\n            'log_path': temp_file.name\n        }\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "await fetch('/api/replay_node', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ node_home: '/path/to/home', halt_height: 1000 }) }).then(r => r.json());"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 parses the log captured in Step 3 and checks that the last committed block equals the desired `halt_height`.",
+            "code": "# backend/verify_halt_height.py\nfrom fastapi import FastAPI, HTTPException\nimport re\nfrom pathlib import Path\n\napp = FastAPI()\n\n@app.get('/api/verify_halt_height')\nasync def verify_halt_height(log_path: str, halt_height: int = 1000):\n    # Examines the log file to confirm the node halted at the expected height.\n    try:\n        text = Path(log_path).read_text()\n        heights = [int(h) for h in re.findall(r'height[=: ]+(\\d+)', text)]\n        if not heights:\n            return {'success': False, 'reason': 'no_height_entries_found'}\n        last_height = max(heights)\n        return {\n            'success': last_height == halt_height,\n            'last_height': last_height,\n            'expected_height': halt_height\n        }\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "await fetch(`/api/verify_halt_height?log_path=${logPath}&halt_height=1000`).then(r => r.json());"
+        }
+    ]
+}

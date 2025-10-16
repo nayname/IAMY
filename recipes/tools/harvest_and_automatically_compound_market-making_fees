@@ -1,0 +1,81 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Fetches and returns the pre-configured wallet address that will harvest the market-making fees.",
+            "function": "get_sender_address(wallet_alias='lender')",
+            "usage": "sender = get_sender_address()['address']"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Queries the fee-collector contract to read how many fees are currently pending for the sender.",
+            "function": "queryContractSmart(contractAddress, queryMsg)",
+            "usage": "const fees = await queryContractSmart(CONTRACT_ADDRESS_MM_FEES, { pending_fees: { address: sender } });"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Builds individual MsgExecuteContract objects that will later be batched together into a single transaction.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds = [])",
+            "usage": "const messages = [constructTxWasmExecute(sender, CONTRACT_ADDRESS_MM_FEES, { collect_fees: {} }), constructTxWasmExecute(sender, CONTRACT_ADDRESS_LP, { add_liquidity: { auto_from_balance: true } })];"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Signs the array of execute messages and broadcasts them atomically to the network.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo = '')",
+            "usage": "const txHash = await signAndBroadcast(signer, sender, messages, 'auto');"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Re-queries the fee-collector contract to confirm that no fees remain pending after the harvest.",
+            "function": "queryContractSmart(contractAddress, queryMsg)",
+            "usage": "const remaining = await queryContractSmart(CONTRACT_ADDRESS_MM_FEES, { pending_fees: { address: sender } });"
+        }
+    ],
+    "frontend": [
+        "const fees = await queryContractSmart(CONTRACT_ADDRESS_MM_FEES, { pending_fees: { address: sender } });//step: 2 Tool: query_contract Desciption: Call the DEX position or fee collector contract (CONTRACT_ADDRESS_MM_FEES) with `{ \"pending_fees\": { \"address\": <sender> } }` to learn the exact amounts available.",
+        "const messages = [constructTxWasmExecute(sender, CONTRACT_ADDRESS_MM_FEES, { collect_fees: {} }), constructTxWasmExecute(sender, CONTRACT_ADDRESS_LP, { add_liquidity: { auto_from_balance: true } })];//step: 3 Tool: construct_tx_multi_execute Desciption: Prepare a multi-message transaction:\n  a) Execute on CONTRACT_ADDRESS_MM_FEES with `{ \"collect_fees\": {} }`.\n  b) Immediately execute on the liquidity-position contract (CONTRACT_ADDRESS_LP) with `{ \"add_liquidity\": { \"auto_from_balance\": true } }` so the freshly harvested tokens are redeposited.",
+        "const txHash = await signAndBroadcast(signer, sender, messages, 'auto');//step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the batched transaction and broadcast it atomically.",
+        "const remaining = await queryContractSmart(CONTRACT_ADDRESS_MM_FEES, { pending_fees: { address: sender } });//step: 5 Tool: query_contract Desciption: Re-query `{ \"pending_fees\": { \"address\": <sender> } }` to ensure the pending amount is now zero."
+    ],
+    "backend": [
+        "sender = get_sender_address()['address']#step: 1 Tool: get_sender_address Desciption: Determine which liquidity-provider address is harvesting fees."
+    ],
+    "intent": "Harvest and automatically compound market-making fees",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_address",
+            "description": "Determine which liquidity-provider address is harvesting fees."
+        },
+        {
+            "step": 2,
+            "tool": "query_contract",
+            "description": "Call the DEX position or fee collector contract (CONTRACT_ADDRESS_MM_FEES) with `{ \"pending_fees\": { \"address\": <sender> } }` to learn the exact amounts available."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_multi_execute",
+            "description": "Prepare a multi-message transaction:\n  a) Execute on CONTRACT_ADDRESS_MM_FEES with `{ \"collect_fees\": {} }`.\n  b) Immediately execute on the liquidity-position contract (CONTRACT_ADDRESS_LP) with `{ \"add_liquidity\": { \"auto_from_balance\": true } }` so the freshly harvested tokens are redeposited."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the batched transaction and broadcast it atomically."
+        },
+        {
+            "step": 5,
+            "tool": "query_contract",
+            "description": "Re-query `{ \"pending_fees\": { \"address\": <sender> } }` to ensure the pending amount is now zero."
+        }
+    ],
+    "outcome_checks": [
+        "Transaction succeeds with events for both `collect_fees` and `add_liquidity`.",
+        "User\u2019s LP token balance has increased, reflecting compounding.",
+        "Pending fees query shows 0 for the user."
+    ]
+}

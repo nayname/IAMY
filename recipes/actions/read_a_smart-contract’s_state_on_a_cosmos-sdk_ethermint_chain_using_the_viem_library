@@ -1,0 +1,40 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Select a public JSON-RPC endpoint for the target Cosmos EVM chain. This helper lets you centrally manage that URL on the client side.",
+            "code": "// rpc.js\nexport const getRpcEndpoint = () => {\n  /*\n   * Change this value to your own full-node URL or an official public RPC.\n   * The example below targets the Evmos mainnet.\n   */\n  return 'https://evmos-rpc.polkachu.com';\n};",
+            "usage": "import { getRpcEndpoint } from './rpc';\nconst rpcEndpoint = getRpcEndpoint();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Instantiate a Web3 client that connects to the chosen RPC endpoint and stores the chain-id for later use. This runs on the server, so installing external libraries such as `web3` is safe.",
+            "code": "# client.py\nfrom web3 import Web3\nfrom web3.middleware import geth_poa_middleware\n\n\ndef get_web3_client(rpc_url: str, chain_id: int) -> Web3:\n    '''Return a configured Web3 HTTP provider.'''\n    if not rpc_url.startswith(('http://', 'https://')):\n        raise ValueError('RPC URL must start with http or https.')\n\n    w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={'timeout': 10}))\n    if not w3.isConnected():\n        raise ConnectionError(f'Unable to connect to RPC endpoint {rpc_url}')\n\n    # Many Cosmos EVM chains use the same header layout as POA networks\n    w3.middleware_onion.inject(geth_poa_middleware, layer=0)\n    w3.chain_id = chain_id\n    return w3",
+            "usage": "from client import get_web3_client\nw3 = get_web3_client('https://evmos-rpc.polkachu.com', 9001)"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Expose the fragment of the contract ABI required for read-only calls. Keeping it on the client avoids unnecessarily serialising huge ABIs over the network.",
+            "code": "// abi.js\nexport const myContractAbi = [\n  {\n    inputs: [\n      { internalType: 'address', name: 'account', type: 'address' }\n    ],\n    name: 'balanceOf',\n    outputs: [\n      { internalType: 'uint256', name: '', type: 'uint256' }\n    ],\n    stateMutability: 'view',\n    type: 'function'\n  }\n  // \ud83d\udc49 add more fragments as required\n];",
+            "usage": "import { myContractAbi } from './abi';"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Create a FastAPI route that performs the `eth_call` using Web3.py. The endpoint receives the contract address, ABI, target function and arguments from the client and returns the result.",
+            "code": "# api.py\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom typing import List, Any\nimport os\n\nfrom client import get_web3_client\nfrom eth_typing import ChecksumAddress\nfrom web3 import Web3\nfrom web3.exceptions import ABIFunctionNotFound\n\napp = FastAPI()\n\nRPC_URL = os.getenv('COSMOS_EVM_RPC', 'https://evmos-rpc.polkachu.com')\nCHAIN_ID = int(os.getenv('COSMOS_EVM_CHAIN_ID', '9001'))\n\n# The Web3 connection is created once at startup for efficiency\nw3 = get_web3_client(RPC_URL, CHAIN_ID)\n\nclass ReadContractRequest(BaseModel):\n    contractAddress: ChecksumAddress\n    abi: List[dict]\n    functionName: str\n    args: List[Any] | None = []\n\n@app.post('/api/read-contract')\nasync def read_contract(req: ReadContractRequest):\n    try:\n        contract = w3.eth.contract(address=req.contractAddress, abi=req.abi)\n        try:\n            fn = getattr(contract.functions, req.functionName)\n        except AttributeError:\n            raise ABIFunctionNotFound(f'{req.functionName} not found in provided ABI')\n\n        data = fn(*req.args).call()\n        return {'data': data}\n    except Exception as e:\n        # Convert all errors to HTTP 400s so the frontend can handle them uniformly\n        raise HTTPException(status_code=400, detail=str(e))",
+            "usage": "The frontend sends a POST request to /api/read-contract (see next step)."
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Wrap the backend endpoint with a tiny helper that your React components can call. The function POSTs the request and returns the parsed on-chain data.",
+            "code": "// readContract.js\nexport const readContract = async ({ contractAddress, abi, functionName, args = [] }) => {\n  try {\n    const res = await fetch('/api/read-contract', {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n      },\n      body: JSON.stringify({ contractAddress, abi, functionName, args }),\n    });\n\n    if (!res.ok) {\n      const { detail } = await res.json();\n      throw new Error(detail || 'Unexpected server error');\n    }\n\n    const { data } = await res.json();\n    return data;\n  } catch (error) {\n    console.error('Failed to read contract', error);\n    throw error;\n  }\n};",
+            "usage": "import { myContractAbi } from './abi';\nimport { readContract } from './readContract';\n\nconst data = await readContract({\n  contractAddress: '0xYourContract',\n  abi: myContractAbi,\n  functionName: 'balanceOf',\n  args: ['0xUserAddress'],\n});\nconsole.log('On-chain value:', data);"
+        }
+    ]
+}

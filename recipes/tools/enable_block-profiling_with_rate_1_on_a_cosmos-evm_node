@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Connects to the JSON-RPC endpoint defined in the environment and confirms it is reachable, returning a Web3 instance for further calls.",
+            "function": "get_web3()",
+            "usage": "w3 = get_web3()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Creates the Basic-Auth header from RPC_USER and RPC_PASS so that subsequent debug namespace calls are authenticated.",
+            "function": "get_rpc_auth_header()",
+            "usage": "headers = get_rpc_auth_header()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Sends an arbitrary JSON-RPC request; here it is used to invoke debug_setBlockProfileRate with rate 1.",
+            "function": "json_rpc_call(method, params=None, endpoint=\"http://localhost:8545\")",
+            "usage": "json_rpc_call(\"debug_setBlockProfileRate\", [1], endpoint=\"http://localhost:8545\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "w3 = get_web3()#step: 1 Tool: select_rpc_endpoint Desciption: Locate the node\u2019s JSON-RPC URL.",
+        "headers = get_rpc_auth_header()#step: 2 Tool: authenticate_debug_namespace Desciption: Supply the private-API credentials for the debug namespace.",
+        "json_rpc_call(\"debug_setBlockProfileRate\", [1], endpoint=\"http://localhost:8545\")#step: 3 Tool: json_rpc_call Desciption: Send the call to debug_setBlockProfileRate with parameter 1:\n{\n  \"method\": \"debug_setBlockProfileRate\",\n  \"params\": [1],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+    ],
+    "intent": "Enable block-profiling with rate 1 on a Cosmos-EVM node",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "select_rpc_endpoint",
+            "description": "Locate the node\u2019s JSON-RPC URL."
+        },
+        {
+            "step": 2,
+            "tool": "authenticate_debug_namespace",
+            "description": "Supply the private-API credentials for the debug namespace."
+        },
+        {
+            "step": 3,
+            "tool": "json_rpc_call",
+            "description": "Send the call to debug_setBlockProfileRate with parameter 1:\n{\n  \"method\": \"debug_setBlockProfileRate\",\n  \"params\": [1],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+        }
+    ],
+    "outcome_checks": [
+        "Expect the result field to echo the rate set or return null (stub implementation).",
+        "Optionally, write a few blocks and verify that cpu.block profile data is being collected in the node\u2019s pprof endpoint."
+    ]
+}

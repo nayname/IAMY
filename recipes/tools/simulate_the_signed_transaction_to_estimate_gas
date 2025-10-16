@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Checks that a provided base64 string decodes to a valid, fully-signed TxRaw protobuf\u2014throwing errors if the bytes are not base64 or not a signed transaction.",
+            "function": "await sign_and_broadcast_tx_({\"tx_base64\": str})",
+            "usage": "await sign_and_broadcast_tx_({\"tx_base64\": signed_tx_b64})"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "undef",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Takes a transaction hash, fetches its JSON from the LCD, and extracts fields including gas_wanted and gas_used for easy inspection.",
+            "function": "await get_formatted_tx(tx_hash)",
+            "usage": "gas_info = (await get_formatted_tx(sim_tx_hash))"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "await sign_and_broadcast_tx_({\"tx_base64\": signed_tx_b64})#step: 1 Tool: validate_signed_tx_bytes Desciption: Confirm that the provided transaction is already signed and base64-encoded.",
+        "undef#step: 2 Tool: simd_tx_simulate Desciption: Invoke `simd tx simulate <base64-bytes>` (or gRPC `cosmos.tx.v1beta1.Service/Simulate`) to run a state-less check that returns gas_info.",
+        "gas_info = (await get_formatted_tx(sim_tx_hash))#step: 3 Tool: extract_gas_info Desciption: Parse the simulation response and extract `gas_used` and `gas_wanted` values for the caller."
+    ],
+    "intent": "Simulate the signed transaction to estimate gas",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_signed_tx_bytes",
+            "description": "Confirm that the provided transaction is already signed and base64-encoded."
+        },
+        {
+            "step": 2,
+            "tool": "simd_tx_simulate",
+            "description": "Invoke `simd tx simulate <base64-bytes>` (or gRPC `cosmos.tx.v1beta1.Service/Simulate`) to run a state-less check that returns gas_info."
+        },
+        {
+            "step": 3,
+            "tool": "extract_gas_info",
+            "description": "Parse the simulation response and extract `gas_used` and `gas_wanted` values for the caller."
+        }
+    ],
+    "outcome_checks": [
+        "Simulation request returns an HTTP/gRPC status of OK or CLI exit code 0.",
+        "`gas_used` is a positive integer ( > 0 ).",
+        "No execution errors are reported in the `result` field."
+    ]
+}

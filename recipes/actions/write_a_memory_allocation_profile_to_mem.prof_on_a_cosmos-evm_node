@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a small Python utility that centralizes the Cosmos-EVM JSON-RPC endpoint so the rest of the backend can import it safely.",
+            "code": "# config.py\nimport os\n\ndef get_rpc_endpoint() -> str:\n    \"\"\"\n    Return the JSON-RPC endpoint of the Cosmos-EVM full node.\n    The URL is resolved from the COSMOS_EVM_RPC environment variable and\n    falls back to 'http://localhost:8545' if not set.\n    \"\"\"\n    rpc = os.getenv(\"COSMOS_EVM_RPC\", \"http://localhost:8545\")\n    if not rpc.startswith((\"http://\", \"https://\")):\n        raise ValueError(f\"Invalid RPC endpoint: {rpc}\")\n    return rpc\n",
+            "usage": "from config import get_rpc_endpoint\nrpc_url = get_rpc_endpoint()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 produces a helper that builds the appropriate Authorization headers (JWT or Basic Auth) required by the private debug namespace.",
+            "code": "# auth.py\nimport os\nimport base64\nfrom typing import Dict\n\ndef get_auth_headers() -> Dict[str, str]:\n    \"\"\"\n    Build Authorization header for the Cosmos-EVM node.\n\n    1. If COSMOS_EVM_JWT is set, use Bearer <token>.\n    2. Else, if COSMOS_EVM_USER and COSMOS_EVM_PASSWORD are set, use Basic Auth.\n    3. Otherwise, return empty dict (assumes node does not require auth).\n    \"\"\"\n    jwt_token = os.getenv(\"COSMOS_EVM_JWT\")\n    if jwt_token:\n        return {\"Authorization\": f\"Bearer {jwt_token}\"}\n\n    user = os.getenv(\"COSMOS_EVM_USER\")\n    password = os.getenv(\"COSMOS_EVM_PASSWORD\")\n    if user and password:\n        credentials = f\"{user}:{password}\"\n        encoded = base64.b64encode(credentials.encode()).decode()\n        return {\"Authorization\": f\"Basic {encoded}\"}\n\n    # No credentials provided\n    return {}\n",
+            "usage": "from auth import get_auth_headers\nheaders = get_auth_headers()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 exposes a FastAPI route that actually invokes debug_writeMemProfile via JSON-RPC, combining the endpoint and auth helpers created earlier.",
+            "code": "# rpc_debug.py\nimport json\nimport requests\nfrom fastapi import APIRouter, HTTPException\nfrom config import get_rpc_endpoint\nfrom auth import get_auth_headers\n\nrouter = APIRouter()\n\n@router.post(\"/api/debug/write_mem_profile\")\ndef write_mem_profile(filename: str = \"mem.prof\"):\n    \"\"\"\n    Calls the debug_writeMemProfile method on the Cosmos-EVM node.\n    By default writes to 'mem.prof'.\n    \"\"\"\n    url = get_rpc_endpoint()\n    headers = {\"Content-Type\": \"application/json\"}\n    headers.update(get_auth_headers())\n\n    payload = {\n        \"jsonrpc\": \"2.0\",\n        \"id\": 1,\n        \"method\": \"debug_writeMemProfile\",\n        \"params\": [filename]\n    }\n\n    try:\n        resp = requests.post(url, headers=headers, json=payload, timeout=10)\n    except requests.exceptions.RequestException as e:\n        raise HTTPException(status_code=502, detail=f\"Failed to reach node: {e}\")\n\n    if resp.status_code != 200:\n        raise HTTPException(status_code=resp.status_code, detail=f\"Node responded with HTTP {resp.status_code}: {resp.text}\")\n\n    try:\n        response_json = resp.json()\n    except json.JSONDecodeError:\n        raise HTTPException(status_code=502, detail=\"Non-JSON response returned from node.\")\n\n    if \"error\" in response_json:\n        raise HTTPException(status_code=500, detail=response_json[\"error\"])\n\n    # success: result field may be None or some output\n    return {\"success\": True, \"result\": response_json.get(\"result\")}\n",
+            "usage": "From your frontend you can now issue:\nfetch('/api/debug/write_mem_profile', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ filename: 'mem.prof' })\n});"
+        }
+    ]
+}

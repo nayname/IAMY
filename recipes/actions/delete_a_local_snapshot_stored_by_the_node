@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 exposes a FastAPI endpoint that returns all local snapshots by internally running \u201c<appd> snapshots list\u201d.",
+            "code": "# backend/snapshots_api.py\nimport os\nimport subprocess\nfrom typing import List\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\n# Either export APPD_BINARY (e.g. neutrond, gaiad, etc.) or fall back to the generic name \"appd\".\nAPPD_BINARY = os.environ.get('APPD_BINARY', 'appd')\n\n\ndef _exec(cmd: List[str]) -> str:\n    \"\"\"Execute a CLI command and return stdout; raise an HTTPException on error.\"\"\"\n    try:\n        completed = subprocess.run(cmd, check=True, capture_output=True, text=True)\n        return completed.stdout\n    except FileNotFoundError:\n        raise HTTPException(status_code=500, detail=f\"Binary '{cmd[0]}' not found on server.\")\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=err.stderr or err.stdout)\n\n\n@app.get('/api/snapshots', response_model=dict)\nasync def list_snapshots():\n    \"\"\"GET /api/snapshots \u2014 returns a JSON array of available snapshots.\"\"\"\n    raw_output = _exec([APPD_BINARY, 'snapshots', 'list'])\n    lines = [line.strip() for line in raw_output.splitlines() if line.strip()]\n    # Remove header row if present (e.g., \"Height   Format   ...\")\n    if lines and lines[0].lower().startswith('height'):\n        lines = lines[1:]\n    return {'snapshots': lines}",
+            "usage": "GET http://<host>:<port>/api/snapshots  # e.g., curl http://localhost:8000/api/snapshots"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 adds a FastAPI endpoint that deletes a particular snapshot using \u201c<appd> snapshots delete <snapshot_id>\u201d.",
+            "code": "# backend/snapshots_api.py (continued)\nimport os\nimport subprocess\nfrom typing import List\nfrom fastapi import FastAPI, HTTPException, Path\n\napp = FastAPI()\n\nAPPD_BINARY = os.environ.get('APPD_BINARY', 'appd')\n\n\ndef _exec(cmd: List[str]) -> str:\n    try:\n        completed = subprocess.run(cmd, check=True, capture_output=True, text=True)\n        return completed.stdout\n    except FileNotFoundError:\n        raise HTTPException(status_code=500, detail=f\"Binary '{cmd[0]}' not found on server.\")\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=err.stderr or err.stdout)\n\n\n@app.delete('/api/snapshots/{snapshot_id}', response_model=dict)\nasync def delete_snapshot(snapshot_id: str = Path(..., description='Height or identifier of the snapshot to delete')):\n    \"\"\"DELETE /api/snapshots/{snapshot_id} \u2014 removes the selected snapshot and returns a confirmation message.\"\"\"\n    _exec([APPD_BINARY, 'snapshots', 'delete', snapshot_id])\n    return {'message': f'Snapshot {snapshot_id} deleted successfully.'}",
+            "usage": "DELETE http://<host>:<port>/api/snapshots/<snapshot_id>  # e.g., curl -X DELETE http://localhost:8000/api/snapshots/12345"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 is a simple JS helper that re-queries the backend to confirm the snapshot was removed.",
+            "code": "// frontend/snapshots.js\n\n/**\n * fetchSnapshots \u2014 retrieves the current snapshot list from the backend.\n * After deleting a snapshot, call this again to verify the ID is gone.\n */\nexport const fetchSnapshots = async () => {\n  try {\n    const res = await fetch('/api/snapshots');\n    if (!res.ok) {\n      throw new Error(`Server responded with ${res.status}`);\n    }\n    const json = await res.json();\n    return json.snapshots;\n  } catch (err) {\n    console.error('Failed to fetch snapshots', err);\n    throw err;\n  }\n};",
+            "usage": "const currentSnapshots = await fetchSnapshots();\nconsole.log(currentSnapshots);"
+        }
+    ]
+}

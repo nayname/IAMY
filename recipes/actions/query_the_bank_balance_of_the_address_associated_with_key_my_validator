@@ -1,0 +1,26 @@
+{
+    "label": "query_balance",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that fetches the bech32 account address for the `my_validator` key stored in the local *test* key-ring via the `simd` CLI.",
+            "code": "import subprocess\n\n\ndef get_key_address(key_name: str, keyring_backend: str = \"test\") -> str:\n    \"\"\"Return the bech32 address for a key in the local key-ring.\"\"\"\n    try:\n        cmd = [\n            \"simd\", \"keys\", \"show\", key_name,\n            \"-a\", \"--keyring-backend\", keyring_backend,\n        ]\n        address = subprocess.check_output(cmd, text=True).strip()\n        if not address:\n            raise ValueError(\"No address returned by simd command.\")\n        return address\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f\"Failed to retrieve address for {key_name}: {e}\") from e",
+            "usage": "address = get_key_address(\"my_validator\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 queries the full bank balance set for the address obtained in Step 1 by invoking `simd q bank balances <address> --output json`, and returns the decoded JSON.",
+            "code": "import subprocess, json\n\n\ndef query_bank_balances(address: str) -> dict:\n    \"\"\"Run `simd q bank balances` and return the parsed JSON payload.\"\"\"\n    if not address:\n        raise ValueError(\"Address is required.\")\n    try:\n        cmd = [\n            \"simd\", \"q\", \"bank\", \"balances\", address,\n            \"--output\", \"json\",\n        ]\n        output = subprocess.check_output(cmd, text=True)\n        return json.loads(output)\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f\"Failed to query balances for {address}: {e}\") from e",
+            "usage": "balances_json = query_bank_balances(address)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 parses the JSON returned from Step 2, extracting an easy-to-consume list of `{ denom, amount }` dictionaries.",
+            "code": "def parse_balances(balances_json: dict) -> list:\n    \"\"\"Extract denomination and amount pairs from a simd balance query response.\"\"\"\n    if not isinstance(balances_json, dict):\n        raise TypeError(\"balances_json must be a dict\")\n    tokens = []\n    for coin in balances_json.get(\"balances\", []):\n        denom = coin.get(\"denom\")\n        amount = coin.get(\"amount\")\n        if denom and amount:\n            tokens.append({\"denom\": denom, \"amount\": amount})\n    return tokens",
+            "usage": "tokens = parse_balances(balances_json)"
+        }
+    ]
+}

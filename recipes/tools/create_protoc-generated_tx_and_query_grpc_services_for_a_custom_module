@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "verify_protoc_plugins() confirms that protoc and all required Go-based proto plugins are present on the PATH and returns their versions.",
+            "function": "verify_protoc_plugins()",
+            "usage": "versions = verify_protoc_plugins()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "ensure_proto_files() creates or updates the .proto files for the custom module so Msg and Query service definitions exist before code-generation.",
+            "function": "ensure_proto_files()",
+            "usage": "proto_info = ensure_proto_files()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "buf_generate() runs \u201cbuf generate\u201d in the repository root, invoking protoc with the Cosmos SDK generators to emit Go code.",
+            "function": "buf_generate(repo_root='.')",
+            "usage": "gen_output = buf_generate('.')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "compile_generated_code() executes \u201cgo vet\u201d and \u201cgo test\u201d to verify that the newly generated *.pb.go files compile without issues.",
+            "function": "compile_generated_code(repo_root='.')",
+            "usage": "report = compile_generated_code('.')"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "verify_generated_services() checks that the expected gRPC stubs (Tx and Query servers/clients) exist in the module\u2019s types directory.",
+            "function": "verify_generated_services(module_path='x/mymodule/types')",
+            "usage": "status = verify_generated_services('x/mymodule/types')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "versions = verify_protoc_plugins()#step: 1 Tool: install_protoc_plugins Desciption: Verify `protoc`, `protoc-gen-go`, `protoc-gen-go-grpc`, and `protoc-gen-go_cosmos` are installed and on PATH.",
+        "proto_info = ensure_proto_files()#step: 2 Tool: ensure_proto_files Desciption: Author or update `proto/myapp/mymodule/*.proto` files with Msg and Query service definitions, including method options.",
+        "gen_output = buf_generate('.')#step: 3 Tool: run_cli_command Desciption: Execute `buf generate` (or `make proto-gen`) at repo root to invoke protoc with Cosmos generators.",
+        "report = compile_generated_code('.')#step: 4 Tool: compile_generated_code Desciption: Run `go vet ./...` and `go test ./...` to ensure generated *.pb.go files compile cleanly.",
+        "status = verify_generated_services('x/mymodule/types')#step: 5 Tool: verify_generated_services Desciption: Check that `MsgServer` and `QueryServer` interfaces as well as gRPC client stubs were emitted in `x/mymodule/types/`."
+    ],
+    "intent": "Create protoc-generated Tx and Query gRPC services for a custom module",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "install_protoc_plugins",
+            "description": "Verify `protoc`, `protoc-gen-go`, `protoc-gen-go-grpc`, and `protoc-gen-go_cosmos` are installed and on PATH."
+        },
+        {
+            "step": 2,
+            "tool": "ensure_proto_files",
+            "description": "Author or update `proto/myapp/mymodule/*.proto` files with Msg and Query service definitions, including method options."
+        },
+        {
+            "step": 3,
+            "tool": "run_cli_command",
+            "description": "Execute `buf generate` (or `make proto-gen`) at repo root to invoke protoc with Cosmos generators."
+        },
+        {
+            "step": 4,
+            "tool": "compile_generated_code",
+            "description": "Run `go vet ./...` and `go test ./...` to ensure generated *.pb.go files compile cleanly."
+        },
+        {
+            "step": 5,
+            "tool": "verify_generated_services",
+            "description": "Check that `MsgServer` and `QueryServer` interfaces as well as gRPC client stubs were emitted in `x/mymodule/types/`."
+        }
+    ],
+    "outcome_checks": [
+        "New *.pb.go and *_grpc.pb.go files exist for the module.",
+        "`go vet` and unit tests pass with no missing symbols.",
+        "Running `grpcurl` against a running node shows the new service endpoints."
+    ]
+}

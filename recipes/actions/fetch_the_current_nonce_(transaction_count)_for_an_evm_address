@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Defines a small helper that validates an EVM address format before any RPC calls are attempted.",
+            "code": "/*\n * validateEvmAddress.js\n * Utility to validate a caller-supplied EVM address.\n * Performs a basic 0x-prefixed, 40-hex-character length check.\n */\nexport const validateEvmAddress = (address) => {\n  // Ensure a string was provided\n  if (typeof address !== \"string\") {\n    throw new Error(\"Address must be a string.\");\n  }\n\n  // Regex: 0x + 40 hexadecimal chars (case-insensitive)\n  const re = /^0x[a-fA-F0-9]{40}$/;\n\n  if (!re.test(address)) {\n    throw new Error(\"Invalid EVM address format.\");\n  }\n\n  // If the check passes, return the checksummed address (lower-cased here)\n  return address.toLowerCase();\n};",
+            "usage": "// Example usage\ntry {\n  const userAddress = validateEvmAddress(inputAddress);\n  // Proceed to step 2 with a valid address\n} catch (err) {\n  console.error(\"Address validation failed:\", err.message);\n}"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Makes a direct JSON-RPC POST request to the Cosmos-EVM endpoint to retrieve the latest transaction count (nonce) for the validated address.",
+            "code": "/*\n * getTransactionCount.js\n * Queries eth_getTransactionCount from a Cosmos-EVM JSON-RPC endpoint.\n */\nexport const getTransactionCount = async ({ address, rpcEndpoint }) => {\n  // Validate parameters up-front\n  if (!address) throw new Error(\"'address' is required\");\n  if (!rpcEndpoint) throw new Error(\"'rpcEndpoint' is required\");\n\n  // JSON-RPC payload\n  const payload = {\n    jsonrpc: \"2.0\",\n    id: 1,\n    method: \"eth_getTransactionCount\",\n    params: [address, \"latest\"]\n  };\n\n  try {\n    const res = await fetch(rpcEndpoint, {\n      method: \"POST\",\n      headers: {\n        \"Content-Type\": \"application/json\"\n      },\n      body: JSON.stringify(payload)\n    });\n\n    if (!res.ok) {\n      throw new Error(`RPC HTTP error: ${res.status} ${res.statusText}`);\n    }\n\n    const json = await res.json();\n\n    // Handle JSON-RPC error object\n    if (json.error) {\n      throw new Error(`RPC returned error: ${json.error.message || JSON.stringify(json.error)}`);\n    }\n\n    // json.result is a hex string, e.g. \"0x10\"\n    const nonceHex = json.result;\n    const nonce = parseInt(nonceHex, 16);\n\n    if (Number.isNaN(nonce)) {\n      throw new Error(`Unable to parse nonce from result: ${nonceHex}`);\n    }\n\n    return nonce;\n  } catch (err) {\n    // Re-throw with context so caller can surface it in UI\n    throw new Error(`Failed to fetch transaction count: ${err.message}`);\n  }\n};",
+            "usage": "// Example invocation inside an async frontend component or hook\ntry {\n  const rpcEndpoint = \"https://rpc.cosmos-evm-chain.example.com\"; // replace with actual RPC URL\n  const address = validateEvmAddress(userInput); // from step 1\n  const nonce = await getTransactionCount({ address, rpcEndpoint });\n  console.log(`Current nonce for ${address}:`, nonce);\n} catch (err) {\n  console.error(err.message);\n}"
+        }
+    ]
+}

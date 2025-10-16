@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "connect_rpc_endpoint pings the given Neutron JSON-RPC URL to ensure it is reachable, then returns the verified endpoint.",
+            "function": "connect_rpc_endpoint(rpc_endpoint)",
+            "usage": "rpc_url = connect_rpc_endpoint(\"https://rpc-kralum.neutron.org\")"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "validateEthereumAddress checks that a supplied 0x-prefixed string is a properly-formatted, checksummed Ethereum address.",
+            "function": "validateEthereumAddress(evmAddress)",
+            "usage": "is_valid = validateEthereumAddress(\"0xAbCdef0123456789aBCdEf0123456789abCDef01\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "download_metadata_json uses a Selenium WebDriver to save the contract\u2019s metadata/ABI JSON file locally.",
+            "function": "download_metadata_json(driver, download_dir, timeout=30)",
+            "usage": "abi_path = download_metadata_json(driver, \"/tmp\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "undef",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "is_valid = validateEthereumAddress(\"0xAbCdef0123456789aBCdEf0123456789abCDef01\")//step: 2 Tool: validate_contract_address Desciption: Confirm the contract address and chain ID are correct and checksummed for the EVM environment."
+    ],
+    "backend": [
+        "rpc_url = connect_rpc_endpoint(\"https://rpc-kralum.neutron.org\")#step: 1 Tool: select_eth_rpc_endpoint Desciption: Obtain the JSON-RPC or WebSocket endpoint for the target Cosmos EVM chain (e.g., https://rpc.my-chain.com or wss://rpc.my-chain.com:8546).",
+        "abi_path = download_metadata_json(driver, \"/tmp\")#step: 3 Tool: retrieve_contract_abi Desciption: Download or copy the ABI for the contract; save it locally as abi.json so cast can decode event signatures.",
+        "undef#step: 4 Tool: cast_logs Desciption: Run `cast logs --rpc-url $RPC --from-block $START --to-block $END --address $CONTRACT --topics $TOPIC_HASH --abi abi.json` to stream or filter logs. Use additional flags such as `--ws` if connecting over WebSocket."
+    ],
+    "intent": "Query smart-contract event logs on a Cosmos EVM chain with Foundry\u2019s cast logs",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "select_eth_rpc_endpoint",
+            "description": "Obtain the JSON-RPC or WebSocket endpoint for the target Cosmos EVM chain (e.g., https://rpc.my-chain.com or wss://rpc.my-chain.com:8546)."
+        },
+        {
+            "step": 2,
+            "tool": "validate_contract_address",
+            "description": "Confirm the contract address and chain ID are correct and checksummed for the EVM environment."
+        },
+        {
+            "step": 3,
+            "tool": "retrieve_contract_abi",
+            "description": "Download or copy the ABI for the contract; save it locally as abi.json so cast can decode event signatures."
+        },
+        {
+            "step": 4,
+            "tool": "cast_logs",
+            "description": "Run `cast logs --rpc-url $RPC --from-block $START --to-block $END --address $CONTRACT --topics $TOPIC_HASH --abi abi.json` to stream or filter logs. Use additional flags such as `--ws` if connecting over WebSocket."
+        }
+    ],
+    "outcome_checks": [
+        "The command returns a non-empty list of decoded events that match the provided topic filters.",
+        "Block numbers and transaction hashes in the output correspond to on-chain data when cross-checked with a block explorer."
+    ]
+}

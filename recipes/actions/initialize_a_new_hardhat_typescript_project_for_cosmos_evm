@@ -1,0 +1,54 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "This Node.js script validates that both Node (>=16) and npm are installed and meet the minimum version requirements.",
+            "code": "/* scripts/checkNodeEnv.js */\nconst { execSync } = require('child_process');\n\nfunction getVersion(cmd) {\n  try {\n    return execSync(`${cmd} --version`).toString().trim();\n  } catch (err) {\n    throw new Error(`${cmd} is not installed or not in PATH.`);\n  }\n}\n\n(function main() {\n  try {\n    const nodeVersion = getVersion('node');\n    const npmVersion = getVersion('npm');\n\n    // Expect something like \"v18.17.1\" \u279c strip leading \"v\" then split\n    const [major] = nodeVersion.replace(/^v/, '').split('.').map(Number);\n    if (isNaN(major) || major < 16) {\n      throw new Error(`Node.js >=16 is required. Detected ${nodeVersion}.`);\n    }\n\n    console.log(`\u2705 Environment OK. Node: ${nodeVersion}, npm: ${npmVersion}`);\n  } catch (error) {\n    console.error(`\u274c Environment check failed: ${error.message}`);\n    process.exit(1);\n  }\n})();",
+            "usage": "node scripts/checkNodeEnv.js"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Initialises an npm project by generating a default package.json in the chosen directory.",
+            "code": "/* scripts/initNpmProject.js */\nconst { execSync } = require('child_process');\nconst path = require('path');\n\nfunction initProject(dir = process.cwd()) {\n  try {\n    console.log(`Initializing npm project in ${dir}...`);\n    execSync('npm init -y', { stdio: 'inherit', cwd: dir });\n    console.log('\u2705 package.json created.');\n  } catch (error) {\n    console.error('\u274c Failed to initialize npm project:', error.message);\n    process.exit(1);\n  }\n}\n\nif (require.main === module) {\n  const targetDir = process.argv[2] ? path.resolve(process.argv[2]) : process.cwd();\n  initProject(targetDir);\n}\n\nmodule.exports = initProject;",
+            "usage": "node scripts/initNpmProject.js   # optional <directory> parameter"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Installs Hardhat locally as a development dependency.",
+            "code": "/* scripts/installHardhat.js */\nconst { execSync } = require('child_process');\n\nfunction installHardhat() {\n  try {\n    console.log('Installing Hardhat as a dev dependency...');\n    execSync('npm install --save-dev hardhat', { stdio: 'inherit' });\n    console.log('\u2705 Hardhat installed.');\n  } catch (error) {\n    console.error('\u274c Failed to install Hardhat:', error.message);\n    process.exit(1);\n  }\n}\n\nif (require.main === module) {\n  installHardhat();\n}\n\nmodule.exports = installHardhat;",
+            "usage": "node scripts/installHardhat.js"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Scaffolds a TypeScript Hardhat project non-interactively to avoid manual prompts.",
+            "code": "/* scripts/createHardhatProject.js */\nconst { execSync } = require('child_process');\n\nfunction createHardhatProject() {\n  try {\n    console.log('Scaffolding a new Hardhat TypeScript project...');\n    // Non-interactive: --template typescript  |  --force overwrites if dir already contains files\n    execSync('npm init hardhat -- --template typescript --force', { stdio: 'inherit' });\n    console.log('\u2705 Hardhat project scaffolded.');\n  } catch (error) {\n    console.error('\u274c Failed to scaffold Hardhat project:', error.message);\n    process.exit(1);\n  }\n}\n\nif (require.main === module) {\n  createHardhatProject();\n}\n\nmodule.exports = createHardhatProject;",
+            "usage": "node scripts/createHardhatProject.js"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Adds Ethers.js and the official Hardhat-Ethers plugin for contract interactions and tests.",
+            "code": "/* scripts/installEthersAndPlugins.js */\nconst { execSync } = require('child_process');\n\nfunction installDeps() {\n  try {\n    console.log('Installing Ethers.js and Hardhat plugins...');\n    execSync('npm install --save-dev @nomicfoundation/hardhat-ethers ethers', { stdio: 'inherit' });\n    console.log('\u2705 Dependencies installed.');\n  } catch (error) {\n    console.error('\u274c Failed to install dependencies:', error.message);\n    process.exit(1);\n  }\n}\n\nif (require.main === module) {\n  installDeps();\n}\n\nmodule.exports = installDeps;",
+            "usage": "node scripts/installEthersAndPlugins.js"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Creates a TypeScript Hardhat configuration that points to a Cosmos EVM RPC endpoint, pulling the private key from an environment variable.",
+            "code": "/* hardhat.config.ts */\nimport { HardhatUserConfig } from \"hardhat/config\";\nimport \"@nomicfoundation/hardhat-ethers\";\nimport * as dotenv from \"dotenv\";\n\ndotenv.config();\n\n// Store your deployer's private key in an .env file:  PRIVATE_KEY=0xabc...\nconst PRIVATE_KEY = process.env.PRIVATE_KEY || \"\";\n\nconst config: HardhatUserConfig = {\n  solidity: \"0.8.21\",\n  networks: {\n    cosmosEvm: {\n      url: \"https://rpc.your-cosmos-evm-chain.example.com\", // \u2b05 replace with actual RPC URL\n      chainId: 777,                                          // \u2b05 replace with actual chain ID\n      gasPrice: \"20gwei\",\n      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],\n    },\n  },\n};\n\nexport default config;",
+            "usage": "Create a .env with PRIVATE_KEY then edit RPC URL / chainId, or rerun scripts; Hardhat will automatically pick up this config."
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Compiles the contracts to verify the setup is working.",
+            "code": "/* scripts/compileProject.js */\nconst { execSync } = require('child_process');\n\nfunction compile() {\n  try {\n    console.log('Compiling Hardhat project...');\n    execSync('npx hardhat compile', { stdio: 'inherit' });\n    console.log('\u2705 Compilation successful.');\n  } catch (error) {\n    console.error('\u274c Compilation failed:', error.message);\n    process.exit(1);\n  }\n}\n\nif (require.main === module) {\n  compile();\n}\n\nmodule.exports = compile;",
+            "usage": "node scripts/compileProject.js"
+        }
+    ]
+}

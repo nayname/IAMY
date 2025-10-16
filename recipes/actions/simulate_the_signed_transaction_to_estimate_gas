@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Exposes a FastAPI endpoint that validates whether an incoming base64 string decodes to a signed TxRaw (i.e. it contains at least one signature).",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport base64\nfrom google.protobuf import message\nfrom cosmos_sdk_proto.cosmos.tx.v1beta1 import tx_pb2 as cosmos_tx_pb2\n\napp = FastAPI()\n\nclass TxBytes(BaseModel):\n    tx_bytes: str  # base64-encoded, signed TxRaw string\n\n@app.post(\"/api/validate_tx\")\nasync def validate_tx(payload: TxBytes):\n    \"\"\"Validate that the provided base64 string decodes to a *signed* TxRaw.\"\"\"\n    # 1. Decode base64\n    try:\n        raw_bytes = base64.b64decode(payload.tx_bytes)\n    except (TypeError, ValueError) as e:\n        raise HTTPException(status_code=400, detail=\"tx_bytes is not valid base64\") from e\n\n    # 2. Parse protobuf TxRaw to ensure it is well-formed\n    try:\n        tx_raw = cosmos_tx_pb2.TxRaw()\n        tx_raw.ParseFromString(raw_bytes)\n    except message.DecodeError as e:\n        raise HTTPException(status_code=400, detail=\"Decoded bytes are not a valid TxRaw message\") from e\n\n    # 3. Confirm the transaction is signed\n    if len(tx_raw.signatures) == 0:\n        raise HTTPException(status_code=400, detail=\"TxRaw contains no signatures\")\n\n    return {\"is_valid\": True, \"signature_count\": len(tx_raw.signatures)}",
+            "usage": "POST your base64 string to /api/validate_tx and ensure the response returns { is_valid: true } before continuing."
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Defines a helper that calls the gRPC Simulate endpoint and a FastAPI route that exposes the functionality to the frontend.",
+            "code": "import os\nimport base64\nimport grpc\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom google.protobuf.json_format import MessageToDict\nfrom cosmos_sdk_proto.cosmos.tx.v1beta1 import service_pb2 as tx_service_pb2\nfrom cosmos_sdk_proto.cosmos.tx.v1beta1 import service_pb2_grpc as tx_service_grpc\n\nGRPC_ENDPOINT = os.getenv(\"GRPC_ENDPOINT\", \"localhost:9090\")  # Point to your full-node gRPC port\n\napp = FastAPI()\n\nclass TxBytes(BaseModel):\n    tx_bytes: str\n\ndef _simulate_tx(base64_tx_bytes: str) -> dict:\n    \"\"\"Internal helper: hits cosmos.tx.v1beta1.Service/Simulate and returns the response as a dict.\"\"\"\n    tx_bytes = base64.b64decode(base64_tx_bytes)\n    with grpc.insecure_channel(GRPC_ENDPOINT) as channel:\n        stub = tx_service_grpc.ServiceStub(channel)\n        request = tx_service_pb2.SimulateRequest(tx_bytes=tx_bytes)\n        response = stub.Simulate(request)\n    return MessageToDict(response, preserving_proto_field_name=True)\n\n@app.post(\"/api/simulate_tx\")\nasync def simulate_tx(payload: TxBytes):\n    \"\"\"HTTP wrapper that forwards signed tx bytes to the gRPC Simulate endpoint.\"\"\"\n    try:\n        result = _simulate_tx(payload.tx_bytes)\n        return result\n    except grpc.RpcError as e:\n        raise HTTPException(status_code=400, detail=f\"Simulation failed: {e.details()}\")\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "Frontend example: await fetch('/api/simulate_tx', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tx_bytes }) }).then(r => r.json());"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "A tiny utility that extracts `gas_used` and `gas_wanted` from the simulation response produced in Step 2.",
+            "code": "export const extractGasInfo = (simulationResponse) => {\n  if (!simulationResponse || !simulationResponse.gas_info) {\n    throw new Error('Missing gas_info in simulation response');\n  }\n  const { gas_used, gas_wanted } = simulationResponse.gas_info;\n  return {\n    gasUsed: Number(gas_used),\n    gasWanted: Number(gas_wanted),\n  };\n};",
+            "usage": "const simulateRes = await simulateTx(); // result from Step 2\nconst { gasUsed, gasWanted } = extractGasInfo(simulateRes);\nconsole.log(`Gas used: ${gasUsed} / Gas wanted: ${gasWanted}`);"
+        }
+    ]
+}

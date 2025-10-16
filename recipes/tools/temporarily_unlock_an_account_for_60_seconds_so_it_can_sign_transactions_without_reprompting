@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Exports the account passphrase as KEYRING_PASSPHRASE for a limited time (default 60 s), then automatically clears it.",
+            "function": "export_passphrase_env(passphrase, ttl=60)",
+            "usage": "export_passphrase_env(\"mySecretPassphrase\", ttl=60)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Executes the desired simd transaction command while the temporary passphrase is set, ensuring it signs without prompting.",
+            "function": "run_timeboxed_script(cmd)",
+            "usage": "run_timeboxed_script([\"simd\", \"tx\", \"bank\", \"send\", \"addr1\", \"addr2\", \"100stake\", \"--yes\"])"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Attempts the same command after the TTL to confirm that the keyring has relocked and a passphrase prompt reappears.",
+            "function": "confirm_relock(cmd)",
+            "usage": "confirm_relock([\"simd\", \"tx\", \"bank\", \"send\", \"addr1\", \"addr2\", \"1stake\"])"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "export_passphrase_env(\"mySecretPassphrase\", ttl=60)#step: 1 Tool: export_passphrase_env Desciption: Export the account\u2019s passphrase into an environment variable (e.g., export KEYRING_PASSPHRASE=\"<pass>\").",
+        "run_timeboxed_script([\"simd\", \"tx\", \"bank\", \"send\", \"addr1\", \"addr2\", \"100stake\", \"--yes\"])#step: 2 Tool: run_timeboxed_script Desciption: Within a shell subshell or script, run the required simd tx sign / broadcast commands; a sleep 60 && unset KEYRING_PASSPHRASE can be used to clear the variable after 60 s.",
+        "confirm_relock([\"simd\", \"tx\", \"bank\", \"send\", \"addr1\", \"addr2\", \"1stake\"])#step: 3 Tool: confirm_relock Desciption: Attempt another signing operation after 60 s to ensure the CLI prompts for the passphrase again."
+    ],
+    "intent": "Temporarily unlock an account for 60 seconds so it can sign transactions without reprompting",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "export_passphrase_env",
+            "description": "Export the account\u2019s passphrase into an environment variable (e.g., export KEYRING_PASSPHRASE=\"<pass>\")."
+        },
+        {
+            "step": 2,
+            "tool": "run_timeboxed_script",
+            "description": "Within a shell subshell or script, run the required simd tx sign / broadcast commands; a sleep 60 && unset KEYRING_PASSPHRASE can be used to clear the variable after 60 s."
+        },
+        {
+            "step": 3,
+            "tool": "confirm_relock",
+            "description": "Attempt another signing operation after 60 s to ensure the CLI prompts for the passphrase again."
+        }
+    ],
+    "outcome_checks": [
+        "Signing operations inside the 60-second window succeed without an interactive prompt.",
+        "Signing attempted after 60 s prompts for the passphrase (or fails if unattended)."
+    ]
+}

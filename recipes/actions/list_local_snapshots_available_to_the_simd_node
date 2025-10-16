@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 exposes an API endpoint that returns the Cosmos node\u2019s home directory. It first checks the SIMD_HOME environment variable, then falls back to ~/.simapp, and validates that the directory exists.",
+            "code": "# backend/snapshot_api.py\n\nimport os\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\ndef get_node_home() -> str:\n    \"\"\"\n    Determine the node's home directory.\n    1. Use the `SIMD_HOME` environment variable if it exists.\n    2. Otherwise, default to `~/.simapp`.\n    \"\"\"\n    home = os.getenv(\"SIMD_HOME\", os.path.expanduser(\"~/.simapp\"))\n    if not os.path.isdir(home):\n        raise FileNotFoundError(f\"Home directory not found: {home}\")\n    return home\n\n@app.get(\"/api/get_node_home\")\nasync def api_get_node_home():\n    \"\"\"Return `{ \"home\": \"/path/to/home\" }` or HTTP 500 on error.\"\"\"\n    try:\n        return {\"home\": get_node_home()}\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "// Front-end call example\nconst { home } = await (await fetch('/api/get_node_home')).json();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 runs `simd snapshot list --home=<home>` (or, as a fallback, `ls -lh <home>/data/snapshots`) and returns the raw command output.",
+            "code": "# backend/snapshot_api.py (continued)\n\nimport subprocess\n\n@app.get(\"/api/list_snapshots\")\nasync def api_list_snapshots(home: str):\n    \"\"\"Return `{ \"raw_output\": \"<stdout>\" }` containing the snapshot list.\"\"\"\n    try:\n        raw_output = _list_snapshots(home)\n        return {\"raw_output\": raw_output}\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))\n\ndef _list_snapshots(home: str) -> str:\n    \"\"\"Helper that actually executes the shell commands.\"\"\"\n    commands = [\n        [\"simd\", \"snapshot\", \"list\", f\"--home={home}\"],\n        [\"ls\", \"-lh\", f\"{home}/data/snapshots\"]\n    ]\n    for cmd in commands:\n        try:\n            result = subprocess.run(cmd, check=True, capture_output=True, text=True)\n            if result.stdout.strip():\n                return result.stdout\n        except FileNotFoundError:\n            # Command not available; try next\n            continue\n        except subprocess.CalledProcessError:\n            # Command failed; try next\n            continue\n    raise RuntimeError(\"Unable to list snapshots. Ensure `simd` is installed or snapshots directory exists.\")",
+            "usage": "// Front-end call example\nconst { raw_output } = await (await fetch(`/api/list_snapshots?home=${encodeURIComponent(home)}`)).json();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 parses the raw snapshot output into a structured JSON array with `height`, `format`, and `hash` fields.",
+            "code": "# backend/snapshot_api.py (continued)\n\nimport re\nfrom typing import List, Dict\n\nSNAPSHOT_REGEX = re.compile(\n    r\"height[=:](?P<height>\\d+)\\s+format[=:](?P<format>\\d+)\\s+hash[=:]?\\s*(?P<hash>[A-Fa-f0-9]+)\",\n    re.IGNORECASE,\n)\n\n@app.post(\"/api/parse_snapshots\")\nasync def api_parse_snapshots(data: Dict[str, str]):\n    \"\"\"POST `{ \"raw_output\": \"...\" }` \u2192 `{ \"snapshots\": [...] }`.\"\"\"\n    try:\n        raw_output = data.get(\"raw_output\", \"\")\n        snapshots = _parse_snapshot_output(raw_output)\n        return {\"snapshots\": snapshots}\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))\n\ndef _parse_snapshot_output(raw_output: str) -> List[Dict]:\n    \"\"\"Convert CLI output into structured objects.\"\"\"\n    snapshots = []\n    for line in raw_output.splitlines():\n        match = SNAPSHOT_REGEX.search(line)\n        if match:\n            snapshots.append({\n                \"height\": int(match.group(\"height\")),\n                \"format\": match.group(\"format\"),\n                \"hash\": match.group(\"hash\")\n            })\n    if not snapshots:\n        raise ValueError(\"No snapshots found in provided output.\")\n    return snapshots",
+            "usage": "// Front-end call example\nconst parsed = await fetch('/api/parse_snapshots', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ raw_output })\n});\nconst { snapshots } = await parsed.json();"
+        }
+    ]
+}

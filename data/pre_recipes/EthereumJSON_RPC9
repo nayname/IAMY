@@ -1,0 +1,102 @@
+[
+    {
+        "intent": "Retrieve the smart-contract bytecode deployed at a given EVM address (latest block)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_evm_address",
+                "description": "Ensure the supplied address is a valid 0x-prefixed, 20-byte EVM address."
+            },
+            {
+                "step": 2,
+                "tool": "json_rpc_call_eth_getCode",
+                "description": "Send a JSON-RPC request to the Cosmos-EVM node: { \"method\": \"eth_getCode\", \"params\": [\"<ADDRESS>\", \"latest\"], \"id\": 1, \"jsonrpc\": \"2.0\" } to obtain the on-chain bytecode."
+            }
+        ],
+        "outcome_checks": [
+            "Response contains a non-null \"result\" field that is a 0x-prefixed hex string.",
+            "Optional: verify code size > 0 if a contract is expected."
+        ]
+    },
+    {
+        "intent": "Fetch the current nonce (transaction count) for an EVM address",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_evm_address",
+                "description": "Confirm the caller supplied a correctly-formatted EVM address."
+            },
+            {
+                "step": 2,
+                "tool": "json_rpc_call_eth_getTransactionCount",
+                "description": "Query the Cosmos-EVM JSON-RPC endpoint with: { \"method\": \"eth_getTransactionCount\", \"params\": [\"<ADDRESS>\", \"latest\"], \"id\": 1, \"jsonrpc\": \"2.0\" }."
+            }
+        ],
+        "outcome_checks": [
+            "Ensure the RPC response returns a hex-encoded nonce in the \"result\" field.",
+            "Optionally convert the hex value to decimal to display to the user."
+        ]
+    },
+    {
+        "intent": "Get block number 0x1 with the full list of transactions",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "json_rpc_call_eth_getBlockByNumber",
+                "description": "Issue: { \"method\": \"eth_getBlockByNumber\", \"params\": [\"0x1\", true], \"id\": 1, \"jsonrpc\": \"2.0\" } against the Cosmos-EVM JSON-RPC endpoint."
+            }
+        ],
+        "outcome_checks": [
+            "Verify the returned block object has \"number\": \"0x1\".",
+            "Confirm the \"transactions\" array is present and contains full transaction objects (not just hashes)."
+        ]
+    },
+    {
+        "intent": "Retrieve a block by its hash without transaction bodies",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "json_rpc_call_eth_getBlockByHash",
+                "description": "Call: { \"method\": \"eth_getBlockByHash\", \"params\": [\"<BLOCK_HASH>\", false], \"id\": 1, \"jsonrpc\": \"2.0\" }."
+            }
+        ],
+        "outcome_checks": [
+            "Returned block\u2019s \"hash\" field matches the supplied hash.",
+            "The \"transactions\" field is an array of transaction hashes, not full objects (lengths should match \"transactionsRoot\" inclusion)."
+        ]
+    },
+    {
+        "intent": "Replace (speed-up) a pending transaction by resending it with a higher gas price",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "json_rpc_call_eth_getTransactionByHash",
+                "description": "Fetch the original transaction to obtain nonce, to-address, data, and gas limits."
+            },
+            {
+                "step": 2,
+                "tool": "verify_tx_pending",
+                "description": "Check that the original transaction\u2019s \"blockNumber\" is null, indicating it is still pending and replaceable."
+            },
+            {
+                "step": 3,
+                "tool": "construct_new_transaction",
+                "description": "Create a new transaction with the SAME nonce and payload but a higher gasPrice OR gasFeeCap/gasPremium (for EIP-1559 chains)."
+            },
+            {
+                "step": 4,
+                "tool": "sign_transaction",
+                "description": "Sign the replacement transaction with the user\u2019s private key or connected wallet."
+            },
+            {
+                "step": 5,
+                "tool": "json_rpc_call_eth_sendRawTransaction",
+                "description": "Broadcast the signed raw transaction hex via { \"method\": \"eth_sendRawTransaction\", ... }."
+            }
+        ],
+        "outcome_checks": [
+            "A new transaction hash is returned and appears in the mempool.",
+            "Once mined, ensure the replacement tx is included in a block and the original hash is absent (dropped) or marked as replaced."
+        ]
+    }
+]

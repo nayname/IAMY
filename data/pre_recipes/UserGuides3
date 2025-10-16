@@ -1,0 +1,117 @@
+[
+    {
+        "intent": "Enable the REST API server via app.toml",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_node_home_dir",
+                "description": "Locate the node\u2019s home directory (e.g., ~/.gaia or ~/.wasmd) where config/app.toml resides."
+            },
+            {
+                "step": 2,
+                "tool": "open_config_file",
+                "description": "Open <home>/config/app.toml for editing."
+            },
+            {
+                "step": 3,
+                "tool": "update_toml_key",
+                "description": "Within the [api] section set `enable = true` (optionally `swagger = true`, `address = \"tcp://0.0.0.0:1317\"`)."
+            },
+            {
+                "step": 4,
+                "tool": "save_and_restart_node",
+                "description": "Save the file, then restart the Cosmo-SDK node so the REST (API) server starts."
+            }
+        ],
+        "outcome_checks": [
+            "curl http://localhost:1317/node_info returns a JSON response.",
+            "Node logs include a line such as \u201cstarting API server at 0.0.0.0:1317\u201d."
+        ]
+    },
+    {
+        "intent": "Generate an unsigned transaction that sends 1000stake from address A to address B",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_address_format",
+                "description": "Ensure both the sender (A) and recipient (B) Bech32 addresses are valid for the chain."
+            },
+            {
+                "step": 2,
+                "tool": "cli_query_account",
+                "description": "Query the sender\u2019s account to obtain current account-number and sequence for later signing."
+            },
+            {
+                "step": 3,
+                "tool": "cli_tx_bank_send_generate_only",
+                "description": "Run: `cosmos tx bank send A B 1000stake --generate-only --chain-id <chain-id> --output json > unsigned_tx.json`."
+            }
+        ],
+        "outcome_checks": [
+            "unsigned_tx.json exists on disk.",
+            "The JSON shows empty `\"signatures\": []` but populated `\"body\"` and `\"auth_info\"` sections."
+        ]
+    },
+    {
+        "intent": "Sign unsigned_tx.json using the key `my_validator` in the test keyring backend",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "cli_keys_show",
+                "description": "Confirm the `my_validator` key is present: `cosmos keys show my_validator --keyring-backend test`."
+            },
+            {
+                "step": 2,
+                "tool": "cli_tx_sign",
+                "description": "Sign: `cosmos tx sign unsigned_tx.json --from my_validator --chain-id <chain-id> --keyring-backend test --output-document tx_signed.json`."
+            },
+            {
+                "step": 3,
+                "tool": "inspect_tx_file",
+                "description": "Open tx_signed.json to verify that the `signatures` array now contains a non-empty signature."
+            }
+        ],
+        "outcome_checks": [
+            "tx_signed.json has a populated `signatures` field.",
+            "Running `cosmos tx decode tx_signed.json` succeeds without errors."
+        ]
+    },
+    {
+        "intent": "Broadcast tx_signed.json in sync mode",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "cli_tx_broadcast",
+                "description": "Execute: `cosmos tx broadcast tx_signed.json --broadcast-mode sync --chain-id <chain-id>` and capture the returned txhash."
+            },
+            {
+                "step": 2,
+                "tool": "cli_query_tx",
+                "description": "Poll the network for the txhash until the transaction is found in a block."
+            }
+        ],
+        "outcome_checks": [
+            "The broadcast response has `code: 0` (success) and a txhash.",
+            "Querying the txhash shows the transaction\u2019s height and success code."
+        ]
+    },
+    {
+        "intent": "Encode the signed transaction to protobuf bytes",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "cli_tx_encode",
+                "description": "Run: `cosmos tx encode tx_signed.json > tx_signed.pb` (or omit the redirection to print the base64 string)."
+            },
+            {
+                "step": 2,
+                "tool": "verify_proto_bytes",
+                "description": "Optionally decode the bytes back using `cosmos tx decode tx_signed.pb` to confirm fidelity."
+            }
+        ],
+        "outcome_checks": [
+            "File tx_signed.pb (or stdout) contains a non-empty base64-encoded protobuf byte string.",
+            "Decoding the bytes reproduces the original signed transaction JSON."
+        ]
+    }
+]

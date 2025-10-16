@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Obtains the user\u2019s Neutron wallet address (and signer) via the browser wallet extension.",
+            "function": "getUserAddress(chainId = 'neutron-1')",
+            "usage": "const { address: userAddr, signer } = await getUserAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Queries the Supervault smart-contract over LCD to fetch the user\u2019s current LP-share balance.",
+            "function": "queryShareBalance(restEndpoint, contractAddress, userAddress)",
+            "usage": "const currentBalance = await queryShareBalance('https://rest-kralum.neutron.org', vaultAddr, userAddr);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Checks that the requested redemption amount does not exceed the user\u2019s available LP shares.",
+            "function": "validateRedeemAmount(requestedAmount, availableShares)",
+            "usage": "validateRedeemAmount(sharesToRedeem, currentBalance);"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Builds a CosmWasm MsgExecuteContract containing the Supervault \"withdraw\" execute payload.",
+            "function": "construct_wasm_execute_msg(sender, contract_address, shares_to_redeem)",
+            "usage": "const executeMsg = construct_wasm_execute_msg(userAddr, vaultAddr, sharesToRedeem);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Signs the transaction with the user\u2019s key and relays the signed bytes to the backend for broadcasting to Neutron.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo = '')",
+            "usage": "const txHash = await signAndBroadcast(signer, userAddr, [executeMsg], 'auto');"
+        }
+    ],
+    "frontend": [
+        "const { address: userAddr, signer } = await getUserAddress();//step: 1 Tool: get_user_address Desciption: Identify the wallet address that holds the Supervault shares.",
+        "const currentBalance = await queryShareBalance('https://rest-kralum.neutron.org', vaultAddr, userAddr);//step: 2 Tool: query_contract_state Desciption: Fetch the user\u2019s current share balance and the Supervault contract address (e.g., `supervault_maxBTC_eBTC`) to determine the maximum redeemable amount.",
+        "validateRedeemAmount(sharesToRedeem, currentBalance);//step: 3 Tool: validate_redeem_amount Desciption: Confirm the user has enough LP shares to cover the requested redemption.",
+        "const txHash = await signAndBroadcast(signer, userAddr, [executeMsg], 'auto');//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign the transaction with the user\u2019s key and broadcast it to the Neutron network."
+    ],
+    "backend": [
+        "const executeMsg = construct_wasm_execute_msg(userAddr, vaultAddr, sharesToRedeem);#step: 4 Tool: construct_wasm_execute_msg Desciption: Build a `withdraw` execute message for the Supervault contract with `{ \"amount\": <shares_to_redeem> }`."
+    ],
+    "intent": "Redeem LP shares from the maxBTC/eBTC Supervault",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_address",
+            "description": "Identify the wallet address that holds the Supervault shares."
+        },
+        {
+            "step": 2,
+            "tool": "query_contract_state",
+            "description": "Fetch the user\u2019s current share balance and the Supervault contract address (e.g., `supervault_maxBTC_eBTC`) to determine the maximum redeemable amount."
+        },
+        {
+            "step": 3,
+            "tool": "validate_redeem_amount",
+            "description": "Confirm the user has enough LP shares to cover the requested redemption."
+        },
+        {
+            "step": 4,
+            "tool": "construct_wasm_execute_msg",
+            "description": "Build a `withdraw` execute message for the Supervault contract with `{ \"amount\": <shares_to_redeem> }`."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the transaction with the user\u2019s key and broadcast it to the Neutron network."
+        }
+    ],
+    "outcome_checks": [
+        "Verify the transaction hash was included in a block without error codes.",
+        "Confirm the user\u2019s maxBTC and eBTC balances increased while their Supervault share balance decreased by the redeemed amount."
+    ]
+}

@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Checks that the supplied account string is a correctly-encoded Bech32 address with the desired HRP.",
+            "function": "validate_recipient_address(address, expected_prefix='cosmos')",
+            "usage": "validate_recipient_address('cosmos1huy0pnhl5stvveqc7n3sxheg6w8av88m0az33k')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Uses a gRPC-backed LedgerClient to query all bank balances for the given account at the specified denomination.",
+            "function": "query_balance(address, denom='untrn')",
+            "usage": "balances = query_balance('cosmos1huy0pnhl5stvveqc7n3sxheg6w8av88m0az33k')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Parses the raw balance response and converts the Coin array into a readable amount-per-denomination structure.",
+            "function": "parse_balance_response(raw_json, denom='untrn')",
+            "usage": "parsed = parse_balance_response(raw_json_response)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "validate_recipient_address('cosmos1huy0pnhl5stvveqc7n3sxheg6w8av88m0az33k')#step: 1 Tool: validate_bech32_address Desciption: Verify the supplied account string conforms to Bech32 encoding for the target chain (e.g., `cosmos1...`).",
+        "balances = query_balance('cosmos1huy0pnhl5stvveqc7n3sxheg6w8av88m0az33k')#step: 2 Tool: grpc_bank_all_balances Desciption: Create a gRPC client and call `cosmos.bank.v1beta1.Query/AllBalances` with `address` set and metadata `x-cosmos-block-height: 123` (or the per-client height field if supported).",
+        "parsed = parse_balance_response(raw_json_response)#step: 3 Tool: parse_balances_response Desciption: Decode the `balances` array of Coin objects (denom / amount) from the gRPC response."
+    ],
+    "intent": "Query AllBalances for an address at block height 123 via gRPC",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_bech32_address",
+            "description": "Verify the supplied account string conforms to Bech32 encoding for the target chain (e.g., `cosmos1...`)."
+        },
+        {
+            "step": 2,
+            "tool": "grpc_bank_all_balances",
+            "description": "Create a gRPC client and call `cosmos.bank.v1beta1.Query/AllBalances` with `address` set and metadata `x-cosmos-block-height: 123` (or the per-client height field if supported)."
+        },
+        {
+            "step": 3,
+            "tool": "parse_balances_response",
+            "description": "Decode the `balances` array of Coin objects (denom / amount) from the gRPC response."
+        }
+    ],
+    "outcome_checks": [
+        "gRPC response status is OK (no `code` errors).",
+        "The `balances` list is returned (can be empty but must be present).",
+        "Response headers confirm `height` equals 123."
+    ]
+}

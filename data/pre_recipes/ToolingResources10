@@ -1,0 +1,132 @@
+[
+    {
+        "intent": "Switch MetaMask to the correct Cosmos-EVM network before contract deployment",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_cosmos_chain_registry",
+                "description": "Fetch the RPC URL, chain ID, currency symbol, and explorer link for the target Cosmos EVM chain (e.g., Evmos, Canto) from the Cosmos chain-registry."
+            },
+            {
+                "step": 2,
+                "tool": "metamask_get_current_chain_id",
+                "description": "Read the currently-selected chain ID from MetaMask to check whether the wallet is already on the desired network."
+            },
+            {
+                "step": 3,
+                "tool": "metamask_switch_network",
+                "description": "If the current chain ID does not match, call MetaMask\u2019s wallet_addEthereumChain (if the network is not added) followed by wallet_switchEthereumChain to add and select the correct Cosmos EVM network using the parameters from Step 1."
+            },
+            {
+                "step": 4,
+                "tool": "metamask_verify_chain_id",
+                "description": "Re-query MetaMask to confirm that the active chain ID now equals the intended Cosmos EVM chain ID."
+            }
+        ],
+        "outcome_checks": [
+            "MetaMask shows the correct network name and chain ID.",
+            "A test read (e.g., eth_blockNumber) against the configured RPC endpoint succeeds without error."
+        ]
+    },
+    {
+        "intent": "Save a Remix IDE workspace to a GitHub repository",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "remix_activate_github_plugin",
+                "description": "Enable the Remix \u2018GitHub\u2019 plugin from the Plugin Manager to expose version-control features inside the IDE."
+            },
+            {
+                "step": 2,
+                "tool": "github_authenticate",
+                "description": "Authenticate the user via GitHub OAuth to grant Remix permission to create or push to repositories."
+            },
+            {
+                "step": 3,
+                "tool": "remix_github_commit_push",
+                "description": "Select the current Remix workspace, enter a commit message, choose or create the target repository, and push the initial commit."
+            }
+        ],
+        "outcome_checks": [
+            "The new commit appears in the chosen GitHub repository.",
+            "Opening the repository in a browser shows the Solidity source files from the Remix workspace."
+        ]
+    },
+    {
+        "intent": "Add ENS support when querying balances with Foundry\u2019s cast CLI",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "cast_ens_resolve",
+                "description": "Run `cast resolve-name <ensName>` to convert the provided ENS name into a checksummed Ethereum address."
+            },
+            {
+                "step": 2,
+                "tool": "cast_balance",
+                "description": "Invoke `cast balance <resolvedAddress> --rpc-url <rpc>` (or `cast balance <ensName>` if the CLI version auto-resolves) to fetch the account\u2019s ETH balance from the specified RPC endpoint."
+            }
+        ],
+        "outcome_checks": [
+            "The CLI prints a hexadecimal or decimal ETH balance instead of an error.",
+            "If the ENS name resolves incorrectly, an explicit \u2018name not found\u2019 error is thrown, triggering user correction."
+        ]
+    },
+    {
+        "intent": "Use Wagmi React hooks to connect a wallet in a dApp",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "npm_install_dependencies",
+                "description": "Install `wagmi`, `@rainbow-me/rainbowkit`, `viem`, and `react` using npm or yarn."
+            },
+            {
+                "step": 2,
+                "tool": "wagmi_configure_chains",
+                "description": "Import desired Cosmos-EVM chains (or any EVM chain) from `wagmi/chains` and set up providers\u2014including a public RPC URL\u2014using `configureChains`."
+            },
+            {
+                "step": 3,
+                "tool": "wagmi_create_client",
+                "description": "Create a Wagmi client with `createConfig` (or `createClient` in older versions) and wrap the React app in `<WagmiConfig>` and `<RainbowKitProvider>`."
+            },
+            {
+                "step": 4,
+                "tool": "react_render_component",
+                "description": "Inside a component, render `<ConnectButton />` (RainbowKit) or invoke `useConnect` to trigger wallet connection flows."
+            }
+        ],
+        "outcome_checks": [
+            "Clicking the connect button opens the wallet modal and allows account selection.",
+            "The React component\u2019s `useAccount` hook reports `isConnected === true` and returns the selected address and chain ID."
+        ]
+    },
+    {
+        "intent": "Batch multiple JSON-RPC calls with the viem library",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "viem_create_client",
+                "description": "Instantiate a viem client with an HTTP transport that targets the desired Cosmos-EVM RPC endpoint."
+            },
+            {
+                "step": 2,
+                "tool": "viem_batch",
+                "description": "Call `client.batch()` to open a batch context, specifying optional concurrency or batch size parameters."
+            },
+            {
+                "step": 3,
+                "tool": "viem_add_calls_to_batch",
+                "description": "Inside the batch context, enqueue multiple read-only methods (e.g., `getBalance`, `getBlockNumber`, `readContract`)."
+            },
+            {
+                "step": 4,
+                "tool": "viem_execute_batch",
+                "description": "Await the batch promise to execute all queued RPC calls in a single request and receive an ordered array of results."
+            }
+        ],
+        "outcome_checks": [
+            "The batch request returns an array whose length matches the number of queued calls.",
+            "No individual call errors; each result object matches the expected schema (e.g., balances are BigInt strings)."
+        ]
+    }
+]

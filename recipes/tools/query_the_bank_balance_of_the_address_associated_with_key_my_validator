@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Fetches the bech32 account address for the key named \u201cmy_validator\u201d from the local test key-store.",
+            "function": "get_key_address(key_name='my_validator', keyring_backend='test')",
+            "usage": "address = get_key_address('my_validator', 'test')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Invokes the CLI wrapper to obtain all bank balances for the specified address and returns the raw JSON string.",
+            "function": "query_bank_balance(contract_addr, denom='untrn')",
+            "usage": "balances_json = query_bank_balance(address)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Parses the JSON balance response, extracting the denomination and amount for easy consumption.",
+            "function": "parse_balance_response(raw_json, denom='untrn')",
+            "usage": "balance_info = parse_balance_response(balances_json)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "address = get_key_address('my_validator', 'test')#step: 1 Tool: get_key_address Desciption: Retrieve the account address for `my_validator` from the test keyring.",
+        "balances_json = query_bank_balance(address)#step: 2 Tool: query_bank_balances Desciption: Execute `simd q bank balances <address>` to fetch all token balances for the address.",
+        "balance_info = parse_balance_response(balances_json)#step: 3 Tool: parse_balance Desciption: Parse the JSON response to extract denomination and amount fields."
+    ],
+    "intent": "Query the bank balance of the address associated with key my_validator",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_key_address",
+            "description": "Retrieve the account address for `my_validator` from the test keyring."
+        },
+        {
+            "step": 2,
+            "tool": "query_bank_balances",
+            "description": "Execute `simd q bank balances <address>` to fetch all token balances for the address."
+        },
+        {
+            "step": 3,
+            "tool": "parse_balance",
+            "description": "Parse the JSON response to extract denomination and amount fields."
+        }
+    ],
+    "outcome_checks": [
+        "The CLI returns exit code 0 and valid JSON output.",
+        "The balance list contains the expected denominations (e.g., stake)."
+    ]
+}

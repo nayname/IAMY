@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Uses the simd CLI to initialise a brand-new blockchain directory with chain-id \u201cmy-test-chain\u201d.",
+            "function": "init_genesis(moniker, chain_id='my-test-chain')",
+            "usage": "init_genesis('validator-node')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Loads the freshly generated genesis.json file and asserts its chain_id equals \u201cmy-test-chain\u201d.",
+            "function": "verify_genesis_file(genesis_path, expected_chain_id='my-test-chain')",
+            "usage": "verify_genesis_file('~/.simapp/config/genesis.json', 'my-test-chain')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "init_genesis('validator-node')#step: 1 Tool: init_genesis Desciption: Execute `simd init <moniker> --chain-id my-test-chain` to create default genesis and configuration files.",
+        "verify_genesis_file('~/.simapp/config/genesis.json', 'my-test-chain')#step: 2 Tool: verify_genesis_file Desciption: Open the generated genesis.json and confirm the `chain_id` field is set to `my-test-chain`."
+    ],
+    "intent": "Initialize a new chain with chain-id my-test-chain",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "init_genesis",
+            "description": "Execute `simd init <moniker> --chain-id my-test-chain` to create default genesis and configuration files."
+        },
+        {
+            "step": 2,
+            "tool": "verify_genesis_file",
+            "description": "Open the generated genesis.json and confirm the `chain_id` field is set to `my-test-chain`."
+        }
+    ],
+    "outcome_checks": [
+        "genesis.json exists under the configured home directory.",
+        "The chain_id inside genesis.json matches my-test-chain."
+    ]
+}

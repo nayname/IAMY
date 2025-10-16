@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Fetches basic network parameters (RPC, EVM chain-ID, currency symbol, explorer URL) for a Cosmos EVM chain directly from the public cosmos/chain-registry on GitHub.",
+            "code": "export const fetchCosmosEvmChainParams = async (chainSlug) => {\n  // Build the GitHub raw URL for the desired chain.json\n  const url = `https://raw.githubusercontent.com/cosmos/chain-registry/master/${chainSlug}/chain.json`;\n\n  try {\n    const response = await fetch(url);\n    if (!response.ok) {\n      throw new Error(`Unable to fetch chain data: ${response.statusText}`);\n    }\n\n    const chainData = await response.json();\n\n    // Extract useful EVM-specific fields with sensible fallbacks\n    const evmRpc   = chainData?.evm?.json_rpc || chainData?.apis?.rpc?.[0]?.address;\n    const evmChainId = chainData?.evm?.chain_id;\n    const symbol   = chainData?.currencies?.[0]?.symbol || chainData?.native_currency?.symbol;\n    const explorer = chainData?.explorers?.[0]?.url || null;\n\n    if (!evmRpc || !evmChainId) {\n      throw new Error('Fetched chain data is missing required EVM fields.');\n    }\n\n    return {\n      chainSlug,\n      evmRpc,\n      evmChainId,\n      symbol,\n      explorer,\n      raw: chainData // keep raw JSON for advanced use-cases\n    };\n  } catch (error) {\n    console.error('fetchCosmosEvmChainParams error:', error);\n    throw error;\n  }\n};",
+            "usage": "const chainParams = await fetchCosmosEvmChainParams('evmos');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Reads the currently-selected chain ID from MetaMask so you can decide whether a network switch is necessary.",
+            "code": "export const getMetaMaskCurrentChainId = async () => {\n  if (!window.ethereum) {\n    throw new Error('MetaMask is not installed');\n  }\n  // Returned value is hex (e.g., \"0x2329\" for 9001); convert to integer.\n  const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });\n  return parseInt(chainIdHex, 16);\n};",
+            "usage": "const currentChainId = await getMetaMaskCurrentChainId();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Attempts to switch MetaMask to the desired Cosmos EVM network. If the network is unknown to MetaMask, it is first added via wallet_addEthereumChain, then switched.",
+            "code": "export const switchToCosmosEvmNetwork = async (chainParams) => {\n  if (!window.ethereum) {\n    throw new Error('MetaMask is not installed');\n  }\n\n  const { evmChainId, symbol, evmRpc, explorer, raw } = chainParams;\n  const chainIdHex = '0x' + evmChainId.toString(16);\n\n  try {\n    // First try to switch directly\n    await window.ethereum.request({\n      method: 'wallet_switchEthereumChain',\n      params: [{ chainId: chainIdHex }]\n    });\n  } catch (switchError) {\n    // Error code 4902 = chain not added yet\n    if (switchError.code === 4902) {\n      try {\n        // Add the network\n        await window.ethereum.request({\n          method: 'wallet_addEthereumChain',\n          params: [{\n            chainId: chainIdHex,\n            chainName: raw?.pretty_name || chainParams.chainSlug,\n            nativeCurrency: {\n              name: symbol,\n              symbol: symbol,\n              decimals: 18 // Most Cosmos EVM coins use 18 decimals\n            },\n            rpcUrls: [evmRpc],\n            blockExplorerUrls: explorer ? [explorer] : []\n          }]\n        });\n        // Then switch again\n        await window.ethereum.request({\n          method: 'wallet_switchEthereumChain',\n          params: [{ chainId: chainIdHex }]\n        });\n      } catch (addError) {\n        console.error('Error adding chain to MetaMask:', addError);\n        throw addError;\n      }\n    } else {\n      console.error('Error switching chain in MetaMask:', switchError);\n      throw switchError;\n    }\n  }\n};",
+            "usage": "await switchToCosmosEvmNetwork(chainParams);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Re-queries MetaMask and throws if the active chain ID still does not match the intended one.",
+            "code": "export const verifyMetaMaskChainId = async (expectedChainId) => {\n  const current = await getMetaMaskCurrentChainId();\n  if (current !== expectedChainId) {\n    throw new Error(`Chain ID verification failed. Expected ${expectedChainId}, got ${current}`);\n  }\n  return true; // Success\n};",
+            "usage": "await verifyMetaMaskChainId(chainParams.evmChainId);"
+        }
+    ]
+}

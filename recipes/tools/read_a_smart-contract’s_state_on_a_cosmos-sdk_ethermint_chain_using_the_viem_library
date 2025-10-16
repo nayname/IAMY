@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Checks that the chosen JSON-RPC URL is reachable and returns it for later use.",
+            "function": "connect_rpc_endpoint(rpc_endpoint='https://rpc-kralum.neutron.org')",
+            "usage": "endpoint = connect_rpc_endpoint('https://rpc.myethermint.io')"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "No implemented function is available that installs or imports the viem library.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Creates a Web3 client instance connected to the configured RPC endpoint.",
+            "function": "get_web3()",
+            "usage": "w3 = get_web3()"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "No implemented helper exists to supply or manage an EVM contract ABI fragment.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Executes an arbitrary JSON-RPC method (e.g., eth_call) to read data from the smart contract.",
+            "function": "json_rpc_call(method='txpool_status', params=None, endpoint='http://localhost:8545')",
+            "usage": "result = json_rpc_call('eth_call', [call_object, 'latest'], 'https://rpc.myethermint.io')"
+        }
+    ],
+    "frontend": [
+        "undef//step: 2 Tool: import_viem Desciption: Add viem (or update to the latest version) in the project: `npm install viem`.",
+        "undef//step: 4 Tool: define_contract_abi Desciption: Provide the ABI fragment that contains the read-only function(s) you wish to call."
+    ],
+    "backend": [
+        "endpoint = connect_rpc_endpoint('https://rpc.myethermint.io')#step: 1 Tool: select_rpc_endpoint Desciption: Choose a public or self-hosted JSON-RPC endpoint for the target Ethermint-based (EVM) Cosmos chain (e.g., Evmos, Cronos, etc.).",
+        "w3 = get_web3()#step: 3 Tool: instantiate_public_client Desciption: Create a `publicClient` with viem, passing the selected RPC URL and chain ID that matches the network.",
+        "result = json_rpc_call('eth_call', [call_object, 'latest'], 'https://rpc.myethermint.io')#step: 5 Tool: call_read_function Desciption: Use `publicClient.readContract({ address, abi, functionName, args })` to retrieve on-chain data."
+    ],
+    "intent": "Read a smart-contract\u2019s state on a Cosmos-SDK/Ethermint chain using the viem library",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "select_rpc_endpoint",
+            "description": "Choose a public or self-hosted JSON-RPC endpoint for the target Ethermint-based (EVM) Cosmos chain (e.g., Evmos, Cronos, etc.)."
+        },
+        {
+            "step": 2,
+            "tool": "import_viem",
+            "description": "Add viem (or update to the latest version) in the project: `npm install viem`."
+        },
+        {
+            "step": 3,
+            "tool": "instantiate_public_client",
+            "description": "Create a `publicClient` with viem, passing the selected RPC URL and chain ID that matches the network."
+        },
+        {
+            "step": 4,
+            "tool": "define_contract_abi",
+            "description": "Provide the ABI fragment that contains the read-only function(s) you wish to call."
+        },
+        {
+            "step": 5,
+            "tool": "call_read_function",
+            "description": "Use `publicClient.readContract({ address, abi, functionName, args })` to retrieve on-chain data."
+        }
+    ],
+    "outcome_checks": [
+        "Confirm the returned value matches the expected on-chain state via a block-explorer or another RPC query.",
+        "Ensure no JSON-RPC errors (e.g., `execution reverted`) were thrown by viem."
+    ]
+}

@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Copies every validator gentx JSON found in the listed folders into the chain\u2019s config/gentx directory.",
+            "function": "gather_gentx_files(source_dirs, target_dir=\"config/gentx\")",
+            "usage": "gather_gentx_files([\"/path/to/val1/gentx\", \"/path/to/val2/gentx\"])"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Runs <chain_binary> collect-gentxs to append all gathered gentxs into genesis and returns the new genesis.json path.",
+            "function": "collect_gentxs(chain_binary=\"mychaind\", home=\".\")",
+            "usage": "genesis_file = collect_gentxs(chain_binary=\"neutrond\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Executes <chain_binary> validate-genesis to confirm the final genesis file is internally consistent and launch-ready.",
+            "function": "validate_genesis(chain_binary=\"mychaind\", home=\".\")",
+            "usage": "is_valid = validate_genesis(chain_binary=\"neutrond\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "gather_gentx_files([\"/path/to/val1/gentx\", \"/path/to/val2/gentx\"])#step: 1 Tool: gather_gentx_files Desciption: Ensure all validator gentx JSON files are placed inside the `config/gentx/` directory.",
+        "genesis_file = collect_gentxs(chain_binary=\"neutrond\")#step: 2 Tool: collect_gentxs Desciption: Run `<chain_binary> collect-gentxs` to merge every gentx into the genesis file.",
+        "is_valid = validate_genesis(chain_binary=\"neutrond\")#step: 3 Tool: validate_genesis Desciption: Re-run `<chain_binary> validate-genesis` to verify the final genesis is consistent and ready for launch."
+    ],
+    "intent": "Collect all gentxs into the genesis file",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "gather_gentx_files",
+            "description": "Ensure all validator gentx JSON files are placed inside the `config/gentx/` directory."
+        },
+        {
+            "step": 2,
+            "tool": "collect_gentxs",
+            "description": "Run `<chain_binary> collect-gentxs` to merge every gentx into the genesis file."
+        },
+        {
+            "step": 3,
+            "tool": "validate_genesis",
+            "description": "Re-run `<chain_binary> validate-genesis` to verify the final genesis is consistent and ready for launch."
+        }
+    ],
+    "outcome_checks": [
+        "Genesis file now contains validator entries for every submitted gentx.",
+        "`validate-genesis` reports success with no critical warnings."
+    ]
+}

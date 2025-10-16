@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Prepare the JSON-RPC payload for an `eth_gasPrice` request.",
+            "code": "/*\n * Creates a JSON-RPC compliant payload for fetching the current gas price\n * from an Ethereum-compatible node.\n */\nexport const prepareGasPricePayload = (id = 1) => {\n  return {\n    jsonrpc: \"2.0\",\n    method: \"eth_gasPrice\",\n    params: [],\n    id\n  };\n};",
+            "usage": "const payload = prepareGasPricePayload();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Send the JSON-RPC POST request to the node and return the raw response.",
+            "code": "/*\n * Executes a POST request against an Ethereum JSON-RPC endpoint.\n * Defaults to a local node at http://localhost:8545 but can be overridden.\n */\nexport const postJsonRpc = async (payload, endpoint = \"http://localhost:8545\") => {\n  try {\n    const res = await fetch(endpoint, {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application/json\" },\n      body: JSON.stringify(payload)\n    });\n\n    if (!res.ok) {\n      // Surface HTTP-level errors\n      const errText = await res.text();\n      throw new Error(`HTTP ${res.status}: ${errText}`);\n    }\n\n    return await res.json();\n  } catch (err) {\n    console.error(\"JSON-RPC request failed\", err);\n    throw err;\n  }\n};",
+            "usage": "const rpcResponse = await postJsonRpc(payload);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Parse the JSON-RPC response, converting the hex-encoded wei value to a decimal string (and convenient gwei/ether helpers).",
+            "code": "/*\n * Parses the `eth_gasPrice` response and converts the result from hex-encoded\n * wei to human-readable formats.\n */\nexport const parseGasPriceResponse = (response) => {\n  if (!response || typeof response.result !== \"string\") {\n    throw new Error(\"Malformed JSON-RPC response: missing 'result' field.\");\n  }\n\n  // The result is a hex string (e.g., \"0x91b1d9f00\"). Convert to BigInt.\n  const weiBigInt = BigInt(response.result);\n  const wei = weiBigInt.toString(10); // decimal string\n\n  // Helper conversions\n  const gwei = (weiBigInt / 1_000_000_000n).toString(10);\n  const ether = Number(weiBigInt) / 1e18; // may lose precision but fine for display\n\n  return { wei, gwei, ether };\n};",
+            "usage": "const gasPrice = parseGasPriceResponse(rpcResponse);\nconsole.log(`Gas price: ${gasPrice.gwei} gwei (${gasPrice.wei} wei)`);"
+        }
+    ]
+}

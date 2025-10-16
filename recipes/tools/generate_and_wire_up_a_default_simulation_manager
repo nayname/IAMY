@@ -1,0 +1,79 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No implemented helper was found that specifically handles adding every module\u2019s simulation files to the Go module path.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No implemented helper was located that programmatically constructs a module.NewSimulationManager with all application modules.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "The codebase does not contain a concrete function that calls simManager.RegisterStoreDecoders().",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "No existing utility was identified that sets app.SetSimulationManager(simManager) in the application builder.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "compile_generated_code() executes `go vet` and `go test ./...`, effectively running the project\u2019s Go test suite which includes the default simulation tests.",
+            "function": "compile_generated_code(repo_root='.')",
+            "usage": "compile_generated_code('.')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: import_simulation_packages Desciption: Ensure each module\u2019s `types/sim.go` and `simulation` folder are included in the Go module path.",
+        "undef#step: 2 Tool: create_sim_manager Desciption: In app/simulations.go build `simManager := module.NewSimulationManager(xauth.AppModule{}, xbank.AppModule{}, ...)` including all modules.",
+        "undef#step: 3 Tool: register_store_decoders Desciption: Call `simManager.RegisterStoreDecoders()` so KVStore decoding works in simulations.",
+        "undef#step: 4 Tool: attach_sim_manager Desciption: In app/app.go set `app.SetSimulationManager(simManager)` after module setup.",
+        "compile_generated_code('.')#step: 5 Tool: run_simulation_tests Desciption: Execute `go test ./... -run TestFullAppSimulation` to run the default simulation suite."
+    ],
+    "intent": "Generate and wire up a default simulation manager",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "import_simulation_packages",
+            "description": "Ensure each module\u2019s `types/sim.go` and `simulation` folder are included in the Go module path."
+        },
+        {
+            "step": 2,
+            "tool": "create_sim_manager",
+            "description": "In app/simulations.go build `simManager := module.NewSimulationManager(xauth.AppModule{}, xbank.AppModule{}, ...)` including all modules."
+        },
+        {
+            "step": 3,
+            "tool": "register_store_decoders",
+            "description": "Call `simManager.RegisterStoreDecoders()` so KVStore decoding works in simulations."
+        },
+        {
+            "step": 4,
+            "tool": "attach_sim_manager",
+            "description": "In app/app.go set `app.SetSimulationManager(simManager)` after module setup."
+        },
+        {
+            "step": 5,
+            "tool": "run_simulation_tests",
+            "description": "Execute `go test ./... -run TestFullAppSimulation` to run the default simulation suite."
+        }
+    ],
+    "outcome_checks": [
+        "Simulation tests compile and execute without panics.",
+        "No non-determinism errors are reported when running `sim-nondeterminism` multiple times."
+    ]
+}

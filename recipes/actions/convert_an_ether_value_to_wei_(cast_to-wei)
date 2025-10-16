@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 prompts the user for a decimal Ether amount and then calls a backend endpoint to convert it to Wei.",
+            "code": "export const convertEtherToWei = async () => {\n  // 1\ufe0f\u20e3 Prompt the user for an Ether amount\n  const amount = prompt('Enter Ether amount to convert into Wei (e.g., 0.42):');\n\n  // Exit if the user cancels the prompt\n  if (amount === null) {\n    return null;\n  }\n\n  // 2\ufe0f\u20e3 Basic validation\n  if (amount.trim() === '' || isNaN(amount) || Number(amount) < 0) {\n    alert('Please enter a valid positive number.');\n    return null;\n  }\n\n  try {\n    // 3\ufe0f\u20e3 POST the amount to the backend\n    const resp = await fetch('/api/to_wei', {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({ amount: amount.trim() })\n    });\n\n    if (!resp.ok) {\n      const err = await resp.json();\n      throw new Error(err.detail || 'Conversion failed');\n    }\n\n    // 4\ufe0f\u20e3 Parse and display the Wei result\n    const data = await resp.json();\n    alert(`${amount} ETH is ${data.wei} Wei`);\n    return data.wei;\n  } catch (error) {\n    console.error('Error converting ETH to Wei:', error);\n    alert(error.message);\n    throw error;\n  }\n};",
+            "usage": "Call convertEtherToWei() from any click handler or lifecycle method to prompt the user, send the request to the backend, and display the resulting Wei value."
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 defines a FastAPI endpoint that uses the Foundry `cast` CLI to perform the actual Ether\u2192Wei conversion.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel, validator\nimport subprocess\n\napp = FastAPI()\n\nclass AmountIn(BaseModel):\n    amount: str\n\n    @validator('amount')\n    def validate_amount(cls, v):\n        try:\n            if float(v) < 0:\n                raise ValueError\n            return v\n        except ValueError:\n            raise ValueError('`amount` must be a positive number represented as a string')\n\n@app.post('/api/to_wei')\nasync def to_wei(payload: AmountIn):\n    \"\"\"Convert an Ether amount to Wei using the `cast` CLI.\n    Foundry\u2019s `cast` must be installed and present in the PATH.\n    \"\"\"\n    try:\n        # Build and execute the CLI command safely\n        cmd = ['cast', 'to-wei', payload.amount, 'ether']\n        result = subprocess.run(cmd, capture_output=True, text=True, check=True)\n        wei_value = result.stdout.strip()\n        return { 'wei': wei_value }\n    except subprocess.CalledProcessError as e:\n        raise HTTPException(status_code=500, detail=f'cast error: {e.stderr.strip()}')\n    except FileNotFoundError:\n        raise HTTPException(status_code=500, detail='`cast` CLI not found on the server')",
+            "usage": "The frontend sends a POST request to `/api/to_wei` with a JSON body `{ \"amount\": \"0.42\" }`. The endpoint responds with `{ \"wei\": \"420000000000000000\" }`."
+        }
+    ]
+}

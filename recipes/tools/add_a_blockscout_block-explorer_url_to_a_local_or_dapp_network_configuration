@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "open_config_file reads the chosen network-configuration file and returns its contents so you can locate the section that defines chain metadata.",
+            "function": "open_config_file(config_path=None)",
+            "usage": "config_lines = open_config_file('/path/to/chain-registry.toml')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "_replace_or_add searches the loaded text and either replaces an existing key or appends a new one, letting us set the explorer = \"https://blockscout.evmos.org\" entry.",
+            "function": "_replace_or_add(pattern, replacement, text)",
+            "usage": "updated_text = _replace_or_add(r'^explorer\\s*=.*$', 'explorer = \"https://blockscout.evmos.org\"', '\\n'.join(config_lines))"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "restart_node_service restarts the running service so the application reloads the updated configuration (and the new Blockscout link).",
+            "function": "restart_node_service(daemon_name, wait_seconds=60)",
+            "usage": "restart_node_service('my-dapp.service')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "config_lines = open_config_file('/path/to/chain-registry.toml')#step: 1 Tool: identify_network_config_file Desciption: Locate the configuration file or environment section (e.g., `chain-registry`, `walletConnect`, or dApp network list) that defines network metadata.",
+        "updated_text = _replace_or_add(r'^explorer\\s*=.*$', 'explorer = \"https://blockscout.evmos.org\"', '\\n'.join(config_lines))#step: 2 Tool: insert_blockscout_url Desciption: Add or update the `explorer` field with the Blockscout base URL, e.g., `https://blockscout.evmos.org`.",
+        "restart_node_service('my-dapp.service')#step: 3 Tool: propagate_config Desciption: Reload or redeploy the application so the new explorer link is picked up (restart dev server, clear cache, etc.)."
+    ],
+    "intent": "Add a Blockscout block-explorer URL to a local or dApp network configuration",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "identify_network_config_file",
+            "description": "Locate the configuration file or environment section (e.g., `chain-registry`, `walletConnect`, or dApp network list) that defines network metadata."
+        },
+        {
+            "step": 2,
+            "tool": "insert_blockscout_url",
+            "description": "Add or update the `explorer` field with the Blockscout base URL, e.g., `https://blockscout.evmos.org`."
+        },
+        {
+            "step": 3,
+            "tool": "propagate_config",
+            "description": "Reload or redeploy the application so the new explorer link is picked up (restart dev server, clear cache, etc.)."
+        }
+    ],
+    "outcome_checks": [
+        "Clicking the explorer link in the UI opens the Blockscout page for the network.",
+        "Blockscout successfully returns blocks and transactions, confirming the URL is correct."
+    ]
+}

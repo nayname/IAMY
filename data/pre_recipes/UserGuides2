@@ -1,0 +1,122 @@
+[
+    {
+        "intent": "Add my_validator address as a genesis account with 100000000000stake",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_address",
+                "description": "Ensure the supplied my_validator Bech32 address is syntactically valid."
+            },
+            {
+                "step": 2,
+                "tool": "add_genesis_account",
+                "description": "Run `<chain_binary> add-genesis-account my_validator 100000000000stake` to append the account and balance to the genesis file."
+            },
+            {
+                "step": 3,
+                "tool": "validate_genesis",
+                "description": "Execute `<chain_binary> validate-genesis` to confirm the updated genesis file has no structural errors."
+            }
+        ],
+        "outcome_checks": [
+            "Genesis file now lists my_validator with a balance of 100000000000stake.",
+            "`validate-genesis` exits with success (code 0 and no error output)."
+        ]
+    },
+    {
+        "intent": "Generate a gentx for my_validator staking 100000000stake",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "ensure_key_exists",
+                "description": "Verify the my_validator key is present in the local keyring; create it if it is missing."
+            },
+            {
+                "step": 2,
+                "tool": "gentx",
+                "description": "Execute `<chain_binary> gentx my_validator 100000000stake --chain-id <chain-id>` to create the genesis transaction in `config/gentx/`."
+            },
+            {
+                "step": 3,
+                "tool": "validate_gentx",
+                "description": "Confirm the generated gentx JSON is well-formed, signed by my_validator, and stakes exactly 100000000stake."
+            }
+        ],
+        "outcome_checks": [
+            "A new gentx JSON file for my_validator exists in `config/gentx/`.",
+            "The gentx references 100000000stake and passes signature verification."
+        ]
+    },
+    {
+        "intent": "Collect all gentxs into the genesis file",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "gather_gentx_files",
+                "description": "Ensure all validator gentx JSON files are placed inside the `config/gentx/` directory."
+            },
+            {
+                "step": 2,
+                "tool": "collect_gentxs",
+                "description": "Run `<chain_binary> collect-gentxs` to merge every gentx into the genesis file."
+            },
+            {
+                "step": 3,
+                "tool": "validate_genesis",
+                "description": "Re-run `<chain_binary> validate-genesis` to verify the final genesis is consistent and ready for launch."
+            }
+        ],
+        "outcome_checks": [
+            "Genesis file now contains validator entries for every submitted gentx.",
+            "`validate-genesis` reports success with no critical warnings."
+        ]
+    },
+    {
+        "intent": "Delegate 500stake from recipient to my_validator validator",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_addresses",
+                "description": "Check that both recipient (delegator) and my_validator (validator) addresses are valid Bech32 strings."
+            },
+            {
+                "step": 2,
+                "tool": "check_balance",
+                "description": "Query the delegator's account to ensure at least 500stake is available (after fees)."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_delegate",
+                "description": "Build the staking delegation transaction: `<chain_binary> tx staking delegate my_validator 500stake --from <delegator>`."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the delegation with the delegator\u2019s key and broadcast it to the network."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction hash included in a block with `code=0` (success).",
+            "`query staking delegation <delegator> my_validator` shows 500stake (plus any previous) delegated."
+        ]
+    },
+    {
+        "intent": "Query total delegations to my_validator validator",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_validator_delegations",
+                "description": "Execute `<chain_binary> query staking delegations-to my_validator --output json` to retrieve all delegation objects."
+            },
+            {
+                "step": 2,
+                "tool": "calculate_total",
+                "description": "Sum the `balance.amount` fields from the returned delegations list to obtain the total stake."
+            }
+        ],
+        "outcome_checks": [
+            "The summed amount matches the chain state when cross-checking with an independent RPC or LCD query.",
+            "Returned value is non-negative and expressed in the expected denomination (stake)."
+        ]
+    }
+]

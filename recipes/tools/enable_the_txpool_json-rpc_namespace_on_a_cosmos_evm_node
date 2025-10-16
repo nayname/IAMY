@@ -1,0 +1,93 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Stops the evmd systemd unit (or any running process) so the node can be reconfigured safely.",
+            "function": "stop_evmd_service()",
+            "usage": "stop_evmd_service()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Reads the app.toml file and returns its contents line-by-line for editing.",
+            "function": "open_config_file()",
+            "usage": "lines = open_config_file()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Edits the [json-rpc] settings in app.toml to enable JSON-RPC, add the txpool API and turn on the indexer.",
+            "function": "update_app_toml_parameter()",
+            "usage": "result = update_app_toml_parameter()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Writes the modified app.toml back to disk (with a backup) and closes the file.",
+            "function": "save_and_close_file(lines)",
+            "usage": "save_and_close_file(lines)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Restarts the evmd service and captures the most recent log lines to confirm a clean boot.",
+            "function": "start_evmd_service()",
+            "usage": "start_evmd_service()"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Performs a txpool_status JSON-RPC request to verify that the new namespace is live.",
+            "function": "json_rpc_call(method=\"txpool_status\")",
+            "usage": "txpool_status = json_rpc_call()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "stop_evmd_service()#step: 1 Tool: stop_evmd_service Desciption: Gracefully stop the running evmd (or systemd service) to edit configuration safely.",
+        "lines = open_config_file()#step: 2 Tool: open_config_file Desciption: Open ~/.evmd/config/app.toml (or the node\u2019s app.toml path) for editing.",
+        "result = update_app_toml_parameter()#step: 3 Tool: update_app_toml_parameter Desciption: Inside the [json-rpc] section set enable = true and add \"txpool\" to the api list, e.g., api = \"eth,net,web3,txpool,debug\". Ensure enable-indexer = true so tx queries work.",
+        "save_and_close_file(lines)#step: 4 Tool: save_and_close_file Desciption: Write the changes and exit the editor.",
+        "start_evmd_service()#step: 5 Tool: start_evmd_service Desciption: Restart the node and watch logs for successful boot with JSON-RPC enabled.",
+        "txpool_status = json_rpc_call()#step: 6 Tool: json_rpc_call Desciption: Send a quick txpool_status call to verify the namespace responds."
+    ],
+    "intent": "Enable the txpool JSON-RPC namespace on a Cosmos EVM node",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "stop_evmd_service",
+            "description": "Gracefully stop the running evmd (or systemd service) to edit configuration safely."
+        },
+        {
+            "step": 2,
+            "tool": "open_config_file",
+            "description": "Open ~/.evmd/config/app.toml (or the node\u2019s app.toml path) for editing."
+        },
+        {
+            "step": 3,
+            "tool": "update_app_toml_parameter",
+            "description": "Inside the [json-rpc] section set enable = true and add \"txpool\" to the api list, e.g., api = \"eth,net,web3,txpool,debug\". Ensure enable-indexer = true so tx queries work."
+        },
+        {
+            "step": 4,
+            "tool": "save_and_close_file",
+            "description": "Write the changes and exit the editor."
+        },
+        {
+            "step": 5,
+            "tool": "start_evmd_service",
+            "description": "Restart the node and watch logs for successful boot with JSON-RPC enabled."
+        },
+        {
+            "step": 6,
+            "tool": "json_rpc_call",
+            "description": "Send a quick txpool_status call to verify the namespace responds."
+        }
+    ],
+    "outcome_checks": [
+        "Node restarts without configuration errors.",
+        "txpool_status returns a JSON object (pending / queued counts).",
+        "No RPC error code -32601 (method not found)."
+    ]
+}

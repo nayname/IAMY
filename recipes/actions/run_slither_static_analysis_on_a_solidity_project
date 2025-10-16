@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Installs Slither globally (via pipx if available, otherwise falls back to pip) so that subsequent analysis steps can run.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport shutil\nimport subprocess\nimport sys\n\nrouter = APIRouter()\n\n@router.post(\"/slither/install\")\nasync def install_slither():\n    \"\"\"\n    Ensure that the Slither static-analysis tool is installed on the host.\n    Preferred installer is `pipx`; we gracefully fall back to `pip` if pipx\n    is not present.  Returns a JSON payload describing the outcome.\n    \"\"\"\n    # Early-exit if Slither already exists in $PATH\n    if shutil.which(\"slither\"):\n        return {\"message\": \"Slither is already installed.\"}\n\n    try:\n        # Decide which installer to use\n        if shutil.which(\"pipx\"):\n            cmd = [\"pipx\", \"install\", \"slither-analyzer\"]\n        else:\n            cmd = [sys.executable, \"-m\", \"pip\", \"install\", \"slither-analyzer\"]\n\n        completed = subprocess.run(\n            cmd,\n            stdout=subprocess.PIPE,\n            stderr=subprocess.PIPE,\n            text=True,\n            check=True,\n        )\n        return {\n            \"message\": \"Slither installed successfully.\",\n            \"stdout\": completed.stdout,\n        }\n    except subprocess.CalledProcessError as exc:\n        # Surface installer stderr so the caller can debug easily\n        raise HTTPException(\n            status_code=500,\n            detail=f\"Failed to install Slither: {exc.stderr}\",\n        )",
+            "usage": "await fetch('/api/slither/install', { method: 'POST' });"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Compiles the Solidity project so Slither has up-to-date build artifacts. Tries Hardhat first and then falls back to a raw `solc` compile.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport os\nimport shutil\nimport subprocess\n\nrouter = APIRouter()\n\n@router.post(\"/slither/compile\")\nasync def compile_project_for_slither():\n    \"\"\"\n    Trigger Solidity compilation for the current project directory.  The\n    function prefers Hardhat (if `hardhat.config.*` files and `npx` are\n    available); otherwise, it attempts a bare-bones `solc` compilation.\n    \"\"\"\n    try:\n        if shutil.which(\"npx\") and (\n            os.path.isfile(\"hardhat.config.js\") or os.path.isfile(\"hardhat.config.ts\")\n        ):\n            cmd = [\"npx\", \"hardhat\", \"compile\"]\n        elif shutil.which(\"solc\"):\n            # Example fallback: compile every .sol file under ./contracts\n            cmd = [\n                \"solc\",\n                \"--bin\",\n                \"--abi\",\n                \"--overwrite\",\n                \"-o\",\n                \"build\",\n                \"contracts/*.sol\",\n            ]\n        else:\n            raise HTTPException(\n                status_code=500,\n                detail=\"Neither Hardhat nor solc found in PATH; cannot compile project.\",\n            )\n\n        completed = subprocess.run(\n            \" \".join(cmd),\n            shell=True,\n            stdout=subprocess.PIPE,\n            stderr=subprocess.PIPE,\n            text=True,\n            check=True,\n        )\n        return {\"message\": \"Compilation completed.\", \"stdout\": completed.stdout}\n    except subprocess.CalledProcessError as exc:\n        raise HTTPException(\n            status_code=500,\n            detail=f\"Compilation failed: {exc.stderr}\",\n        )",
+            "usage": "await fetch('/api/slither/compile', { method: 'POST' });"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Runs Slither across the current project and returns the human-readable report produced by the analyzer.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport subprocess\n\nrouter = APIRouter()\n\n@router.post(\"/slither/run\")\nasync def run_slither():\n    \"\"\"\n    Execute `slither .` in the project root and stream the textual\n    vulnerability report back to the caller.\n    \"\"\"\n    try:\n        completed = subprocess.run(\n            [\"slither\", \".\"],\n            stdout=subprocess.PIPE,\n            stderr=subprocess.PIPE,\n            text=True,\n            check=True,\n        )\n        return {\n            \"message\": \"Slither analysis completed.\",\n            \"stdout\": completed.stdout,\n        }\n    except subprocess.CalledProcessError as exc:\n        raise HTTPException(status_code=500, detail=f\"Slither run failed: {exc.stderr}\")",
+            "usage": "await fetch('/api/slither/run', { method: 'POST' });"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Generates a machine-readable JSON report from Slither so it can be processed programmatically or stored for CI artifacts.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport subprocess\nimport os\n\nrouter = APIRouter()\n\n@router.post(\"/slither/report\")\nasync def generate_slither_report():\n    \"\"\"\n    Run `slither . --json slither-report.json` and verify that the report\n    file exists before returning.  The JSON contents are *not* inlined in the\n    HTTP response to avoid large payloads; only the filepath is returned.\n    \"\"\"\n    report_file = \"slither-report.json\"\n    try:\n        cmd = [\"slither\", \".\", \"--json\", report_file]\n        completed = subprocess.run(\n            cmd,\n            stdout=subprocess.PIPE,\n            stderr=subprocess.PIPE,\n            text=True,\n            check=True,\n        )\n        if not os.path.isfile(report_file):\n            raise HTTPException(\n                status_code=500,\n                detail=\"Slither did not produce the expected JSON report.\",\n            )\n        return {\n            \"message\": \"JSON report generated successfully.\",\n            \"stdout\": completed.stdout,\n            \"report_file\": report_file,\n        }\n    except subprocess.CalledProcessError as exc:\n        raise HTTPException(\n            status_code=500,\n            detail=f\"Failed to generate Slither JSON report: {exc.stderr}\",\n        )",
+            "usage": "await fetch('/api/slither/report', { method: 'POST' });"
+        }
+    ]
+}

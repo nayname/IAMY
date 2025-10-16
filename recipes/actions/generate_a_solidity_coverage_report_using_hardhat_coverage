@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Installs the hardhat-coverage plugin as a development dependency via npm.",
+            "code": "import subprocess\n\n\ndef install_hardhat_coverage():\n    '''\n    Installs the hardhat-coverage plugin as a development dependency.\n    '''\n    try:\n        result = subprocess.run(\n            ['npm', 'install', '--save-dev', 'hardhat-coverage'],\n            check=True,\n            capture_output=True,\n            text=True\n        )\n        return {'stdout': result.stdout, 'stderr': result.stderr}\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f'Failed to install hardhat-coverage: {err.stderr}') from err",
+            "usage": "await fetch('/api/install_hardhat_coverage', { method: 'POST' });"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Ensures that `require('hardhat-coverage');` is present at the top of hardhat.config.js.",
+            "code": "import pathlib\n\n\ndef configure_hardhat():\n    '''\n    Adds require('hardhat-coverage'); to hardhat.config.js if not already present.\n    '''\n    config_path = pathlib.Path('hardhat.config.js')\n    if not config_path.exists():\n        raise FileNotFoundError('hardhat.config.js not found.')\n\n    content = config_path.read_text()\n    require_line = \"require('hardhat-coverage');\"\n\n    if require_line not in content:\n        config_path.write_text(f'{require_line}\\n{content}')\n        return {'status': 'updated', 'path': str(config_path)}\n\n    return {'status': 'already_configured', 'path': str(config_path)}",
+            "usage": "await fetch('/api/configure_hardhat', { method: 'POST' });"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Runs `npx hardhat coverage` to compile contracts, execute tests, and generate coverage data.",
+            "code": "import subprocess\n\n\ndef run_hardhat_coverage():\n    '''\n    Executes the Hardhat coverage task.\n    '''\n    try:\n        result = subprocess.run(\n            ['npx', 'hardhat', 'coverage'],\n            check=True,\n            capture_output=True,\n            text=True\n        )\n        return {'stdout': result.stdout}\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f'Coverage run failed: {err.stderr}') from err",
+            "usage": "await fetch('/api/run_hardhat_coverage', { method: 'POST' });"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Opens the generated HTML coverage report in the user's default browser.",
+            "code": "import webbrowser\nimport pathlib\n\n\ndef open_coverage_report():\n    '''\n    Opens coverage/lcov-report/index.html in the default browser if it exists.\n    '''\n    report_path = pathlib.Path('coverage/lcov-report/index.html').resolve()\n    if not report_path.exists():\n        raise FileNotFoundError('Coverage report not found; please run coverage first.')\n\n    webbrowser.open(report_path.as_uri())\n    return {'status': 'opened', 'report': str(report_path)}",
+            "usage": "await fetch('/api/open_coverage_report', { method: 'POST' });"
+        }
+    ]
+}

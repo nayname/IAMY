@@ -1,0 +1,47 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 implements a Python helper that discovers the simd node\u2019s home directory, trying an environment variable, the simd CLI, and finally a sane default.",
+            "code": "import os\nimport subprocess\n\ndef get_chain_home() -> str:\n    \"\"\"Detect the simd node's home directory.\n\n    Priority order:\n      1. `SIMD_HOME` environment variable\n      2. `simd config home` CLI output\n      3. Fallback to `~/.simapp`\n    \"\"\"\n    # 1. Environment variable\n    env_home = os.getenv(\"SIMD_HOME\")\n    if env_home and os.path.isdir(os.path.expanduser(env_home)):\n        return os.path.expanduser(env_home)\n\n    # 2. CLI query (may not exist on older versions)\n    try:\n        result = subprocess.run([\"simd\", \"config\", \"home\"], capture_output=True, text=True, check=True)\n        cli_home = result.stdout.strip()\n        if cli_home and os.path.isdir(os.path.expanduser(cli_home)):\n            return os.path.expanduser(cli_home)\n    except (subprocess.SubprocessError, FileNotFoundError):\n        # CLI not available or failed; continue\n        pass\n\n    # 3. Fallback default\n    default_home = os.path.expanduser(\"~/.simapp\")\n    if os.path.isdir(default_home):\n        return default_home\n\n    raise FileNotFoundError(\"Unable to determine simd home directory. Set 'SIMD_HOME' or install simd CLI.\")",
+            "usage": "chain_home = get_chain_home()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 constructs the absolute path to config/genesis.json inside the detected home directory and validates its existence.",
+            "code": "import os\n\ndef locate_genesis_file(chain_home: str) -> str:\n    \"\"\"Return the absolute path to config/genesis.json, ensuring it exists.\"\"\"\n    genesis_path = os.path.join(chain_home, \"config\", \"genesis.json\")\n    if not os.path.isfile(genesis_path):\n        raise FileNotFoundError(f\"genesis.json not found at {genesis_path}\")\n    return genesis_path",
+            "usage": "genesis_path = locate_genesis_file(chain_home)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 creates a backup copy of the original genesis.json, saving it as genesis.json.bak in the same directory.",
+            "code": "import shutil\n\ndef backup_genesis(genesis_path: str) -> str:\n    \"\"\"Copy genesis.json to genesis.json.bak and return the backup path.\"\"\"\n    backup_path = genesis_path + \".bak\"\n    shutil.copy2(genesis_path, backup_path)\n    return backup_path",
+            "usage": "backup_path = backup_genesis(genesis_path)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 loads the genesis JSON, updates the top-level `chain_id` to \u201ctesting\u201d, and returns the updated object (but does not write it yet).",
+            "code": "import json\n\ndef update_chain_id(genesis_path: str, new_chain_id: str = \"testing\") -> dict:\n    \"\"\"Return a modified genesis dict with the chain_id changed.\"\"\"\n    with open(genesis_path, \"r\", encoding=\"utf-8\") as f:\n        genesis_data = json.load(f)\n\n    genesis_data[\"chain_id\"] = new_chain_id\n    return genesis_data",
+            "usage": "updated_genesis = update_chain_id(genesis_path, new_chain_id=\"testing\")"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 safely writes the updated genesis back to disk, using a temporary file to prevent data corruption.",
+            "code": "import json\nimport os\nimport shutil\nimport tempfile\n\ndef save_genesis(genesis_path: str, genesis_data: dict) -> None:\n    \"\"\"Safely overwrite genesis.json with the updated content.\"\"\"\n    dir_name = os.path.dirname(genesis_path)\n    # Write to a temp file first\n    with tempfile.NamedTemporaryFile(\"w\", dir=dir_name, delete=False, encoding=\"utf-8\") as tmp:\n        json.dump(genesis_data, tmp, indent=2, ensure_ascii=False)\n        tmp.flush()\n        os.fsync(tmp.fileno())\n        temp_name = tmp.name\n    # Atomically replace the original file\n    shutil.move(temp_name, genesis_path)",
+            "usage": "save_genesis(genesis_path, updated_genesis)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Step 6 executes `simd validate-genesis` to make sure the modified genesis file is valid and passes all invariants.",
+            "code": "import subprocess\n\ndef validate_genesis(chain_home: str) -> bool:\n    \"\"\"Return True if `simd validate-genesis` succeeds, otherwise False.\"\"\"\n    try:\n        subprocess.run([\n            \"simd\",\n            \"validate-genesis\",\n            \"--home\",\n            chain_home,\n        ], check=True)\n        return True\n    except subprocess.CalledProcessError as err:\n        print(\"Genesis validation failed:\", err)\n        return False",
+            "usage": "is_valid = validate_genesis(chain_home)\nprint(\"Genesis valid?\", is_valid)"
+        }
+    ]
+}

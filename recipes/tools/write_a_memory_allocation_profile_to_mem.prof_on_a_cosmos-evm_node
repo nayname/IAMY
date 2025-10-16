@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "connect_rpc_endpoint verifies that the supplied JSON-RPC URL is reachable and returns the validated endpoint string.",
+            "function": "connect_rpc_endpoint(rpc_endpoint)",
+            "usage": "rpc_url = connect_rpc_endpoint('http://localhost:8545')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "get_rpc_auth_header builds the Basic-Auth HTTP header from RPC_USER and RPC_PASS environment variables to authenticate private debug methods.",
+            "function": "get_rpc_auth_header()",
+            "usage": "auth_header = get_rpc_auth_header()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "json_rpc_call sends an arbitrary JSON-RPC request, here invoking debug_writeMemProfile so the node writes its memory profile to mem.prof.",
+            "function": "json_rpc_call(method, params, endpoint)",
+            "usage": "json_rpc_call('debug_writeMemProfile', ['mem.prof'], rpc_url)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "rpc_url = connect_rpc_endpoint('http://localhost:8545')#step: 1 Tool: select_rpc_endpoint Desciption: Identify the JSON-RPC URL of the Cosmos-EVM full node (e.g. http://localhost:8545).",
+        "auth_header = get_rpc_auth_header()#step: 2 Tool: authenticate_debug_namespace Desciption: Provide the node\u2019s configured credentials or JWT token because debug_writeMemProfile is marked Private and requires authentication.",
+        "json_rpc_call('debug_writeMemProfile', ['mem.prof'], rpc_url)#step: 3 Tool: json_rpc_call Desciption: Invoke debug_writeMemProfile with the single parameter \"mem.prof\" to instruct the node to write the allocation profile:\n{\n  \"method\": \"debug_writeMemProfile\",\n  \"params\": [\"mem.prof\"],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+    ],
+    "intent": "Write a memory allocation profile to mem.prof on a Cosmos-EVM node",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "select_rpc_endpoint",
+            "description": "Identify the JSON-RPC URL of the Cosmos-EVM full node (e.g. http://localhost:8545)."
+        },
+        {
+            "step": 2,
+            "tool": "authenticate_debug_namespace",
+            "description": "Provide the node\u2019s configured credentials or JWT token because debug_writeMemProfile is marked Private and requires authentication."
+        },
+        {
+            "step": 3,
+            "tool": "json_rpc_call",
+            "description": "Invoke debug_writeMemProfile with the single parameter \"mem.prof\" to instruct the node to write the allocation profile:\n{\n  \"method\": \"debug_writeMemProfile\",\n  \"params\": [\"mem.prof\"],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+        }
+    ],
+    "outcome_checks": [
+        "Receive a JSON-RPC result field with value true or an empty string (implementation dependent).",
+        "Confirm that a new file named mem.prof appears in the node\u2019s working directory."
+    ]
+}

@@ -1,0 +1,79 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates and writes the PreBlocker function into app/app.go so it can update consensus parameters each block.",
+            "function": "create_preblocker_fn(app_dir: str)",
+            "usage": "create_preblocker_fn(\"./myapp\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Inserts a call to app.SetPreBlocker(PreBlocker) inside the NewApp constructor to register the PreBlocker.",
+            "function": "register_preblocker(app_dir: str)",
+            "usage": "register_preblocker(\"./myapp\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Rebuilds the application\u2019s Go binary so the new PreBlocker logic is included.",
+            "function": "compile_binary(app_dir: str = \".\")",
+            "usage": "compile_binary(\"./myapp\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Initialises (if needed) and starts a single-node local chain to begin producing blocks.",
+            "function": "start_local_chain(home: str = \"./data\", chain_id: str = \"localnet\", binary: str = \"appd\")",
+            "usage": "start_local_chain(home=\"./data\", chain_id=\"localnet\")"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Fetches the consensus parameter subspace at a specified block height to verify updates.",
+            "function": "query_consensus_params(height: int, binary: str = \"appd\")",
+            "usage": "query_consensus_params(height=50)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "create_preblocker_fn(\"./myapp\")#step: 1 Tool: create_preblocker_fn Desciption: In app/app.go define `func PreBlocker(ctx sdk.Context, req abci.RequestPreBlock) { ... }` that calls `app.BaseApp.UpdateConsensusParams(ctx, newParams)`.",
+        "register_preblocker(\"./myapp\")#step: 2 Tool: register_preblocker Desciption: Invoke `app.SetPreBlocker(PreBlocker)` during app construction (after BaseApp is created).",
+        "compile_binary(\"./myapp\")#step: 3 Tool: compile_binary Desciption: Rebuild the binary to include the PreBlocker logic.",
+        "start_local_chain(home=\"./data\", chain_id=\"localnet\")#step: 4 Tool: start_local_chain Desciption: Start a local single-node chain and let a few blocks produce.",
+        "query_consensus_params(height=50)#step: 5 Tool: query_consensus_params Desciption: Run `appd query params subspace consensus 1 --height <n>` at successive heights to confirm the parameters changed as intended."
+    ],
+    "intent": "Set a PreBlocker that updates consensus parameters every block",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "create_preblocker_fn",
+            "description": "In app/app.go define `func PreBlocker(ctx sdk.Context, req abci.RequestPreBlock) { ... }` that calls `app.BaseApp.UpdateConsensusParams(ctx, newParams)`."
+        },
+        {
+            "step": 2,
+            "tool": "register_preblocker",
+            "description": "Invoke `app.SetPreBlocker(PreBlocker)` during app construction (after BaseApp is created)."
+        },
+        {
+            "step": 3,
+            "tool": "compile_binary",
+            "description": "Rebuild the binary to include the PreBlocker logic."
+        },
+        {
+            "step": 4,
+            "tool": "start_local_chain",
+            "description": "Start a local single-node chain and let a few blocks produce."
+        },
+        {
+            "step": 5,
+            "tool": "query_consensus_params",
+            "description": "Run `appd query params subspace consensus 1 --height <n>` at successive heights to confirm the parameters changed as intended."
+        }
+    ],
+    "outcome_checks": [
+        "Consensus parameters reported by the node differ between consecutive heights in accordance with the PreBlocker logic.",
+        "No consensus failures or evidence of mis-behavior appear in the logs."
+    ]
+}

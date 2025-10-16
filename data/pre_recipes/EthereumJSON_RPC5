@@ -1,0 +1,129 @@
+[
+    {
+        "intent": "Retrieve the list of pending (unconfirmed) transactions from the Cosmos mempool",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "set_rpc_endpoint",
+                "description": "Identify the CometBFT RPC address of the node (e.g., http://localhost:26657)."
+            },
+            {
+                "step": 2,
+                "tool": "fetch_unconfirmed_txs",
+                "description": "Issue an HTTP GET request to /unconfirmed_txs?limit=<N> to pull the current mempool contents."
+            },
+            {
+                "step": 3,
+                "tool": "parse_response",
+                "description": "Parse the JSON response to extract the n_txs count and the txs array (base64-encoded transactions)."
+            }
+        ],
+        "outcome_checks": [
+            "HTTP status code is 200.",
+            "Field n_txs equals the length of the returned txs array.",
+            "If n_txs is 0, the txs array is empty; otherwise each element is a valid base64 string."
+        ]
+    },
+    {
+        "intent": "Create a new key (account) secured with a passphrase",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "choose_key_name",
+                "description": "Select a unique key name that is not already present in the keyring."
+            },
+            {
+                "step": 2,
+                "tool": "keys_add",
+                "description": "Run: simd keys add <name> --keyring-backend file , then provide the desired passphrase twice when prompted."
+            },
+            {
+                "step": 3,
+                "tool": "record_mnemonic",
+                "description": "Safely store the 24-word mnemonic output by the command in an offline location."
+            }
+        ],
+        "outcome_checks": [
+            "CLI prints a bech32 address and mnemonic.",
+            "simd keys show <name> --keyring-backend file returns the same address without error."
+        ]
+    },
+    {
+        "intent": "Import a raw private key into the Cosmos keyring",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prepare_privkey_file",
+                "description": "Save the hex-encoded private key to a temporary file (e.g., privkey.hex)."
+            },
+            {
+                "step": 2,
+                "tool": "keys_import",
+                "description": "Execute: simd keys import <name> privkey.hex --keyring-backend file , then supply a new passphrase to encrypt the key."
+            },
+            {
+                "step": 3,
+                "tool": "verify_import",
+                "description": "Run: simd keys show <name> --keyring-backend file to display the newly imported address."
+            }
+        ],
+        "outcome_checks": [
+            "keys import exits with code 0.",
+            "simd keys list includes the new key name.",
+            "simd keys show returns a valid bech32 address."
+        ]
+    },
+    {
+        "intent": "Temporarily unlock an account for 60 seconds so it can sign transactions without reprompting",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "export_passphrase_env",
+                "description": "Export the account\u2019s passphrase into an environment variable (e.g., export KEYRING_PASSPHRASE=\"<pass>\")."
+            },
+            {
+                "step": 2,
+                "tool": "run_timeboxed_script",
+                "description": "Within a shell subshell or script, run the required simd tx sign / broadcast commands; a sleep 60 && unset KEYRING_PASSPHRASE can be used to clear the variable after 60 s."
+            },
+            {
+                "step": 3,
+                "tool": "confirm_relock",
+                "description": "Attempt another signing operation after 60 s to ensure the CLI prompts for the passphrase again."
+            }
+        ],
+        "outcome_checks": [
+            "Signing operations inside the 60-second window succeed without an interactive prompt.",
+            "Signing attempted after 60 s prompts for the passphrase (or fails if unattended)."
+        ]
+    },
+    {
+        "intent": "Sign an arbitrary message using eth_sign on a Cosmos-EVM (Ethermint/Evmos) JSON-RPC endpoint",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "connect_json_rpc",
+                "description": "Ensure the node\u2019s Ethereum JSON-RPC service is reachable (default http://localhost:8545)."
+            },
+            {
+                "step": 2,
+                "tool": "format_message_hex",
+                "description": "Convert the ASCII/UTF-8 message to 0x-prefixed hex, as required by eth_sign."
+            },
+            {
+                "step": 3,
+                "tool": "eth_sign",
+                "description": "Call eth_sign with parameters [fromAddress, 0xMessageHex] via curl or web3 library."
+            },
+            {
+                "step": 4,
+                "tool": "verify_signature",
+                "description": "Optionally call eth_call / personal_ecRecover or use web3.eth.accounts.recover to ensure the signature recovers the original address."
+            }
+        ],
+        "outcome_checks": [
+            "RPC returns a 0x-prefixed 132-character signature (65 bytes).",
+            "Recovering the signer address with the signature and message yields the original fromAddress."
+        ]
+    }
+]

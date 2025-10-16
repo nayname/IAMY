@@ -1,0 +1,81 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Obtains the connected user\u2019s Neutron bech32 address from the browser wallet.",
+            "function": "getUserWalletAddress()",
+            "usage": "const userAddress = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the vesting contract to find the amount of claimable (unclaimed) NTRN rewards for a given address.",
+            "function": "query_vesting_contract(address)",
+            "usage": "pending = await query_vesting_contract(user_address)"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Creates a MsgExecuteContract wrapper that includes the `{ claim: { vesting: \"standard\" } }` payload.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds = [])",
+            "usage": "const exec = constructTxWasmExecute(sender, vestingContract, { claim: { vesting: 'standard' } });"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the prepared transaction with the supplied wallet and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "const result = sign_and_broadcast_tx(tx, wallet, client)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Retrieves the latest vesting schedule for the address to confirm the rewards were successfully added.",
+            "function": "query_vesting_schedule(address)",
+            "usage": "const schedule = await query_vesting_schedule(user_address)"
+        }
+    ],
+    "frontend": [
+        "const userAddress = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Determine the claimant\u2019s Neutron address.",
+        "const exec = constructTxWasmExecute(sender, vestingContract, { claim: { vesting: 'standard' } });//step: 3 Tool: construct_wasm_execute_claim Desciption: Build `{ \"claim\": { \"vesting\": \"standard\" } }` to route rewards into the default vesting schedule."
+    ],
+    "backend": [
+        "pending = await query_vesting_contract(user_address)#step: 2 Tool: query_pending_rewards Desciption: Fetch the amount of unclaimed NTRN rewards and confirm they are > 0.",
+        "const result = sign_and_broadcast_tx(tx, wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the claim transaction.",
+        "const schedule = await query_vesting_schedule(user_address)#step: 5 Tool: query_vesting_schedule Desciption: Retrieve the updated vesting schedule to verify the rewards were added."
+    ],
+    "intent": "Claim my NTRN rewards with standard vesting",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_wallet_address",
+            "description": "Determine the claimant\u2019s Neutron address."
+        },
+        {
+            "step": 2,
+            "tool": "query_pending_rewards",
+            "description": "Fetch the amount of unclaimed NTRN rewards and confirm they are > 0."
+        },
+        {
+            "step": 3,
+            "tool": "construct_wasm_execute_claim",
+            "description": "Build `{ \"claim\": { \"vesting\": \"standard\" } }` to route rewards into the default vesting schedule."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the claim transaction."
+        },
+        {
+            "step": 5,
+            "tool": "query_vesting_schedule",
+            "description": "Retrieve the updated vesting schedule to verify the rewards were added."
+        }
+    ],
+    "outcome_checks": [
+        "Claim transaction finalized with success code 0.",
+        "Vesting contract shows a new entry with the claimed NTRN amount, correct cliff and unlock schedule.",
+        "Wallet reflects any immediately unlocked portion, if applicable."
+    ]
+}

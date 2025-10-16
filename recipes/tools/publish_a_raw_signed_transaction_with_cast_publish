@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "No implemented helper was found that prompts for a 0x-prefixed, RLP-encoded signed transaction string.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "broadcast_signed_tx() sends the raw, pre-signed transaction to the network and returns its hash, mirroring the effect of \u201ccast publish\u201d.",
+            "function": "broadcast_signed_tx()",
+            "usage": "tx_info = await broadcast_signed_tx()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Storing the transaction hash is handled inline; no specific utility function exists for this task.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "fetch_receipt(tx_hash) contacts the RPC endpoint and returns the transaction receipt to verify inclusion.",
+            "function": "fetch_receipt(tx_hash)",
+            "usage": "receipt = await fetch_receipt(tx_hash)"
+        }
+    ],
+    "frontend": [
+        "undef//step: 1 Tool: input_raw_tx Desciption: Obtain (or prompt the user for) the 0x-prefixed RLP-encoded signed transaction string."
+    ],
+    "backend": [
+        "tx_info = await broadcast_signed_tx()#step: 2 Tool: run_command Desciption: Broadcast the raw transaction:\n  cast publish $RAW_TX_HEX --rpc-url $COSMOS_RPC_URL",
+        "undef#step: 3 Tool: capture_output Desciption: Store the transaction hash returned by cast.",
+        "receipt = await fetch_receipt(tx_hash)#step: 4 Tool: run_command Desciption: Confirm inclusion by fetching the receipt:\n  cast receipt $TX_HASH --rpc-url $COSMOS_RPC_URL --json"
+    ],
+    "intent": "Publish a raw signed transaction with cast publish",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "input_raw_tx",
+            "description": "Obtain (or prompt the user for) the 0x-prefixed RLP-encoded signed transaction string."
+        },
+        {
+            "step": 2,
+            "tool": "run_command",
+            "description": "Broadcast the raw transaction:\n  cast publish $RAW_TX_HEX --rpc-url $COSMOS_RPC_URL"
+        },
+        {
+            "step": 3,
+            "tool": "capture_output",
+            "description": "Store the transaction hash returned by cast."
+        },
+        {
+            "step": 4,
+            "tool": "run_command",
+            "description": "Confirm inclusion by fetching the receipt:\n  cast receipt $TX_HASH --rpc-url $COSMOS_RPC_URL --json"
+        }
+    ],
+    "outcome_checks": [
+        "Receipt status equals 1 (success) and includes a blockNumber field.",
+        "gasUsed and logs fields are present, confirming the tx was fully processed."
+    ]
+}

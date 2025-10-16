@@ -1,0 +1,81 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No implemented helper is available in the codebase to query IBC channels or inspect their ordering.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "calculateUnlockTimestamp() returns a Unix timestamp far in the future, which can be re-purposed as a unique timeout value for an IBC transfer.",
+            "function": "calculateUnlockTimestamp()",
+            "usage": "const timeoutNs = calculateUnlockTimestamp() * 1_000_000_000;"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "sign_and_broadcast_tx(tx, wallet, client) signs the prepared MsgTransfer transaction and broadcasts it to the chain in one call.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "const res = sign_and_broadcast_tx(transferTx, senderWallet, ledgerClient);"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "The same sign_and_broadcast_tx call returns a response whose tx_response.txhash field is the hash you need to capture.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "const txHash = res.tx_response.txhash;"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "wait_for_tx_commit(tx_hash, client) continuously queries the node until the given transaction is included in a block (code 0).",
+            "function": "wait_for_tx_commit(tx_hash, client, timeout=120, poll=2.0)",
+            "usage": "const confirmation = wait_for_tx_commit(txHash, ledgerClient);"
+        }
+    ],
+    "frontend": [
+        "const timeoutNs = calculateUnlockTimestamp() * 1_000_000_000;//step: 2 Tool: generate_timeout_timestamp Desciption: Compute a Unix time at least several minutes in the future and convert it to nanoseconds: `export TIMEOUT=$(($(date +%s)+600))000000000`."
+    ],
+    "backend": [
+        "undef#step: 1 Tool: query_ibc_channel Desciption: Run `gaiad q ibc channel channels --node <RPC>` and locate the desired `<port-id>/<channel-id>` pair. Confirm the channel\u2019s ordering field is `UNORDERED`.",
+        "const res = sign_and_broadcast_tx(transferTx, senderWallet, ledgerClient);#step: 3 Tool: tx_ibc_transfer Desciption: Construct the transfer: `gaiad tx ibc-transfer transfer transfer <channel-id> <receiver> <amount><denom> --from <key> --timeout-timestamp $TIMEOUT --chain-id <chain-id> -y -b block`.",
+        "const txHash = res.tx_response.txhash;#step: 4 Tool: sign_and_broadcast_tx Desciption: The previous command signs and broadcasts automatically; capture the resulting TX hash.",
+        "const confirmation = wait_for_tx_commit(txHash, ledgerClient);#step: 5 Tool: monitor_tx Desciption: Use `gaiad q tx <txhash> --node <RPC> --type=json` until `code` is 0, indicating inclusion in a block."
+    ],
+    "intent": "Create an IBC transfer on an unordered channel with a unique timeout timestamp",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "query_ibc_channel",
+            "description": "Run `gaiad q ibc channel channels --node <RPC>` and locate the desired `<port-id>/<channel-id>` pair. Confirm the channel\u2019s ordering field is `UNORDERED`."
+        },
+        {
+            "step": 2,
+            "tool": "generate_timeout_timestamp",
+            "description": "Compute a Unix time at least several minutes in the future and convert it to nanoseconds: `export TIMEOUT=$(($(date +%s)+600))000000000`."
+        },
+        {
+            "step": 3,
+            "tool": "tx_ibc_transfer",
+            "description": "Construct the transfer: `gaiad tx ibc-transfer transfer transfer <channel-id> <receiver> <amount><denom> --from <key> --timeout-timestamp $TIMEOUT --chain-id <chain-id> -y -b block`."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "The previous command signs and broadcasts automatically; capture the resulting TX hash."
+        },
+        {
+            "step": 5,
+            "tool": "monitor_tx",
+            "description": "Use `gaiad q tx <txhash> --node <RPC> --type=json` until `code` is 0, indicating inclusion in a block."
+        }
+    ],
+    "outcome_checks": [
+        "The transaction hash returns `code: 0` and appears in a confirmed block.",
+        "On the destination chain, the receiver\u2019s balance increases by the expected amount.",
+        "If the timeout elapses without acknowledgement, the source chain emits an OnTimeoutPacket event."
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Creates a browser-friendly JavaScript helper that sends an eth_getBlockByNumber JSON-RPC request to any Cosmos-EVM endpoint and returns the decoded block data.",
+            "code": "export const getBlockByNumber = async ({\n  rpcEndpoint,\n  blockNumber = '0x1',       // Hex string or tags like 'latest'\n  includeTxObjects = true,   // true: full tx objects, false: only tx hashes\n  fetchOptions = {}          // optional: extra init values for fetch (e.g., mode, credentials)\n} = {}) => {\n  if (!rpcEndpoint) {\n    throw new Error('Parameter \"rpcEndpoint\" is required.');\n  }\n\n  // Compose the JSON-RPC payload\n  const payload = {\n    jsonrpc: '2.0',\n    id: 1,\n    method: 'eth_getBlockByNumber',\n    params: [blockNumber, includeTxObjects]\n  };\n\n  try {\n    const response = await fetch(rpcEndpoint, {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json'\n      },\n      body: JSON.stringify(payload),\n      ...fetchOptions\n    });\n\n    // Network-level error handling\n    if (!response.ok) {\n      throw new Error(`JSON-RPC call failed with HTTP status ${response.status}`);\n    }\n\n    const body = await response.json();\n\n    // JSON-RPC-level error handling\n    if (body.error) {\n      const message = body.error.message || JSON.stringify(body.error);\n      throw new Error(`RPC Error: ${message}`);\n    }\n\n    return body.result; // the block object\n  } catch (err) {\n    console.error('[getBlockByNumber] RPC request failed:', err);\n    throw err;\n  }\n};",
+            "usage": "import { getBlockByNumber } from './path/to/helpers';\n\n(async () => {\n  try {\n    const block = await getBlockByNumber({\n      rpcEndpoint: 'https://rpc.evmos.org:8545', // replace with your Cosmos-EVM endpoint\n      blockNumber: '0x1',                        // genesis block\n      includeTxObjects: true\n    });\n\n    console.log('Block data:', block);\n  } catch (e) {\n    alert('Failed to fetch block: ' + e.message);\n  }\n})();"
+        }
+    ]
+}

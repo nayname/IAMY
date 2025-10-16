@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Uses simd\u2019s snapshot CLI to enumerate all snapshots that exist in the node\u2019s home directory.",
+            "function": "list_snapshots(home_dir)",
+            "usage": "snapshots = list_snapshots(os.path.expanduser('~/.simd'))"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "undef",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Re-runs the snapshot-listing command to verify the chosen snapshot is no longer present.",
+            "function": "list_snapshots(home_dir)",
+            "usage": "remaining = list_snapshots(os.path.expanduser('~/.simd'))"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "snapshots = list_snapshots(os.path.expanduser('~/.simd'))#step: 1 Tool: snapshots_list Desciption: Run \"<appd> snapshots list\" to enumerate all local snapshots and note the snapshot height or identifier you wish to remove.",
+        "undef#step: 2 Tool: snapshots_delete Desciption: Execute \"<appd> snapshots delete <snapshot_identifier>\" to remove the selected snapshot from the snapshot store.",
+        "remaining = list_snapshots(os.path.expanduser('~/.simd'))#step: 3 Tool: snapshots_list Desciption: Re-run \"<appd> snapshots list\" to confirm the snapshot no longer appears in the inventory."
+    ],
+    "intent": "Delete a local snapshot stored by the node",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "snapshots_list",
+            "description": "Run \"<appd> snapshots list\" to enumerate all local snapshots and note the snapshot height or identifier you wish to remove."
+        },
+        {
+            "step": 2,
+            "tool": "snapshots_delete",
+            "description": "Execute \"<appd> snapshots delete <snapshot_identifier>\" to remove the selected snapshot from the snapshot store."
+        },
+        {
+            "step": 3,
+            "tool": "snapshots_list",
+            "description": "Re-run \"<appd> snapshots list\" to confirm the snapshot no longer appears in the inventory."
+        }
+    ],
+    "outcome_checks": [
+        "The chosen snapshot identifier is absent from the list after deletion.",
+        "Command exits with status code 0 and prints a confirmation message such as \"snapshot deleted\"."
+    ]
+}

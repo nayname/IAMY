@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Stops the running Cosmos SDK (simd) service so configuration files can be safely edited.",
+            "function": "stop_simd_service(service_name='simd')",
+            "usage": "stop_simd_service()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Opens the node\u2019s app.toml and rewrites configuration lines, allowing parameters such as snapshot-interval to be updated.",
+            "function": "update_app_toml_parameter(config_path=\"~/.gaia/config/app.toml\")",
+            "usage": "update_app_toml_parameter(config_path=\"/home/validator/.gaia/config/app.toml\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Restarts the node\u2019s systemd service and waits until it is reported as active, applying the new snapshot settings.",
+            "function": "restart_node_service(daemon_name, wait_seconds=60)",
+            "usage": "restart_node_service('simd')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Lists on-disk snapshots so you can confirm a new file appears every 1000 blocks.",
+            "function": "list_snapshots(home_dir)",
+            "usage": "list_snapshots('~/.gaia')"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "No implemented backend function was found that verifies the snapshot info endpoint.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "stop_simd_service()#step: 1 Tool: stop_node_service Desciption: Gracefully stop the running Cosmos SDK node to modify configuration.",
+        "update_app_toml_parameter(config_path=\"/home/validator/.gaia/config/app.toml\")#step: 2 Tool: edit_app_toml_snapshot_section Desciption: Open `$HOME/.<chain-id>/config/app.toml` and set `snapshot-interval = 1000` and ensure `snapshot-keep-recent` is appropriately configured.",
+        "restart_node_service('simd')#step: 3 Tool: start_node_service Desciption: Restart the node so the new snapshot settings take effect.",
+        "list_snapshots('~/.gaia')#step: 4 Tool: verify_snapshot_creation Desciption: Monitor the node logs or check the `$HOME/.<chain-id>/data/snapshots` directory to confirm a snapshot is created every 1000 blocks.",
+        "undef#step: 5 Tool: serve_snapshot_rpc Desciption: Ensure the node\u2019s RPC endpoint exposes the `snapshot` info (e.g., via `/snapshot/info`) for state-syncing peers."
+    ],
+    "intent": "Enable state sync snapshots with interval 1000",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "stop_node_service",
+            "description": "Gracefully stop the running Cosmos SDK node to modify configuration."
+        },
+        {
+            "step": 2,
+            "tool": "edit_app_toml_snapshot_section",
+            "description": "Open `$HOME/.<chain-id>/config/app.toml` and set `snapshot-interval = 1000` and ensure `snapshot-keep-recent` is appropriately configured."
+        },
+        {
+            "step": 3,
+            "tool": "start_node_service",
+            "description": "Restart the node so the new snapshot settings take effect."
+        },
+        {
+            "step": 4,
+            "tool": "verify_snapshot_creation",
+            "description": "Monitor the node logs or check the `$HOME/.<chain-id>/data/snapshots` directory to confirm a snapshot is created every 1000 blocks."
+        },
+        {
+            "step": 5,
+            "tool": "serve_snapshot_rpc",
+            "description": "Ensure the node\u2019s RPC endpoint exposes the `snapshot` info (e.g., via `/snapshot/info`) for state-syncing peers."
+        }
+    ],
+    "outcome_checks": [
+        "Snapshots appear in the snapshots directory at the expected 1000-block cadence.",
+        "RPC endpoint returns valid snapshot metadata.",
+        "Peers can successfully state-sync using the produced snapshots."
+    ]
+}

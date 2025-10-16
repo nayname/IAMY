@@ -1,0 +1,61 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"Learn\", \"query\": \"Add wallet keys to keyring\"}, {\"label\": \"Learn\", \"query\": \"Query node status\"}, {\"label\": \"Learn\", \"query\": \"Query block at height 0 should return error\"}, {\"label\": \"Learn\", \"query\": \"Add streaming services to kv stores\"}, {\"label\": \"Learn\", \"query\": \"Create and sign multi-sign transaction\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "b1028cb9-713c-4d10-8221-29a9bb382b5f",
+            "example": false
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Add a new wallet key to the local keyring\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"select_keyring_backend\",\n        \"description\": \"Determine and set the keyring backend (os, file, or memory) via the --keyring-backend flag or KEYRING_BACKEND env variable.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"key_add\",\n        \"description\": \"Run '<chaind> keys add <key_name>' to generate a new key and store it in the chosen keyring.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"securely_store_mnemonic\",\n        \"description\": \"Display the generated mnemonic and prompt the user to back it up in a secure location.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"key_list\",\n        \"description\": \"Execute '<chaind> keys list' to verify the new key appears in the keyring.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The new key name is present in the key list output.\",\n      \"No errors were returned during key creation.\"\n    ]\n  },\n  {\n    \"intent\": \"Query the current status of a running full node\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"rpc_call_status\",\n        \"description\": \"Call the Tendermint RPC endpoint GET /status or run '<chaind> status --node <rpc_url>'.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"parse_node_status\",\n        \"description\": \"Extract latest block height, syncing status, and network ID from the returned JSON.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The response JSON contains non-zero latest_block_height.\",\n      \"sync_info.catching_up is false (or expected value) indicating machine health.\"\n    ]\n  },\n  {\n    \"intent\": \"Query block at height 0 and confirm the node returns an error\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"rpc_call_block_by_height\",\n        \"description\": \"Request GET /block?height=0 (or '<chaind> query block 0').\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"assert_error_for_height_0\",\n        \"description\": \"Expect and validate that the RPC response returns error code for invalid height (height must be > 0).\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"RPC response contains an error object with code != 0.\",\n      \"Error message explicitly mentions height must be greater than 0.\"\n    ]\n  },\n  {\n    \"intent\": \"Enable streaming services for KV stores\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"enable_state_streaming_config\",\n        \"description\": \"In app.toml, set 'streamers = [\\\"kinesis\\\", \\\"fs\\\", ...]' or programmatically pass 'streaming' options in app.go.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"integrate_streaming_module\",\n        \"description\": \"Import the 'state/streaming' packages and register them with the BaseApp using 'app.SetStreamingManager(...)'.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"rebuild_app_binary\",\n        \"description\": \"Compile the modified chain binary so the streaming manager is included.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"restart_node_with_streaming\",\n        \"description\": \"Start the node with the new binary and updated configuration.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"verify_streaming_output\",\n        \"description\": \"Confirm that KV store changes are being sent to the configured streaming sink (file system directory, Kinesis stream, etc.).\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Node logs show 'Streaming service enabled' at startup.\",\n      \"Streaming sink receives key-value change events in real time.\"\n    ]\n  },\n  {\n    \"intent\": \"Create and sign a multi-signature transaction\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"create_multisig_pubkey_from_parties\",\n        \"description\": \"Combine individual public keys with '<chaind> keys add <name> --multisig=<key1>,<key2>,<key3> --multisig-threshold=<N>'.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"add_multisig_signer_to_keyring\",\n        \"description\": \"Store the resulting multisig address in the keyring for future use.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_transaction\",\n        \"description\": \"Build an unsigned transaction (e.g., bank send) using the multisig address as the sender: '<chaind> tx bank send ... --generate-only'.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_tx_with_individual_keys\",\n        \"description\": \"Distribute the unsigned tx file and have each signer run '<chaind> tx sign ... --sign-mode=direct --from <signer_key>'.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"combine_multisig_signatures\",\n        \"description\": \"Merge the partial signatures with '<chaind> tx multisign <unsigned.json> <multisig_account_name> <sig1.json> <sig2.json> ...'.\"\n      },\n      {\n        \"step\": 6,\n        \"tool\": \"broadcast_combined_tx\",\n        \"description\": \"Broadcast the fully-signed transaction with '<chaind> tx broadcast <multisig_tx.json>'.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The combined transaction successfully passes CheckTx and is included in a block.\",\n      \"All required signatures (threshold) are present in the final tx.\",\n      \"Balances or state changes produced by the transaction are reflected on-chain.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2853,
+                    "prompt_tokens": 688,
+                    "total_tokens": 3541,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1536,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CQEtgnA5TiaRLip4ndqeACfeWCbFs",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--b8a7b4b4-019b-4e4d-808a-41da9ee2495b-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 688,
+                "output_tokens": 2853,
+                "total_tokens": 3541,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1536
+                }
+            }
+        }
+    ]
+}

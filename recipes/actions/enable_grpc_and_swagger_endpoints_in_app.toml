@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that loads the node's app.toml configuration file into a Python dictionary so it can be inspected or mutated by later steps.",
+            "code": "import os\nimport toml\n\ndef load_app_config(chain_id: str):\n    \"\"\"Load ~/.<chain-id>/config/app.toml and return a (config_dict, file_path) tuple.\"\"\"\n    config_path = os.path.expanduser(f\"~/.{chain_id}/config/app.toml\")\n\n    if not os.path.isfile(config_path):\n        raise FileNotFoundError(f\"app.toml not found at {config_path}\")\n\n    try:\n        with open(config_path, \"r\", encoding=\"utf-8\") as fp:\n            config = toml.load(fp)\n    except Exception as err:\n        raise RuntimeError(f\"Failed to parse {config_path}: {err}\")\n\n    return config, config_path",
+            "usage": "# Python\nconfig, path = load_app_config('neutron')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 enables the gRPC server inside the `[grpc]` section of the same configuration file and (optionally) sets the listen address.",
+            "code": "def enable_grpc(chain_id: str, address: str = \":9090\"):\n    \"\"\"Enable gRPC and set its listen address (default :9090).\"\"\"\n    config, path = load_app_config(chain_id)\n\n    grpc_cfg = config.get(\"grpc\", {})\n    grpc_cfg[\"enable\"] = True\n    if address:\n        grpc_cfg[\"address\"] = address\n    config[\"grpc\"] = grpc_cfg\n\n    # Persist changes back to disk\n    with open(path, \"w\", encoding=\"utf-8\") as fp:\n        toml.dump(config, fp)\n\n    return {\"status\": \"success\", \"path\": path, \"grpc\": grpc_cfg}",
+            "usage": "# Python\nresponse = enable_grpc(chain_id='neutron')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 enables the built-in REST API's Swagger UI and makes sure it listens on `0.0.0.0:1317` by modifying the `[api]` section.",
+            "code": "def enable_swagger(chain_id: str, address: str = \"tcp://0.0.0.0:1317\"):\n    \"\"\"Enable Swagger UI and REST API address.\"\"\"\n    config, path = load_app_config(chain_id)\n\n    api_cfg = config.get(\"api\", {})\n    api_cfg[\"swagger\"] = True\n    api_cfg[\"address\"] = address\n    config[\"api\"] = api_cfg\n\n    with open(path, \"w\", encoding=\"utf-8\") as fp:\n        toml.dump(config, fp)\n\n    return {\"status\": \"success\", \"path\": path, \"api\": api_cfg}",
+            "usage": "# Python\nresponse = enable_swagger(chain_id='neutron')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 restarts the full node so the new configuration is picked up. This example assumes your node is managed by `systemd`.",
+            "code": "import subprocess\n\ndef restart_node(service_name: str):\n    \"\"\"Restart the node via systemctl (e.g. service_name='neutrond').\"\"\"\n    try:\n        subprocess.run([\"systemctl\", \"restart\", service_name], check=True)\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"Failed to restart {service_name}: {err}\")\n    return {\"status\": \"restarted\", \"service\": service_name}",
+            "usage": "# Python\nrestart_node('neutrond')"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 verifies that both gRPC and Swagger endpoints are reachable by invoking `grpcurl` and performing an HTTP request, respectively.",
+            "code": "import subprocess\nimport requests\n\n\ndef check_endpoints(grpc_addr: str = \"localhost:9090\", swagger_url: str = \"http://localhost:1317/swagger/\"):\n    \"\"\"Return a list of gRPC services and whether the Swagger UI is reachable.\"\"\"\n    # Check gRPC services\n    try:\n        result = subprocess.run([\n            \"grpcurl\", \"-plaintext\", grpc_addr, \"list\"\n        ], capture_output=True, text=True, check=True)\n        grpc_services = result.stdout.strip().splitlines()\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"grpcurl failed: {err.stderr}\")\n\n    # Check Swagger UI\n    try:\n        resp = requests.get(swagger_url, timeout=5)\n        swagger_ok = resp.status_code == 200\n    except requests.RequestException:\n        swagger_ok = False\n\n    return {\n        \"grpc_services\": grpc_services,\n        \"swagger_reachable\": swagger_ok\n    }",
+            "usage": "# Python\nstatus = check_endpoints()"
+        }
+    ]
+}

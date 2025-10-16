@@ -1,0 +1,41 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Shows a browser prompt so the user can type in any string or hex data.",
+            "function": "getUserEvmAddressInput()",
+            "usage": "const rawData = getUserEvmAddressInput();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Invokes eth_utils.keccak internally to hash supplied bytes when computing an Ethereum CREATE2 address.",
+            "function": "compute_create2_address(req)",
+            "usage": "const hashInfo = compute_create2_address({ deployer: '0x00\u2026', salt: '0x00\u2026', init_code_hash: '0x00\u2026' });"
+        }
+    ],
+    "frontend": [
+        "const rawData = getUserEvmAddressInput();//step: 1 Tool: prompt_user Desciption: Ask the user for the raw data string or hex bytes they wish to hash."
+    ],
+    "backend": [
+        "const hashInfo = compute_create2_address({ deployer: '0x00\u2026', salt: '0x00\u2026', init_code_hash: '0x00\u2026' });#step: 2 Tool: cast_cli Desciption: Run `cast keccak <data>` to obtain the Keccak-256 hash."
+    ],
+    "intent": "Hash arbitrary data using Keccak-256 (cast keccak)",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "prompt_user",
+            "description": "Ask the user for the raw data string or hex bytes they wish to hash."
+        },
+        {
+            "step": 2,
+            "tool": "cast_cli",
+            "description": "Run `cast keccak <data>` to obtain the Keccak-256 hash."
+        }
+    ],
+    "outcome_checks": [
+        "Output is a 32-byte (64-hex-character) string prefixed with 0x.",
+        "Re-running the command with identical input yields the same hash."
+    ]
+}

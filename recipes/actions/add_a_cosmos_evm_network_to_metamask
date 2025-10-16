@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Expose an HTTP endpoint that returns a ready-to-use MetaMask network configuration for Evmos (RPC URL, Chain ID, symbol, and block-explorer URL).",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom fastapi.responses import JSONResponse\n\napp = FastAPI()\n\n\ndef _evmos_network_config() -> dict:\n    \"\"\"Return a dict that follows MetaMask\u2019s `wallet_addEthereumChain` spec.\"\"\"\n    return {\n        \"chainId\": \"0x2329\",  # 9001 in hex\n        \"chainName\": \"Evmos\",\n        \"nativeCurrency\": {\n            \"name\": \"Evmos\",\n            \"symbol\": \"EVMOS\",\n            \"decimals\": 18\n        },\n        \"rpcUrls\": [\n            \"https://eth.bd.evmos.org:8545\"\n        ],\n        \"blockExplorerUrls\": [\n            \"https://escan.live\"\n        ]\n    }\n\n\n@app.get(\"/api/network/evmos\")\nasync def get_network_config():\n    \"\"\"GET /api/network/evmos \u2192 JSON network parameters.\"\"\"\n    try:\n        return JSONResponse(_evmos_network_config())\n    except Exception as err:\n        raise HTTPException(status_code=500, detail=str(err))",
+            "usage": "Frontend calls: const res = await fetch('/api/network/evmos'); const cfg = await res.json();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Fetch the Evmos config from the backend and programmatically prompt MetaMask to add & switch to that network.",
+            "code": "// addEvmosNetwork.js\nexport const addEvmosNetwork = async () => {\n  // 1. Grab config from backend\n  const res = await fetch('/api/network/evmos');\n  if (!res.ok) {\n    throw new Error(`Could not fetch network config: ${res.statusText}`);\n  }\n  const config = await res.json();\n\n  // 2. Ensure MetaMask is present\n  if (typeof window === 'undefined' || !window.ethereum) {\n    throw new Error('MetaMask is not installed or window.ethereum is undefined.');\n  }\n\n  try {\n    // 3. Ask MetaMask to add the chain (opens confirmation modal for the user)\n    await window.ethereum.request({\n      method: 'wallet_addEthereumChain',\n      params: [config]\n    });\n\n    // 4. Optionally switch to the newly-added chain\n    await window.ethereum.request({\n      method: 'wallet_switchEthereumChain',\n      params: [{ chainId: config.chainId }]\n    });\n\n    return 'Network added & switched successfully';\n  } catch (error) {\n    console.error('MetaMask network setup failed', error);\n    throw error; // Propagate so the caller can handle (e.g., display toast)\n  }\n};",
+            "usage": "await addEvmosNetwork(); // Prompts MetaMask UI and finishes when the user approves"
+        }
+    ]
+}

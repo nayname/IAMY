@@ -1,0 +1,65 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "open_config_file reads the existing TOML configuration file from disk and returns its contents as a list of lines.",
+            "function": "open_config_file(config_path=None)",
+            "usage": "lines = open_config_file(\"$HOME/.mydaemon/config/config.toml\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "modify_minimum_gas_prices searches the loaded lines and replaces (or inserts) the target parameter with the supplied value.",
+            "function": "modify_minimum_gas_prices(lines, new_value=\"0stake\")",
+            "usage": "updated_lines = modify_minimum_gas_prices(lines, new_value=\"state:info,p2p:info,consensus:info,*:error\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "save_and_close_file writes the modified configuration back to disk, safely replacing the original file.",
+            "function": "save_and_close_file(lines, config_path=None)",
+            "usage": "save_and_close_file(updated_lines, \"$HOME/.mydaemon/config/config.toml\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "restart_node_service restarts the specified systemd daemon and waits until it becomes active again.",
+            "function": "restart_node_service(daemon_name, wait_seconds=60)",
+            "usage": "restart_node_service(\"mydaemon\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "lines = open_config_file(\"$HOME/.mydaemon/config/config.toml\")#step: 1 Tool: open_config_file Desciption: Edit `$HOME/.<daemon>/config/config.toml`.",
+        "updated_lines = modify_minimum_gas_prices(lines, new_value=\"state:info,p2p:info,consensus:info,*:error\")#step: 2 Tool: update_toml_value Desciption: Locate `log_level = \"*\"` (or similar) and set it to `log_level = \"state:info,p2p:info,consensus:info,*:error\"`.",
+        "save_and_close_file(updated_lines, \"$HOME/.mydaemon/config/config.toml\")#step: 3 Tool: save_and_close_file Desciption: Save the changes and exit the editor.",
+        "restart_node_service(\"mydaemon\")#step: 4 Tool: restart_node_service Desciption: Restart the node so the new log level takes effect, e.g., `sudo systemctl restart <daemon>`."
+    ],
+    "intent": "Configure log_level to state:info,p2p:info,consensus:info,*:error",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "open_config_file",
+            "description": "Edit `$HOME/.<daemon>/config/config.toml`."
+        },
+        {
+            "step": 2,
+            "tool": "update_toml_value",
+            "description": "Locate `log_level = \"*\"` (or similar) and set it to `log_level = \"state:info,p2p:info,consensus:info,*:error\"`."
+        },
+        {
+            "step": 3,
+            "tool": "save_and_close_file",
+            "description": "Save the changes and exit the editor."
+        },
+        {
+            "step": 4,
+            "tool": "restart_node_service",
+            "description": "Restart the node so the new log level takes effect, e.g., `sudo systemctl restart <daemon>`."
+        }
+    ],
+    "outcome_checks": [
+        "Tail the journal with `journalctl -u <daemon> -f` and confirm INFO messages appear only for state, p2p, and consensus categories while other modules show ERROR level logs."
+    ]
+}

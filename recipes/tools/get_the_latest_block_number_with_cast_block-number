@@ -1,0 +1,26 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Parses the node-status JSON and returns the latest block height, giving the current block number.",
+            "function": "extract_block_height(status_json)",
+            "usage": "block_number = extract_block_height(neutrond_status(COSMOS_RPC_URL))"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "block_number = extract_block_height(neutrond_status(COSMOS_RPC_URL))#step: 1 Tool: run_command Desciption: Execute Foundry\u2019s CLI query against the desired RPC endpoint:\n  cast block-number --rpc-url $COSMOS_RPC_URL"
+    ],
+    "intent": "Get the latest block number with cast block-number",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "run_command",
+            "description": "Execute Foundry\u2019s CLI query against the desired RPC endpoint:\n  cast block-number --rpc-url $COSMOS_RPC_URL"
+        }
+    ],
+    "outcome_checks": [
+        "STDOUT is a single integer > 0 (e.g. 101234), representing the most recent block height."
+    ]
+}

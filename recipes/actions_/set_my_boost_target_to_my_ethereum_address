@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Retrieves the connected user\u2019s Neutron bech32 address via Keplr / Leap.",
+            "function": "getNeutronAddress()",
+            "usage": "const neutronAddr = await getNeutronAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Prompts the user to type in the destination Ethereum address and returns the trimmed value.",
+            "function": "getUserEvmAddressInput()",
+            "usage": "const evmAddr = getUserEvmAddressInput();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Performs a regex check to be sure the supplied string is a valid 0x-prefixed EVM address.",
+            "function": "validateEthereumAddress(evmAddress)",
+            "usage": "validateEthereumAddress(evmAddr);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Builds a CosmWasm MsgExecuteContract payload that calls `set_target { evm_address }` on the Boost contract.",
+            "function": "constructSetTargetMsg({ contractAddress, senderAddress, evmAddress })",
+            "usage": "const msg = constructSetTargetMsg({ contractAddress: BOOST_ADDR, senderAddress: neutronAddr, evmAddress: evmAddr });"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Signs the provided `set_target` execute message with a server wallet and broadcasts it to the Neutron chain.",
+            "function": "set_target(payload)",
+            "usage": "const txResp = set_target({ typeUrl: msg.typeUrl, value: msg.value });"
+        },
+        {
+            "step": 6,
+            "label": "frontend",
+            "introduction": "Queries the Boost contract\u2019s `target` field to verify it now equals the supplied EVM address.",
+            "function": "queryBoostTarget(contractAddress)",
+            "usage": "const targetInfo = await queryBoostTarget(BOOST_ADDR);"
+        }
+    ],
+    "frontend": [
+        "const neutronAddr = await getNeutronAddress();//step: 1 Tool: get_neutron_address Desciption: Identify the user\u2019s Neutron wallet address that owns the boost.",
+        "const evmAddr = getUserEvmAddressInput();//step: 2 Tool: get_user_input Desciption: Collect the user\u2019s Ethereum (EVM) address to be used as the boost target.",
+        "validateEthereumAddress(evmAddr);//step: 3 Tool: validate_ethereum_address Desciption: Ensure the provided string is a valid checksummed EVM address.",
+        "const msg = constructSetTargetMsg({ contractAddress: BOOST_ADDR, senderAddress: neutronAddr, evmAddress: evmAddr });//step: 4 Tool: construct_set_target_msg Desciption: Create a `set_target` message for the Boost contract with parameter `{ evm_address }`.",
+        "const targetInfo = await queryBoostTarget(BOOST_ADDR);//step: 6 Tool: query_boost_target Desciption: Query the Boost contract to confirm the target address now equals the supplied Ethereum address."
+    ],
+    "backend": [
+        "const txResp = set_target({ typeUrl: msg.typeUrl, value: msg.value });#step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the transaction to update the boost target."
+    ],
+    "intent": "Set my boost target to my Ethereum address",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_neutron_address",
+            "description": "Identify the user\u2019s Neutron wallet address that owns the boost."
+        },
+        {
+            "step": 2,
+            "tool": "get_user_input",
+            "description": "Collect the user\u2019s Ethereum (EVM) address to be used as the boost target."
+        },
+        {
+            "step": 3,
+            "tool": "validate_ethereum_address",
+            "description": "Ensure the provided string is a valid checksummed EVM address."
+        },
+        {
+            "step": 4,
+            "tool": "construct_set_target_msg",
+            "description": "Create a `set_target` message for the Boost contract with parameter `{ evm_address }`."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the transaction to update the boost target."
+        },
+        {
+            "step": 6,
+            "tool": "query_boost_target",
+            "description": "Query the Boost contract to confirm the target address now equals the supplied Ethereum address."
+        }
+    ],
+    "outcome_checks": [
+        "Transaction included with `code == 0`.",
+        "`query_boost_target` returns the new Ethereum address.",
+        "No pending governance or admin veto flags exist for the address update."
+    ]
+}

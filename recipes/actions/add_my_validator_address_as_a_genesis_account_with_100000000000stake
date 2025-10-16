@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Expose a REST endpoint that checks whether a supplied Bech32 address is syntactically valid and, if provided, matches a given HRP (prefix).",
+            "code": "from fastapi import FastAPI, HTTPException, Query\nfrom bech32 import bech32_decode\n\napp = FastAPI()\n\n@app.get(\"/api/validate_address\")\nasync def validate_address(address: str = Query(..., description=\"Bech32 address\"), expected_hrp: str | None = Query(None, description=\"Expected prefix e.g. 'cosmos'\")):\n    '''Return True if the address is valid Bech32 and (optionally) matches the expected HRP.'''\n    try:\n        hrp, data = bech32_decode(address)\n        if hrp is None or data is None:\n            raise ValueError(\"Invalid Bech32 encoding or checksum.\")\n        if expected_hrp and hrp != expected_hrp:\n            raise ValueError(f\"Unexpected HRP. Expected '{expected_hrp}', got '{hrp}'.\")\n        return {\"address\": address, \"hrp\": hrp, \"valid\": True}\n    except Exception as e:\n        raise HTTPException(status_code=400, detail=str(e))",
+            "usage": "const res = await fetch(`/api/validate_address?address=${address}&expected_hrp=cosmos`).then(r => r.json());"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Provide an endpoint that runs `<chain_binary> add-genesis-account <address> <amount><denom>` to append the account and balance to the genesis file.",
+            "code": "import os\nimport subprocess\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\nclass AddAccountPayload(BaseModel):\n    address: str\n    amount: int  # amount in base denomination units (e.g. 100000000000)\n    denom: str = \"stake\"\n\n@app.post(\"/api/add_genesis_account\")\nasync def add_genesis_account(payload: AddAccountPayload):\n    '''Invoke the chain binary to add an account to the genesis file.'''\n    chain_binary = os.getenv(\"CHAIN_BINARY\", \"gaiad\")\n    cmd = [chain_binary, \"add-genesis-account\", payload.address, f\"{payload.amount}{payload.denom}\"]\n    try:\n        result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)\n        return {\"success\": True, \"stdout\": result.stdout}\n    except subprocess.CalledProcessError as e:\n        raise HTTPException(status_code=500, detail=e.stderr)",
+            "usage": "await fetch('/api/add_genesis_account', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ address, amount: 100000000000, denom: 'stake' })\n}).then(r => r.json());"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Add a second endpoint that executes `<chain_binary> validate-genesis` to make sure the updated genesis file has no structural errors.",
+            "code": "import os\nimport subprocess\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\n@app.post(\"/api/validate_genesis\")\nasync def validate_genesis():\n    '''Run the chain binary's genesis validation command and return the result.'''\n    chain_binary = os.getenv(\"CHAIN_BINARY\", \"gaiad\")\n    cmd = [chain_binary, \"validate-genesis\"]\n    try:\n        result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)\n        return {\"success\": True, \"stdout\": result.stdout}\n    except subprocess.CalledProcessError as e:\n        raise HTTPException(status_code=500, detail=e.stderr)",
+            "usage": "await fetch('/api/validate_genesis', { method: 'POST' }).then(r => r.json());"
+        }
+    ]
+}

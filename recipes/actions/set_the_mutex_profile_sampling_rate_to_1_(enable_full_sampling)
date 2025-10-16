@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a backend helper that generates a Basic-Auth header (required for private JSON-RPC methods) from environment variables. Keeping credentials on the server protects secrets from exposure in the browser.",
+            "code": "import os\nimport base64\n\n\ndef get_rpc_auth_header():\n    # Build Basic-Auth header from RPC_USER and RPC_PASS environment variables.\n    username = os.getenv('RPC_USER')\n    password = os.getenv('RPC_PASS')\n    if not username or not password:\n        raise EnvironmentError('RPC_USER or RPC_PASS is not set in environment variables.')\n\n    token_bytes = f'{username}:{password}'.encode()\n    token_b64 = base64.b64encode(token_bytes).decode()\n    return {'Authorization': f'Basic {token_b64}'}\n",
+            "usage": "Import and call get_rpc_auth_header() inside other backend routes (e.g., Step 2). It is not meant to be invoked directly from the frontend."
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 exposes a Flask route that calls the private RPC method debug_setMutexProfileFraction(1), enabling mutex-contention sampling. It re-uses the authentication header from Step 1 and returns a JSON response the frontend can consume.",
+            "code": "from flask import Blueprint, jsonify\nimport requests\nimport uuid\nimport os\n\n# Helper from Step 1\nfrom .auth import get_rpc_auth_header\n\ndebug_bp = Blueprint('debug', __name__)\n\n# RPC endpoint (defaults to local geth but can be overridden)\nRPC_URL = os.getenv('RPC_URL', 'http://localhost:8545')\n\n@debug_bp.route('/api/debug/mutex/enable', methods=['POST'])\ndef enable_mutex_profiling():\n    # Enable mutex contention sampling by calling debug_setMutexProfileFraction(1).\n    headers = get_rpc_auth_header()\n    headers['Content-Type'] = 'application/json'\n\n    payload = {\n        'jsonrpc': '2.0',\n        'id': str(uuid.uuid4()),\n        'method': 'debug_setMutexProfileFraction',\n        'params': [1]\n    }\n\n    try:\n        resp = requests.post(RPC_URL, json=payload, headers=headers, timeout=10)\n        resp.raise_for_status()\n        data = resp.json()\n        if 'error' in data:\n            return jsonify({'status': 'error', 'message': data['error']}), 500\n        return jsonify({'status': 'success', 'result': data.get('result')})\n    except requests.exceptions.RequestException as e:\n        return jsonify({'status': 'error', 'message': str(e)}), 500\n",
+            "usage": "Frontend example:\nawait fetch('/api/debug/mutex/enable', { method: 'POST' });"
+        }
+    ]
+}

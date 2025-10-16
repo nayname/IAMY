@@ -1,0 +1,132 @@
+[
+    {
+        "intent": "Create an IBC transfer on an unordered channel with a unique timeout timestamp",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_ibc_channel",
+                "description": "Run `gaiad q ibc channel channels --node <RPC>` and locate the desired `<port-id>/<channel-id>` pair. Confirm the channel\u2019s ordering field is `UNORDERED`."
+            },
+            {
+                "step": 2,
+                "tool": "generate_timeout_timestamp",
+                "description": "Compute a Unix time at least several minutes in the future and convert it to nanoseconds: `export TIMEOUT=$(($(date +%s)+600))000000000`."
+            },
+            {
+                "step": 3,
+                "tool": "tx_ibc_transfer",
+                "description": "Construct the transfer: `gaiad tx ibc-transfer transfer transfer <channel-id> <receiver> <amount><denom> --from <key> --timeout-timestamp $TIMEOUT --chain-id <chain-id> -y -b block`."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "The previous command signs and broadcasts automatically; capture the resulting TX hash."
+            },
+            {
+                "step": 5,
+                "tool": "monitor_tx",
+                "description": "Use `gaiad q tx <txhash> --node <RPC> --type=json` until `code` is 0, indicating inclusion in a block."
+            }
+        ],
+        "outcome_checks": [
+            "The transaction hash returns `code: 0` and appears in a confirmed block.",
+            "On the destination chain, the receiver\u2019s balance increases by the expected amount.",
+            "If the timeout elapses without acknowledgement, the source chain emits an OnTimeoutPacket event."
+        ]
+    },
+    {
+        "intent": "Set mempool max-txs to -1 in app.toml",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_config_file",
+                "description": "Open `$HOME/.<daemon>/config/app.toml` for editing."
+            },
+            {
+                "step": 2,
+                "tool": "update_toml_value",
+                "description": "Under the `[mempool]` section change `max_txs = 5000` (or whatever it is) to `max_txs = -1` to disable the cap."
+            },
+            {
+                "step": 3,
+                "tool": "save_and_close_file",
+                "description": "Write the file and exit the editor."
+            },
+            {
+                "step": 4,
+                "tool": "restart_node_service",
+                "description": "Restart the node service, e.g., `sudo systemctl restart <daemon>`. Wait until the node is fully synced again."
+            }
+        ],
+        "outcome_checks": [
+            "Run `grep -A2 \"\\[mempool\\]\" $HOME/.<daemon>/config/app.toml` and verify `max_txs = -1` is persisted.",
+            "Node starts without configuration errors and resumes block production."
+        ]
+    },
+    {
+        "intent": "Configure log_level to state:info,p2p:info,consensus:info,*:error",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_config_file",
+                "description": "Edit `$HOME/.<daemon>/config/config.toml`."
+            },
+            {
+                "step": 2,
+                "tool": "update_toml_value",
+                "description": "Locate `log_level = \"*\"` (or similar) and set it to `log_level = \"state:info,p2p:info,consensus:info,*:error\"`."
+            },
+            {
+                "step": 3,
+                "tool": "save_and_close_file",
+                "description": "Save the changes and exit the editor."
+            },
+            {
+                "step": 4,
+                "tool": "restart_node_service",
+                "description": "Restart the node so the new log level takes effect, e.g., `sudo systemctl restart <daemon>`."
+            }
+        ],
+        "outcome_checks": [
+            "Tail the journal with `journalctl -u <daemon> -f` and confirm INFO messages appear only for state, p2p, and consensus categories while other modules show ERROR level logs."
+        ]
+    },
+    {
+        "intent": "Allow p2p port 26656 through ufw",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "ufw_command",
+                "description": "Run `sudo ufw allow 26656/tcp comment 'Cosmos P2P'`."
+            },
+            {
+                "step": 2,
+                "tool": "ufw_reload",
+                "description": "Execute `sudo ufw reload` to apply the new rule."
+            }
+        ],
+        "outcome_checks": [
+            "`sudo ufw status numbered` lists a rule allowing TCP port 26656.",
+            "External peers can establish P2P connections (check increasing peer count in node logs)."
+        ]
+    },
+    {
+        "intent": "Allow prometheus port 26660 through ufw",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "ufw_command",
+                "description": "Run `sudo ufw allow 26660/tcp comment 'Cosmos Prometheus'`."
+            },
+            {
+                "step": 2,
+                "tool": "ufw_reload",
+                "description": "Execute `sudo ufw reload` to activate the rule."
+            }
+        ],
+        "outcome_checks": [
+            "`sudo ufw status numbered` shows TCP port 26660 open.",
+            "Prometheus endpoint `curl http://<node-ip>:26660/metrics` returns metrics data from a remote machine."
+        ]
+    }
+]

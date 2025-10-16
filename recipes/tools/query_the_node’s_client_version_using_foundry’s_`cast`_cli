@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Adds a shell alias that hard-codes the chosen JSON-RPC endpoint into every future `cast` command invocation.",
+            "function": "add_cast_alias(rpc_url, profile_path=None)",
+            "usage": "add_cast_alias('https://rpc-kralum.neutron.org')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No fully-implemented backend helper for invoking `cast client` exists in the provided codebase.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "add_cast_alias('https://rpc-kralum.neutron.org')#step: 1 Tool: select_rpc_endpoint Desciption: Export or pass the JSON-RPC URL for the target node through the `--rpc-url` flag or `FOUNDRY_RPC_URL` env variable.",
+        "undef#step: 2 Tool: cast_client_version Desciption: Run `cast client --rpc-url $RPC_URL` or `cast client` if the env variable is set."
+    ],
+    "intent": "Query the node\u2019s client version using Foundry\u2019s `cast` CLI",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "select_rpc_endpoint",
+            "description": "Export or pass the JSON-RPC URL for the target node through the `--rpc-url` flag or `FOUNDRY_RPC_URL` env variable."
+        },
+        {
+            "step": 2,
+            "tool": "cast_client_version",
+            "description": "Run `cast client --rpc-url $RPC_URL` or `cast client` if the env variable is set."
+        }
+    ],
+    "outcome_checks": [
+        "The command prints the client version string (e.g., `Ethermint/v0.x.x` or `geth/v1.x.x`).",
+        "Exit status is 0 (no error)."
+    ]
+}

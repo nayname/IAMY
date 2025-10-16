@@ -1,0 +1,177 @@
+[
+    {
+        "intent": "Add a `tx bank send` CLI command to the chain binary",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "verify_module_exists",
+                "description": "Confirm that the x/bank module is imported in app/app.go and included in the module manager; the command relies on MsgSend from x/bank."
+            },
+            {
+                "step": 2,
+                "tool": "create_cli_command_file",
+                "description": "Create a new file (e.g., cmd/bank_send.go) that defines a Cobra command `TxBankSendCmd` which builds and broadcasts a `MsgSend` using clienttx.Factory."
+            },
+            {
+                "step": 3,
+                "tool": "register_command_root",
+                "description": "Add `TxBankSendCmd` to the Tx sub-command tree in cmd/root.go so it is available as `appd tx bank send`."
+            },
+            {
+                "step": 4,
+                "tool": "compile_binary",
+                "description": "Run `make install` (or `go install ./...`) to build the binary with the new command."
+            },
+            {
+                "step": 5,
+                "tool": "validate_cli_help",
+                "description": "Execute `appd tx bank send --help` and check that usage and flags render correctly."
+            },
+            {
+                "step": 6,
+                "tool": "broadcast_test_tx",
+                "description": "Send a small test transaction on a local node to verify the command signs and broadcasts successfully."
+            }
+        ],
+        "outcome_checks": [
+            "`appd tx bank send --help` shows expected arguments <from_addr> <to_addr> <amount>`.",
+            "A broadcast test transaction is included in a block and the recipient balance increases."
+        ]
+    },
+    {
+        "intent": "Add transaction sign-mode TEXTUAL support",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "update_go_mod",
+                "description": "Bump Cosmos-SDK dependency to v0.47+ (where sign-mode TEXTUAL is available) and run `go mod tidy`."
+            },
+            {
+                "step": 2,
+                "tool": "update_encoding_config",
+                "description": "In app/encoding.go, add `signing.RegisterSignModeHandler(signing.SignMode_SIGN_MODE_TEXTUAL, ...)` or use `tx.ConfigOptions{EnabledSignModes: []signing.SignMode{signing.SignMode_SIGN_MODE_TEXTUAL, ...}}` when creating the TxConfig."
+            },
+            {
+                "step": 3,
+                "tool": "expose_cli_flag",
+                "description": "Ensure the CLI inherits the `--sign-mode` flag from Cosmos-SDK tx commands so users can pass `--sign-mode=textual`."
+            },
+            {
+                "step": 4,
+                "tool": "compile_binary",
+                "description": "Re-build the application to embed the new encoding configuration."
+            },
+            {
+                "step": 5,
+                "tool": "sign_textual_tx",
+                "description": "Run `appd tx sign tx.json --from alice --sign-mode=textual` and inspect the human-readable representation."
+            }
+        ],
+        "outcome_checks": [
+            "`appd tx sign --help` lists `textual` in the available sign modes.",
+            "A transaction signed with `--sign-mode=textual` is accepted by `appd tx broadcast` and included in a block."
+        ]
+    },
+    {
+        "intent": "Enable gRPC and Swagger endpoints in app.toml",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_config_file",
+                "description": "Open `$HOME/.<chain-id>/config/app.toml` for editing."
+            },
+            {
+                "step": 2,
+                "tool": "update_config_param",
+                "description": "Set `grpc.enable = true` and (optionally) `grpc.address = \":9090\"` in the `[grpc]` section."
+            },
+            {
+                "step": 3,
+                "tool": "update_config_param",
+                "description": "In the `[api]` section set `swagger = true` and confirm `address = \"tcp://0.0.0.0:1317\"`."
+            },
+            {
+                "step": 4,
+                "tool": "restart_node",
+                "description": "Restart the full node so the new configuration is applied."
+            },
+            {
+                "step": 5,
+                "tool": "check_endpoints",
+                "description": "Use `grpcurl localhost:9090 list` to list gRPC services and open `http://localhost:1317/swagger/` in a browser to view the Swagger UI."
+            }
+        ],
+        "outcome_checks": [
+            "`grpcurl localhost:9090 list` returns a list of protobuf services.",
+            "Swagger UI loads in the browser and can query REST endpoints successfully."
+        ]
+    },
+    {
+        "intent": "Set a PreBlocker that updates consensus parameters every block",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "create_preblocker_fn",
+                "description": "In app/app.go define `func PreBlocker(ctx sdk.Context, req abci.RequestPreBlock) { ... }` that calls `app.BaseApp.UpdateConsensusParams(ctx, newParams)`."
+            },
+            {
+                "step": 2,
+                "tool": "register_preblocker",
+                "description": "Invoke `app.SetPreBlocker(PreBlocker)` during app construction (after BaseApp is created)."
+            },
+            {
+                "step": 3,
+                "tool": "compile_binary",
+                "description": "Rebuild the binary to include the PreBlocker logic."
+            },
+            {
+                "step": 4,
+                "tool": "start_local_chain",
+                "description": "Start a local single-node chain and let a few blocks produce."
+            },
+            {
+                "step": 5,
+                "tool": "query_consensus_params",
+                "description": "Run `appd query params subspace consensus 1 --height <n>` at successive heights to confirm the parameters changed as intended."
+            }
+        ],
+        "outcome_checks": [
+            "Consensus parameters reported by the node differ between consecutive heights in accordance with the PreBlocker logic.",
+            "No consensus failures or evidence of mis-behavior appear in the logs."
+        ]
+    },
+    {
+        "intent": "Generate and wire up a default simulation manager",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "import_simulation_packages",
+                "description": "Ensure each module\u2019s `types/sim.go` and `simulation` folder are included in the Go module path."
+            },
+            {
+                "step": 2,
+                "tool": "create_sim_manager",
+                "description": "In app/simulations.go build `simManager := module.NewSimulationManager(xauth.AppModule{}, xbank.AppModule{}, ...)` including all modules."
+            },
+            {
+                "step": 3,
+                "tool": "register_store_decoders",
+                "description": "Call `simManager.RegisterStoreDecoders()` so KVStore decoding works in simulations."
+            },
+            {
+                "step": 4,
+                "tool": "attach_sim_manager",
+                "description": "In app/app.go set `app.SetSimulationManager(simManager)` after module setup."
+            },
+            {
+                "step": 5,
+                "tool": "run_simulation_tests",
+                "description": "Execute `go test ./... -run TestFullAppSimulation` to run the default simulation suite."
+            }
+        ],
+        "outcome_checks": [
+            "Simulation tests compile and execute without panics.",
+            "No non-determinism errors are reported when running `sim-nondeterminism` multiple times."
+        ]
+    }
+]

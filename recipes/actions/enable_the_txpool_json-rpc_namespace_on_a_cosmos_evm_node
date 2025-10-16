@@ -1,0 +1,47 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Gracefully stop the running evmd systemd service so that the configuration file can be edited safely.",
+            "code": "import subprocess\n\n\ndef stop_evmd_service(service_name: str = \"evmd\") -> dict:\n    \"\"\"Stops the evmd (systemd) service gracefully.\"\"\"\n    try:\n        # Attempt to stop the service\n        subprocess.run([\"systemctl\", \"stop\", service_name], check=True)\n        return {\"service\": service_name, \"status\": \"stopped\"}\n    except subprocess.CalledProcessError as e:\n        # Convert the low-level error into a clearer Python exception\n        raise RuntimeError(f\"Failed to stop {service_name}: {e}\")",
+            "usage": ">>> stop_evmd_service()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Load the current ~/.evmd/config/app.toml file into memory so it can be inspected or modified.",
+            "code": "from pathlib import Path\n\n\ndef load_app_toml(config_path: str = \"~/.evmd/config/app.toml\") -> dict:\n    \"\"\"Reads the app.toml file and returns its contents along with the absolute path.\"\"\"\n    path = Path(config_path).expanduser()\n    if not path.exists():\n        raise FileNotFoundError(f\"{path} does not exist.\")\n\n    with path.open(\"r\", encoding=\"utf-8\") as f:\n        content = f.read()\n\n    return {\"path\": str(path), \"content\": content}",
+            "usage": ">>> data = load_app_toml()\n>>> original_content = data[\"content\"]"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Update the [json-rpc] section of app.toml\u2014enable JSON-RPC, add the txpool API, and ensure the indexer is enabled\u2014then write the file back to disk.",
+            "code": "import re\nfrom pathlib import Path\n\n\ndef _replace_or_add(pattern: str, replacement: str, text: str) -> str:\n    \"\"\"Replace a line that matches pattern or add replacement inside [json-rpc] section.\"\"\"\n    if re.search(pattern, text, flags=re.MULTILINE):\n        return re.sub(pattern, replacement, text, flags=re.MULTILINE)\n\n    # If the key is missing, insert it after the [json-rpc] header\n    lines = text.splitlines()\n    updated_lines = []\n    in_json_rpc = False\n\n    for idx, line in enumerate(lines):\n        updated_lines.append(line)\n        if line.strip().startswith(\"[json-rpc]\"):\n            in_json_rpc = True\n            continue\n        # Insert when we exit the [json-rpc] section\n        if in_json_rpc and line.strip().startswith(\"[\") and not line.strip().startswith(\"[json-rpc]\"):\n            updated_lines.insert(len(updated_lines) - 1, replacement)\n            in_json_rpc = False\n    return \"\\n\".join(updated_lines)\n\n\ndef update_app_toml_parameter(config_path: str = \"~/.evmd/config/app.toml\") -> dict:\n    \"\"\"Mutates app.toml in-place to enable JSON-RPC & txpool along with indexing.\"\"\"\n    path = Path(config_path).expanduser()\n    if not path.exists():\n        raise FileNotFoundError(f\"{path} does not exist.\")\n\n    raw = path.read_text(encoding=\"utf-8\")\n\n    # Apply the required replacements or insertions\n    updated = raw\n    updated = _replace_or_add(r\"^enable\\s*=.*$\", \"enable = true\", updated)\n    updated = _replace_or_add(r\"^api\\s*=.*$\", \"api = \\\"eth,net,web3,txpool,debug\\\"\", updated)\n    updated = _replace_or_add(r\"^enable-indexer\\s*=.*$\", \"enable-indexer = true\", updated)\n\n    # Write only if something changed\n    changed = updated != raw\n    if changed:\n        path.write_text(updated, encoding=\"utf-8\")\n\n    return {\"path\": str(path), \"changed\": changed}",
+            "usage": ">>> result = update_app_toml_parameter()\n>>> print(result[\"changed\"])  # True if file was modified"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Verify that the updated configuration file now contains the desired settings.",
+            "code": "from pathlib import Path\n\n\ndef verify_app_toml(config_path: str = \"~/.evmd/config/app.toml\") -> bool:\n    \"\"\"Returns True if enable=true, txpool exists in api, and enable-indexer=true.\"\"\"\n    path = Path(config_path).expanduser()\n    text = path.read_text(encoding=\"utf-8\")\n    return all([\n        \"enable = true\" in text,\n        \"txpool\" in text,\n        \"enable-indexer = true\" in text,\n    ])",
+            "usage": ">>> assert verify_app_toml(), \"Configuration still missing required flags\""
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Restart the evmd systemd service and show the last 20 log lines so the operator can confirm JSON-RPC started without issues.",
+            "code": "import subprocess\n\n\ndef start_evmd_service(service_name: str = \"evmd\") -> dict:\n    \"\"\"Starts evmd and returns the latest logs to confirm successful boot.\"\"\"\n    try:\n        subprocess.run([\"systemctl\", \"start\", service_name], check=True)\n        logs = subprocess.check_output([\n            \"journalctl\", \"-u\", service_name, \"-n\", \"20\", \"--no-pager\"\n        ], text=True)\n        return {\"service\": service_name, \"status\": \"started\", \"logs\": logs}\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f\"Failed to start {service_name}: {e}\")",
+            "usage": ">>> boot_info = start_evmd_service()\n>>> print(boot_info[\"logs\"])"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Send a txpool_status JSON-RPC request to ensure the new namespace responds correctly.",
+            "code": "import requests\n\n\ndef json_rpc_call(method: str = \"txpool_status\", params: list | None = None, endpoint: str = \"http://localhost:8545\") -> dict:\n    \"\"\"Executes a JSON-RPC call and returns the result payload.\"\"\"\n    if params is None:\n        params = []\n\n    payload = {\n        \"jsonrpc\": \"2.0\",\n        \"method\": method,\n        \"params\": params,\n        \"id\": 1,\n    }\n\n    try:\n        response = requests.post(endpoint, json=payload, timeout=5)\n        response.raise_for_status()\n        data = response.json()\n        if \"error\" in data:\n            raise RuntimeError(f\"RPC Error: {data['error']}\")\n        return data.get(\"result\")\n    except (requests.RequestException, ValueError) as e:\n        raise RuntimeError(f\"Failed to perform JSON-RPC call: {e}\")",
+            "usage": ">>> status = json_rpc_call()\n>>> print(status)  # Expecting txpool status result"
+        }
+    ]
+}

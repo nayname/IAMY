@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Locate the active Cosmos-SDK node home directory (e.g., ~/.gaia or ~/.wasmd) and expose it through a FastAPI endpoint so the frontend can discover it with a simple fetch call.",
+            "code": "from pathlib import Path\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\n# Map well-known node names to the folder that the daemon initialises.\nNODE_HOME_MAPPING = {\n    \"gaia\": \".gaia\",      # gaiad\n    \"wasmd\": \".wasmd\",    # wasmd\n    \"osmosis\": \".osmosisd\" # osmosisd\n}\n\n@app.get(\"/node-home\")\nasync def get_node_home(node: str = \"gaia\"):\n    \"\"\"Return the absolute path to the requested node\u2019s home directory.\"\"\"\n    folder = NODE_HOME_MAPPING.get(node.lower())\n    if folder is None:\n        raise HTTPException(status_code=400, detail=f\"Unsupported node '{node}'.\")\n\n    home_path = Path.home() / folder\n\n    if not home_path.exists():\n        raise HTTPException(\n            status_code=404,\n            detail=f\"Home directory {home_path} does not exist. Initialise the node or supply the correct name.\"\n        )\n\n    return {\"home\": str(home_path)}",
+            "usage": "// Frontend example\nconst { home } = await fetch('/api/node-home?node=gaia').then(r => r.json());"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Read <home>/config/app.toml, create a one-time backup, and return the parsed TOML as JSON so the UI (or later backend calls) can display or modify it.",
+            "code": "from pathlib import Path\nimport shutil\nimport toml\nfrom fastapi import FastAPI, HTTPException, Query\n\napp = FastAPI()\n\n@app.get(\"/config\")\nasync def open_config_file(home: str = Query(..., description=\"Absolute path to the node home directory\")):\n    \"\"\"Open <home>/config/app.toml and return its contents as a Python dict.\"\"\"\n    config_path = Path(home) / \"config\" / \"app.toml\"\n\n    if not config_path.exists():\n        raise HTTPException(status_code=404, detail=f\"{config_path} not found.\")\n\n    # Create a backup once to preserve the original file.\n    backup = config_path.with_suffix(\".toml.bak\")\n    if not backup.exists():\n        shutil.copy(config_path, backup)\n\n    with config_path.open(\"r\") as f:\n        config_dict = toml.load(f)\n\n    return {\"path\": str(config_path), \"config\": config_dict}",
+            "usage": "// Frontend example\nconst { config } = await fetch(`/api/config?home=${encodeURIComponent(home)}`).then(r => r.json());"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Update the [api] section of app.toml: enable the API server, optionally enable Swagger, and set the listening address. The endpoint rewrites the file safely.",
+            "code": "from pathlib import Path\nimport toml\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\nclass ApiSettings(BaseModel):\n    home: str             # node home directory\n    enable: bool = True   # turn REST server on/off\n    swagger: bool = True  # expose Swagger docs\n    address: str = \"tcp://0.0.0.0:1317\"  # listen address\n\n@app.post(\"/config/api\")\nasync def update_toml_key(settings: ApiSettings):\n    \"\"\"Patch the [api] section inside app.toml with the supplied values.\"\"\"\n    cfg_path = Path(settings.home) / \"config\" / \"app.toml\"\n\n    if not cfg_path.exists():\n        raise HTTPException(status_code=404, detail=f\"{cfg_path} not found.\")\n\n    # Load current configuration.\n    with cfg_path.open(\"r\") as f:\n        cfg = toml.load(f)\n\n    # Ensure the api section exists then update keys.\n    cfg.setdefault(\"api\", {})\n    cfg[\"api\"].update({\n        \"enable\": settings.enable,\n        \"swagger\": settings.swagger,\n        \"address\": settings.address\n    })\n\n    # Persist changes.\n    with cfg_path.open(\"w\") as f:\n        toml.dump(cfg, f)\n\n    return {\"message\": \"[api] section updated successfully\", \"api\": cfg[\"api\"]}",
+            "usage": "// Frontend example\nawait fetch('/api/config/api', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({\n    home,\n    enable: true,\n    swagger: true,\n    address: 'tcp://0.0.0.0:1317'\n  })\n});"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Restart the underlying Cosmos-SDK daemon so the new REST configuration takes effect. The service name is mapped from the node type and restarted with systemctl.",
+            "code": "import subprocess\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\nSERVICE_NAME = {\n    \"gaia\": \"gaiad\",\n    \"wasmd\": \"wasmd\",\n    \"osmosis\": \"osmosisd\"\n}\n\n@app.post(\"/restart-node\")\nasync def save_and_restart_node(node: str = \"gaia\"):\n    \"\"\"Restart the node\u2019s systemd service so the REST API starts with the new config.\"\"\"\n    service = SERVICE_NAME.get(node.lower())\n\n    if service is None:\n        raise HTTPException(status_code=400, detail=f\"Unsupported node '{node}'.\")\n\n    try:\n        # Requires the backend process to have permissions (run as root or via sudoers).\n        subprocess.run([\"systemctl\", \"restart\", service], check=True)\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=f\"Failed to restart {service}: {err}\")\n\n    return {\"message\": f\"{service} restarted successfully\"}",
+            "usage": "// Frontend example\nawait fetch('/api/restart-node', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ node: 'gaia' })\n});"
+        }
+    ]
+}

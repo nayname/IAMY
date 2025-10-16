@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Upgrade the chain\u2019s `go.mod` to Cosmos-SDK \u2265 v0.47 (which introduces the TEXTUAL sign-mode) and tidy the module graph.",
+            "code": "#!/usr/bin/env bash\n# scripts/update_sdk.sh\n# ---------------------------------------------\n# Updates Cosmos-SDK to v0.47.x and runs `go mod tidy`.\n# Exits on any failure and prints a helpful message.\n# ---------------------------------------------\nset -euo pipefail\n\nSDK_VERSION=\"v0.47.5\"   # <- Pin the exact version you wish to use\n\nprintf \"\\n\ud83d\ude80  Updating Cosmos-SDK to %s \u2026\\n\" \"$SDK_VERSION\"\n\ngo get github.com/cosmos/cosmos-sdk@${SDK_VERSION}\n\necho \"\ud83d\udd04  Tidying go.mod / go.sum \u2026\"\ngo mod tidy\n\necho \"\u2705  go.mod successfully updated to Cosmos-SDK ${SDK_VERSION}\"",
+            "usage": "chmod +x scripts/update_sdk.sh && ./scripts/update_sdk.sh"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Register `SIGN_MODE_TEXTUAL` in your application\u2019s TxConfig (typically in `app/encoding.go`).",
+            "code": "// app/encoding.go\npackage app\n\nimport (\n    \"github.com/cosmos/cosmos-sdk/client\"\n    \"github.com/cosmos/cosmos-sdk/codec\"\n    \"github.com/cosmos/cosmos-sdk/codec/types\"\n    \"github.com/cosmos/cosmos-sdk/simapp\"\n    sdk \"github.com/cosmos/cosmos-sdk/types\"\n    tx \"github.com/cosmos/cosmos-sdk/types/tx\"\n    \"github.com/cosmos/cosmos-sdk/types/tx/signing\"\n)\n\n// MakeEncodingConfig returns an EncodingConfig with TEXTUAL sign-mode enabled.\nfunc MakeEncodingConfig() simapp.EncodingConfig {\n    cfg := simapp.MakeTestEncodingConfig()\n\n    // ---------------------------------------------------\n    // Enable SIGN_MODE_TEXTUAL so wallets / CLI can use it\n    // ---------------------------------------------------\n    signing.RegisterSignModeHandler(\n        signing.SignMode_SIGN_MODE_TEXTUAL,\n        func() client.TxConfig { return cfg.TxConfig }, // provide underlying TxConfig\n        nil, // no custom options needed for defaults\n    )\n\n    // (Optional) You can also restrict available sign-modes explicitly:\n    // cfg.TxConfig = tx.NewTxConfig(cfg.Codec, tx.ConfigOptions{\n    //     EnabledSignModes: []signing.SignMode{\n    //         signing.SignMode_SIGN_MODE_TEXTUAL,\n    //         signing.SignMode_SIGN_MODE_DIRECT,\n    //     },\n    // })\n\n    return cfg\n}",
+            "usage": "Re-build the binary after saving the file so the new encoding config is embedded."
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Expose (or keep) the `--sign-mode` flag on your CLI root so users can choose `textual`.",
+            "code": "// cmd/root.go\npackage cmd\n\nimport (\n    \"github.com/spf13/cobra\"\n    \"github.com/cosmos/cosmos-sdk/client/flags\"\n)\n\n// NewRootCmd constructs the root command for your daemon.\nfunc NewRootCmd() *cobra.Command {\n    rootCmd := &cobra.Command{\n        Use:   \"appd\",\n        Short: \"My Cosmos SDK Application\",\n    }\n\n    // OPTIONAL: If you build custom tx sub-commands, be sure to add tx flags.\n    rootCmd.PersistentFlags().String(flags.FlagSignMode, \"\", \"Choose sign mode (e.g. 'textual', 'direct')\")\n\n    // If you import the default tx commands from the SDK they already carry this flag;\n    // the above keeps it when you wrap or replace them.\n    return rootCmd\n}",
+            "usage": "Run `appd --help` and confirm `--sign-mode` appears in the global or tx-related flags."
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Re-compile the application so the new encoding configuration and flags are baked into the binary.",
+            "code": "#!/usr/bin/env bash\n# scripts/build.sh\nset -euo pipefail\n\nBINARY_NAME=\"appd\"\n\nprintf \"\\n\ud83d\udd27  Building %s \u2026\\n\" \"$BINARY_NAME\"\n\ngo build -o \"./build/${BINARY_NAME}\" ./cmd/appd\n\necho \"\u2705  Binary built at ./build/${BINARY_NAME}\"",
+            "usage": "chmod +x scripts/build.sh && ./scripts/build.sh"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Sign a transaction using the new TEXTUAL sign-mode and inspect its human-readable output.",
+            "code": "# Example shell command \u2014 replace values as needed\nappd tx sign unsigned_tx.json \\\n    --from alice \\\n    --chain-id mychain-1 \\\n    --sign-mode textual \\\n    --output-document signed_tx.json\n\n# The CLI will display a textual, human-readable representation automatically.\n# You can also inspect the signed file:\ncat signed_tx.json | jq '.'",
+            "usage": "1. Create or obtain `unsigned_tx.json`.\n2. Run the command above.\n3. Verify the displayed TEXTUAL representation before broadcasting."
+        }
+    ]
+}

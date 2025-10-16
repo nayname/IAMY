@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 connects to an injected EVM wallet (e.g., MetaMask), verifies the user is on the correct Cosmos EVM network, and gathers all transaction fields required by later backend steps.",
+            "code": "export const collectTxFields = async ({ to, value = \"0x0\", data = \"0x\", gasLimit }) => {\n  // 1. Ensure an EVM wallet is available in the browser\n  if (typeof window === \"undefined\" || !window.ethereum) {\n    throw new Error(\"No EVM wallet detected. Please install MetaMask or another Web3 wallet.\");\n  }\n\n  // 2. Ask the user to connect the wallet and fetch the first account\n  const [from] = await window.ethereum.request({ method: \"eth_requestAccounts\" });\n\n  // 3. Verify the user is on the expected Cosmos-EVM chain (replace the ID below)\n  const expectedChainIdHex = \"0x2323\"; // example: 0x2323 == 8995\n  const chainIdHex = await window.ethereum.request({ method: \"eth_chainId\" });\n  if (chainIdHex !== expectedChainIdHex) {\n    throw new Error(`Wrong network. Please switch your wallet to chainId ${expectedChainIdHex}.`);\n  }\n\n  // 4. Build the transaction object\n  const tx = {\n    from,\n    to,\n    value,        // amount in WEI, hex-prefixed string\n    data,         // calldata, hex-prefixed string\n    gasLimit,     // optional gas limit (hex string)\n    chainId: parseInt(chainIdHex, 16)\n  };\n\n  return tx;\n};",
+            "usage": "const txFields = await collectTxFields({\n  to: \"0xRecipientAddress\",\n  value: \"0xde0b6b3a7640000\", // 1 ETH in WEI\n  data: \"0x\"\n});"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 exposes a REST endpoint that runs `cast estimate` to obtain a gas-limit estimate and EIP-1559 fee suggestions for the provided transaction.",
+            "code": "from flask import Flask, request, jsonify\nimport subprocess, json, os\n\napp = Flask(__name__)\n\n@app.route(\"/api/estimate_gas\", methods=[\"POST\"])\ndef estimate_gas():\n    \"\"\"Estimate gas limit and dynamic fees using Foundry's cast CLI.\"\"\"\n    tx = request.get_json(force=True)\n\n    # ---- Validation ----\n    required = [\"from\", \"to\", \"value\", \"data\", \"chainId\"]\n    missing = [f for f in required if f not in tx]\n    if missing:\n        return jsonify({\"error\": f\"Missing fields: {', '.join(missing)}\"}), 422\n\n    # ---- Build cast command ----\n    cmd = [\n        \"cast\", \"estimate\",\n        \"--from\", tx[\"from\"],\n        \"--to\", tx[\"to\"],\n        \"--value\", tx[\"value\"],\n        \"--data\", tx[\"data\"],\n        \"--max-fee-per-gas\", \"auto\",\n        \"--max-priority-fee-per-gas\", \"auto\",\n        \"--chain-id\", str(tx[\"chainId\"]),\n        \"--json\"\n    ]\n\n    try:\n        # ETH_RPC_URL must be set in the environment for cast to work\n        result = subprocess.check_output(cmd, env=os.environ, text=True)\n        payload = json.loads(result)\n        return jsonify({\n            \"estimatedGas\": int(payload[\"gas\"]),\n            \"maxFeePerGas\": int(payload[\"maxFeePerGas\"]),\n            \"maxPriorityFeePerGas\": int(payload[\"maxPriorityFeePerGas\"])\n        })\n    except subprocess.CalledProcessError as err:\n        return jsonify({\"error\": err.output}), 500\n\nif __name__ == \"__main__\":\n    app.run(host=\"0.0.0.0\", port=8000, debug=True)",
+            "usage": "const res = await fetch(\"/api/estimate_gas\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\" },\n  body: JSON.stringify(txFields)\n});\nconst { estimatedGas, maxFeePerGas, maxPriorityFeePerGas } = await res.json();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 provides another endpoint that fetches recent base-fee and priority-fee data by running `cast gas-price --blocks 5`.",
+            "code": "from flask import Flask, jsonify\nimport subprocess, json\n\napp = Flask(__name__)\n\n@app.route(\"/api/gas_price\", methods=[\"GET\"])\ndef gas_price():\n    \"\"\"Return baseFee and suggested priority fee from the last 5 blocks.\"\"\"\n    cmd = [\"cast\", \"gas-price\", \"--blocks\", \"5\", \"--json\"]\n    try:\n        raw = subprocess.check_output(cmd, text=True)\n        info = json.loads(raw)\n        return jsonify({\n            \"baseFee\": int(info[\"baseFeePerGas\"]),\n            \"priorityFee\": int(info[\"maxPriorityFeePerGas\"])\n        })\n    except subprocess.CalledProcessError as err:\n        return jsonify({\"error\": err.output}), 500\n\nif __name__ == \"__main__\":\n    app.run(host=\"0.0.0.0\", port=8000, debug=True)",
+            "usage": "const gasInfo = await fetch(\"/api/gas_price\").then(r => r.json());\nconst { baseFee, priorityFee } = gasInfo;"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 offers a small REST helper that calculates the effective gas price and total transaction fee (in WEI) according to EIP-1559 rules.",
+            "code": "from flask import Flask, request, jsonify\n\napp = Flask(__name__)\n\ndef _calc_total_fee(estimated_gas: int, base_fee: int, priority_fee: int, max_fee_per_gas: int):\n    \"\"\"Compute effectiveGasPrice and totalFee as per EIP-1559.\"\"\"\n    effective_gas_price = min(base_fee + priority_fee, max_fee_per_gas)\n    total_fee = estimated_gas * effective_gas_price\n    return {\n        \"effectiveGasPrice\": effective_gas_price,\n        \"totalFee\": total_fee\n    }\n\n@app.route(\"/api/calculate_total_fee\", methods=[\"POST\"])\ndef calculate_total_fee():\n    data = request.get_json(force=True)\n    try:\n        result = _calc_total_fee(\n            estimated_gas = int(data[\"estimatedGas\"]),\n            base_fee       = int(data[\"baseFee\"]),\n            priority_fee   = int(data[\"priorityFee\"]),\n            max_fee_per_gas= int(data[\"maxFeePerGas\"])\n        )\n        return jsonify(result)\n    except (KeyError, ValueError) as err:\n        return jsonify({\"error\": str(err)}), 422\n\nif __name__ == \"__main__\":\n    app.run(host=\"0.0.0.0\", port=8000, debug=True)",
+            "usage": "const feeResp = await fetch(\"/api/calculate_total_fee\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\" },\n  body: JSON.stringify({\n    estimatedGas,\n    baseFee,\n    priorityFee,\n    maxFeePerGas\n  })\n});\nconst { totalFee, effectiveGasPrice } = await feeResp.json();"
+        }
+    ]
+}

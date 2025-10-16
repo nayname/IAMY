@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Locate the simd node\u2019s home directory, defaulting to ~/.simapp if the SIMD_HOME environment variable is not set.",
+            "code": "import os\n\n\ndef get_node_home() -> str:\n    \"\"\"Return the path to the node's home directory.\n\n    Priority order:\n    1. Environment variable `SIMD_HOME`\n    2. Default path `~/.simapp`\n    \"\"\"\n    home = os.environ.get(\"SIMD_HOME\", os.path.expanduser(\"~/.simapp\"))\n    if not os.path.isdir(home):\n        raise FileNotFoundError(f\"Simd home directory not found at {home}\")\n    return home",
+            "usage": "# Example\nhome_dir = get_node_home()\nprint(f\"Node home directory: {home_dir}\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Fetch the latest block height from the node\u2019s RPC endpoint so the snapshot can be tagged correctly.",
+            "code": "import requests\n\n\ndef get_latest_block_height(rpc_url: str = \"http://localhost:26657\") -> int:\n    \"\"\"Return the latest block height from the node's RPC `/status` endpoint.\"\"\"\n    try:\n        response = requests.get(f\"{rpc_url}/status\", timeout=10)\n        response.raise_for_status()\n        data = response.json()\n        height = int(data[\"result\"][\"sync_info\"][\"latest_block_height\"])\n        return height\n    except Exception as err:\n        raise RuntimeError(f\"Unable to fetch latest block height: {err}\") from err",
+            "usage": "# Example\nheight = get_latest_block_height()\nprint(f\"Current block height: {height}\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Execute `simd snapshot create --home=<home>` to generate a snapshot at the current height.",
+            "code": "import subprocess\n\n\ndef create_snapshot(home: str) -> None:\n    \"\"\"Create a snapshot via `simd snapshot create`. Raises on failure.\"\"\"\n    cmd = [\n        \"simd\",\n        \"snapshot\",\n        \"create\",\n        f\"--home={home}\"\n    ]\n    process = subprocess.run(cmd, capture_output=True, text=True)\n    if process.returncode != 0:\n        raise RuntimeError(\n            f\"Snapshot creation failed (exit {process.returncode}): {process.stderr.strip()}\"\n        )\n    # Log stdout for debugging purposes\n    print(process.stdout.strip())",
+            "usage": "# Example\ncreate_snapshot(home_dir)\nprint(\"Snapshot creation command finished successfully.\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Poll `simd snapshot list` until the CLI reports the newly-created snapshot exists or timeouts.",
+            "code": "import subprocess\nimport time\n\n\ndef _list_snapshots_raw(home: str) -> list[str]:\n    \"\"\"Internal helper to call `simd snapshot list`. Returns raw line output.\"\"\"\n    cmd = [\"simd\", \"snapshot\", \"list\", f\"--home={home}\"]\n    proc = subprocess.run(cmd, capture_output=True, text=True)\n    if proc.returncode != 0:\n        raise RuntimeError(f\"Snapshot list failed: {proc.stderr.strip()}\")\n    return [ln.strip() for ln in proc.stdout.splitlines() if ln.strip()]\n\n\ndef wait_for_snapshot(home: str, expected_height: int, timeout: int = 300, poll_interval: int = 5) -> str:\n    \"\"\"Wait until a snapshot containing `expected_height` appears or raise TimeoutError.\"\"\"\n    deadline = time.time() + timeout\n    while time.time() < deadline:\n        for line in _list_snapshots_raw(home):\n            if str(expected_height) in line:\n                return line  # Return snapshot identifier / line\n        time.sleep(poll_interval)\n    raise TimeoutError(\n        f\"Snapshot at height {expected_height} not found within {timeout} seconds.\"\n    )",
+            "usage": "# Example\nsnapshot_line = wait_for_snapshot(home_dir, height)\nprint(f\"Snapshot confirmed: {snapshot_line}\")"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Verify that the new snapshot appears by running `simd snapshot list --home=<home>`.",
+            "code": "import subprocess\n\n\ndef list_snapshots(home: str) -> list[str]:\n    \"\"\"Return every snapshot line produced by `simd snapshot list`.\"\"\"\n    cmd = [\"simd\", \"snapshot\", \"list\", f\"--home={home}\"]\n    proc = subprocess.run(cmd, capture_output=True, text=True)\n    if proc.returncode != 0:\n        raise RuntimeError(f\"Listing snapshots failed: {proc.stderr.strip()}\")\n    return [ln.strip() for ln in proc.stdout.splitlines() if ln.strip()]",
+            "usage": "# Example\nsnapshots = list_snapshots(home_dir)\nprint(\"Available snapshots:\\n\" + \"\\n\".join(snapshots))"
+        }
+    ]
+}

@@ -1,0 +1,79 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "get_sender_address fetches the default (or named) backend wallet and returns its Bech32 sender address.",
+            "function": "get_sender_address(wallet_alias: str = 'lender')",
+            "usage": "sender_addr = get_sender_address()['address']"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "validate_recipient_address checks that the supplied Bech32 recipient string has the expected prefix and a valid checksum.",
+            "function": "validate_recipient_address(address: str, expected_prefix: str = 'cosmos')",
+            "usage": "validate_recipient_address('cosmos1xyz\u2026')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "build_send_tx constructs an unsigned MsgSend JSON file containing sender, recipient, amount and denom.",
+            "function": "build_send_tx(sender: str, recipient: str, amount: str = '1000stake', fee: str = '200stake', chain_id: str = 'my-test-chain', outfile: str = 'unsigned_tx.json')",
+            "usage": "unsigned_tx_path = build_send_tx(sender_addr, recipient_addr, '10token', '1000token', 'neutron-1')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "sign_and_broadcast_tx signs the prepared Transaction with the wallet key and broadcasts it to the chain.",
+            "function": "sign_and_broadcast_tx(tx: Transaction, wallet: LocalWallet, client: LedgerClient)",
+            "usage": "response = sign_and_broadcast_tx(tx_obj, wallet, client)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "wait_for_tx_commit repeatedly queries the chain until the supplied tx hash is included in a committed block.",
+            "function": "wait_for_tx_commit(tx_hash: str, client: LedgerClient, timeout: int = 120, poll: float = 2.0)",
+            "usage": "commit_info = wait_for_tx_commit(tx_hash, client)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "sender_addr = get_sender_address()['address']#step: 1 Tool: get_sender_address Desciption: Read the default key name or prompt the user for the bech32 address that will fund the transfer.",
+        "validate_recipient_address('cosmos1xyz\u2026')#step: 2 Tool: validate_recipient_address Desciption: Confirm the provided recipient bech32 string has a valid prefix and checksum.",
+        "unsigned_tx_path = build_send_tx(sender_addr, recipient_addr, '10token', '1000token', 'neutron-1')#step: 3 Tool: construct_tx_bank_send Desciption: Build the MsgSend with sender, recipient, amount, and denom, e.g., `10token`.",
+        "response = sign_and_broadcast_tx(tx_obj, wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Run `<appd> tx bank send <from> <to> 10token --gas auto --gas-adjustment 1.3 --fees 1000token --broadcast-mode block`.",
+        "commit_info = wait_for_tx_commit(tx_hash, client)#step: 5 Tool: check_tx_confirmation Desciption: Query the tx hash until it is included in a committed block."
+    ],
+    "intent": "Broadcast a MsgSend transaction (Bank module) via CLI",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_address",
+            "description": "Read the default key name or prompt the user for the bech32 address that will fund the transfer."
+        },
+        {
+            "step": 2,
+            "tool": "validate_recipient_address",
+            "description": "Confirm the provided recipient bech32 string has a valid prefix and checksum."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_bank_send",
+            "description": "Build the MsgSend with sender, recipient, amount, and denom, e.g., `10token`."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Run `<appd> tx bank send <from> <to> 10token --gas auto --gas-adjustment 1.3 --fees 1000token --broadcast-mode block`."
+        },
+        {
+            "step": 5,
+            "tool": "check_tx_confirmation",
+            "description": "Query the tx hash until it is included in a committed block."
+        }
+    ],
+    "outcome_checks": [
+        "Transaction appears in a finalized block with `code: 0`.",
+        "Recipient's balance increases by the transferred amount minus any fees."
+    ]
+}

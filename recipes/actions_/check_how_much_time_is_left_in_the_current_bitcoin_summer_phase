@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Calls the backend API to query a CosmWasm contract and returns the JSON response.",
+            "function": "queryContractSmart(contractAddress, queryMsg)",
+            "usage": "const result = await queryContractSmart(CONTRACT_ADDRESS_BITCOIN_SUMMER, { current_phase: {} });"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "undef",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "undef",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "undef",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "const result = await queryContractSmart(CONTRACT_ADDRESS_BITCOIN_SUMMER, { current_phase: {} });//step: 1 Tool: query_contract Desciption: Call the Bitcoin Summer campaign contract (CONTRACT_ADDRESS_BITCOIN_SUMMER) with `{ \"current_phase\": {} }` to obtain `{ \"phase\": <id>, \"end_time\": <unix_timestamp> }`.",
+        "undef//step: 3 Tool: calculate_time_difference Desciption: Subtract current time from `end_time` to compute the remaining duration.",
+        "undef//step: 4 Tool: format_time_output Desciption: Convert the raw seconds into a human-readable string (e.g., days-hours-minutes)."
+    ],
+    "backend": [
+        "undef#step: 2 Tool: get_current_block_time Desciption: Fetch the current chain time (block timestamp) for accurate comparison."
+    ],
+    "intent": "Check how much time is left in the current Bitcoin Summer phase",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "query_contract",
+            "description": "Call the Bitcoin Summer campaign contract (CONTRACT_ADDRESS_BITCOIN_SUMMER) with `{ \"current_phase\": {} }` to obtain `{ \"phase\": <id>, \"end_time\": <unix_timestamp> }`."
+        },
+        {
+            "step": 2,
+            "tool": "get_current_block_time",
+            "description": "Fetch the current chain time (block timestamp) for accurate comparison."
+        },
+        {
+            "step": 3,
+            "tool": "calculate_time_difference",
+            "description": "Subtract current time from `end_time` to compute the remaining duration."
+        },
+        {
+            "step": 4,
+            "tool": "format_time_output",
+            "description": "Convert the raw seconds into a human-readable string (e.g., days-hours-minutes)."
+        }
+    ],
+    "outcome_checks": [
+        "Output shows a non-negative duration (or clearly states the phase has ended).",
+        "The `phase` ID in the response is consistent with documentation for the current campaign period."
+    ]
+}

@@ -1,0 +1,142 @@
+[
+    {
+        "intent": "Fetch the current EVM chain ID via JSON-RPC",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prepare_json_rpc_payload",
+                "description": "Create the request body: {\"jsonrpc\":\"2.0\",\"method\":\"eth_chainId\",\"params\":[],\"id\":1}"
+            },
+            {
+                "step": 2,
+                "tool": "http_post",
+                "description": "POST the payload to the node\u2019s JSON-RPC endpoint (e.g., http://localhost:8545) with header Content-Type: application/json."
+            },
+            {
+                "step": 3,
+                "tool": "parse_json_rpc_response",
+                "description": "Read the \"result\" field, which contains the chain ID as a hex string (e.g., 0x40000). Convert to decimal if needed."
+            }
+        ],
+        "outcome_checks": [
+            "HTTP response status is 200.",
+            "\"result\" field is a non-empty hex string.",
+            "Converted numeric chain ID is greater than zero."
+        ]
+    },
+    {
+        "intent": "Retrieve the current base gas price (eth_gasPrice)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prepare_json_rpc_payload",
+                "description": "Create the request body: {\"jsonrpc\":\"2.0\",\"method\":\"eth_gasPrice\",\"params\":[],\"id\":1}"
+            },
+            {
+                "step": 2,
+                "tool": "http_post",
+                "description": "Send the request to the JSON-RPC endpoint (default http://localhost:8545)."
+            },
+            {
+                "step": 3,
+                "tool": "parse_json_rpc_response",
+                "description": "Extract the hex-encoded wei value from the \"result\" field and convert it to a decimal number for readability."
+            }
+        ],
+        "outcome_checks": [
+            "HTTP status 200 with a valid JSON body.",
+            "\"result\" is a valid hex string.",
+            "Converted gas price is a positive integer (wei > 0)."
+        ]
+    },
+    {
+        "intent": "Enable the txpool JSON-RPC namespace on a Cosmos EVM node",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "stop_evmd_service",
+                "description": "Gracefully stop the running evmd (or systemd service) to edit configuration safely."
+            },
+            {
+                "step": 2,
+                "tool": "open_config_file",
+                "description": "Open ~/.evmd/config/app.toml (or the node\u2019s app.toml path) for editing."
+            },
+            {
+                "step": 3,
+                "tool": "update_app_toml_parameter",
+                "description": "Inside the [json-rpc] section set enable = true and add \"txpool\" to the api list, e.g., api = \"eth,net,web3,txpool,debug\". Ensure enable-indexer = true so tx queries work."
+            },
+            {
+                "step": 4,
+                "tool": "save_and_close_file",
+                "description": "Write the changes and exit the editor."
+            },
+            {
+                "step": 5,
+                "tool": "start_evmd_service",
+                "description": "Restart the node and watch logs for successful boot with JSON-RPC enabled."
+            },
+            {
+                "step": 6,
+                "tool": "json_rpc_call",
+                "description": "Send a quick txpool_status call to verify the namespace responds."
+            }
+        ],
+        "outcome_checks": [
+            "Node restarts without configuration errors.",
+            "txpool_status returns a JSON object (pending / queued counts).",
+            "No RPC error code -32601 (method not found)."
+        ]
+    },
+    {
+        "intent": "Query current txpool status (pending vs. queued counts)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prepare_json_rpc_payload",
+                "description": "Create: {\"jsonrpc\":\"2.0\",\"method\":\"txpool_status\",\"params\":[],\"id\":1}"
+            },
+            {
+                "step": 2,
+                "tool": "http_post",
+                "description": "POST to the JSON-RPC endpoint."
+            },
+            {
+                "step": 3,
+                "tool": "parse_json_rpc_response",
+                "description": "Read the \"result\" object; it should have hex strings for \"pending\" and \"queued\"."
+            }
+        ],
+        "outcome_checks": [
+            "HTTP 200 response.",
+            "\"result.pending\" and \"result.queued\" exist.",
+            "Hex values convert to non-negative integers."
+        ]
+    },
+    {
+        "intent": "Inspect full txpool contents for debugging purposes",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prepare_json_rpc_payload",
+                "description": "Choose depth: txpool_inspect (text summary) or txpool_content (full objects). Example payload: {\"jsonrpc\":\"2.0\",\"method\":\"txpool_inspect\",\"params\":[],\"id\":1}."
+            },
+            {
+                "step": 2,
+                "tool": "http_post",
+                "description": "Submit the payload to the JSON-RPC endpoint."
+            },
+            {
+                "step": 3,
+                "tool": "parse_json_rpc_response",
+                "description": "For txpool_inspect: capture the textual map of accounts \u2192 nonces. For txpool_content: capture the structured JSON detailing each transaction."
+            }
+        ],
+        "outcome_checks": [
+            "Response returns either a text map (inspect) or structured JSON (content).",
+            "No RPC error returned.",
+            "Data lists at least zero or more transactions without mal-formed fields."
+        ]
+    }
+]

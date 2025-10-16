@@ -1,0 +1,12 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 exposes a lightweight FastAPI endpoint that performs a JSON-RPC call (eth_blockNumber) against any provided RPC URL and returns the latest block number. This replaces the original Foundry CLI command so it can run in a backend-for-frontend pattern without requiring Foundry to be installed.",
+            "code": "from fastapi import FastAPI, HTTPException, Query\nimport httpx\n\napp = FastAPI()\n\n@app.get(\"/block-number\")\nasync def get_block_number(rpc_url: str = Query(..., description=\"Full HTTP(S) JSON-RPC endpoint\")):\n    \"\"\"Return the latest block number from a JSON-RPC endpoint.\"\"\"\n    payload = {\n        \"jsonrpc\": \"2.0\",\n        \"id\": 1,\n        \"method\": \"eth_blockNumber\",\n        \"params\": []\n    }\n    try:\n        async with httpx.AsyncClient(timeout=10) as client:\n            response = await client.post(rpc_url, json=payload)\n            response.raise_for_status()\n            data = response.json()\n            # Validate JSON-RPC structure\n            if \"result\" not in data:\n                raise ValueError(\"Malformed JSON-RPC response: 'result' key missing\")\n            # Convert hex string (e.g., '0x10d4f') to int\n            block_number = int(data[\"result\"], 16)\n            return {\"block_number\": block_number}\n    except (httpx.HTTPError, ValueError) as exc:\n        # Propagate a clean API error to the caller\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "Frontend example (JS):\n\nconst rpcUrl = \"https://your-rpc-endpoint\";\nconst res = await fetch(`/api/block-number?rpc_url=${encodeURIComponent(rpcUrl)}`);\nconst { block_number } = await res.json();\nconsole.log(\"Latest block number:\", block_number);"
+        }
+    ]
+}

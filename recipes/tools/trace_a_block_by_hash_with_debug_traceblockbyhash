@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "connect_rpc_endpoint verifies that a given JSON-RPC URL is reachable and returns it for later requests.",
+            "function": "connect_rpc_endpoint(rpc_endpoint='https://rpc-kralum.neutron.org')",
+            "usage": "endpoint = connect_rpc_endpoint('http://localhost:8545')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "json_rpc_call performs the debug_traceBlockByHash JSON-RPC call (or any other) against the selected node and returns the trace result.",
+            "function": "json_rpc_call(method: str = 'txpool_status', params: list | None = None, endpoint: str = 'http://localhost:8545')",
+            "usage": "trace = json_rpc_call('debug_traceBlockByHash', [block_hash, {}], endpoint=endpoint)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "endpoint = connect_rpc_endpoint('http://localhost:8545')#step: 1 Tool: select_rpc_endpoint Desciption: Use the node\u2019s JSON-RPC URL.",
+        "trace = json_rpc_call('debug_traceBlockByHash', [block_hash, {}], endpoint=endpoint)#step: 2 Tool: json_rpc_call Desciption: Call debug_traceBlockByHash with the desired block hash and an empty tracer:\n{\n  \"method\": \"debug_traceBlockByHash\",\n  \"params\": [\"<blockHash>\", {}],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+    ],
+    "intent": "Trace a block by hash with debug_traceBlockByHash",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "select_rpc_endpoint",
+            "description": "Use the node\u2019s JSON-RPC URL."
+        },
+        {
+            "step": 2,
+            "tool": "json_rpc_call",
+            "description": "Call debug_traceBlockByHash with the desired block hash and an empty tracer:\n{\n  \"method\": \"debug_traceBlockByHash\",\n  \"params\": [\"<blockHash>\", {}],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+        }
+    ],
+    "outcome_checks": [
+        "Expect an empty array [] while tracing is stubbed.",
+        "Once implemented, ensure each transaction trace object is returned in the same order as the block\u2019s transactions."
+    ]
+}

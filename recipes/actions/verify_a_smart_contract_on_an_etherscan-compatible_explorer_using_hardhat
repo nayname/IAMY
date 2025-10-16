@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Backend Python helper that installs the Hardhat Etherscan plugin by spawning an npm subprocess.",
+            "code": "import subprocess\nimport sys\n\n\ndef install_hardhat_etherscan_plugin(project_path: str = '.'):\n    \"\"\"\n    Installs @nomiclabs/hardhat-etherscan as a dev-dependency inside the given project directory.\n    \"\"\"\n    try:\n        result = subprocess.run(\n            ['npm', 'install', '--save-dev', '@nomiclabs/hardhat-etherscan'],\n            cwd=project_path,\n            stdout=subprocess.PIPE,\n            stderr=subprocess.PIPE,\n            text=True,\n            check=True\n        )\n        print(result.stdout)\n        return {'status': 'success', 'message': 'Plugin installed successfully'}\n    except subprocess.CalledProcessError as e:\n        print(e.stderr, file=sys.stderr)\n        return {'status': 'error', 'message': e.stderr}",
+            "usage": "POST /api/install-plugin   // no body required"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Backend Python utility that writes (or replaces) your Etherscan key in a .env file.",
+            "code": "import os\n\n\ndef configure_etherscan_api_key(key: str, env_path: str = '.env'):\n    \"\"\"\n    Persists ETHERSCAN_API_KEY to .env, replacing any existing value.\n    \"\"\"\n    try:\n        lines = []\n        if os.path.isfile(env_path):\n            with open(env_path, 'r') as f:\n                lines = f.readlines()\n        # Remove stale entries\n        lines = [l for l in lines if not l.startswith('ETHERSCAN_API_KEY=')]\n        lines.append(f'ETHERSCAN_API_KEY={key}\\n')\n        with open(env_path, 'w') as f:\n            f.writelines(lines)\n        return {'status': 'success', 'message': 'ETHERSCAN_API_KEY written to .env'}\n    except Exception as e:\n        return {'status': 'error', 'message': str(e)}",
+            "usage": "POST /api/set-etherscan-key   body: {\"key\":\"<YOUR_API_KEY>\"}"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Backend Python wrapper that compiles Hardhat contracts to make sure ABI/bytecode match the deployed build.",
+            "code": "import subprocess\nimport sys\n\n\ndef compile_contracts(project_path: str = '.'):\n    \"\"\"\n    Executes `npx hardhat compile` inside the project directory.\n    \"\"\"\n    try:\n        result = subprocess.run(\n            ['npx', 'hardhat', 'compile'],\n            cwd=project_path,\n            stdout=subprocess.PIPE,\n            stderr=subprocess.PIPE,\n            text=True,\n            check=True\n        )\n        return {'status': 'success', 'output': result.stdout}\n    except subprocess.CalledProcessError as e:\n        print(e.stderr, file=sys.stderr)\n        return {'status': 'error', 'message': e.stderr}",
+            "usage": "POST /api/compile-contracts   // no body required"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Backend Python helper that runs `npx hardhat verify` with dynamic args to verify the contract.",
+            "code": "import subprocess\nimport sys\nfrom typing import List\n\n\ndef verify_contract(network: str, address: str, constructor_args: List[str] | None = None, project_path: str = '.'):\n    \"\"\"\n    Launches Hardhat verification for a deployed contract.\n    \"\"\"\n    try:\n        cmd = ['npx', 'hardhat', 'verify', '--network', network, address]\n        if constructor_args:\n            cmd.extend(constructor_args)\n        result = subprocess.run(\n            cmd,\n            cwd=project_path,\n            stdout=subprocess.PIPE,\n            stderr=subprocess.PIPE,\n            text=True,\n            check=True\n        )\n        return {'status': 'success', 'output': result.stdout}\n    except subprocess.CalledProcessError as e:\n        print(e.stderr, file=sys.stderr)\n        return {'status': 'error', 'message': e.stderr}",
+            "usage": "POST /api/verify-contract   body: {\"network\":\"goerli\",\"address\":\"0x...\",\"args\":[]}"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Browser-side utility that queries Etherscan\u2019s API to confirm that the contract source code is verified.",
+            "code": "export const checkVerificationStatus = async (network, contractAddress, apiKey) => {\n  const baseUrlMap = {\n    mainnet: 'https://api.etherscan.io/api',\n    goerli: 'https://api-goerli.etherscan.io/api',\n    sepolia: 'https://api-sepolia.etherscan.io/api',\n  };\n\n  const baseUrl = baseUrlMap[network];\n  if (!baseUrl) throw new Error(`Unsupported network ${network}`);\n\n  const url = `${baseUrl}?module=contract&action=getsourcecode&address=${contractAddress}&apikey=${apiKey}`;\n\n  try {\n    const res = await fetch(url);\n    if (!res.ok) throw new Error(`Explorer responded with ${res.status}`);\n    const data = await res.json();\n    const verified = data.status === '1' && data.result && data.result.length > 0 && data.result[0].SourceCode !== '';\n    return { verified, raw: data };\n  } catch (err) {\n    console.error(err);\n    throw new Error('Failed to fetch verification status');\n  }\n};",
+            "usage": "const { verified } = await checkVerificationStatus('goerli', contractAddress, etherscanApiKey);"
+        }
+    ]
+}

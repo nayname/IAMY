@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "sign_and_broadcast_tx_ first attempts to base64-decode the provided tx_base64 field and throws an error if the string is not valid, making it a convenient validator for user-supplied protobuf bytes.",
+            "function": "sign_and_broadcast_tx_(req)",
+            "usage": "await sign_and_broadcast_tx_({\"tx_base64\": userInput })"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No fully-implemented function in the current codebase performs the `simd tx decode` CLI conversion.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "get_formatted_tx retrieves a raw transaction and returns a curated, human-readable JSON object, effectively pretty-printing the decoded data.",
+            "function": "get_formatted_tx(tx_hash)",
+            "usage": "const pretty = await get_formatted_tx(\"A1B2C3\u2026\");"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "await sign_and_broadcast_tx_({\"tx_base64\": userInput })#step: 1 Tool: validate_base64_input Desciption: Ensure the user-supplied transaction bytes are valid base64 (the format expected by Cosmos CLI and gRPC endpoints).",
+        "undef#step: 2 Tool: simd_tx_decode Desciption: Run `simd tx decode <base64-bytes>` to convert the protobuf-encoded TxRaw bytes into a JSON representation.",
+        "const pretty = await get_formatted_tx(\"A1B2C3\u2026\");#step: 3 Tool: pretty_print_json Desciption: Format the decoded JSON for readable output or save it to a file if requested."
+    ],
+    "intent": "Decode protobuf transaction bytes to JSON",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_base64_input",
+            "description": "Ensure the user-supplied transaction bytes are valid base64 (the format expected by Cosmos CLI and gRPC endpoints)."
+        },
+        {
+            "step": 2,
+            "tool": "simd_tx_decode",
+            "description": "Run `simd tx decode <base64-bytes>` to convert the protobuf-encoded TxRaw bytes into a JSON representation."
+        },
+        {
+            "step": 3,
+            "tool": "pretty_print_json",
+            "description": "Format the decoded JSON for readable output or save it to a file if requested."
+        }
+    ],
+    "outcome_checks": [
+        "The CLI exits with code 0 (no decoding errors).",
+        "The resulting JSON contains expected top-level fields: body, auth_info, signatures.",
+        "If a file path was supplied, verify that the JSON file now exists and is non-empty."
+    ]
+}

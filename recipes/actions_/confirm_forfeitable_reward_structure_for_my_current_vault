@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Fetches the vault contract address associated with the supplied user address from the registry service.",
+            "function": "getVaultContractAddress(userAddress, registryBaseUrl?)",
+            "usage": "const vaultAddress = await getVaultContractAddress(userAddress);"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Queries the vault contract with { config: {} } to retrieve its full configuration, including reward policies.",
+            "function": "queryVaultConfig(vaultAddress, lcdUrl?)",
+            "usage": "const config = await queryVaultConfig(vaultAddress);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Parses the configuration JSON to isolate forfeitable reward or early-exit penalty settings.",
+            "function": "parseRewardPolicy(config)",
+            "usage": "const policy = parseRewardPolicy(config);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Displays the parsed reward-forfeiture information to the user in the UI or console.",
+            "function": "displayRewardPolicy(policy, targetElementId?)",
+            "usage": "displayRewardPolicy(policy);"
+        }
+    ],
+    "frontend": [
+        "const vaultAddress = await getVaultContractAddress(userAddress);//step: 1 Tool: get_contract_address Desciption: Determine the vault contract address associated with the user\u2019s deposit.",
+        "const config = await queryVaultConfig(vaultAddress);//step: 2 Tool: query_contract_state Desciption: Invoke `{ config: {} }` (or similar) on the vault contract to retrieve reward policy settings.",
+        "const policy = parseRewardPolicy(config);//step: 3 Tool: parse_reward_policy Desciption: Read the `forfeitable_rewards` or `early_exit_penalty` field from the config JSON.",
+        "displayRewardPolicy(policy);//step: 4 Tool: display_result Desciption: Show the user whether rewards are forfeited on early withdrawal and, if applicable, the penalty schedule."
+    ],
+    "backend": [],
+    "intent": "Confirm forfeitable reward structure for my current vault",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_contract_address",
+            "description": "Determine the vault contract address associated with the user\u2019s deposit."
+        },
+        {
+            "step": 2,
+            "tool": "query_contract_state",
+            "description": "Invoke `{ config: {} }` (or similar) on the vault contract to retrieve reward policy settings."
+        },
+        {
+            "step": 3,
+            "tool": "parse_reward_policy",
+            "description": "Read the `forfeitable_rewards` or `early_exit_penalty` field from the config JSON."
+        },
+        {
+            "step": 4,
+            "tool": "display_result",
+            "description": "Show the user whether rewards are forfeited on early withdrawal and, if applicable, the penalty schedule."
+        }
+    ],
+    "outcome_checks": [
+        "The config query returns without error and includes a recognizable reward policy field.",
+        "Displayed information matches the raw values returned by the contract (no parsing errors)."
+    ]
+}

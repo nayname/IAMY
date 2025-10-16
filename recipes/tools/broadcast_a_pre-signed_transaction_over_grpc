@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "build_send_tx() runs the CLI with --generate-only to create an unsigned transaction JSON file.",
+            "function": "build_send_tx(sender, recipient, amount='1000stake', fee='200stake', chain_id='my-test-chain', outfile='unsigned_tx.json')",
+            "usage": "unsigned_file = build_send_tx('cosmos1from...', 'cosmos1to...', '100stake', '50stake', 'cosmoshub-4', 'unsigned_tx.json')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "sign_tx() signs the previously generated unsigned transaction JSON and outputs a signed file that contains the base64-encoded tx_bytes.",
+            "function": "sign_tx(unsigned_tx_path, key_name='my_validator', keyring_backend='test', chain_id='my-test-chain', outfile='signed_tx.json')",
+            "usage": "signed_file = sign_tx(unsigned_file, 'mykey', 'test', 'cosmoshub-4', 'signed_tx.json')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "broadcast_tx() takes the signed transaction file and broadcasts it to the chain, similar to invoking the gRPC BroadcastTx endpoint.",
+            "function": "broadcast_tx(signed_tx_path, chain_id='my-test-chain', node_rpc='http://localhost:26657')",
+            "usage": "tx_hash = broadcast_tx(signed_file, 'cosmoshub-4', 'http://localhost:26657')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "unsigned_file = build_send_tx('cosmos1from...', 'cosmos1to...', '100stake', '50stake', 'cosmoshub-4', 'unsigned_tx.json')#step: 1 Tool: construct_unsigned_tx_cli Desciption: Generate an unsigned tx JSON with \"<appd> tx <module> <msg> --generate-only\".",
+        "signed_file = sign_tx(unsigned_file, 'mykey', 'test', 'cosmoshub-4', 'signed_tx.json')#step: 2 Tool: sign_tx_cli Desciption: Sign the tx with \"<appd> tx sign\" to obtain a base64 \"tx_bytes\" field.",
+        "tx_hash = broadcast_tx(signed_file, 'cosmoshub-4', 'http://localhost:26657')#step: 3 Tool: grpcurl_broadcast_tx Desciption: Invoke the gRPC method with: \n  grpcurl -plaintext -d '{\"tx_bytes\":\"<base64>\",\"mode\":\"BROADCAST_MODE_SYNC\"}' \\\n          localhost:9090 cosmos.tx.v1beta1.Service/BroadcastTx"
+    ],
+    "intent": "Broadcast a pre-signed transaction over gRPC",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "construct_unsigned_tx_cli",
+            "description": "Generate an unsigned tx JSON with \"<appd> tx <module> <msg> --generate-only\"."
+        },
+        {
+            "step": 2,
+            "tool": "sign_tx_cli",
+            "description": "Sign the tx with \"<appd> tx sign\" to obtain a base64 \"tx_bytes\" field."
+        },
+        {
+            "step": 3,
+            "tool": "grpcurl_broadcast_tx",
+            "description": "Invoke the gRPC method with: \n  grpcurl -plaintext -d '{\"tx_bytes\":\"<base64>\",\"mode\":\"BROADCAST_MODE_SYNC\"}' \\\n          localhost:9090 cosmos.tx.v1beta1.Service/BroadcastTx"
+        }
+    ],
+    "outcome_checks": [
+        "grpcurl returns JSON containing \"tx_response\" with a non-empty \"txhash\".",
+        "\"tx_response.code\" is 0 for success; non-zero indicates an error.",
+        "Searching the hash via REST or gRPC shows the tx included in a block."
+    ]
+}

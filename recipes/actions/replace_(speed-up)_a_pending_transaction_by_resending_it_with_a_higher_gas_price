@@ -1,0 +1,40 @@
+{
+    "label": "send",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Fetch the full transaction object from an EVM-compatible RPC endpoint so we can inspect its nonce, gas values and other parameters.",
+            "code": "/* ---------------------------------------------\n * fetchTransactionByHash(txHash, rpcUrl)\n * ---------------------------------------------\n * Returns: the transaction JSON object or throws.\n */\nexport const fetchTransactionByHash = async (txHash, rpcUrl) => {\n  const payload = {\n    jsonrpc: \"2.0\",\n    id: Date.now(),\n    method: \"eth_getTransactionByHash\",\n    params: [txHash]\n  };\n\n  const res = await fetch(rpcUrl, {\n    method: \"POST\",\n    headers: { \"Content-Type\": \"application/json\" },\n    body: JSON.stringify(payload)\n  });\n\n  if (!res.ok) {\n    throw new Error(`RPC call failed with status ${res.status}`);\n  }\n\n  const json = await res.json();\n  if (json.error) throw new Error(json.error.message);\n  if (!json.result) throw new Error(\"Transaction not found on RPC node\");\n\n  return json.result; // full tx object\n};",
+            "usage": "const originalTx = await fetchTransactionByHash(\"0xABC\u2026\", \"https://rpc.my-evm-chain.org\");"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Confirm the transaction is still pending (blockNumber === null).  If it already landed on-chain we abort.",
+            "code": "/* ---------------------------------------------\n * verifyTxPending(tx)\n * ---------------------------------------------\n * Throws if the tx is NOT replaceable.\n */\nexport const verifyTxPending = (tx) => {\n  if (tx.blockNumber !== null) {\n    throw new Error(\"Original transaction is already mined; cannot be replaced.\");\n  }\n  return true;\n};",
+            "usage": "verifyTxPending(originalTx); // will throw if not pending"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Create a replacement transaction using the SAME nonce and payload but bumping the gas price / EIP-1559 fee params.",
+            "code": "/* ----------------------------------------------------------\n * constructReplacementTx(originalTx, { multiplier })\n * ----------------------------------------------------------\n * - Keeps nonce, to, data, value, gas.\n * - Increases gasPrice (or maxFeePerGas / maxPriorityFeePerGas).\n * - Returns a txParams object ready for signing.\n */\nexport const constructReplacementTx = (\n  originalTx,\n  { multiplier = 1.2 } = {}\n) => {\n  const toHex = (bn) => \"0x\" + bn.toString(16);\n  const bump = (valueHex) => {\n    const orig = BigInt(valueHex);\n    // ensure we bump by at least +10% even if multiplier is small\n    const bumped = orig * BigInt(Math.round(multiplier * 100)) / BigInt(100);\n    return bumped > orig ? bumped : orig + orig / BigInt(10);\n  };\n\n  const baseParams = {\n    from: originalTx.from,\n    to: originalTx.to,\n    data: originalTx.input,\n    gas: originalTx.gas,\n    nonce: originalTx.nonce,\n    value: originalTx.value\n  };\n\n  // Legacy gas pricing ---------------------------------------------------\n  if (originalTx.gasPrice && originalTx.gasPrice !== \"0x0\") {\n    baseParams.gasPrice = toHex(bump(originalTx.gasPrice));\n  }\n\n  // EIP-1559 style -------------------------------------------------------\n  if (originalTx.maxFeePerGas) {\n    baseParams.maxFeePerGas = toHex(bump(originalTx.maxFeePerGas));\n    baseParams.maxPriorityFeePerGas = toHex(\n      bump(originalTx.maxPriorityFeePerGas || \"0x0\")\n    );\n  }\n\n  return baseParams;\n};",
+            "usage": "const replacementTx = constructReplacementTx(originalTx, { multiplier: 1.25 });"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Ask the user\u2019s wallet (window.ethereum) to sign the replacement transaction and return the raw-tx hex.  If `eth_signTransaction` is unsupported we fall back to `eth_sendTransaction`, which signs *and* broadcasts in one shot.",
+            "code": "/* ----------------------------------------------------------\n * signReplacementTx(txParams, { chainId })\n * ----------------------------------------------------------\n * Returns rawTx hex *or* txHash if wallet automatically broadcasts.\n */\nexport const signReplacementTx = async (txParams, { chainId } = {}) => {\n  if (!window.ethereum) throw new Error(\"No EVM-compatible wallet detected.\");\n\n  // Add chainId if provided (helps some wallets)\n  if (chainId) txParams.chainId = chainId;\n\n  try {\n    // 1\ufe0f\u20e3  Attempt to just sign (keeps rawTx for manual broadcast)\n    const raw = await window.ethereum.request({\n      method: \"eth_signTransaction\",\n      params: [txParams]\n    });\n    if (!raw || !raw.raw) throw new Error(\"Wallet did not return raw transaction\");\n    return { rawTx: raw.raw };\n  } catch (e) {\n    // 2\ufe0f\u20e3  Fallback: let the wallet sign *and* send (most common path)\n    const txHash = await window.ethereum.request({\n      method: \"eth_sendTransaction\",\n      params: [txParams]\n    });\n    return { txHash }; // already broadcast, nothing left to do\n  }\n};",
+            "usage": "const { rawTx, txHash } = await signReplacementTx(replacementTx, { chainId: 9001 });"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "If we obtained the raw-signed transaction from step 4 we still need to broadcast it via `eth_sendRawTransaction`.",
+            "code": "/* ----------------------------------------------------------\n * sendRawTransaction(rawTxHex, rpcUrl)\n * ----------------------------------------------------------\n * Broadcasts and returns the new txHash.\n */\nexport const sendRawTransaction = async (rawTxHex, rpcUrl) => {\n  const payload = {\n    jsonrpc: \"2.0\",\n    id: Date.now(),\n    method: \"eth_sendRawTransaction\",\n    params: [rawTxHex]\n  };\n\n  const res = await fetch(rpcUrl, {\n    method: \"POST\",\n    headers: { \"Content-Type\": \"application/json\" },\n    body: JSON.stringify(payload)\n  });\n\n  if (!res.ok) throw new Error(`Broadcast failed \u2013 HTTP ${res.status}`);\n  const json = await res.json();\n  if (json.error) throw new Error(json.error.message);\n  return json.result; // txHash\n};",
+            "usage": "if (rawTx) {\n  const newTxHash = await sendRawTransaction(rawTx, \"https://rpc.my-evm-chain.org\");\n  console.log(\"Replacement tx sent:\", newTxHash);\n}"
+        }
+    ]
+}

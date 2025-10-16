@@ -1,0 +1,26 @@
+{
+    "label": "query_balance",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Collect and validate the bech32 address from a user-provided HTML input element.",
+            "code": "/* utils/wallet.js */\nexport const collectTargetAddress = () => {\n  // Assuming there is an <input id=\"address-input\" /> in the DOM\n  const raw = document.getElementById('address-input')?.value?.trim();\n  // Basic sanity checks; for production use a bech32 library\n  if (!raw || !/^([a-z0-9]+)1[0-9a-z]{38}$/.test(raw)) {\n    throw new Error('Invalid bech32 address supplied.');\n  }\n  return raw;\n};",
+            "usage": "// In your click handler or form submit\nconst address = collectTargetAddress();\n// Pass this address to the backend in Step 2"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Expose a FastAPI endpoint that proxies the Cosmos SDK REST call and returns the balances array. Doing this server-side avoids CORS issues in the docs frontend.",
+            "code": "# api/balances.py\nfrom fastapi import FastAPI, HTTPException\nimport httpx\n\napp = FastAPI()\n\nREST_ENDPOINT = \"http://localhost:1317\"  # Change to your full-node REST host if different\n\n@app.get(\"/api/balances\")\nasync def query_balances(address: str):\n    \"\"\"Fetch bank balances for a bech32 address and return only the relevant JSON payload.\"\"\"\n    url = f\"{REST_ENDPOINT}/cosmos/bank/v1beta1/balances/{address}\"\n    try:\n        async with httpx.AsyncClient(timeout=5.0) as client:\n            resp = await client.get(url)\n            resp.raise_for_status()\n            data = resp.json()\n    except httpx.RequestError as exc:\n        # Network-level failure\n        raise HTTPException(status_code=502, detail=f\"Cannot reach REST endpoint: {exc}\")\n    except httpx.HTTPStatusError as exc:\n        # Non-200 response from node\n        raise HTTPException(status_code=exc.response.status_code, detail=exc.response.text)\n\n    # Return a trimmed response to the frontend\n    return {\n        \"address\": address,\n        \"balances\": data.get(\"balances\", [])\n    }",
+            "usage": "GET /api/balances?address=<bech32Address>\n// Frontend will call this using fetch in Step 3"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Fetch the balances from the backend route, parse the JSON, and convert it into a simple JS object array for rendering.",
+            "code": "/* services/balances.js */\nexport const fetchAndParseBalances = async (address) => {\n  const res = await fetch(`/api/balances?address=${encodeURIComponent(address)}`);\n  if (!res.ok) {\n    const { detail } = await res.json().catch(() => ({ detail: res.statusText }));\n    throw new Error(`Backend error: ${detail}`);\n  }\n  const data = await res.json();\n  // Ensure we always return an array even if no balances are found\n  return (data.balances || []).map(({ denom, amount }) => ({ denom, amount }));\n};",
+            "usage": "try {\n  const address = collectTargetAddress(); // Step 1\n  const balances = await fetchAndParseBalances(address); // Step 3\n  console.log('Balances:', balances);\n} catch (err) {\n  console.error(err);\n}"
+        }
+    ]
+}

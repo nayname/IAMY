@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 exposes a FastAPI endpoint that installs the OpenZeppelin Contracts library by running the shell command `npm install @openzeppelin/contracts` inside the specified Hardhat project directory.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport subprocess\nimport pathlib\n\napp = FastAPI()\n\n@app.post(\"/install_openzeppelin\")\nasync def install_openzeppelin(project_path: str = \".\"):\n    \"\"\"Install OpenZeppelin Contracts with npm.\"\"\"\n    try:\n        # Ensure we are operating in an absolute path for safety\n        project_dir = pathlib.Path(project_path).resolve()\n        subprocess.run(\n            [\"npm\", \"install\", \"@openzeppelin/contracts\"],\n            cwd=project_dir,\n            check=True,\n        )\n        return {\"status\": \"success\", \"message\": \"@openzeppelin/contracts installed.\"}\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=f\"npm install failed: {err}\")",
+            "usage": "POST /install_openzeppelin  with JSON body {\"project_path\": \"/absolute/path/to/your/hardhat/project\"}"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 adds another FastAPI endpoint that writes a sample ERC-20 token contract to `contracts/MyToken.sol`, demonstrating how to import from OpenZeppelin.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport pathlib\n\napp = FastAPI()\n\nSAMPLE_ERC20 = \"\"\"// SPDX-License-Identifier: MIT\npragma solidity ^0.8.20;\n\nimport \\\"@openzeppelin/contracts/token/ERC20/ERC20.sol\\\";\n\ncontract MyToken is ERC20 {\n    constructor(uint256 initialSupply) ERC20(\\\"MyToken\\\", \\\"MTK\\\") {\n        _mint(msg.sender, initialSupply);\n    }\n}\n\"\"\"\n\n@app.post(\"/create_contract\")\nasync def create_contract(project_path: str = \".\", filename: str = \"MyToken.sol\"):\n    \"\"\"Create a Solidity file with OpenZeppelin imports.\"\"\"\n    try:\n        contracts_dir = pathlib.Path(project_path).resolve() / \"contracts\"\n        contracts_dir.mkdir(parents=True, exist_ok=True)\n        contract_file = contracts_dir / filename\n        contract_file.write_text(SAMPLE_ERC20)\n        return {\"status\": \"success\", \"message\": f\"Contract written to {contract_file}\"}\n    except Exception as err:\n        raise HTTPException(status_code=500, detail=f\"Unable to write contract: {err}\")",
+            "usage": "POST /create_contract  with JSON body {\"project_path\": \"/absolute/path/to/your/hardhat/project\"}"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 exposes a FastAPI endpoint that invokes `npx hardhat compile`, compiling the project and automatically pulling OpenZeppelin sources.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport subprocess\nimport pathlib\n\napp = FastAPI()\n\n@app.post(\"/compile_contracts\")\nasync def compile_contracts(project_path: str = \".\"):\n    \"\"\"Compile Solidity contracts with Hardhat.\"\"\"\n    try:\n        project_dir = pathlib.Path(project_path).resolve()\n        subprocess.run([\"npx\", \"hardhat\", \"compile\"], cwd=project_dir, check=True)\n        return {\"status\": \"success\", \"message\": \"Hardhat compilation completed.\"}\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=f\"Hardhat compile failed: {err}\")",
+            "usage": "POST /compile_contracts  with JSON body {\"project_path\": \"/absolute/path/to/your/hardhat/project\"}"
+        }
+    ]
+}

@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Validate that a provided transaction hash follows the Ethereum format (0x + 64 hex chars).",
+            "code": "export const validateTxHash = (txHash) => {\n  // Ethereum-style transaction hashes are 0x-prefixed and 66 characters long\n  const pattern = /^0x([A-Fa-f0-9]{64})$/;\n\n  if (!pattern.test(txHash)) {\n    throw new Error(\n      'Invalid transaction hash. It must be 0x-prefixed and 66 characters long.'\n    );\n  }\n\n  // Return the hash unchanged so it can be safely re-used downstream\n  return txHash;\n};",
+            "usage": "const safeHash = validateTxHash(userInputHash);"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Choose an RPC endpoint from a predefined, CORS-friendly list that can serve historical data.",
+            "code": "/* Public RPC URLs for EVM-compatible Cosmos chains (e.g., Evmos).  \n * Feel free to add/remove endpoints that suit your deployment.\n */\nconst RPC_ENDPOINTS = [\n  'https://eth.bd.evmos.dev:8545/',\n  'https://rpc-evmos.cosmos.directory/',\n  'https://evmos-json-rpc.publicnode.com'\n];\n\nexport const selectRpcEndpoint = () => {\n  // Basic (pseudo) load-balancing via random selection\n  const index = Math.floor(Math.random() * RPC_ENDPOINTS.length);\n  return RPC_ENDPOINTS[index];\n};",
+            "usage": "const rpc = selectRpcEndpoint();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Issue a single eth_getTransactionReceipt JSON-RPC call. Returns `None` if the transaction is still pending.",
+            "code": "import httpx\nfrom typing import Optional\n\nasync def get_transaction_receipt_once(tx_hash: str, rpc_endpoint: str) -> Optional[dict]:\n    \"\"\"Fire exactly one eth_getTransactionReceipt call.\"\"\"\n\n    payload = {\n        'jsonrpc': '2.0',\n        'id': 1,\n        'method': 'eth_getTransactionReceipt',\n        'params': [tx_hash],\n    }\n\n    async with httpx.AsyncClient() as client:\n        resp = await client.post(rpc_endpoint, json=payload, timeout=10)\n        resp.raise_for_status()\n        data = resp.json()\n\n    # `result` is None while the tx is pending\n    return data.get('result')",
+            "usage": "receipt = await get_transaction_receipt_once(tx_hash, rpc_endpoint)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Poll eth_getTransactionReceipt every few seconds until a receipt is returned or a timeout is hit. Exposes a FastAPI HTTP endpoint for the frontend to call.",
+            "code": "import asyncio\nimport os\nfrom typing import Optional\n\nimport httpx\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\nDEFAULT_RPC = os.getenv('DEFAULT_RPC_ENDPOINT', 'https://eth.bd.evmos.dev:8545/')\nDEFAULT_TIMEOUT = int(os.getenv('TX_RECEIPT_TIMEOUT', 60))   # seconds\nDEFAULT_INTERVAL = int(os.getenv('TX_RECEIPT_INTERVAL', 5))  # seconds\n\n\nasync def _get_receipt_once(tx_hash: str, rpc_endpoint: str):\n    \"\"\"Light wrapper around the function from Step 3 so we keep the file self-contained.\"\"\"\n    payload = {\n        'jsonrpc': '2.0',\n        'id': 1,\n        'method': 'eth_getTransactionReceipt',\n        'params': [tx_hash],\n    }\n    async with httpx.AsyncClient() as client:\n        res = await client.post(rpc_endpoint, json=payload, timeout=10)\n        res.raise_for_status()\n        return res.json().get('result')\n\n\nasync def poll_for_receipt(tx_hash: str, rpc_endpoint: str, timeout: int, interval: int):\n    \"\"\"Repeat JSON-RPC calls until we get a non-null receipt or hit the timeout.\"\"\"\n    deadline = asyncio.get_running_loop().time() + timeout\n    while True:\n        receipt = await _get_receipt_once(tx_hash, rpc_endpoint)\n        if receipt is not None:\n            return receipt\n        if asyncio.get_running_loop().time() >= deadline:\n            raise TimeoutError(f'Receipt not found within {timeout}s')\n        await asyncio.sleep(interval)\n\n\n@app.get('/api/poll_receipt')\nasync def api_poll_receipt(\n    tx_hash: str,\n    rpc_endpoint: Optional[str] = None,\n    timeout: int = DEFAULT_TIMEOUT,\n    interval: int = DEFAULT_INTERVAL,\n):\n    \"\"\"Frontend-facing endpoint: /api/poll_receipt?tx_hash=<hash>&rpc_endpoint=<opt>\"\"\"\n\n    if not (tx_hash.startswith('0x') and len(tx_hash) == 66):\n        raise HTTPException(status_code=400, detail='Invalid transaction hash')\n\n    endpoint = rpc_endpoint or DEFAULT_RPC\n\n    try:\n        receipt = await poll_for_receipt(tx_hash, endpoint, timeout, interval)\n        return {'receipt': receipt}\n    except TimeoutError as err:\n        raise HTTPException(status_code=504, detail=str(err))\n    except Exception as err:\n        raise HTTPException(status_code=500, detail=str(err))",
+            "usage": "GET /api/poll_receipt?tx_hash=0xABC... will return `{ receipt: { ... } }` or 504 on timeout."
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Interpret the JSON-RPC receipt to produce human-readable information (status, gas, block, etc.).",
+            "code": "export const interpretReceipt = (receipt) => {\n  if (!receipt) {\n    throw new Error('No receipt supplied');\n  }\n\n  const {\n    status,\n    gasUsed,\n    cumulativeGasUsed,\n    effectiveGasPrice,\n    blockNumber,\n    transactionHash,\n    logs,\n  } = receipt;\n\n  // Helper to convert hex strings (e.g., \"0x1a\") into decimal numbers\n  const hexToInt = (hex) => parseInt(hex, 16);\n\n  return {\n    transactionHash,\n    blockNumber: hexToInt(blockNumber),\n    status: status === '0x1' ? 'Success' : 'Failure',\n    gasUsed: hexToInt(gasUsed),\n    cumulativeGasUsed: hexToInt(cumulativeGasUsed),\n    effectiveGasPrice: hexToInt(effectiveGasPrice),\n    logs, // Raw logs are surfaced for the caller to decode as needed\n  };\n};",
+            "usage": "const summary = interpretReceipt(apiResponse.receipt);"
+        }
+    ]
+}

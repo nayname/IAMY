@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Resolves the SIMD home directory and verifies that it exists on disk.",
+            "function": "get_chain_home(chain_id='simd')",
+            "usage": "home_dir = get_chain_home()['chain_home']"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Launches the Tendermint/ABCI node by executing `simd start` for the specified home directory.",
+            "function": "start_simd(home_dir, additional_flags='', detach=True)",
+            "usage": "start_simd(home_dir)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Continuously queries the RPC status endpoint until the node reports a latest block height.",
+            "function": "verify_local_chain_running(rpc_url='http://localhost:26657/status', timeout=60)",
+            "usage": "verify_local_chain_running()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "home_dir = get_chain_home()['chain_home']#step: 1 Tool: get_chain_home Desciption: Confirm the SIMD home directory contains a valid genesis.json and config.",
+        "start_simd(home_dir)#step: 2 Tool: start_node Desciption: Run `simd start` (optionally with `--home` flag) to launch the ABCI application and Tendermint node.",
+        "verify_local_chain_running()#step: 3 Tool: health_check Desciption: Query the node status endpoint `curl localhost:26657/status` until it returns a non-empty latest_block_height."
+    ],
+    "intent": "Start the local simd node",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_chain_home",
+            "description": "Confirm the SIMD home directory contains a valid genesis.json and config."
+        },
+        {
+            "step": 2,
+            "tool": "start_node",
+            "description": "Run `simd start` (optionally with `--home` flag) to launch the ABCI application and Tendermint node."
+        },
+        {
+            "step": 3,
+            "tool": "health_check",
+            "description": "Query the node status endpoint `curl localhost:26657/status` until it returns a non-empty latest_block_height."
+        }
+    ],
+    "outcome_checks": [
+        "The node process remains running without errors in logs.",
+        "The status endpoint shows syncing:false after initial blocks, indicating the node is fully started."
+    ]
+}

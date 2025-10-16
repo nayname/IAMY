@@ -1,0 +1,93 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Retrieves the pre-configured backend wallet alias (default \u201clender\u201d) and returns its Bech32 address for subsequent transactions.",
+            "function": "get_sender_address(wallet_alias='lender')",
+            "usage": "sender_info = get_sender_address();  # {'wallet': 'lender', 'address': 'neutron1\u2026'}"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Checks the connected wallet\u2019s uniBTC balance and confirms it is at least 2 uniBTC on Neutron.",
+            "function": "checkTokenBalance(address)",
+            "usage": "const { ok, amount } = await checkTokenBalance(userAddress);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Builds a CW20 `increase_allowance` message so the Amber lending contract can spend 2 uniBTC on the user\u2019s behalf.",
+            "function": "construct_cw20_approve(spender, amount_micro)",
+            "usage": "approveMsg = construct_cw20_approve(AMBER_POOL_ADDR, 2_000_000);"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the approval transaction with the supplied wallet key and broadcasts it to the Neutron network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "approval_resp = sign_and_broadcast_tx(approve_tx, wallet, client)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Creates the execute message that supplies (lends) 2 uniBTC to the Amber Finance lending pool.",
+            "function": "construct_amber_lend_tx(amount_micro)",
+            "usage": "lendMsg = construct_amber_lend_tx(2_000_000);"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Signs and broadcasts the lending transaction, returning the resulting transaction hash once included.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "lend_resp = sign_and_broadcast_tx(lend_tx, wallet, client)"
+        }
+    ],
+    "frontend": [
+        "const { ok, amount } = await checkTokenBalance(userAddress);//step: 2 Tool: check_token_balance Desciption: Verify the wallet holds at least 2 uniBTC on Neutron."
+    ],
+    "backend": [
+        "sender_info = get_sender_address();  # {'wallet': 'lender', 'address': 'neutron1\u2026'}#step: 1 Tool: get_sender_address Desciption: Select the wallet that will supply uniBTC to Amber Finance.",
+        "approveMsg = construct_cw20_approve(AMBER_POOL_ADDR, 2_000_000);#step: 3 Tool: construct_cw20_approve Desciption: Create an approval message allowing the Amber Finance lending contract to spend 2 uniBTC on behalf of the user.",
+        "approval_resp = sign_and_broadcast_tx(approve_tx, wallet, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the approval transaction, then wait for confirmation.",
+        "lendMsg = construct_amber_lend_tx(2_000_000);#step: 5 Tool: construct_amber_lend_tx Desciption: Build the lending (supply) transaction for 2 uniBTC referencing Amber Finance\u2019s lending pool contract.",
+        "lend_resp = sign_and_broadcast_tx(lend_tx, wallet, client)#step: 6 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the lending transaction."
+    ],
+    "intent": "Lend 2 uniBTC on Amber Finance",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_address",
+            "description": "Select the wallet that will supply uniBTC to Amber Finance."
+        },
+        {
+            "step": 2,
+            "tool": "check_token_balance",
+            "description": "Verify the wallet holds at least 2 uniBTC on Neutron."
+        },
+        {
+            "step": 3,
+            "tool": "construct_cw20_approve",
+            "description": "Create an approval message allowing the Amber Finance lending contract to spend 2 uniBTC on behalf of the user."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the approval transaction, then wait for confirmation."
+        },
+        {
+            "step": 5,
+            "tool": "construct_amber_lend_tx",
+            "description": "Build the lending (supply) transaction for 2 uniBTC referencing Amber Finance\u2019s lending pool contract."
+        },
+        {
+            "step": 6,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the lending transaction."
+        }
+    ],
+    "outcome_checks": [
+        "Check that the lend transaction is finalized successfully.",
+        "Query Amber Finance to confirm the user\u2019s supplied balance now includes an additional 2 uniBTC and that receipt (interest-bearing) tokens were minted."
+    ]
+}

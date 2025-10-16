@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Expose an endpoint that auto-detects the Cosmos SDK daemon\u2019s binary name and its home directory (e.g. `~/.appd`). The logic first honors the `COSMOS_HOME` / `COSMOS_BINARY` environment variables and, if not present, falls back to a small `pgrep` scan before resorting to sensible defaults.",
+            "code": "from pathlib import Path\nimport os\nimport subprocess\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\n\ndef detect_node_home_and_binary():\n    \"\"\"Return a tuple of (home_path: Path, binary_name: str).\"\"\"\n    # 1. Environment overrides -------------------------------------------------\n    env_home = os.getenv(\"COSMOS_HOME\")\n    env_bin  = os.getenv(\"COSMOS_BINARY\")\n    if env_home and env_bin:\n        return Path(env_home).expanduser(), env_bin\n\n    # 2. Best-effort process scan ---------------------------------------------\n    try:\n        pgrep_output = subprocess.check_output([\"pgrep\", \"-fa\", \"d$\"]).decode()\n        # Pick the first matching daemon process\n        line        = pgrep_output.splitlines()[0]\n        _pid, *cmd  = line.strip().split()\n        binary_path = Path(cmd[0])\n        binary_name = binary_path.name\n        # Attempt to extract an explicit --home flag\n        home_path = None\n        if \"--home\" in cmd:\n            idx = cmd.index(\"--home\")\n            if idx + 1 < len(cmd):\n                home_path = Path(cmd[idx + 1]).expanduser()\n        if not home_path:\n            home_path = Path.home() / f\".{binary_name}\"\n        return home_path, binary_name\n    except Exception:\n        # 3. Conservative fallback --------------------------------------------\n        return Path.home() / \".appd\", \"appd\"\n\n\n@app.get(\"/api/node-info\")\ndef api_node_info():\n    \"\"\"Return `{ home: str, binary: str }` or HTTP 500 on failure.\"\"\"\n    try:\n        home, binary = detect_node_home_and_binary()\n        return {\"home\": str(home), \"binary\": binary}\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "const info = await fetch('/api/node-info').then(r => r.json());\n// info => { home: '/home/user/.appd', binary: 'appd' }"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Provide an endpoint that gracefully terminates the running daemon by sending a SIGTERM (falls back to SIGKILL if the process refuses to exit within the timeout).",
+            "code": "import os\nimport signal\nimport subprocess\nimport time\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\nTIMEOUT_SEC = 30  # wait time for graceful shutdown\n\n\ndef stop_node_process(binary_name: str, timeout: int = TIMEOUT_SEC) -> bool:\n    \"\"\"Return True on graceful shutdown, False if SIGKILL had to be used.\"\"\"\n    try:\n        pid_bytes = subprocess.check_output([\"pgrep\", \"-f\", binary_name])\n        pids      = [int(pid) for pid in pid_bytes.decode().split()]\n    except subprocess.CalledProcessError:\n        raise RuntimeError(f\"No running process found for '{binary_name}'.\")\n\n    # Send SIGTERM to every matching PID\n    for pid in pids:\n        os.kill(pid, signal.SIGTERM)\n\n    # Wait until the first PID exits (others should follow)\n    start = time.time()\n    while time.time() - start < timeout:\n        try:\n            os.kill(pids[0], 0)  # check still alive\n            time.sleep(1)\n        except OSError:  # process is gone\n            return True\n\n    # Escalate to SIGKILL if we\u2019re still here\n    for pid in pids:\n        os.kill(pid, signal.SIGKILL)\n    return False\n\n\n@app.post(\"/api/node-stop\")\ndef api_node_stop(binary: str):\n    try:\n        graceful = stop_node_process(binary)\n        return {\"graceful\": graceful}\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "await fetch(`/api/node-stop?binary=${encodeURIComponent(info.binary)}`, { method: 'POST' });"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Ensure the snapshot directory `<home>/data/snapshots` exists, creating it if needed, and return the absolute path.",
+            "code": "from pathlib import Path\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\n\ndef ensure_snapshot_dir(home_path: str) -> Path:\n    snap_dir = Path(home_path).expanduser() / \"data\" / \"snapshots\"\n    snap_dir.mkdir(parents=True, exist_ok=True)\n    return snap_dir\n\n\n@app.post(\"/api/snapshot/ensure-dir\")\ndef api_ensure_snapshot_dir(home: str):\n    try:\n        path = ensure_snapshot_dir(home)\n        return {\"snapshot_dir\": str(path)}\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "await fetch(`/api/snapshot/ensure-dir?home=${encodeURIComponent(info.home)}`, { method: 'POST' });"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Run the `snapshots export` CLI command so that the latest application state is flushed into the snapshot store.",
+            "code": "import subprocess\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\n\ndef export_snapshot(binary: str, home_path: str) -> str:\n    cmd = [binary, \"snapshots\", \"export\", \"--home\", home_path]\n    result = subprocess.run(cmd, capture_output=True, text=True)\n    if result.returncode != 0:\n        raise RuntimeError(result.stderr.strip())\n    return result.stdout.strip()\n\n\n@app.post(\"/api/snapshot/export\")\ndef api_export_snapshot(binary: str, home: str):\n    try:\n        output = export_snapshot(binary, home)\n        return {\"status\": \"exported\", \"cli_output\": output}\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "await fetch(`/api/snapshot/export?binary=${encodeURIComponent(info.binary)}&home=${encodeURIComponent(info.home)}`, { method: 'POST' });"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Verify at least one snapshot archive exists on disk and confirm the CLI `snapshots list` command can see it.",
+            "code": "import subprocess\nfrom pathlib import Path\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\n\ndef verify_snapshot(binary: str, home_path: str):\n    snap_dir   = Path(home_path).expanduser() / \"data\" / \"snapshots\"\n    archives   = [p.name for p in snap_dir.glob(\"*.tar*\")]\n\n    list_cmd   = [binary, \"snapshots\", \"list\", \"--home\", home_path]\n    list_proc  = subprocess.run(list_cmd, capture_output=True, text=True)\n    if list_proc.returncode != 0:\n        raise RuntimeError(list_proc.stderr.strip())\n\n    return {\"archives_on_disk\": archives, \"cli_output\": list_proc.stdout.strip()}\n\n\n@app.get(\"/api/snapshot/verify\")\ndef api_verify_snapshot(binary: str, home: str):\n    try:\n        res = verify_snapshot(binary, home)\n        if not res[\"archives_on_disk\"]:\n            raise RuntimeError(\"Snapshot directory is empty.\")\n        return res\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "const summary = await fetch(`/api/snapshot/verify?binary=${encodeURIComponent(info.binary)}&home=${encodeURIComponent(info.home)}`).then(r => r.json());\nconsole.log('Snapshots:', summary);"
+        }
+    ]
+}

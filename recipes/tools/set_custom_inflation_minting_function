@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Copies the specified source directories (e.g. the original x/mint folder) into a new target folder that will hold the forked module.",
+            "function": "gather_gentx_files(source_dirs, target_dir=\"x/custommint\")",
+            "usage": "gather_gentx_files([\"x/mint\"], \"x/custommint\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Re-writes the inflation setting inside a genesis-like JSON structure, letting you inject a custom inflation formula or constant before building the chain.",
+            "function": "update_inflation(genesis_data, new_inflation=\"0.150000000000000000\")",
+            "usage": "genesis_data = await update_inflation(genesis_data, \"0.150000000000000000\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Adds registration code for a new component (here, the custom mint keeper) into app.go so it becomes part of the module manager at start-up.",
+            "function": "register_preblocker(app_dir)",
+            "usage": "register_preblocker(\"./mychain\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Runs `go vet` and `go test` across the repo, ensuring the application compiles and unit tests (including those for the new inflation logic) pass.",
+            "function": "compile_generated_code(repo_root=\".\")",
+            "usage": "compile_generated_code(\".\")"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Bootstraps and starts a single-node devnet so blocks begin producing, allowing subsequent REST queries to confirm the custom inflation values.",
+            "function": "start_local_chain(home=\"./devnet\", chain_id=\"localnet\")",
+            "usage": "start_local_chain(home=\"./devnet\", chain_id=\"localnet\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "gather_gentx_files([\"x/mint\"], \"x/custommint\")#step: 1 Tool: fork_mint_module Desciption: Copy `x/mint` module into the application\u2019s local modules directory (e.g., `x/custommint`).",
+        "genesis_data = await update_inflation(genesis_data, \"0.150000000000000000\")#step: 2 Tool: implement_custom_inflation_logic Desciption: Modify `inflation.go` (or equivalent) to replace `CalculateInflation` with the desired formula.",
+        "register_preblocker(\"./mychain\")#step: 3 Tool: register_custom_module Desciption: In `app.go`, replace the standard mint keeper with the custom module\u2019s keeper and add it to the module manager.",
+        "compile_generated_code(\".\")#step: 4 Tool: go_build_and_unit_test Desciption: Compile the application and add unit tests ensuring the new inflation function returns expected values across epochs.",
+        "start_local_chain(home=\"./devnet\", chain_id=\"localnet\")#step: 5 Tool: launch_devnet_and_monitor Desciption: Start a local devnet, let several blocks pass, and query the `minting/inflation` and `minting/annual_provisions` endpoints to verify the custom rates."
+    ],
+    "intent": "Set custom inflation minting function",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "fork_mint_module",
+            "description": "Copy `x/mint` module into the application\u2019s local modules directory (e.g., `x/custommint`)."
+        },
+        {
+            "step": 2,
+            "tool": "implement_custom_inflation_logic",
+            "description": "Modify `inflation.go` (or equivalent) to replace `CalculateInflation` with the desired formula."
+        },
+        {
+            "step": 3,
+            "tool": "register_custom_module",
+            "description": "In `app.go`, replace the standard mint keeper with the custom module\u2019s keeper and add it to the module manager."
+        },
+        {
+            "step": 4,
+            "tool": "go_build_and_unit_test",
+            "description": "Compile the application and add unit tests ensuring the new inflation function returns expected values across epochs."
+        },
+        {
+            "step": 5,
+            "tool": "launch_devnet_and_monitor",
+            "description": "Start a local devnet, let several blocks pass, and query the `minting/inflation` and `minting/annual_provisions` endpoints to verify the custom rates."
+        }
+    ],
+    "outcome_checks": [
+        "Application compiles and passes unit tests.",
+        "On-chain inflation queries reflect the custom inflation curve.",
+        "Minted supply over time matches expectations derived from the custom function."
+    ]
+}

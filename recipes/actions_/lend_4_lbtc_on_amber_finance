@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Retrieves the connected wallet\u2019s Neutron address by enabling Keplr and reading the first account.",
+            "function": "getUserWalletAddress()",
+            "usage": "const userAddr = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Fetches the CW20 token balance for the supplied wallet to verify it holds at least 4 LBTC in micro-units.",
+            "function": "cw20_balance(contract, addr)",
+            "usage": "const balance = cw20_balance(LBTC_CONTRACT, userAddr);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Creates a CW20 increase_allowance message that lets the Amber lending contract spend 4 LBTC on the user\u2019s behalf.",
+            "function": "construct_cw20_approve(spender, amount_micro)",
+            "usage": "const allowMsg = construct_cw20_approve(AMBER_MARKET_CONTRACT, 4000000);"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Builds the Amber Finance lend execute message that deposits the 4 LBTC into the lending market.",
+            "function": "construct_amber_lend_tx(amount_micro)",
+            "usage": "const lendMsg = construct_amber_lend_tx(4000000);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Signs both the allowance and lend messages with the user\u2019s wallet and sends the signed transaction to the backend for broadcasting.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo)",
+            "usage": "const txHash = await signAndBroadcast(signer, userAddr, [allowMsg, lendMsg], \"auto\");"
+        }
+    ],
+    "frontend": [
+        "const userAddr = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Identify the connected Neutron wallet that will provide the LBTC.",
+        "const txHash = await signAndBroadcast(signer, userAddr, [allowMsg, lendMsg], \"auto\");//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign both the allowance and lend messages and broadcast them to the Neutron network."
+    ],
+    "backend": [
+        "const balance = cw20_balance(LBTC_CONTRACT, userAddr);#step: 2 Tool: query_cw20_balance Desciption: Check that the wallet holds at least 4 LBTC (including decimals) to cover the lend amount.",
+        "const allowMsg = construct_cw20_approve(AMBER_MARKET_CONTRACT, 4000000);#step: 3 Tool: construct_tx_cw20_increase_allowance Desciption: Grant the Amber Finance lending contract an allowance of 4 LBTC so it can pull the tokens.",
+        "const lendMsg = construct_amber_lend_tx(4000000);#step: 4 Tool: construct_tx_contract_execute Desciption: Build the smart-contract call to Amber Finance (e.g., `{ lend: { asset: { token: <LBTC_contract>, amount: \"4000000\" } } }`, assuming 6-decimals) that deposits the 4 LBTC."
+    ],
+    "intent": "Lend 4 LBTC on Amber Finance",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_wallet_address",
+            "description": "Identify the connected Neutron wallet that will provide the LBTC."
+        },
+        {
+            "step": 2,
+            "tool": "query_cw20_balance",
+            "description": "Check that the wallet holds at least 4 LBTC (including decimals) to cover the lend amount."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_cw20_increase_allowance",
+            "description": "Grant the Amber Finance lending contract an allowance of 4 LBTC so it can pull the tokens."
+        },
+        {
+            "step": 4,
+            "tool": "construct_tx_contract_execute",
+            "description": "Build the smart-contract call to Amber Finance (e.g., `{ lend: { asset: { token: <LBTC_contract>, amount: \"4000000\" } } }`, assuming 6-decimals) that deposits the 4 LBTC."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign both the allowance and lend messages and broadcast them to the Neutron network."
+        }
+    ],
+    "outcome_checks": [
+        "Verify the transaction succeeded and was included in a block.",
+        "Query Amber Finance to confirm the wallet\u2019s supplied balance increased by 4 LBTC."
+    ]
+}

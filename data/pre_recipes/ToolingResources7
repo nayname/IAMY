@@ -1,0 +1,142 @@
+[
+    {
+        "intent": "Query smart-contract event logs on a Cosmos EVM chain with Foundry\u2019s cast logs",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "select_eth_rpc_endpoint",
+                "description": "Obtain the JSON-RPC or WebSocket endpoint for the target Cosmos EVM chain (e.g., https://rpc.my-chain.com or wss://rpc.my-chain.com:8546)."
+            },
+            {
+                "step": 2,
+                "tool": "validate_contract_address",
+                "description": "Confirm the contract address and chain ID are correct and checksummed for the EVM environment."
+            },
+            {
+                "step": 3,
+                "tool": "retrieve_contract_abi",
+                "description": "Download or copy the ABI for the contract; save it locally as abi.json so cast can decode event signatures."
+            },
+            {
+                "step": 4,
+                "tool": "cast_logs",
+                "description": "Run `cast logs --rpc-url $RPC --from-block $START --to-block $END --address $CONTRACT --topics $TOPIC_HASH --abi abi.json` to stream or filter logs. Use additional flags such as `--ws` if connecting over WebSocket."
+            }
+        ],
+        "outcome_checks": [
+            "The command returns a non-empty list of decoded events that match the provided topic filters.",
+            "Block numbers and transaction hashes in the output correspond to on-chain data when cross-checked with a block explorer."
+        ]
+    },
+    {
+        "intent": "Create a global foundry.toml configuration file",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "ensure_foundryup",
+                "description": "Run `foundryup` (or install Foundry if missing) so `forge`, `cast`, and default templates are available."
+            },
+            {
+                "step": 2,
+                "tool": "create_foundry_toml",
+                "description": "In your $HOME directory, run `forge config --global` or manually create `$HOME/.foundry/foundry.toml`."
+            },
+            {
+                "step": 3,
+                "tool": "edit_foundry_toml",
+                "description": "Add common settings, e.g.: `rpc_endpoints = { cosmos_evm = \"https://rpc.my-chain.com\" }`, `default_rpc_endpoint = \"cosmos_evm\"`, `optimizer = true`, `optimizer_runs = 200`."
+            },
+            {
+                "step": 4,
+                "tool": "validate_foundry_config",
+                "description": "Run `forge config --show --global` to verify the file is discovered and values are parsed."
+            }
+        ],
+        "outcome_checks": [
+            "Running any `forge` or `cast` command without local project overrides uses the global configuration.",
+            "The path `$HOME/.foundry/foundry.toml` (or equivalent) exists and contains the expected key/value pairs."
+        ]
+    },
+    {
+        "intent": "Install Hardhat with @nomicfoundation/hardhat-toolbox in a new project",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "node_environment_check",
+                "description": "Ensure Node.js \u226516 and npm (or pnpm/yarn) are installed: `node -v && npm -v`."
+            },
+            {
+                "step": 2,
+                "tool": "npm_init",
+                "description": "Create a project folder and run `npm init -y` (or the preferred package-manager equivalent) to generate package.json."
+            },
+            {
+                "step": 3,
+                "tool": "npm_install_hardhat_toolbox",
+                "description": "Execute `npm install --save-dev hardhat @nomicfoundation/hardhat-toolbox` to install Hardhat core and the toolbox plugin set."
+            },
+            {
+                "step": 4,
+                "tool": "hardhat_init",
+                "description": "Run `npx hardhat` and follow the prompt to create a basic project, selecting TypeScript or JavaScript as preferred."
+            }
+        ],
+        "outcome_checks": [
+            "`node_modules` contains hardhat and hardhat-toolbox packages.",
+            "hardhat.config.(ts|js) exists and reports no errors when running `npx hardhat compile`."
+        ]
+    },
+    {
+        "intent": "Import OpenZeppelin contracts into the project",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "npm_install_openzeppelin",
+                "description": "Run `npm install @openzeppelin/contracts` to add the library to the project\u2019s dependencies."
+            },
+            {
+                "step": 2,
+                "tool": "write_contract_imports",
+                "description": "In your Solidity file, import contracts such as `import \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";`."
+            },
+            {
+                "step": 3,
+                "tool": "hardhat_compile",
+                "description": "Execute `npx hardhat compile` to compile the project and pull in OpenZeppelin sources."
+            }
+        ],
+        "outcome_checks": [
+            "Compilation succeeds without dependency errors.",
+            "Type-chain (if enabled) or artifacts folder includes compiled OpenZeppelin bytecode/ABI."
+        ]
+    },
+    {
+        "intent": "Write unit tests for a Solidity contract in Hardhat",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "create_test_file",
+                "description": "Add a new file in `test/`, e.g. `MyContract.t.ts` (TypeScript) or `MyContract.js`, importing `ethers` and `expect` from Hardhat."
+            },
+            {
+                "step": 2,
+                "tool": "deploy_fixture",
+                "description": "Within a `beforeEach` hook, deploy the contract using `await ethers.deployContract(\"MyContract\", [constructorArgs])` or the built-in fixture helper."
+            },
+            {
+                "step": 3,
+                "tool": "write_assertions",
+                "description": "Call contract methods and use `expect(await contract.someCall()).to.equal(expectedValue)` to check state changes or return values."
+            },
+            {
+                "step": 4,
+                "tool": "run_hardhat_tests",
+                "description": "Execute `npx hardhat test` (optionally with `--network cosmos_evm` if configured) to run the suite."
+            }
+        ],
+        "outcome_checks": [
+            "All tests show a green status with 0 failures.",
+            "`npx hardhat coverage` (optional) reports meaningful coverage >90% for the contract\u2019s functions."
+        ]
+    }
+]

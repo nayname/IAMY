@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a backend endpoint that invokes `simd keys add` to generate a new key pair and store it in the chosen keyring backend (default: `test`).",
+            "code": "from fastapi import APIRouter, HTTPException\nimport subprocess, json\n\nrouter = APIRouter()\n\n@router.post('/api/generate-key')\nasync def generate_key(key_name: str, keyring_backend: str = 'test'):\n    \"\"\"Generate a new key pair using `simd` and persist it to the provided keyring backend.\"\"\"\n    cmd = [\n        'simd', 'keys', 'add', key_name,\n        '--keyring-backend', keyring_backend,\n        '--output', 'json'  # ensures machine-readable output\n    ]\n\n    try:\n        # Execute the CLI command and capture its output\n        result = subprocess.run(\n            cmd,\n            capture_output=True,\n            text=True,\n            check=True\n        )\n        key_info = json.loads(result.stdout)  # parse the JSON given by simd\n        return {\n            'message': 'Key generated successfully',\n            'data': key_info\n        }\n\n    except subprocess.CalledProcessError as e:\n        # When simd exits with a non-zero code we surface the error message\n        raise HTTPException(\n            status_code=500,\n            detail=f'Key generation failed: {e.stderr.strip()}'\n        )\n    except json.JSONDecodeError:\n        # simd did not return JSON despite --output=json flag\n        raise HTTPException(\n            status_code=500,\n            detail='Failed to parse simd output as JSON.'\n        )",
+            "usage": "await fetch('/api/generate-key', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ key_name: 'my_validator' })\n});"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 offers a verification endpoint to confirm the key was saved by querying it from the same keyring backend.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport subprocess\n\nrouter = APIRouter()\n\n@router.get('/api/verify-key/{key_name}')\nasync def verify_key(key_name: str, keyring_backend: str = 'test'):\n    \"\"\"Check whether a key exists in the requested keyring backend.\"\"\"\n    cmd = [\n        'simd', 'keys', 'show', key_name,\n        '--keyring-backend', keyring_backend,\n        '-a'  # address-only output (quieter, easier to parse)\n    ]\n\n    try:\n        result = subprocess.run(\n            cmd,\n            capture_output=True,\n            text=True,\n            check=True\n        )\n        address = result.stdout.strip()\n        if not address:\n            # simd printed nothing even though command succeeded\n            raise HTTPException(status_code=404, detail=f'Key `{key_name}` seems empty.')\n        return {\n            'key_name': key_name,\n            'address': address\n        }\n\n    except subprocess.CalledProcessError:\n        # simd returns non-zero when key isn't found\n        raise HTTPException(\n            status_code=404,\n            detail=f'Key `{key_name}` not found in `{keyring_backend}` keyring.'\n        )",
+            "usage": "const response = await fetch('/api/verify-key/my_validator');\nconst data = await response.json(); // { key_name: 'my_validator', address: 'cosmos1...' }"
+        }
+    ]
+}

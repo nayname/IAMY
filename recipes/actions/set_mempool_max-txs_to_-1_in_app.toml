@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Opens the app.toml file for a given Cosmos daemon, parses it, and returns both the file path and a Python dictionary representation of the TOML configuration.",
+            "code": "import os\nimport toml\n\n# ---------------------------\n# Step 1 \u2013 open_config_file\n# ---------------------------\n\ndef open_config_file(daemon_name: str):\n    \"\"\"Return (path, config_dict) for $HOME/.<daemon>/config/app.toml.\n\n    Parameters\n    ----------\n    daemon_name : str\n        The binary/service name (e.g. 'gaiad', 'junod').\n    \"\"\"\n    home_dir = os.path.expanduser('~')\n    path = os.path.join(home_dir, f'.{daemon_name}', 'config', 'app.toml')\n\n    if not os.path.isfile(path):\n        raise FileNotFoundError(f'Config file not found at {path}')\n\n    try:\n        with open(path, 'r', encoding='utf-8') as fh:\n            raw_toml = fh.read()\n        config_dict = toml.loads(raw_toml)  # `pip install toml` on Python < 3.11\n        return path, config_dict\n    except Exception as err:\n        # Surface additional context while preserving the original traceback\n        raise RuntimeError(f'Unable to open or parse {path}: {err}') from err",
+            "usage": "# Example\npath, config = open_config_file('gaiad')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Modifies the in-memory TOML dictionary so that `[mempool].max_txs` is set to `-1`, effectively disabling the limit.",
+            "code": "import copy\n\n# ---------------------------\n# Step 2 \u2013 update_mempool_max_txs\n# ---------------------------\n\ndef update_mempool_max_txs(config_dict: dict, new_value: int = -1):\n    \"\"\"Return an updated copy of the TOML config with mempool.max_txs replaced.\"\"\"\n    updated = copy.deepcopy(config_dict)\n    mempool_cfg = updated.get('mempool', {})\n    mempool_cfg['max_txs'] = new_value\n    updated['mempool'] = mempool_cfg\n    return updated",
+            "usage": "# Example\nupdated_config = update_mempool_max_txs(config, -1)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Serializes the updated TOML dictionary back to disk, writing atomically so that partial writes are avoided.",
+            "code": "import os\nimport toml\n\n# ---------------------------\n# Step 3 \u2013 save_config_file\n# ---------------------------\n\ndef save_config_file(path: str, config_dict: dict):\n    \"\"\"Write the provided config_dict back to the original file atomically.\"\"\"\n    try:\n        toml_str = toml.dumps(config_dict)\n        tmp_path = f\"{path}.tmp\"\n        with open(tmp_path, 'w', encoding='utf-8') as fh:\n            fh.write(toml_str)\n        os.replace(tmp_path, path)  # atomic move on POSIX\n    except Exception as err:\n        raise RuntimeError(f'Failed to write config file {path}: {err}') from err",
+            "usage": "# Example\nsave_config_file(path, updated_config)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Restarts the systemd service for the specified daemon and waits until the service reports an `active` state.",
+            "code": "import subprocess\nimport time\n\n# ---------------------------\n# Step 4 \u2013 restart_node_service\n# ---------------------------\n\ndef restart_node_service(daemon_name: str, wait_seconds: int = 60):\n    \"\"\"Restart <daemon> with systemctl and wait until it's active.\n\n    This function assumes the current user can invoke `sudo systemctl` without\n    interactive password prompts (e.g. via sudoers configuration).\n    \"\"\"\n    service_name = daemon_name\n\n    # Restart the service\n    try:\n        subprocess.run(['sudo', 'systemctl', 'restart', service_name], check=True)\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f'Failed to restart service {service_name}: {err}') from err\n\n    # Poll until the service is active or timeout is reached\n    start_time = time.time()\n    while time.time() - start_time < wait_seconds:\n        result = subprocess.run(['systemctl', 'is-active', service_name], capture_output=True, text=True)\n        if result.stdout.strip() == 'active':\n            print(f'Service {service_name} is active again.')\n            return\n        time.sleep(2)\n\n    raise TimeoutError(f'Service {service_name} did not become active within {wait_seconds} seconds.')",
+            "usage": "# Example\nrestart_node_service('gaiad')"
+        }
+    ]
+}

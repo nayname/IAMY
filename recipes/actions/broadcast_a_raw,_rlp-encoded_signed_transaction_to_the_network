@@ -1,0 +1,33 @@
+{
+    "label": "send",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Ask the user (or an injected wallet SDK) for the fully-signed, 0x-prefixed RLP transaction string.",
+            "code": "export const getSignedRawTx = async () => {\n  // Prompt the user to paste a raw, signed transaction.\n  // In production you would integrate with the wallet\u2019s SDK instead of using window.prompt().\n  const rawTx = window.prompt('Please paste the 0x-prefixed, RLP-encoded transaction:');\n\n  // Basic validation\n  if (!rawTx) {\n    throw new Error('Transaction input cancelled by user.');\n  }\n  if (!rawTx.startsWith('0x')) {\n    throw new Error('Raw transaction must start with 0x.');\n  }\n  if (rawTx.length < 10) {\n    throw new Error('Raw transaction appears too short.');\n  }\n\n  return rawTx.trim();\n};",
+            "usage": "const rawTx = await getSignedRawTx();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Select the first healthy, write-enabled Cosmos-EVM JSON-RPC endpoint.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport os, requests\n\nrouter = APIRouter()\n\n# Comma-separated list of candidate endpoints, configurable via env.\nRPC_ENDPOINTS = os.getenv('EVM_RPC_ENDPOINTS', 'https://rpc-evmos.cosmos.network,https://json-rpc.ethermint.org').split(',')\n\n\ndef _is_endpoint_alive(url: str) -> bool:\n    \"\"\"Return True if the endpoint responds successfully to eth_chainId.\"\"\"\n    try:\n        payload = {\"jsonrpc\": \"2.0\", \"method\": \"eth_chainId\", \"params\": [], \"id\": 1}\n        r = requests.post(url, json=payload, timeout=5)\n        return r.status_code == 200 and 'result' in r.json()\n    except Exception:\n        return False\n\n\n@router.get('/api/get_rpc_endpoint')\nasync def get_rpc_endpoint():\n    \"\"\"Pick the first healthy RPC endpoint from the list and return it.\"\"\"\n    for url in RPC_ENDPOINTS:\n        if _is_endpoint_alive(url):\n            return {\"endpoint\": url}\n    raise HTTPException(status_code=503, detail='No healthy RPC endpoint found')",
+            "usage": "const { endpoint } = await (await fetch('/api/get_rpc_endpoint')).json();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Broadcast the raw transaction via eth_sendRawTransaction and return the resulting transaction hash.",
+            "code": "from fastapi import APIRouter, HTTPException\nfrom pydantic import BaseModel\nimport os, requests\n\nrouter = APIRouter()\n\nclass TxPayload(BaseModel):\n    raw_tx: str\n\ndef _broadcast(endpoint: str, raw_tx: str) -> str:\n    \"\"\"Attempt to broadcast the raw transaction.\"\"\"\n    payload = {\n        \"jsonrpc\": \"2.0\",\n        \"method\": \"eth_sendRawTransaction\",\n        \"params\": [raw_tx],\n        \"id\": 1\n    }\n    response = requests.post(endpoint, json=payload, timeout=20)\n\n    # HTTP-level errors\n    if response.status_code != 200:\n        raise HTTPException(status_code=response.status_code, detail=f'RPC status code {response.status_code}')\n\n    data = response.json()\n\n    # JSON-RPC-level errors\n    if 'error' in data:\n        raise HTTPException(status_code=400, detail=data['error'])\n\n    # Successful path returns the 0x-prefixed tx hash\n    return data['result']\n\n@router.post('/api/broadcast_raw_tx')\nasync def broadcast_raw_tx(payload: TxPayload):\n    \"\"\"Try each configured endpoint until the tx is accepted, then return its hash.\"\"\"\n    endpoints = os.getenv('EVM_RPC_ENDPOINTS', 'https://rpc-evmos.cosmos.network,https://json-rpc.ethermint.org').split(',')\n    for endpoint in endpoints:\n        try:\n            tx_hash = _broadcast(endpoint, payload.raw_tx)\n            return {\"tx_hash\": tx_hash, \"endpoint\": endpoint}\n        except HTTPException:\n            # Allow the next endpoint a chance\n            continue\n    raise HTTPException(status_code=503, detail='Failed to broadcast transaction on all endpoints')",
+            "usage": "const txResponse = await fetch('/api/broadcast_raw_tx', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ raw_tx: rawTx })\n});\nconst { tx_hash } = await txResponse.json();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Persist the returned transaction hash locally so the dApp can track confirmation status later.",
+            "code": "export const captureTxHash = (txHash) => {\n  if (!txHash || !txHash.startsWith('0x')) {\n    throw new Error('Invalid transaction hash received.');\n  }\n  const storageKey = 'sentTxs';\n  const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');\n  existing.push({ hash: txHash, timestamp: Date.now() });\n  localStorage.setItem(storageKey, JSON.stringify(existing));\n  return txHash;\n};",
+            "usage": "captureTxHash(tx_hash);"
+        }
+    ]
+}

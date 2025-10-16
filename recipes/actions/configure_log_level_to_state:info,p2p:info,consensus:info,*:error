@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that opens and parses the `$HOME/.<daemon>/config/config.toml` file and returns both its `Path` and the parsed dictionary.",
+            "code": "import os\nfrom pathlib import Path\nimport tomllib  # Python 3.11+ for TOML parsing\n\n\ndef open_config_file(daemon_name: str):\n    \"\"\"Return (Path, dict) for the daemon's config file.\n\n    Args:\n        daemon_name: The binary/service name (e.g., \"gaiad\", \"osmosisd\").\n    Raises:\n        FileNotFoundError: When the config file does not exist.\n    \"\"\"\n    home_dir = Path(os.environ.get(\"HOME\", \"~/\")).expanduser()\n    config_path = home_dir / f\".{daemon_name}\" / \"config\" / \"config.toml\"\n\n    # Ensure the file exists before attempting to open it\n    if not config_path.is_file():\n        raise FileNotFoundError(f\"Config file not found: {config_path}\")\n\n    # Read TOML as binary (required by tomllib)\n    with config_path.open(\"rb\") as fp:\n        config_dict = tomllib.load(fp)\n\n    return config_path, config_dict",
+            "usage": "# Replace \"gaiad\" with your own daemon name\nconfig_path, config_dict = open_config_file(\"gaiad\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 updates (or inserts) the `log_level` key in the in-memory dictionary to the desired value `state:info,p2p:info,consensus:info,*:error`.",
+            "code": "def update_log_level(config_dict: dict, desired_level: str | None = None):\n    \"\"\"Mutates and returns the provided config dict with an updated log_level.\n\n    Args:\n        config_dict: Parsed TOML dictionary returned from `open_config_file`.\n        desired_level: Custom log level string (defaults to the recommended value).\n    Returns:\n        dict: The same dictionary instance, now with the new log level set.\n    \"\"\"\n    desired_level = desired_level or \"state:info,p2p:info,consensus:info,*:error\"\n\n    # The `log_level` key lives at the top level of config.toml for most Cosmos SDK daemons.\n    # If your daemon nests the setting, update the path accordingly.\n    config_dict[\"log_level\"] = desired_level\n\n    return config_dict",
+            "usage": "config_dict = update_log_level(config_dict)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 serialises the modified dictionary back to TOML and saves it to disk, completing the \"save and close\" operation.",
+            "code": "try:\n    import toml  # External package needed for TOML *writing*\nexcept ModuleNotFoundError as err:\n    raise SystemExit(\"\\n[ERROR] Missing dependency: `toml`. Install via `pip install toml` and retry.\\n\") from err\n\n\ndef save_config_file(config_path: Path, config_dict: dict):\n    \"\"\"Write the updated config dict back to `config_path` in TOML format.\n\n    This will overwrite the existing file, so make sure you have backups\n    or version control in place.\n    \"\"\"\n    # Create a temporary backup before overriding (best-practice safety net)\n    backup_path = config_path.with_suffix(\".toml.bak\")\n    if not backup_path.exists():\n        config_path.replace(backup_path)\n\n    # Write the new TOML data\n    with config_path.open(\"w\", encoding=\"utf-8\") as fp:\n        toml.dump(config_dict, fp)\n\n    print(f\"[INFO] Saved updated config to {config_path}\")",
+            "usage": "save_config_file(config_path, config_dict)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 restarts the systemd service so the new log level takes effect.",
+            "code": "import subprocess\n\n\ndef restart_node_service(daemon_name: str):\n    \"\"\"Restart the node's systemd service (requires sudo privileges).\"\"\"\n    service_name = daemon_name  # Usually the same as the binary, adjust if different\n    cmd = [\"sudo\", \"systemctl\", \"restart\", service_name]\n\n    try:\n        subprocess.run(cmd, check=True)\n        print(f\"[INFO] Successfully restarted `{service_name}` service.\")\n    except subprocess.CalledProcessError as exc:\n        raise RuntimeError(\n            f\"Failed to restart service `{service_name}`: {exc}. \"\n            \"Check journal logs (journalctl -u {service_name}) for details.\"\n        ) from exc",
+            "usage": "restart_node_service(\"gaiad\")"
+        }
+    ]
+}

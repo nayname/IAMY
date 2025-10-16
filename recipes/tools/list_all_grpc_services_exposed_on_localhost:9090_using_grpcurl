@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No implemented function in the current codebase verifies that the grpcurl CLI tool is installed.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No implemented function is available to run grpcurl and list the server\u2019s gRPC services.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: verify_grpcurl_installation Desciption: Ensure grpcurl is installed and in PATH by running \"grpcurl -help\".",
+        "undef#step: 2 Tool: grpcurl_list_services Desciption: Run \"grpcurl -plaintext localhost:9090 list\" (add -insecure if TLS is enabled without trusted certs) to query the server\u2019s gRPC reflection service."
+    ],
+    "intent": "List all gRPC services exposed on localhost:9090 using grpcurl",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "verify_grpcurl_installation",
+            "description": "Ensure grpcurl is installed and in PATH by running \"grpcurl -help\"."
+        },
+        {
+            "step": 2,
+            "tool": "grpcurl_list_services",
+            "description": "Run \"grpcurl -plaintext localhost:9090 list\" (add -insecure if TLS is enabled without trusted certs) to query the server\u2019s gRPC reflection service."
+        }
+    ],
+    "outcome_checks": [
+        "Command returns a newline-delimited list of fully-qualified service names (e.g., cosmos.tx.v1beta1.Service, cosmos.bank.v1beta1.Query).",
+        "Exit status is 0 indicating the server responded successfully."
+    ]
+}

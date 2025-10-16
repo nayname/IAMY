@@ -1,0 +1,118 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Determine the absolute home directory for the running Cosmos node.",
+            "function": "get_chain_home(chain_id='simd')",
+            "usage": "chain_home = get_chain_home()['chain_home']"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Load the app.toml file located inside the chain home and return its path plus current contents.",
+            "function": "load_app_toml(config_path)",
+            "usage": "app_cfg = load_app_toml(f\"{chain_home}/config/app.toml\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "undef",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Enable the API in app.toml by ensuring the \"enable = true\" line is present.",
+            "function": "update_app_toml_parameter(config_path)",
+            "usage": "update_app_toml_parameter(config_path=f\"{chain_home}/config/app.toml\")"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "undef",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Persist the updated TOML configuration back to disk.",
+            "function": "save_config_file(path, config_dict)",
+            "usage": "save_config_file(f\"{chain_home}/config/app.toml\", my_updated_config)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Restart the simd daemon so the new API settings take effect.",
+            "function": "restart_node_service(daemon_name='simd', wait_seconds=60)",
+            "usage": "restart_node_service('simd')"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Check that the Swagger endpoint is reachable and returns an HTTP response.",
+            "function": "_ping(base_url, path)",
+            "usage": "latency_ms = _ping('http://localhost:1317', '/swagger')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "chain_home = get_chain_home()['chain_home']#step: 1 Tool: get_chain_home Desciption: Resolve the node\u2019s home directory (default $HOME/.simapp unless --home is set).",
+        "app_cfg = load_app_toml(f\"{chain_home}/config/app.toml\")#step: 2 Tool: locate_file Desciption: Build the absolute path to config/app.toml inside the chain home.",
+        "undef#step: 3 Tool: backup_file Desciption: Create app.toml.bak so changes can be rolled back if needed.",
+        "update_app_toml_parameter(config_path=f\"{chain_home}/config/app.toml\")#step: 4 Tool: update_toml_value Desciption: Set api.enable = true in app.toml to start the REST server.",
+        "undef#step: 5 Tool: update_toml_value Desciption: Set api.swagger = true so the /swagger endpoint is generated.",
+        "save_config_file(f\"{chain_home}/config/app.toml\", my_updated_config)#step: 6 Tool: save_file Desciption: Write the modified app.toml to disk.",
+        "restart_node_service('simd')#step: 7 Tool: restart_node Desciption: Restart the simd process so the new API settings are loaded.",
+        "latency_ms = _ping('http://localhost:1317', '/swagger')#step: 8 Tool: check_http_endpoint Desciption: Query http://localhost:1317/swagger and expect an HTTP 200 response."
+    ],
+    "intent": "Enable the REST server and expose Swagger documentation",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_chain_home",
+            "description": "Resolve the node\u2019s home directory (default $HOME/.simapp unless --home is set)."
+        },
+        {
+            "step": 2,
+            "tool": "locate_file",
+            "description": "Build the absolute path to config/app.toml inside the chain home."
+        },
+        {
+            "step": 3,
+            "tool": "backup_file",
+            "description": "Create app.toml.bak so changes can be rolled back if needed."
+        },
+        {
+            "step": 4,
+            "tool": "update_toml_value",
+            "description": "Set api.enable = true in app.toml to start the REST server."
+        },
+        {
+            "step": 5,
+            "tool": "update_toml_value",
+            "description": "Set api.swagger = true so the /swagger endpoint is generated."
+        },
+        {
+            "step": 6,
+            "tool": "save_file",
+            "description": "Write the modified app.toml to disk."
+        },
+        {
+            "step": 7,
+            "tool": "restart_node",
+            "description": "Restart the simd process so the new API settings are loaded."
+        },
+        {
+            "step": 8,
+            "tool": "check_http_endpoint",
+            "description": "Query http://localhost:1317/swagger and expect an HTTP 200 response."
+        }
+    ],
+    "outcome_checks": [
+        "Node log shows \"Starting API server\" bound to :1317.",
+        "GET http://localhost:1317/swagger returns the OpenAPI spec (JSON)."
+    ]
+}

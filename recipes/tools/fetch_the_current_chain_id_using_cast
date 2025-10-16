@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No implemented backend helper for explicitly checking that Foundry\u2019s `cast` binary is installed could be located in the codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "connect_rpc_endpoint probes the given Neutron RPC URL\u2019s /status route and returns it only if the endpoint is alive and responding.",
+            "function": "connect_rpc_endpoint(rpc_endpoint='https://rpc-kralum.neutron.org')",
+            "usage": "rpc_url = connect_rpc_endpoint('https://rpc-kralum.neutron.org')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "rpc_request performs a raw JSON-RPC call, so passing the method `eth_chainId` yields the chain\u2019s identifier in hex-encoded form.",
+            "function": "rpc_request(method, params=None, id=1)",
+            "usage": "chain_id_hex = rpc_request('eth_chainId')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: verify_foundry_installation Desciption: Check that cast is installed.",
+        "rpc_url = connect_rpc_endpoint('https://rpc-kralum.neutron.org')#step: 2 Tool: get_rpc_url Desciption: Locate a working RPC endpoint for the target Cosmos EVM chain.",
+        "chain_id_hex = rpc_request('eth_chainId')#step: 3 Tool: cast_chain_id_query Desciption: Run: `cast chain-id --rpc-url <RPC_URL>` to retrieve the numeric chain ID."
+    ],
+    "intent": "Fetch the current chain ID using cast",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "verify_foundry_installation",
+            "description": "Check that cast is installed."
+        },
+        {
+            "step": 2,
+            "tool": "get_rpc_url",
+            "description": "Locate a working RPC endpoint for the target Cosmos EVM chain."
+        },
+        {
+            "step": 3,
+            "tool": "cast_chain_id_query",
+            "description": "Run: `cast chain-id --rpc-url <RPC_URL>` to retrieve the numeric chain ID."
+        }
+    ],
+    "outcome_checks": [
+        "The command outputs an integer matching the Chain ID documented for the network.",
+        "No error or timeout occurs during the query."
+    ]
+}

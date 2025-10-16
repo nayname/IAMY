@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Creates the JSON-RPC payload for an Ethereum-style `txpool_status` query.",
+            "code": "/*\n * prepareJsonRpcPayload.js\n * -----------------------\n * Returns a JSON object ready to be sent to a JSON-RPC endpoint.\n */\nexport const prepareJsonRpcPayload = () => {\n  return {\n    jsonrpc: \"2.0\",\n    method: \"txpool_status\",\n    params: [],\n    id: 1,\n  };\n};",
+            "usage": "const payload = prepareJsonRpcPayload();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Posts the JSON-RPC payload to a remote node and returns the raw JSON-RPC response.",
+            "code": "/*\n * postJsonRpc.js\n * --------------\n * Sends a POST request with a JSON-RPC payload.\n *\n * Parameters:\n *   endpoint (string) \u2013 Full URL to the JSON-RPC server.\n *   payload  (object) \u2013 Payload created in Step 1.\n *\n * Returns:\n *   The parsed JSON received from the server.\n */\nexport const postJsonRpc = async (endpoint, payload) => {\n  try {\n    const response = await fetch(endpoint, {\n      method: \"POST\",\n      headers: {\n        \"Content-Type\": \"application/json\",\n      },\n      body: JSON.stringify(payload),\n    });\n\n    if (!response.ok) {\n      // Convert non-2xx HTTP codes into explicit errors.\n      throw new Error(`HTTP ${response.status}: ${response.statusText}`);\n    }\n\n    const json = await response.json();\n    return json;\n  } catch (error) {\n    console.error(\"postJsonRpc error:\", error);\n    throw error;\n  }\n};",
+            "usage": "const rawResponse = await postJsonRpc(\"https://my-rpc-node.example.com\", payload);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Parses the JSON-RPC response, converting the hex strings for `pending` and `queued` into integers.",
+            "code": "/*\n * parseTxpoolStatus.js\n * --------------------\n * Extracts `pending` and `queued` values from the txpool_status response.\n */\nexport const parseTxpoolStatus = (jsonRpcResponse) => {\n  if (!jsonRpcResponse) {\n    throw new Error(\"Empty response object\");\n  }\n\n  if (jsonRpcResponse.error) {\n    // Surface the JSON-RPC error to the caller.\n    throw new Error(`JSON-RPC Error ${jsonRpcResponse.error.code}: ${jsonRpcResponse.error.message}`);\n  }\n\n  const { result } = jsonRpcResponse;\n  if (!result || typeof result.pending !== \"string\" || typeof result.queued !== \"string\") {\n    throw new Error(\"Malformed txpool_status response\");\n  }\n\n  // Convert hex strings (e.g., \"0x4e\") to decimal numbers.\n  const pending = parseInt(result.pending, 16);\n  const queued = parseInt(result.queued, 16);\n\n  return { pending, queued };\n};",
+            "usage": "const { pending, queued } = parseTxpoolStatus(rawResponse);\nconsole.log(`Pending: ${pending}, Queued: ${queued}`);"
+        }
+    ]
+}

@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Checks that the supplied string is a valid 0x-prefixed, 40-hex-character Ethereum address.",
+            "function": "validateEthereumAddress(evmAddress)",
+            "usage": "validateEthereumAddress('0xAbcdef1234567890abcdef1234567890abcdef12');"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Creates a Web3 instance and verifies that the JSON-RPC endpoint defined in the environment is reachable.",
+            "function": "get_web3()",
+            "usage": "w3 = get_web3()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Performs an arbitrary JSON-RPC call, allowing invocation of eth_getBalance for the target address and block tag.",
+            "function": "json_rpc_call(method, params, endpoint='http://localhost:8545')",
+            "usage": "balance_hex = json_rpc_call('eth_getBalance', ['0xAbcdef1234567890abcdef1234567890abcdef12', 'latest'])"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Convert the hexadecimal Wei balance to a human-readable decimal value.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "validateEthereumAddress('0xAbcdef1234567890abcdef1234567890abcdef12');//step: 1 Tool: validate_eth_address Desciption: Ensure the provided address matches the 0x[0-9a-fA-F]{40} format.",
+        "undef//step: 4 Tool: parse_balance_hex_to_decimal Desciption: Convert the returned Wei balance from hex to decimal for display (optionally format to ETH by dividing by 1e18)."
+    ],
+    "backend": [
+        "w3 = get_web3()#step: 2 Tool: select_rpc_endpoint Desciption: Pick a read-enabled JSON-RPC endpoint.",
+        "balance_hex = json_rpc_call('eth_getBalance', ['0xAbcdef1234567890abcdef1234567890abcdef12', 'latest'])#step: 3 Tool: eth_getBalance Desciption: Invoke {\"method\":\"eth_getBalance\",\"params\":[<address>,\"latest\"],\"id\":1,\"jsonrpc\":\"2.0\"}."
+    ],
+    "intent": "Query the balance of an EVM address at the latest block",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_eth_address",
+            "description": "Ensure the provided address matches the 0x[0-9a-fA-F]{40} format."
+        },
+        {
+            "step": 2,
+            "tool": "select_rpc_endpoint",
+            "description": "Pick a read-enabled JSON-RPC endpoint."
+        },
+        {
+            "step": 3,
+            "tool": "eth_getBalance",
+            "description": "Invoke {\"method\":\"eth_getBalance\",\"params\":[<address>,\"latest\"],\"id\":1,\"jsonrpc\":\"2.0\"}."
+        },
+        {
+            "step": 4,
+            "tool": "parse_balance_hex_to_decimal",
+            "description": "Convert the returned Wei balance from hex to decimal for display (optionally format to ETH by dividing by 1e18)."
+        }
+    ],
+    "outcome_checks": [
+        "Response is a 0x-prefixed hex string.",
+        "Parsed balance is non-negative and consistent with expected account activity."
+    ]
+}

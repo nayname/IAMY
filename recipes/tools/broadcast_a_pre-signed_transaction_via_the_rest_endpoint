@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates an unsigned transaction JSON file by running the simd CLI with --generate-only.",
+            "function": "build_send_tx(sender, recipient, amount, fee=\"200stake\", chain_id=\"my-test-chain\", outfile=\"unsigned.json\")",
+            "usage": "unsigned_path = build_send_tx(\"cosmos1sender...\", \"cosmos1recipient...\", \"1000stake\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Signs the previously-generated unsigned transaction file via the simd CLI and writes a signed JSON file.",
+            "function": "sign_tx(unsigned_tx_path, key_name=\"mykey\", keyring_backend=\"test\", chain_id=\"my-test-chain\", outfile=\"signed.json\")",
+            "usage": "signed_path = sign_tx(\"unsigned.json\", key_name=\"validator\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No implemented helper for extracting the tx_bytes field from a signed JSON file could be located.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Takes base-64 encoded signed transaction bytes and (mock) broadcasts them, returning the computed tx-hash.",
+            "function": "await sign_and_broadcast_tx_(req)",
+            "usage": "tx_hash_info = await sign_and_broadcast_tx_({\"tx_base64\": base64_signed_tx})"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "unsigned_path = build_send_tx(\"cosmos1sender...\", \"cosmos1recipient...\", \"1000stake\")#step: 1 Tool: construct_unsigned_tx_cli Desciption: Use \"<appd> tx <module> <msg> --generate-only --chain-id=<id> --fees=<amount><denom> -o json > unsigned.json\" to build an unsigned transaction (replace placeholders appropriately).",
+        "signed_path = sign_tx(\"unsigned.json\", key_name=\"validator\")#step: 2 Tool: sign_tx_cli Desciption: Sign the transaction with \"<appd> tx sign unsigned.json --from=<key_name> --chain-id=<id> -o json > signed.json\" to obtain a base64-encoded tx.",
+        "undef#step: 3 Tool: extract_tx_bytes Desciption: Read \"signed.json\" and copy the value of \"tx_bytes\" (base64 string).",
+        "tx_hash_info = await sign_and_broadcast_tx_({\"tx_base64\": base64_signed_tx})#step: 4 Tool: broadcast_tx_rest Desciption: POST the signed bytes: \n  curl -X POST http://localhost:1317/cosmos/tx/v1beta1/txs \\\n       -H \"Content-Type: application/json\" \\\n       -d '{\"tx_bytes\":\"<base64>\",\"mode\":\"BROADCAST_MODE_SYNC\"}'"
+    ],
+    "intent": "Broadcast a pre-signed transaction via the REST endpoint",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "construct_unsigned_tx_cli",
+            "description": "Use \"<appd> tx <module> <msg> --generate-only --chain-id=<id> --fees=<amount><denom> -o json > unsigned.json\" to build an unsigned transaction (replace placeholders appropriately)."
+        },
+        {
+            "step": 2,
+            "tool": "sign_tx_cli",
+            "description": "Sign the transaction with \"<appd> tx sign unsigned.json --from=<key_name> --chain-id=<id> -o json > signed.json\" to obtain a base64-encoded tx."
+        },
+        {
+            "step": 3,
+            "tool": "extract_tx_bytes",
+            "description": "Read \"signed.json\" and copy the value of \"tx_bytes\" (base64 string)."
+        },
+        {
+            "step": 4,
+            "tool": "broadcast_tx_rest",
+            "description": "POST the signed bytes: \n  curl -X POST http://localhost:1317/cosmos/tx/v1beta1/txs \\\n       -H \"Content-Type: application/json\" \\\n       -d '{\"tx_bytes\":\"<base64>\",\"mode\":\"BROADCAST_MODE_SYNC\"}'"
+        }
+    ],
+    "outcome_checks": [
+        "HTTP 200 response contains a \"tx_response\" object.",
+        "\"tx_response.code\" equals 0 indicating success or provides an error code if it failed.",
+        "\"tx_response.txhash\" can be searched in a block to confirm inclusion."
+    ]
+}

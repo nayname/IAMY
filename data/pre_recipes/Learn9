@@ -1,0 +1,174 @@
+[
+    {
+        "intent": "Initialize and populate the snapshot store at data/snapshots",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_node_home",
+                "description": "Detect the home directory (e.g., ~/.appd) and binary name for the running Cosmos SDK node."
+            },
+            {
+                "step": 2,
+                "tool": "stop_node_process",
+                "description": "Gracefully stop the node so a consistent snapshot can be created."
+            },
+            {
+                "step": 3,
+                "tool": "ensure_directory",
+                "description": "Verify that the path <home>/data/snapshots exists; create it if missing."
+            },
+            {
+                "step": 4,
+                "tool": "run_cli_command",
+                "description": "Execute `<appd> snapshots export` to write the latest application state into the snapshot store."
+            },
+            {
+                "step": 5,
+                "tool": "verify_snapshot_exists",
+                "description": "Confirm at least one snapshot archive now resides inside <home>/data/snapshots and that `<appd> snapshots list` returns it."
+            }
+        ],
+        "outcome_checks": [
+            "A new snapshot archive file is present under data/snapshots.",
+            "`<appd> snapshots list` shows the snapshot with a recent height and size."
+        ]
+    },
+    {
+        "intent": "Set minimum gas prices to 0.01token in app.toml",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "locate_config_file",
+                "description": "Find <home>/config/app.toml for the running node."
+            },
+            {
+                "step": 2,
+                "tool": "load_config_file",
+                "description": "Open app.toml for editing."
+            },
+            {
+                "step": 3,
+                "tool": "update_toml_value",
+                "description": "Set the `minimum-gas-prices` field to the string \"0.01token\"."
+            },
+            {
+                "step": 4,
+                "tool": "save_file",
+                "description": "Write the updated configuration to disk."
+            },
+            {
+                "step": 5,
+                "tool": "restart_node_process",
+                "description": "Start the node again so the new gas-price floor takes effect."
+            },
+            {
+                "step": 6,
+                "tool": "verify_config_value",
+                "description": "Tail startup logs or run `<appd> status` to ensure the node reports min-gas-prices = 0.01token."
+            }
+        ],
+        "outcome_checks": [
+            "Node starts without halting and advertises minimum gas prices of 0.01token.",
+            "Transactions offering less than 0.01token gas price are rejected."
+        ]
+    },
+    {
+        "intent": "Create protoc-generated Tx and Query gRPC services for a custom module",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "install_protoc_plugins",
+                "description": "Verify `protoc`, `protoc-gen-go`, `protoc-gen-go-grpc`, and `protoc-gen-go_cosmos` are installed and on PATH."
+            },
+            {
+                "step": 2,
+                "tool": "ensure_proto_files",
+                "description": "Author or update `proto/myapp/mymodule/*.proto` files with Msg and Query service definitions, including method options."
+            },
+            {
+                "step": 3,
+                "tool": "run_cli_command",
+                "description": "Execute `buf generate` (or `make proto-gen`) at repo root to invoke protoc with Cosmos generators."
+            },
+            {
+                "step": 4,
+                "tool": "compile_generated_code",
+                "description": "Run `go vet ./...` and `go test ./...` to ensure generated *.pb.go files compile cleanly."
+            },
+            {
+                "step": 5,
+                "tool": "verify_generated_services",
+                "description": "Check that `MsgServer` and `QueryServer` interfaces as well as gRPC client stubs were emitted in `x/mymodule/types/`."
+            }
+        ],
+        "outcome_checks": [
+            "New *.pb.go and *_grpc.pb.go files exist for the module.",
+            "`go vet` and unit tests pass with no missing symbols.",
+            "Running `grpcurl` against a running node shows the new service endpoints."
+        ]
+    },
+    {
+        "intent": "Execute full-app simulation fuzz testing",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "set_go_env",
+                "description": "Export any required simulation flags, e.g., `SIMAPP_RANDOM_SEED`, and ensure `$GOFLAGS` is unset."
+            },
+            {
+                "step": 2,
+                "tool": "run_cli_command",
+                "description": "From project root, run `make test-sim-nondeterminism` or `go test ./sim/... -run TestFullAppSimulation -v`."
+            },
+            {
+                "step": 3,
+                "tool": "capture_results",
+                "description": "Stream the test output and log each simulation seed and block height executed."
+            },
+            {
+                "step": 4,
+                "tool": "verify_test_pass",
+                "description": "Assert exit-code 0 and scan logs for `no panic` / `invariants broken: 0` messages."
+            }
+        ],
+        "outcome_checks": [
+            "Command exits successfully (code 0).",
+            "No invariants failed or panics occurred for any random seed.",
+            "Aggregate simulation report saved to `simulations/` directory."
+        ]
+    },
+    {
+        "intent": "Broadcast a MsgSend transaction (Bank module) via CLI",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Read the default key name or prompt the user for the bech32 address that will fund the transfer."
+            },
+            {
+                "step": 2,
+                "tool": "validate_recipient_address",
+                "description": "Confirm the provided recipient bech32 string has a valid prefix and checksum."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_bank_send",
+                "description": "Build the MsgSend with sender, recipient, amount, and denom, e.g., `10token`."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Run `<appd> tx bank send <from> <to> 10token --gas auto --gas-adjustment 1.3 --fees 1000token --broadcast-mode block`."
+            },
+            {
+                "step": 5,
+                "tool": "check_tx_confirmation",
+                "description": "Query the tx hash until it is included in a committed block."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction appears in a finalized block with `code: 0`.",
+            "Recipient's balance increases by the transferred amount minus any fees."
+        ]
+    }
+]

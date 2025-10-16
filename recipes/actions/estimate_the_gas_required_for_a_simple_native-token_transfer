@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 defines a helper that validates user-supplied transfer information and returns it in a structured format.",
+            "code": "/*\n * Collect and validate the basic transfer parameters.\n * @param {string} senderAddress  \u2013 0x-prefixed hex address (40 chars)\n * @param {string} recipientAddress \u2013 0x-prefixed hex address (40 chars)\n * @param {string|number|bigint} valueWei \u2013 amount in Wei\n * @returns {{senderAddress:string,recipientAddress:string,valueWei:string}}\n */\nexport const collectTransferParameters = (senderAddress, recipientAddress, valueWei) => {\n  const ethAddrRegex = /^0x[a-fA-F0-9]{40}$/;\n\n  if (!ethAddrRegex.test(senderAddress)) {\n    throw new Error(\"Invalid sender address provided.\");\n  }\n  if (!ethAddrRegex.test(recipientAddress)) {\n    throw new Error(\"Invalid recipient address provided.\");\n  }\n  if (valueWei === undefined || valueWei === null || valueWei === \"\") {\n    throw new Error(\"Value (in Wei) is required.\");\n  }\n\n  return {\n    senderAddress,\n    recipientAddress,\n    valueWei: valueWei.toString() // always return as string for consistency\n  };\n};",
+            "usage": "const params = collectTransferParameters(\n  \"0xSenderAddress\u2026\",   // replace with real sender\n  \"0xRecipientAddress\u2026\", // replace with real recipient\n  1000000000000000000n     // 1 ETH in Wei, for example\n);"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 converts the validated parameters into a JSON-RPC compliant transaction object ready for gas estimation.",
+            "code": "/*\n * Construct a minimal tx object for eth_estimateGas.\n * Adds 0x-prefixed hex values for the `value` field and blank `data`.\n */\nexport const constructTxObject = ({ senderAddress, recipientAddress, valueWei }) => {\n  const valueHex = \"0x\" + BigInt(valueWei).toString(16);\n  return {\n    from: senderAddress,\n    to: recipientAddress,\n    value: valueHex,\n    data: \"0x\" // empty data for a native transfer\n  };\n};",
+            "usage": "const txObject = constructTxObject(params);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 exposes a function that returns a public JSON-RPC endpoint supporting `eth_estimateGas`. No secrets are required.",
+            "code": "/*\n * Return a public Ethereum JSON-RPC endpoint.\n * Replace with your preferred RPC service if desired.\n */\nexport const getRpcEndpoint = () => {\n  // Cloudflare's public Ethereum gateway (Mainnet)\n  return \"https://cloudflare-eth.com\";\n};",
+            "usage": "const rpcEndpoint = getRpcEndpoint();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 sends the `eth_estimateGas` request via `fetch`, performs basic error checking, and returns the raw hex gas value.",
+            "code": "/*\n * Estimate gas by calling eth_estimateGas.\n * @param {object} txObject \u2013 built in Step 2\n * @param {string} rpcEndpoint \u2013 RPC URL obtained in Step 3\n * @returns {Promise<string>} \u2013 hex string like \"0x5208\"\n */\nexport const estimateGas = async (txObject, rpcEndpoint = getRpcEndpoint()) => {\n  try {\n    const payload = {\n      jsonrpc: \"2.0\",\n      id: 1,\n      method: \"eth_estimateGas\",\n      params: [txObject]\n    };\n\n    const res = await fetch(rpcEndpoint, {\n      method: \"POST\",\n      headers: { \"Content-Type\": \"application/json\" },\n      body: JSON.stringify(payload)\n    });\n\n    if (!res.ok) {\n      throw new Error(`Network error: ${res.status} ${res.statusText}`);\n    }\n\n    const json = await res.json();\n\n    if (json.error) {\n      throw new Error(`RPC Error: ${json.error.message || \"Unknown error\"}`);\n    }\n\n    if (!json.result) {\n      throw new Error(\"No result field returned from RPC response.\");\n    }\n\n    return json.result; // gas in hexadecimal string\n  } catch (err) {\n    console.error(\"estimateGas() failed\", err);\n    throw err;\n  }\n};",
+            "usage": "const gasHex = await estimateGas(txObject);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Step 5 converts the hex-encoded gas value to decimal, adds an optional 10 % safety buffer, and returns both figures.",
+            "code": "/*\n * Convert a hex gas value to decimal and add a safety buffer.\n * @param {string} gasHex \u2013 hex string from Step 4\n * @param {number} [bufferFraction=0.1] \u2013 e.g. 0.1 adds 10 % extra gas\n * @returns {{gas:string, adjustedGas:string}}\n */\nexport const parseGasHexToDecimal = (gasHex, bufferFraction = 0.1) => {\n  if (!gasHex || typeof gasHex !== \"string\" || !gasHex.startsWith(\"0x\")) {\n    throw new Error(\"Invalid hex gas value provided.\");\n  }\n\n  const gasBigInt = BigInt(gasHex);\n  // Calculate buffer: gas * bufferFraction. Using integer arithmetic.\n  const bufferGas = gasBigInt / BigInt(Math.round(1 / bufferFraction));\n  const adjustedGas = gasBigInt + bufferGas;\n\n  return {\n    gas: gasBigInt.toString(),\n    adjustedGas: adjustedGas.toString()\n  };\n};",
+            "usage": "const { gas, adjustedGas } = parseGasHexToDecimal(gasHex, 0.10);\nconsole.log(`Estimated Gas: ${gas}`);\nconsole.log(`Gas with 10% buffer: ${adjustedGas}`);"
+        }
+    ]
+}

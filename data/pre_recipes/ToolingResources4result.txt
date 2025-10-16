@@ -1,0 +1,61 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"ToolingResources\", \"query\": \"Update Foundry to the nightly build\"}, {\"label\": \"ToolingResources\", \"query\": \"Set the default RPC URL in ~/.foundry/foundry.toml\"}, {\"label\": \"ToolingResources\", \"query\": \"Verify a contract on an Etherscan-compatible explorer from Hardhat\"}, {\"label\": \"ToolingResources\", \"query\": \"Run fuzz tests with forge test --fuzz-runs\"}, {\"label\": \"ToolingResources\", \"query\": \"Start an Anvil local JSON-RPC node\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "e9ac2fc2-cf48-4b5d-8610-516c61e3ca89",
+            "example": false
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Update Foundry to the latest nightly build\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"check_foundryup_installation\",\n        \"description\": \"Run `foundryup --version` to ensure the Foundry updater is installed and on your PATH.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"run_foundryup_nightly\",\n        \"description\": \"Execute `foundryup nightly` (or `foundryup -v nightly`) to download and install the newest nightly binaries for forge, cast, anvil, and foundryup.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"verify_foundry_version\",\n        \"description\": \"Confirm the update by running `forge --version`; the output should show a commit hash tagged as a nightly build.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The `forge --version` output contains the word \u201cnightly\u201d and a recent commit hash.\",\n      \"`foundryup` exits with a 0 status code and no errors are reported.\"\n    ]\n  },\n  {\n    \"intent\": \"Set the default RPC URL in ~/.foundry/foundry.toml\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"open_or_create_foundry_config\",\n        \"description\": \"Locate `~/.foundry/foundry.toml`; create the file if it does not exist.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"edit_toml_key_value\",\n        \"description\": \"Add or update the line `rpc_endpoint = \\\"https://my.rpc.node:8545\\\"` (replace with your desired URL).\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"save_and_close_file\",\n        \"description\": \"Write the changes to disk and close the editor.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"validate_configuration\",\n        \"description\": \"Run `forge config` or `forge inspect --rpc-url` to make sure Forge picks up the new default RPC endpoint.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Running any `forge` command that touches the chain (e.g., `forge block-number`) defaults to the newly-configured RPC URL.\",\n      \"`forge config` shows `rpc_endpoint` set to the expected value.\"\n    ]\n  },\n  {\n    \"intent\": \"Verify a smart contract on an Etherscan-compatible explorer using Hardhat\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"install_hardhat_etherscan_plugin\",\n        \"description\": \"Ensure `@nomiclabs/hardhat-etherscan` is installed: `npm install --save-dev @nomiclabs/hardhat-etherscan`.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"configure_etherscan_api_key\",\n        \"description\": \"Add `ETHERSCAN_API_KEY=<your-key>` to your environment variables or `hardhat.config.js`.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"compile_contracts\",\n        \"description\": \"Run `npx hardhat compile` to make sure the bytecode and ABI match the deployed contract.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"run_hardhat_verify\",\n        \"description\": \"Execute `npx hardhat verify --network <networkName> <contractAddress> <constructorArgs...>` replacing placeholders accordingly.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"check_verification_status\",\n        \"description\": \"Visit the contract page on the explorer or inspect CLI output to confirm successful verification.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The explorer page lists the contract as 'Verified' and shows source code.\",\n      \"Hardhat CLI logs `Successfully verified contract` with no errors.\"\n    ]\n  },\n  {\n    \"intent\": \"Run fuzz tests with Forge specifying the number of fuzz runs\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"compile_tests\",\n        \"description\": \"Run `forge build` to ensure all test contracts compile successfully.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"execute_forge_test_fuzz\",\n        \"description\": \"Run `forge test --fuzz-runs <N>` replacing `<N>` with the desired number of fuzz cases (e.g., 500).\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"review_test_output\",\n        \"description\": \"Inspect the terminal output for any failing properties or reverted transactions during fuzzing.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"All tests pass and Forge exits with status code 0.\",\n      \"`forge test` summary shows the exact number of fuzz runs requested and zero failures.\"\n    ]\n  },\n  {\n    \"intent\": \"Start an Anvil local JSON-RPC node\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"launch_anvil\",\n        \"description\": \"Run `anvil` in a terminal to start the local Ethereum JSON-RPC server (defaults to 127.0.0.1:8545).\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"wait_for_ready_output\",\n        \"description\": \"Monitor stdout for the line `Listening on 127.0.0.1:8545` indicating the node is ready.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"test_rpc_connection\",\n        \"description\": \"From another terminal, run `curl -X POST --data '{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"method\\\":\\\"eth_blockNumber\\\",\\\"params\\\":[],\\\"id\\\":1}' http://127.0.0.1:8545` to confirm the RPC is responsive.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The curl (or any Web3 client) request returns a valid JSON-RPC response.\",\n      \"No errors are printed in Anvil\u2019s console after startup.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2546,
+                    "prompt_tokens": 723,
+                    "total_tokens": 3269,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1216,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CPtf09Xk7noXhGY8no0KMMH7OhRUB",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--2d57e0cc-e625-4277-98a2-98b23ae6ec79-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 723,
+                "output_tokens": 2546,
+                "total_tokens": 3269,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1216
+                }
+            }
+        }
+    ]
+}

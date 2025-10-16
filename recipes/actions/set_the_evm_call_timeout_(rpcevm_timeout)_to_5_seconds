@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that gracefully stops any running `evmd` process, using `systemctl` when available and falling back to `pkill` otherwise.",
+            "code": "import subprocess\nfrom typing import Dict\n\n\ndef stop_evmd_node() -> Dict[str, str]:\n    \"\"\"Stop the running `evmd` instance.\"\"\"\n    try:\n        # Attempt a graceful shutdown via systemd\n        result = subprocess.run(\n            [\"systemctl\", \"stop\", \"evmd\"],\n            stdout=subprocess.PIPE,\n            stderr=subprocess.STDOUT,\n            text=True,\n            check=False,\n        )\n\n        # Fallback for non-systemd or failure cases\n        if result.returncode != 0:\n            subprocess.run([\"pkill\", \"-f\", \"evmd\"], check=False)\n\n        return {\"status\": \"evmd stopped\"}\n\n    except Exception as e:\n        # Capture and return any error information\n        return {\"error\": str(e)}",
+            "usage": "# Backend call\nstatus = stop_evmd_node()\nprint(status)  # {'status': 'evmd stopped'}"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 loads the existing `app.toml` configuration file and returns it as a Python dictionary so it can be inspected or modified.",
+            "code": "import pathlib\nimport toml\n\nAPP_TOML_PATH = pathlib.Path.home() / \".evmd\" / \"config\" / \"app.toml\"\n\n\ndef load_app_toml() -> dict:\n    \"\"\"Read ~/.evmd/config/app.toml into a Python dictionary.\"\"\"\n    if not APP_TOML_PATH.exists():\n        raise FileNotFoundError(f\"{APP_TOML_PATH} does not exist.\")\n    return toml.load(APP_TOML_PATH)",
+            "usage": "# Backend call\ncfg = load_app_toml()\nprint(cfg.get(\"json-rpc\", {}))"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 updates the JSON-RPC timeout in memory, handling both the new (`evm-timeout`) and legacy (`rpc-evm-timeout`) keys that may appear in different evmd versions.",
+            "code": "def set_json_rpc_timeout(cfg: dict, timeout: str = \"5s\") -> dict:\n    \"\"\"Mutate the `cfg` dict to enforce a 5-second JSON-RPC EVM timeout.\"\"\"\n    json_rpc_block = cfg.setdefault(\"json-rpc\", {})\n\n    # Prefer the modern key, fall back if not present\n    if \"evm-timeout\" in json_rpc_block or \"rpc-evm-timeout\" not in json_rpc_block:\n        json_rpc_block[\"evm-timeout\"] = timeout\n    else:\n        json_rpc_block[\"rpc-evm-timeout\"] = timeout\n\n    return cfg",
+            "usage": "# Backend call\ncfg = set_json_rpc_timeout(cfg, timeout=\"5s\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 persists the modified configuration back to disk so the new timeout takes effect the next time the node starts.",
+            "code": "import toml\n\n\ndef save_app_toml(cfg: dict) -> None:\n    \"\"\"Write the updated configuration back to ~/.evmd/config/app.toml.\"\"\"\n    with open(APP_TOML_PATH, \"w\", encoding=\"utf-8\") as fp:\n        toml.dump(cfg, fp)",
+            "usage": "# Backend call\nsave_app_toml(cfg)\nprint(\"Configuration file saved \u2714\ufe0f\")"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 restarts `evmd`, applying the freshly-written configuration in a new process.",
+            "code": "def start_evmd_node() -> dict:\n    \"\"\"Start (or restart) the `evmd` service so it picks up the new configuration.\"\"\"\n    try:\n        # Systemd path (preferred)\n        subprocess.run([\"systemctl\", \"start\", \"evmd\"], check=True)\n    except subprocess.CalledProcessError:\n        # Fallback: spawn the process directly if systemd is unavailable\n        subprocess.Popen([\"evmd\", \"start\"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)\n    return {\"status\": \"evmd started\"}",
+            "usage": "# Backend call\nstatus = start_evmd_node()\nprint(status)  # {'status': 'evmd started'}"
+        }
+    ]
+}

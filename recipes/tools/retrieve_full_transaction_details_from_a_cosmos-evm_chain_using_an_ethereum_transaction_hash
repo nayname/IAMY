@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "_hex_to_bytes verifies that the provided hash is exactly 32 bytes / 64-hex-characters long and raises an error when the format is invalid.",
+            "function": "_hex_to_bytes(hex_str, expected_len)",
+            "usage": "tx_bytes = _hex_to_bytes(tx_hash, 64)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "get_web3 opens an HTTP JSON-RPC connection and returns a ready-to-use Web3 instance once the node is reachable.",
+            "function": "get_web3()",
+            "usage": "w3 = get_web3()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "json_rpc_call sends a raw JSON-RPC request, here calling eth_getTransactionByHash to pull the full transaction object.",
+            "function": "json_rpc_call(method, params=None, endpoint='http://localhost:8545')",
+            "usage": "tx_obj = json_rpc_call('eth_getTransactionByHash', [tx_hash])"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "fetch_receipt wraps the eth_getTransactionReceipt RPC call and returns status, gas and log details for the transaction.",
+            "function": "fetch_receipt(tx_hash)",
+            "usage": "receipt = await fetch_receipt(tx_hash)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "tx_bytes = _hex_to_bytes(tx_hash, 64)#step: 1 Tool: validate_tx_hash_format Desciption: Ensure the supplied hash is a 0x-prefixed, 32-byte (64 hex chars) Ethereum transaction hash.",
+        "w3 = get_web3()#step: 2 Tool: establish_json_rpc_connection Desciption: Connect to the node\u2019s HTTP JSON-RPC endpoint (e.g., http://localhost:8545).",
+        "tx_obj = json_rpc_call('eth_getTransactionByHash', [tx_hash])#step: 3 Tool: eth_getTransactionByHash Desciption: Query eth_getTransactionByHash with the validated hash to fetch the raw transaction object.",
+        "receipt = await fetch_receipt(tx_hash)#step: 4 Tool: eth_getTransactionReceipt Desciption: Call eth_getTransactionReceipt with the same hash to obtain execution status, gas used, logs, and block inclusion."
+    ],
+    "intent": "Retrieve full transaction details from a Cosmos-EVM chain using an Ethereum transaction hash",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_tx_hash_format",
+            "description": "Ensure the supplied hash is a 0x-prefixed, 32-byte (64 hex chars) Ethereum transaction hash."
+        },
+        {
+            "step": 2,
+            "tool": "establish_json_rpc_connection",
+            "description": "Connect to the node\u2019s HTTP JSON-RPC endpoint (e.g., http://localhost:8545)."
+        },
+        {
+            "step": 3,
+            "tool": "eth_getTransactionByHash",
+            "description": "Query eth_getTransactionByHash with the validated hash to fetch the raw transaction object."
+        },
+        {
+            "step": 4,
+            "tool": "eth_getTransactionReceipt",
+            "description": "Call eth_getTransactionReceipt with the same hash to obtain execution status, gas used, logs, and block inclusion."
+        }
+    ],
+    "outcome_checks": [
+        "The JSON-RPC response for eth_getTransactionByHash returns a non-null object.",
+        "The eth_getTransactionReceipt response contains status, blockNumber, and gasUsed fields, confirming inclusion in a block."
+    ]
+}

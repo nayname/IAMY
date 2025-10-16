@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Fetches and returns the user-selected Ethereum account address through the MetaMask provider.",
+            "function": "getAccountAddress()",
+            "usage": "const address = await getAccountAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Builds the Basic-Auth header string required to access the protected JSON-RPC endpoint.",
+            "function": "get_rpc_auth_header()",
+            "usage": "headers = get_rpc_auth_header()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Sends an arbitrary JSON-RPC call; here it is used to invoke personal_lockAccount for the target address.",
+            "function": "rpc_request(method, params=None, id=1)",
+            "usage": "rpc_request(\"personal_lockAccount\", [address])"
+        }
+    ],
+    "frontend": [
+        "const address = await getAccountAddress();//step: 1 Tool: get_account_address Desciption: Obtain the Ethereum-style address of the account the user wishes to lock."
+    ],
+    "backend": [
+        "headers = get_rpc_auth_header()#step: 2 Tool: authenticate_rpc Desciption: Ensure the JSON-RPC endpoint is accessed with the required authentication headers or bearer token (the personal_* namespace is private).",
+        "rpc_request(\"personal_lockAccount\", [address])#step: 3 Tool: personal_lockAccount Desciption: Invoke the personal_lockAccount RPC method with the target address to remove the decrypted key from memory."
+    ],
+    "intent": "Lock a specific account so it can no longer send transactions",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_account_address",
+            "description": "Obtain the Ethereum-style address of the account the user wishes to lock."
+        },
+        {
+            "step": 2,
+            "tool": "authenticate_rpc",
+            "description": "Ensure the JSON-RPC endpoint is accessed with the required authentication headers or bearer token (the personal_* namespace is private)."
+        },
+        {
+            "step": 3,
+            "tool": "personal_lockAccount",
+            "description": "Invoke the personal_lockAccount RPC method with the target address to remove the decrypted key from memory."
+        }
+    ],
+    "outcome_checks": [
+        "RPC call returns a JSON-RPC success response (no error field).",
+        "Subsequent attempts to sign or send a transaction from that address fail unless the account is unlocked again."
+    ]
+}

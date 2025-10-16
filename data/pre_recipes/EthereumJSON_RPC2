@@ -1,0 +1,155 @@
+[
+    {
+        "intent": "Retrieve full transaction details from a Cosmos-EVM chain using an Ethereum transaction hash",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_tx_hash_format",
+                "description": "Ensure the supplied hash is a 0x-prefixed, 32-byte (64 hex chars) Ethereum transaction hash."
+            },
+            {
+                "step": 2,
+                "tool": "establish_json_rpc_connection",
+                "description": "Connect to the node\u2019s HTTP JSON-RPC endpoint (e.g., http://localhost:8545)."
+            },
+            {
+                "step": 3,
+                "tool": "eth_getTransactionByHash",
+                "description": "Query eth_getTransactionByHash with the validated hash to fetch the raw transaction object."
+            },
+            {
+                "step": 4,
+                "tool": "eth_getTransactionReceipt",
+                "description": "Call eth_getTransactionReceipt with the same hash to obtain execution status, gas used, logs, and block inclusion."
+            }
+        ],
+        "outcome_checks": [
+            "The JSON-RPC response for eth_getTransactionByHash returns a non-null object.",
+            "The eth_getTransactionReceipt response contains status, blockNumber, and gasUsed fields, confirming inclusion in a block."
+        ]
+    },
+    {
+        "intent": "Enable and expose the JSON-RPC server on port 8545 for a Cosmos-EVM node",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_node_config_file",
+                "description": "Open ~/.evmd/config/app.toml (or the chain\u2019s equivalent app.toml) in edit mode."
+            },
+            {
+                "step": 2,
+                "tool": "set_json_rpc_enable",
+                "description": "Within the [json-rpc] section, set enable = true to turn on the server."
+            },
+            {
+                "step": 3,
+                "tool": "set_json_rpc_address",
+                "description": "Set address = \"0.0.0.0:8545\" (or 127.0.0.1:8545) to bind the HTTP JSON-RPC server to port 8545."
+            },
+            {
+                "step": 4,
+                "tool": "set_ws_address_optional",
+                "description": "Optionally set ws-address = \"0.0.0.0:8546\" to expose WebSocket subscriptions."
+            },
+            {
+                "step": 5,
+                "tool": "save_and_close_file",
+                "description": "Save the changed app.toml file and exit the editor."
+            },
+            {
+                "step": 6,
+                "tool": "restart_node",
+                "description": "Restart the Cosmos-EVM node so the new JSON-RPC settings take effect."
+            }
+        ],
+        "outcome_checks": [
+            "curl http://localhost:8545 returns a valid JSON-RPC error response (e.g., method not found) indicating the port is listening.",
+            "The node logs include \"JSON-RPC server started\" with address 0.0.0.0:8545."
+        ]
+    },
+    {
+        "intent": "Subscribe to new block headers over WebSocket",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_websocket_connection",
+                "description": "Connect to the node\u2019s WebSocket endpoint (ws://localhost:8546)."
+            },
+            {
+                "step": 2,
+                "tool": "eth_subscribe_newHeads",
+                "description": "Send a JSON-RPC request {\"id\":1,\"method\":\"eth_subscribe\",\"params\":[\"newHeads\"]}."
+            },
+            {
+                "step": 3,
+                "tool": "store_subscription_id",
+                "description": "Save the subscription id returned in the result field for later use."
+            },
+            {
+                "step": 4,
+                "tool": "listen_for_notifications",
+                "description": "Continuously read messages; each notification will contain the subscription id and the header data for newly-mined blocks."
+            }
+        ],
+        "outcome_checks": [
+            "At least one subsequent WebSocket message with the saved subscription id and header fields (hash, number, parentHash, etc.) is received."
+        ]
+    },
+    {
+        "intent": "Subscribe to hashes of new pending transactions via WebSocket",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_websocket_connection",
+                "description": "Connect to ws://localhost:8546."
+            },
+            {
+                "step": 2,
+                "tool": "eth_subscribe_pendingTxs",
+                "description": "Send {\"id\":1,\"method\":\"eth_subscribe\",\"params\":[\"newPendingTransactions\"]} to start the subscription."
+            },
+            {
+                "step": 3,
+                "tool": "store_subscription_id",
+                "description": "Record the returned subscription id."
+            },
+            {
+                "step": 4,
+                "tool": "listen_for_notifications",
+                "description": "Receive push notifications containing the subscription id and the 0x-hash of each pending transaction."
+            }
+        ],
+        "outcome_checks": [
+            "Multiple WebSocket messages arrive with 0x-prefixed transaction hashes matching the stored subscription id."
+        ]
+    },
+    {
+        "intent": "Create a filter that tracks new blocks using eth_newBlockFilter",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "establish_json_rpc_connection",
+                "description": "Connect to the JSON-RPC HTTP endpoint (http://localhost:8545)."
+            },
+            {
+                "step": 2,
+                "tool": "eth_newBlockFilter",
+                "description": "Send {\"id\":1,\"method\":\"eth_newBlockFilter\",\"params\":[]} to create a block filter."
+            },
+            {
+                "step": 3,
+                "tool": "store_filter_id",
+                "description": "Save the hexadecimal filter id returned by the call."
+            },
+            {
+                "step": 4,
+                "tool": "eth_getFilterChanges_loop",
+                "description": "Periodically poll eth_getFilterChanges with the stored filter id to obtain hashes of newly-mined blocks."
+            }
+        ],
+        "outcome_checks": [
+            "eth_newBlockFilter returns a valid non-null filter id.",
+            "Subsequent eth_getFilterChanges calls return an array of block hashes after new blocks are produced."
+        ]
+    }
+]

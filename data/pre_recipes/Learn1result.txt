@@ -1,0 +1,61 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"Learn\", \"query\": \"Start the full node client\"}, {\"label\": \"Learn\", \"query\": \"Initialize a new Cosmos SDK blockchain\"}, {\"label\": \"Learn\", \"query\": \"Query the balance of an address\"}, {\"label\": \"Learn\", \"query\": \"Send 100token from address A to address B\"}, {\"label\": \"Learn\", \"query\": \"Generate genesis file with default modules\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "e59c9124-bc0e-4de6-83d8-8e22a60ad9b0",
+            "example": false
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Start a full node client on a Cosmos SDK network\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"install_cosmos_binary\",\n        \"description\": \"Download or build the correct version of the Cosmos SDK node binary (e.g., gaiad, appd) for the target network.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"configure_node_home\",\n        \"description\": \"Set up the node\u2019s home directory and configure chain-id, keyring-backend, and RPC settings (e.g., gaiad config chain-id <chain-id>).\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"download_genesis_and_addrbook\",\n        \"description\": \"Fetch the network\u2019s genesis.json and addrbook.json (or seeds/peers) so the node can connect to existing peers.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"start_full_node\",\n        \"description\": \"Launch the node with the start command (e.g., gaiad start) and begin state sync or full sync.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"CLI logs show blocks being executed and height increasing.\",\n      \"A call to http://localhost:26657/status returns catching_up = false when synced.\"\n    ]\n  },\n  {\n    \"intent\": \"Initialize a new Cosmos SDK blockchain\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"install_cosmos_binary\",\n        \"description\": \"Ensure the custom application binary (e.g., appd) is compiled and on PATH.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"init_cosmos_sdk_chain\",\n        \"description\": \"Run `appd init <moniker> --chain-id <chain-id>` to create the initial configuration and genesis file.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"verify_genesis_file\",\n        \"description\": \"Confirm genesis.json and config files were created in the designated home directory.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"validate_genesis\",\n        \"description\": \"Execute `appd validate-genesis` to be sure the file is internally consistent.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"genesis.json exists at ~/.appd/config/genesis.json.\",\n      \"`appd validate-genesis` returns SUCCESS with no errors.\"\n    ]\n  },\n  {\n    \"intent\": \"Query the balance of an address\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"validate_address_format\",\n        \"description\": \"Check that the provided Bech32 address is well-formed for the chain\u2019s HRP.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_bank_balance\",\n        \"description\": \"Run `appd query bank balances <address> --node <rpc>` to fetch on-chain balances.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"parse_balance_output\",\n        \"description\": \"Decode the CLI or JSON response to present spendable and vesting balances to the user.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The command returns a list of coin objects (denom, amount) without error.\",\n      \"Amounts match expectations from recent transactions or on-chain explorers.\"\n    ]\n  },\n  {\n    \"intent\": \"Send 100token from address A to address B\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_sender_key\",\n        \"description\": \"Locate the key or hardware wallet for address A and ensure it has enough balance and fee tokens.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"validate_recipient_address\",\n        \"description\": \"Confirm that address B is a valid Bech32 address for the chain.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_tx_bank_send\",\n        \"description\": \"Build a bank send transaction for 100token from A to B, specifying gas, fees, and memo if needed.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the transaction with A\u2019s key and broadcast it to the network.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"wait_for_tx_commit\",\n        \"description\": \"Poll the transaction hash until it is included in a block.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Transaction hash appears in a committed block and shows success code = 0.\",\n      \"Address A\u2019s balance decreased by 100token + fees; address B\u2019s balance increased by 100token.\"\n    ]\n  },\n  {\n    \"intent\": \"Generate a genesis file with default modules\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"run_init_command\",\n        \"description\": \"Execute `appd init <moniker> --chain-id <chain-id>`; this scaffolds a default genesis.json containing standard modules (auth, bank, staking, gov, crisis, etc.).\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"verify_genesis_contains_modules\",\n        \"description\": \"Inspect genesis.json to ensure required module state objects exist at top level (e.g., \\\"bank\\\", \\\"staking\\\", \\\"gov\\\").\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"validate_genesis\",\n        \"description\": \"Run `appd validate-genesis` to confirm the generated file is valid.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"genesis.json is present and includes default Cosmos SDK module sections.\",\n      \"`appd validate-genesis` returns SUCCESS with no missing or invalid fields.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2347,
+                    "prompt_tokens": 694,
+                    "total_tokens": 3041,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1088,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CQEM8Uv77AlfvacKvQ9kGdPXbTk7u",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--cac463bd-8cad-4c3d-94d6-fa0355161dcd-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 694,
+                "output_tokens": 2347,
+                "total_tokens": 3041,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1088
+                }
+            }
+        }
+    ]
+}

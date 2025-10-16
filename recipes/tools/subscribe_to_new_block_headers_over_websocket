@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Verifies that the node\u2019s RPC endpoint is reachable, effectively opening a live connection to it.",
+            "function": "connect_rpc_endpoint(rpc_endpoint)",
+            "usage": "connect_rpc_endpoint('ws://localhost:8546')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Executes an arbitrary JSON-RPC call, which we use here to issue the eth_subscribe request for new block headers.",
+            "function": "json_rpc_call(method, params, endpoint)",
+            "usage": "sub_resp = json_rpc_call('eth_subscribe', ['newHeads'], 'http://localhost:8546')"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "No available function was found that stores the returned subscription id.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "No implemented function was located that continuously listens for WebSocket notifications.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "undef//step: 3 Tool: store_subscription_id Desciption: Save the subscription id returned in the result field for later use."
+    ],
+    "backend": [
+        "connect_rpc_endpoint('ws://localhost:8546')#step: 1 Tool: open_websocket_connection Desciption: Connect to the node\u2019s WebSocket endpoint (ws://localhost:8546).",
+        "sub_resp = json_rpc_call('eth_subscribe', ['newHeads'], 'http://localhost:8546')#step: 2 Tool: eth_subscribe_newHeads Desciption: Send a JSON-RPC request {\"id\":1,\"method\":\"eth_subscribe\",\"params\":[\"newHeads\"]}.",
+        "undef#step: 4 Tool: listen_for_notifications Desciption: Continuously read messages; each notification will contain the subscription id and the header data for newly-mined blocks."
+    ],
+    "intent": "Subscribe to new block headers over WebSocket",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "open_websocket_connection",
+            "description": "Connect to the node\u2019s WebSocket endpoint (ws://localhost:8546)."
+        },
+        {
+            "step": 2,
+            "tool": "eth_subscribe_newHeads",
+            "description": "Send a JSON-RPC request {\"id\":1,\"method\":\"eth_subscribe\",\"params\":[\"newHeads\"]}."
+        },
+        {
+            "step": 3,
+            "tool": "store_subscription_id",
+            "description": "Save the subscription id returned in the result field for later use."
+        },
+        {
+            "step": 4,
+            "tool": "listen_for_notifications",
+            "description": "Continuously read messages; each notification will contain the subscription id and the header data for newly-mined blocks."
+        }
+    ],
+    "outcome_checks": [
+        "At least one subsequent WebSocket message with the saved subscription id and header fields (hash, number, parentHash, etc.) is received."
+    ]
+}

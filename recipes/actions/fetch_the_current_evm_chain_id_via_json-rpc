@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 prepares the JSON-RPC payload needed to request the Ethereum chain ID from a node.",
+            "code": "export const prepareJsonRpcPayload = (\n  method = \"eth_chainId\", // default method\n  params = [],             // default empty params\n  id = 1                   // default request id\n) => {\n  /*\n    Returns a well-formed JSON-RPC 2.0 payload, e.g.\n    {\n      jsonrpc: \"2.0\",\n      method: \"eth_chainId\",\n      params: [],\n      id: 1\n    }\n  */\n  return {\n    jsonrpc: \"2.0\",\n    method,\n    params,\n    id\n  };\n};",
+            "usage": "const payload = prepareJsonRpcPayload();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 sends the payload to the node\u2019s JSON-RPC endpoint via an HTTP POST request.",
+            "code": "export const sendRpcRequest = async (\n  endpoint = \"http://localhost:8545\", // default local endpoint\n  payload\n) => {\n  try {\n    const response = await fetch(endpoint, {\n      method: \"POST\",\n      headers: {\n        \"Content-Type\": \"application/json\"\n      },\n      body: JSON.stringify(payload)\n    });\n\n    if (!response.ok) {\n      // Any non-2xx HTTP status is treated as an error\n      throw new Error(`HTTP error! status: ${response.status}`);\n    }\n\n    const json = await response.json();\n    return json;\n  } catch (error) {\n    console.error(\"Error sending RPC request:\", error);\n    throw error; // propagate so caller can handle\n  }\n};",
+            "usage": "const rpcResponse = await sendRpcRequest(\"http://localhost:8545\", payload);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 parses the JSON-RPC response, extracts the chain ID, and optionally converts it from hex to decimal.",
+            "code": "export const parseChainIdFromResponse = (\n  rpcResponse,\n  asDecimal = false // set true if you want decimal output\n) => {\n  // Handle JSON-RPC error object if present\n  if (rpcResponse.error) {\n    throw new Error(`RPC Error: ${rpcResponse.error.message || \"Unknown error\"}`);\n  }\n\n  const chainIdHex = rpcResponse.result;\n\n  if (typeof chainIdHex !== \"string\") {\n    throw new Error(\"Invalid RPC response: 'result' field is not a string\");\n  }\n\n  // Return either hex (default) or decimal representation\n  return asDecimal ? parseInt(chainIdHex, 16) : chainIdHex;\n};",
+            "usage": "const chainIdDecimal = parseChainIdFromResponse(rpcResponse, true);\nconsole.log(`Chain ID (decimal): ${chainIdDecimal}`);"
+        }
+    ]
+}

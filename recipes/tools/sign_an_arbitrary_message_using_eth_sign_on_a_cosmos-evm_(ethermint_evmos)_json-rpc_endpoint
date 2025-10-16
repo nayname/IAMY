@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates a Web3 instance and confirms the JSON-RPC endpoint is reachable before returning it.",
+            "function": "get_web3()",
+            "usage": "w3 = get_web3()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No helper for ASCII \u2192 0x-hex conversion exists in the current codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Sends an eth_sign JSON-RPC request and returns the resulting signature string.",
+            "function": "eth_sign(from_address, message_hex)",
+            "usage": "signature = eth_sign(addr, msg_hex)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Recovers the signer from the signature and checks it matches the expected address.",
+            "function": "verify_signature(message, signature, expected_address)",
+            "usage": "is_valid = verify_signature(original_msg, signature, addr)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "w3 = get_web3()#step: 1 Tool: connect_json_rpc Desciption: Ensure the node\u2019s Ethereum JSON-RPC service is reachable (default http://localhost:8545).",
+        "undef#step: 2 Tool: format_message_hex Desciption: Convert the ASCII/UTF-8 message to 0x-prefixed hex, as required by eth_sign.",
+        "signature = eth_sign(addr, msg_hex)#step: 3 Tool: eth_sign Desciption: Call eth_sign with parameters [fromAddress, 0xMessageHex] via curl or web3 library.",
+        "is_valid = verify_signature(original_msg, signature, addr)#step: 4 Tool: verify_signature Desciption: Optionally call eth_call / personal_ecRecover or use web3.eth.accounts.recover to ensure the signature recovers the original address."
+    ],
+    "intent": "Sign an arbitrary message using eth_sign on a Cosmos-EVM (Ethermint/Evmos) JSON-RPC endpoint",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "connect_json_rpc",
+            "description": "Ensure the node\u2019s Ethereum JSON-RPC service is reachable (default http://localhost:8545)."
+        },
+        {
+            "step": 2,
+            "tool": "format_message_hex",
+            "description": "Convert the ASCII/UTF-8 message to 0x-prefixed hex, as required by eth_sign."
+        },
+        {
+            "step": 3,
+            "tool": "eth_sign",
+            "description": "Call eth_sign with parameters [fromAddress, 0xMessageHex] via curl or web3 library."
+        },
+        {
+            "step": 4,
+            "tool": "verify_signature",
+            "description": "Optionally call eth_call / personal_ecRecover or use web3.eth.accounts.recover to ensure the signature recovers the original address."
+        }
+    ],
+    "outcome_checks": [
+        "RPC returns a 0x-prefixed 132-character signature (65 bytes).",
+        "Recovering the signer address with the signature and message yields the original fromAddress."
+    ]
+}

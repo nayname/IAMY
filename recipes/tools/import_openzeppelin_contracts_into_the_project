@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "No helper function exists in the codebase to perform the OpenZeppelin npm installation step automatically.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "There is no utility function for adding Solidity import lines; this action must be done manually in the contract source file.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "compile() triggers `npx hardhat compile`, compiling the project and fetching any OpenZeppelin dependencies.",
+            "function": "compile()",
+            "usage": "compile();"
+        }
+    ],
+    "frontend": [
+        "undef//step: 1 Tool: npm_install_openzeppelin Desciption: Run `npm install @openzeppelin/contracts` to add the library to the project\u2019s dependencies.",
+        "undef//step: 2 Tool: write_contract_imports Desciption: In your Solidity file, import contracts such as `import \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";`."
+    ],
+    "backend": [
+        "compile();#step: 3 Tool: hardhat_compile Desciption: Execute `npx hardhat compile` to compile the project and pull in OpenZeppelin sources."
+    ],
+    "intent": "Import OpenZeppelin contracts into the project",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "npm_install_openzeppelin",
+            "description": "Run `npm install @openzeppelin/contracts` to add the library to the project\u2019s dependencies."
+        },
+        {
+            "step": 2,
+            "tool": "write_contract_imports",
+            "description": "In your Solidity file, import contracts such as `import \"@openzeppelin/contracts/token/ERC20/ERC20.sol\";`."
+        },
+        {
+            "step": 3,
+            "tool": "hardhat_compile",
+            "description": "Execute `npx hardhat compile` to compile the project and pull in OpenZeppelin sources."
+        }
+    ],
+    "outcome_checks": [
+        "Compilation succeeds without dependency errors.",
+        "Type-chain (if enabled) or artifacts folder includes compiled OpenZeppelin bytecode/ABI."
+    ]
+}

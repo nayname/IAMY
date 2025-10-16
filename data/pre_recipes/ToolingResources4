@@ -1,0 +1,137 @@
+[
+    {
+        "intent": "Update Foundry to the latest nightly build",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "check_foundryup_installation",
+                "description": "Run `foundryup --version` to ensure the Foundry updater is installed and on your PATH."
+            },
+            {
+                "step": 2,
+                "tool": "run_foundryup_nightly",
+                "description": "Execute `foundryup nightly` (or `foundryup -v nightly`) to download and install the newest nightly binaries for forge, cast, anvil, and foundryup."
+            },
+            {
+                "step": 3,
+                "tool": "verify_foundry_version",
+                "description": "Confirm the update by running `forge --version`; the output should show a commit hash tagged as a nightly build."
+            }
+        ],
+        "outcome_checks": [
+            "The `forge --version` output contains the word \u201cnightly\u201d and a recent commit hash.",
+            "`foundryup` exits with a 0 status code and no errors are reported."
+        ]
+    },
+    {
+        "intent": "Set the default RPC URL in ~/.foundry/foundry.toml",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_or_create_foundry_config",
+                "description": "Locate `~/.foundry/foundry.toml`; create the file if it does not exist."
+            },
+            {
+                "step": 2,
+                "tool": "edit_toml_key_value",
+                "description": "Add or update the line `rpc_endpoint = \"https://my.rpc.node:8545\"` (replace with your desired URL)."
+            },
+            {
+                "step": 3,
+                "tool": "save_and_close_file",
+                "description": "Write the changes to disk and close the editor."
+            },
+            {
+                "step": 4,
+                "tool": "validate_configuration",
+                "description": "Run `forge config` or `forge inspect --rpc-url` to make sure Forge picks up the new default RPC endpoint."
+            }
+        ],
+        "outcome_checks": [
+            "Running any `forge` command that touches the chain (e.g., `forge block-number`) defaults to the newly-configured RPC URL.",
+            "`forge config` shows `rpc_endpoint` set to the expected value."
+        ]
+    },
+    {
+        "intent": "Verify a smart contract on an Etherscan-compatible explorer using Hardhat",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "install_hardhat_etherscan_plugin",
+                "description": "Ensure `@nomiclabs/hardhat-etherscan` is installed: `npm install --save-dev @nomiclabs/hardhat-etherscan`."
+            },
+            {
+                "step": 2,
+                "tool": "configure_etherscan_api_key",
+                "description": "Add `ETHERSCAN_API_KEY=<your-key>` to your environment variables or `hardhat.config.js`."
+            },
+            {
+                "step": 3,
+                "tool": "compile_contracts",
+                "description": "Run `npx hardhat compile` to make sure the bytecode and ABI match the deployed contract."
+            },
+            {
+                "step": 4,
+                "tool": "run_hardhat_verify",
+                "description": "Execute `npx hardhat verify --network <networkName> <contractAddress> <constructorArgs...>` replacing placeholders accordingly."
+            },
+            {
+                "step": 5,
+                "tool": "check_verification_status",
+                "description": "Visit the contract page on the explorer or inspect CLI output to confirm successful verification."
+            }
+        ],
+        "outcome_checks": [
+            "The explorer page lists the contract as 'Verified' and shows source code.",
+            "Hardhat CLI logs `Successfully verified contract` with no errors."
+        ]
+    },
+    {
+        "intent": "Run fuzz tests with Forge specifying the number of fuzz runs",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "compile_tests",
+                "description": "Run `forge build` to ensure all test contracts compile successfully."
+            },
+            {
+                "step": 2,
+                "tool": "execute_forge_test_fuzz",
+                "description": "Run `forge test --fuzz-runs <N>` replacing `<N>` with the desired number of fuzz cases (e.g., 500)."
+            },
+            {
+                "step": 3,
+                "tool": "review_test_output",
+                "description": "Inspect the terminal output for any failing properties or reverted transactions during fuzzing."
+            }
+        ],
+        "outcome_checks": [
+            "All tests pass and Forge exits with status code 0.",
+            "`forge test` summary shows the exact number of fuzz runs requested and zero failures."
+        ]
+    },
+    {
+        "intent": "Start an Anvil local JSON-RPC node",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "launch_anvil",
+                "description": "Run `anvil` in a terminal to start the local Ethereum JSON-RPC server (defaults to 127.0.0.1:8545)."
+            },
+            {
+                "step": 2,
+                "tool": "wait_for_ready_output",
+                "description": "Monitor stdout for the line `Listening on 127.0.0.1:8545` indicating the node is ready."
+            },
+            {
+                "step": 3,
+                "tool": "test_rpc_connection",
+                "description": "From another terminal, run `curl -X POST --data '{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1}' http://127.0.0.1:8545` to confirm the RPC is responsive."
+            }
+        ],
+        "outcome_checks": [
+            "The curl (or any Web3 client) request returns a valid JSON-RPC response.",
+            "No errors are printed in Anvil\u2019s console after startup."
+        ]
+    }
+]

@@ -1,0 +1,123 @@
+[
+    {
+        "intent": "Send 1000stake from key my_validator to a recipient address",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_key_address",
+                "description": "Retrieve the bech32 account address associated with the key name `my_validator` in the test keyring."
+            },
+            {
+                "step": 2,
+                "tool": "validate_recipient_address",
+                "description": "Ensure the provided recipient address conforms to the chain's bech32 prefix and checksum."
+            },
+            {
+                "step": 3,
+                "tool": "construct_tx_bank_send",
+                "description": "Build a bank send transaction specifying sender address, recipient address, amount 1000stake, and appropriate fees."
+            },
+            {
+                "step": 4,
+                "tool": "sign_tx",
+                "description": "Sign the constructed transaction using the `my_validator` key."
+            },
+            {
+                "step": 5,
+                "tool": "broadcast_tx",
+                "description": "Broadcast the signed transaction to the network and obtain the transaction hash."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm the transaction hash is found in a committed block via `simd q tx`.",
+            "Verify the recipient's balance increased by exactly 1000stake.",
+            "Verify the sender's balance decreased by 1000stake plus gas fees."
+        ]
+    },
+    {
+        "intent": "Query the bank balance of the address associated with key my_validator",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_key_address",
+                "description": "Retrieve the account address for `my_validator` from the test keyring."
+            },
+            {
+                "step": 2,
+                "tool": "query_bank_balances",
+                "description": "Execute `simd q bank balances <address>` to fetch all token balances for the address."
+            },
+            {
+                "step": 3,
+                "tool": "parse_balance",
+                "description": "Parse the JSON response to extract denomination and amount fields."
+            }
+        ],
+        "outcome_checks": [
+            "The CLI returns exit code 0 and valid JSON output.",
+            "The balance list contains the expected denominations (e.g., stake)."
+        ]
+    },
+    {
+        "intent": "Add a new key named my_validator to the test keyring",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "generate_key",
+                "description": "Run `simd keys add my_validator --keyring-backend test` to create a new key pair."
+            },
+            {
+                "step": 2,
+                "tool": "save_key_to_keyring",
+                "description": "Ensure the generated key is stored in the test keyring backend."
+            }
+        ],
+        "outcome_checks": [
+            "Running `simd keys list --keyring-backend test` shows `my_validator` in the output.",
+            "The key entry includes a valid bech32 address and public key."
+        ]
+    },
+    {
+        "intent": "Initialize a new chain with chain-id my-test-chain",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "init_genesis",
+                "description": "Execute `simd init <moniker> --chain-id my-test-chain` to create default genesis and configuration files."
+            },
+            {
+                "step": 2,
+                "tool": "verify_genesis_file",
+                "description": "Open the generated genesis.json and confirm the `chain_id` field is set to `my-test-chain`."
+            }
+        ],
+        "outcome_checks": [
+            "genesis.json exists under the configured home directory.",
+            "The chain_id inside genesis.json matches my-test-chain."
+        ]
+    },
+    {
+        "intent": "Start the local simd node",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_chain_home",
+                "description": "Confirm the SIMD home directory contains a valid genesis.json and config."
+            },
+            {
+                "step": 2,
+                "tool": "start_node",
+                "description": "Run `simd start` (optionally with `--home` flag) to launch the ABCI application and Tendermint node."
+            },
+            {
+                "step": 3,
+                "tool": "health_check",
+                "description": "Query the node status endpoint `curl localhost:26657/status` until it returns a non-empty latest_block_height."
+            }
+        ],
+        "outcome_checks": [
+            "The node process remains running without errors in logs.",
+            "The status endpoint shows syncing:false after initial blocks, indicating the node is fully started."
+        ]
+    }
+]

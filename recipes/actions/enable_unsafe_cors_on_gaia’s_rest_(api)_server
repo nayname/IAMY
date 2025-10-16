@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 opens the Gaia configuration file located at $HOME/.gaia/config/app.toml and returns its content as a list of lines for further processing.",
+            "code": "import os\nfrom pathlib import Path\n\nCONFIG_PATH = Path.home() / \".gaia\" / \"config\" / \"app.toml\"\n\n\ndef open_config_file() -> list[str]:\n    \"\"\"Read the Gaia app.toml file and return a list of its lines.\"\"\"\n    if not CONFIG_PATH.exists():\n        raise FileNotFoundError(f\"Config file not found at {CONFIG_PATH}\")\n\n    try:\n        with CONFIG_PATH.open(\"r\", encoding=\"utf-8\") as f:\n            lines = f.readlines()\n            return lines\n    except Exception as err:\n        # Surface a more readable error for callers\n        raise RuntimeError(f\"Failed to read {CONFIG_PATH}: {err}\") from err",
+            "usage": "lines = open_config_file()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 scans the in-memory representation of app.toml and forces `unsafe-cors = true` in the `[api]`, `[rpc]`, or `[grpc-web]` block (whichever one exists).",
+            "code": "import re\n\nSECTION_HEADERS = {\"[api]\", \"[rpc]\", \"[grpc-web]\"}\n\n\ndef modify_parameter(lines: list[str]) -> list[str]:\n    \"\"\"Return a new list of lines where `unsafe-cors = true` is guaranteed.\"\"\"\n\n    modified_lines = []\n    in_relevant_section = False\n    parameter_set = False\n\n    for line in lines:\n        stripped = line.strip().lower()\n\n        # Track which section we are in\n        if stripped.startswith(\"[\") and stripped.endswith(\"]\"):\n            in_relevant_section = stripped in SECTION_HEADERS\n\n        if in_relevant_section and stripped.startswith(\"unsafe-cors\"):\n            # Replace whatever value was there with `true`\n            modified_lines.append(\"unsafe-cors = true\\n\")\n            parameter_set = True\n        else:\n            modified_lines.append(line)\n\n    # If the flag did not previously exist, inject it into the first relevant section\n    if not parameter_set:\n        for i, line in enumerate(modified_lines):\n            if line.strip().lower() in SECTION_HEADERS:\n                # Insert immediately after the section header\n                modified_lines.insert(i + 1, \"unsafe-cors = true\\n\")\n                parameter_set = True\n                break\n\n    if not parameter_set:\n        # No relevant section found; fall back to appending under [api]\n        modified_lines.append(\"\\n[api]\\n\")\n        modified_lines.append(\"unsafe-cors = true\\n\")\n\n    return modified_lines",
+            "usage": "updated_lines = modify_parameter(lines)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 writes the modified configuration back to disk, creating a timestamped backup automatically to prevent accidental loss.",
+            "code": "import shutil\nimport datetime as _dt\n\n\ndef save_and_close_file(modified_lines: list[str]):\n    \"\"\"Persist the modified app.toml, creating a backup of the original file.\"\"\"\n    timestamp = _dt.datetime.utcnow().strftime(\"%Y%m%d%H%M%S\")\n    backup_path = CONFIG_PATH.with_suffix(f\".bak.{timestamp}\")\n\n    try:\n        shutil.copy2(CONFIG_PATH, backup_path)\n    except Exception as err:\n        raise RuntimeError(f\"Unable to create backup file {backup_path}: {err}\") from err\n\n    try:\n        with CONFIG_PATH.open(\"w\", encoding=\"utf-8\") as f:\n            f.writelines(modified_lines)\n    except Exception as err:\n        raise RuntimeError(f\"Failed to write new configuration: {err}\") from err",
+            "usage": "save_and_close_file(updated_lines)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 restarts the Gaia daemon so that the new CORS setting is loaded. This helper attempts a systemctl restart first and falls back to a direct process signal if systemd is not available.",
+            "code": "import subprocess\nimport signal\nimport psutil  # type: ignore  # Requires `pip install psutil`\n\n\ndef restart_gaiad():\n    \"\"\"Restart the Gaia daemon to apply configuration changes.\"\"\"\n    # Preferred: use systemctl when it exists\n    try:\n        subprocess.check_call([\"systemctl\", \"restart\", \"gaiad\"], stderr=subprocess.STDOUT)\n        return \"Restarted via systemctl\"\n    except (subprocess.CalledProcessError, FileNotFoundError):\n        # Fall back: find the gaiad process and send SIGHUP\n        for proc in psutil.process_iter([\"name\"]):\n            if proc.info.get(\"name\", \"\").startswith(\"gaiad\"):\n                proc.send_signal(signal.SIGHUP)\n                return f\"Sent SIGHUP to pid {proc.pid}\"\n        raise RuntimeError(\"gaiad process not found; manual restart required\")",
+            "usage": "message = restart_gaiad()"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 issues an HTTP request with a custom `Origin` header to verify that CORS is indeed enabled on the Gaia REST API.",
+            "code": "import requests\n\nDEFAULT_REST_ENDPOINT = \"http://localhost:1317/cosmos/base/tendermint/v1beta1/blocks/latest\"\n\n\ndef verify_cors_header(rest_endpoint: str | None = None, origin: str = \"http://example.com\") -> bool:\n    \"\"\"Return True if Access-Control-Allow-Origin is `*` or matches the supplied origin.\"\"\"\n    url = rest_endpoint or DEFAULT_REST_ENDPOINT\n    try:\n        response = requests.get(url, headers={\"Origin\": origin}, timeout=5)\n        allowed = response.headers.get(\"Access-Control-Allow-Origin\", \"\")\n        return allowed == \"*\" or allowed == origin\n    except requests.RequestException as err:\n        raise RuntimeError(f\"Failed to query REST endpoint {url}: {err}\") from err",
+            "usage": "cors_ok = verify_cors_header(origin=\"http://example.com\")"
+        }
+    ]
+}

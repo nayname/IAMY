@@ -1,0 +1,40 @@
+{
+    "label": "send",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects to the user\u2019s Keplr wallet in the browser and returns the active bech32 address that will fund the transfer.",
+            "code": "export const getSenderAddress = async (chainId = 'cosmoshub-4') => {\n  try {\n    if (!window.keplr) {\n      throw new Error('Keplr wallet extension not found');\n    }\n\n    // Ask the extension to enable the selected chain.\n    await window.keplr.enable(chainId);\n\n    // Obtain an OfflineSigner and read the first account.\n    const offlineSigner = window.getOfflineSigner(chainId);\n    const accounts = await offlineSigner.getAccounts();\n\n    if (!accounts || accounts.length === 0) {\n      throw new Error('No account found for the given chain.');\n    }\n\n    return accounts[0].address;\n  } catch (error) {\n    console.error('getSenderAddress error:', error);\n    throw error;\n  }\n};",
+            "usage": "const sender = await getSenderAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Validates that a provided bech32 string has the correct prefix and checksum.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom bech32 import bech32_decode\n\napp = FastAPI()\n\n\ndef is_valid_bech32(address: str, expected_prefix: str) -> bool:\n    \"\"\"Return True if `address` is a valid bech32 string with the given prefix.\"\"\"\n    hrp, data = bech32_decode(address)\n    return hrp == expected_prefix and data is not None\n\n\n@app.get('/api/validate_recipient')\nasync def validate_recipient(address: str, prefix: str = 'cosmos'):\n    if not is_valid_bech32(address, prefix):\n        raise HTTPException(status_code=400, detail='Invalid bech32 address')\n    return {'valid': True}",
+            "usage": "await fetch(`/api/validate_recipient?address=${recipient}&prefix=cosmos`).then(r => r.json());"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Constructs a bank MsgSend protocol-buffer message and returns the hex-encoded bytes ready for signing.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom cosmpy.protos.cosmos.bank.v1beta1 import tx_pb2 as bank_tx_pb2\n\napp = FastAPI()\n\nclass MsgSendRequest(BaseModel):\n    sender: str\n    recipient: str\n    amount: int          # integer amount in base denom (e.g. uatom)\n    denom: str = 'uatom'\n\n\n@app.post('/api/construct_msg_send')\nasync def construct_msg_send(req: MsgSendRequest):\n    try:\n        msg = bank_tx_pb2.MsgSend(\n            from_address=req.sender,\n            to_address=req.recipient,\n            amount=[{'amount': str(req.amount), 'denom': req.denom}]\n        )\n        return {'proto_hex': msg.SerializeToString().hex()}\n    except Exception as err:\n        raise HTTPException(status_code=500, detail=str(err))",
+            "usage": "const { proto_hex } = await fetch('/api/construct_msg_send', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ sender, recipient, amount: 10, denom: 'uatom' })\n}).then(r => r.json());"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the previously built MsgSend with a mnemonic stored in an environment variable and broadcasts it to the network.",
+            "code": "import os\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.aerial.wallet import PrivateKey\n\napp = FastAPI()\n\nNETWORK = NetworkConfig(\n    chain_id=os.getenv('CHAIN_ID', 'cosmoshub-4'),\n    url=os.getenv('RPC_ENDPOINT', 'https://rpc.cosmos.network:443')\n)\nclient = LedgerClient(NETWORK)\n\nMNEMONIC = os.getenv('SENDER_MNEMONIC')  # NEVER commit this to source control in production!\nif not MNEMONIC:\n    raise RuntimeError('SENDER_MNEMONIC environment variable is required.')\n\nclass BroadcastRequest(BaseModel):\n    proto_hex: str\n    gas: int = 200000\n    fee_amount: int = 1000\n    fee_denom: str = 'uatom'\n\n\n@app.post('/api/sign_and_broadcast')\nasync def sign_and_broadcast(req: BroadcastRequest):\n    try:\n        wallet = PrivateKey.from_mnemonic(MNEMONIC)\n\n        tx = Transaction()\n        tx.add_raw_message(bytes.fromhex(req.proto_hex))\n        tx.set_fee(f\"{req.fee_amount}{req.fee_denom}\")\n        tx.set_gas(req.gas)\n        tx.seal(client, wallet)\n        tx.sign(wallet)\n        tx.complete()\n\n        result = client.broadcast_tx(tx)\n        if result.is_err():\n            raise ValueError(result.raw_log)\n        return { 'tx_hash': result.tx_hash }\n    except Exception as err:\n        raise HTTPException(status_code=500, detail=str(err))",
+            "usage": "const { tx_hash } = await fetch('/api/sign_and_broadcast', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ proto_hex, gas: 200000, fee_amount: 1000, fee_denom: 'uatom' })\n}).then(r => r.json());"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Polls the chain for the transaction hash until it has been included in a committed block and then returns the full result.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nimport os, asyncio\n\napp = FastAPI()\n\nNETWORK = NetworkConfig(\n    chain_id=os.getenv('CHAIN_ID', 'cosmoshub-4'),\n    url=os.getenv('RPC_ENDPOINT', 'https://rpc.cosmos.network:443')\n)\nclient = LedgerClient(NETWORK)\n\n\n@app.get('/api/check_tx')\nasync def check_tx(tx_hash: str, timeout: int = 30):\n    \"\"\"Return the tx result as soon as it is committed or raise 404 after `timeout` seconds.\"\"\"\n    try:\n        for _ in range(timeout):\n            try:\n                return client.tx_by_hash(tx_hash)\n            except Exception:\n                await asyncio.sleep(1)\n        raise HTTPException(status_code=404, detail='Transaction not found within timeout window.')\n    except Exception as err:\n        raise HTTPException(status_code=500, detail=str(err))",
+            "usage": "const txResult = await fetch(`/api/check_tx?tx_hash=${tx_hash}`)\n  .then(r => r.json());"
+        }
+    ]
+}

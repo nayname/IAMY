@@ -1,0 +1,47 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that gracefully stops the node\u2019s systemd service, ensuring no writes occur during the backup window.",
+            "code": "def stop_cosmos_service(service_name: str = \"cosmosd\") -> None:\n    \"\"\"Gracefully stop a running Cosmos systemd service.\"\"\"\n    import subprocess\n\n    try:\n        # Use systemd to stop the validator\n        subprocess.run([\"sudo\", \"systemctl\", \"stop\", service_name], check=True, text=True)\n        print(f\"Successfully stopped {service_name}.\")\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"Failed to stop {service_name}: {err}\")",
+            "usage": "# Stop the default `cosmosd` service\nstop_cosmos_service()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 verifies that the target `priv_val_state.json` file exists before continuing, throwing an explicit error if it does not.",
+            "code": "def verify_file_exists(file_path: str) -> None:\n    \"\"\"Raise FileNotFoundError if a required file is missing.\"\"\"\n    import os\n\n    if not os.path.isfile(file_path):\n        raise FileNotFoundError(f\"Required file not found: {file_path}\")\n    print(f\"Verified file exists: {file_path}\")",
+            "usage": "# Example NODE_HOME\nNODE_HOME = \"/home/cosmos/.cosmosd\"\nverify_file_exists(f\"{NODE_HOME}/data/priv_val_state.json\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 copies `priv_val_state.json` into a timestamped backup file under `/var/backups`, creating the directory if necessary.",
+            "code": "def backup_priv_val_state(node_home: str, backup_dir: str = \"/var/backups\") -> str:\n    \"\"\"Return the absolute path of the created backup file.\"\"\"\n    import os, shutil, datetime\n\n    src_path = os.path.join(node_home, \"data\", \"priv_val_state.json\")\n    timestamp = datetime.datetime.utcnow().strftime(\"%Y%m%d-%H%M%S\")\n    backup_name = f\"priv_val_state_{timestamp}.json\"\n    dst_path = os.path.join(backup_dir, backup_name)\n\n    os.makedirs(backup_dir, exist_ok=True)\n    shutil.copy2(src_path, dst_path)  # preserves metadata\n    print(f\"Backup created at: {dst_path}\")\n    return dst_path",
+            "usage": "backup_path = backup_priv_val_state(NODE_HOME)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 computes a SHA-256 checksum for both the original and backup files, returning `True` only if they match.",
+            "code": "def _sha256(file_path: str) -> str:\n    import hashlib\n    h = hashlib.sha256()\n    with open(file_path, \"rb\") as f:\n        for chunk in iter(lambda: f.read(8192), b\"\"):\n            h.update(chunk)\n    return h.hexdigest()\n\n\ndef compare_checksums(original: str, backup: str) -> bool:\n    \"\"\"Return True when both files share an identical SHA-256 digest.\"\"\"\n    orig_hash = _sha256(original)\n    backup_hash = _sha256(backup)\n    print(f\"Original SHA-256: {orig_hash}\\nBackup   SHA-256: {backup_hash}\")\n    return orig_hash == backup_hash",
+            "usage": "is_valid = compare_checksums(f\"{NODE_HOME}/data/priv_val_state.json\", backup_path)\nprint(\"Checksum match \u2705\" if is_valid else \"Checksum mismatch \u274c\")"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 optionally performs a secure off-site copy using `scp`. Adjust credentials and paths to match your hardened backup server.",
+            "code": "def secure_offsite_copy(local_path: str, remote_user: str, remote_host: str, remote_dir: str) -> None:\n    \"\"\"SCP the backup to an off-site server.\"\"\"\n    import os, subprocess\n\n    remote_target = f\"{remote_user}@{remote_host}:{remote_dir}/{os.path.basename(local_path)}\"\n    try:\n        subprocess.run([\"scp\", \"-p\", local_path, remote_target], check=True, text=True)\n        print(f\"Successfully copied to {remote_target}\")\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"Secure copy failed: {err}\")",
+            "usage": "# Example (uncomment and fill in real server details)\n# secure_offsite_copy(backup_path, \"backupuser\", \"10.0.0.5\", \"/data/cosmos_backups\")"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Step 6 restarts the validator\u2019s systemd service so the node can resume signing blocks.",
+            "code": "def start_cosmos_service(service_name: str = \"cosmosd\") -> None:\n    \"\"\"Restart the Cosmos validator systemd unit.\"\"\"\n    import subprocess\n\n    try:\n        subprocess.run([\"sudo\", \"systemctl\", \"start\", service_name], check=True, text=True)\n        print(f\"Successfully started {service_name}.\")\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"Failed to start {service_name}: {err}\")",
+            "usage": "# Bring the validator back online\nstart_cosmos_service()"
+        }
+    ]
+}

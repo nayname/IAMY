@@ -1,0 +1,61 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"UserGuides\", \"query\": \"Launch simd start with max-txs set to -1\"}, {\"label\": \"UserGuides\", \"query\": \"List local snapshots\"}, {\"label\": \"UserGuides\", \"query\": \"Export current app state to a snapshot\"}, {\"label\": \"UserGuides\", \"query\": \"Load a snapshot archive into the store\"}, {\"label\": \"UserGuides\", \"query\": \"Restore app state from a local snapshot\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "3da5f8d6-b89d-4b2d-a763-9ca42a8067d9",
+            "example": false
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Launch a simd node with an unlimited mempool (max-txs = -1)\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"check_binary_available\",\n        \"description\": \"Ensure the `simd` binary is installed and accessible in the system PATH.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"get_node_home\",\n        \"description\": \"Determine (or prompt for) the node\u2019s home directory, e.g., ~/.simapp.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_simd_start_command\",\n        \"description\": \"Build the CLI command `simd start --mempool.max-txs=-1 --home=<home>`.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"execute_shell_command\",\n        \"description\": \"Execute the constructed start command as a long-running process.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"monitor_logs\",\n        \"description\": \"Stream node logs and look for healthy block production or sync messages.\"\n      },\n      {\n        \"step\": 6,\n        \"tool\": \"query_node_status\",\n        \"description\": \"Call `simd status` or hit the RPC endpoint to confirm the node is live.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"RPC endpoint returns a valid JSON status.\",\n      \"Logs show height increasing with no mempool errors.\"\n    ]\n  },\n  {\n    \"intent\": \"List local snapshots available to the simd node\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_node_home\",\n        \"description\": \"Identify the node\u2019s home directory containing the data folder.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"execute_shell_command\",\n        \"description\": \"Run `simd snapshot list --home=<home>` (or `ls -lh <home>/data/snapshots`) to enumerate snapshots.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"parse_snapshot_list\",\n        \"description\": \"Convert the command output into a structured list with height, format, and hash.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"A structured array of snapshots is returned.\",\n      \"No errors such as \u201csnapshot directory not found\u201d occur.\"\n    ]\n  },\n  {\n    \"intent\": \"Export the current application state to a new snapshot file\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_node_home\",\n        \"description\": \"Locate the node\u2019s home directory.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"query_node_status\",\n        \"description\": \"Fetch the latest block height so the snapshot can be tagged correctly.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"execute_shell_command\",\n        \"description\": \"Run `simd snapshot create --home=<home>` to generate a snapshot at the current height.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"monitor_logs\",\n        \"description\": \"Wait until the CLI reports the snapshot was created.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"execute_shell_command\",\n        \"description\": \"Run `simd snapshot list --home=<home>` to verify the new snapshot appears.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"A new snapshot archive exists in <home>/data/snapshots at the expected height.\"\n    ]\n  },\n  {\n    \"intent\": \"Load an external snapshot archive into the node's store\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_node_home\",\n        \"description\": \"Locate the node\u2019s home directory.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"stop_node_service\",\n        \"description\": \"Gracefully stop the running simd process or systemd service.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"validate_snapshot_archive\",\n        \"description\": \"Verify the snapshot file\u2019s existence, checksum, and chain-ID compatibility.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"backup_and_remove_data\",\n        \"description\": \"Back up and then remove the current <home>/data directory.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"execute_shell_command\",\n        \"description\": \"Run `simd snapshot restore <archive-file> --home=<home>` (or decompress the archive into <home>/data).\"\n      },\n      {\n        \"step\": 6,\n        \"tool\": \"construct_simd_start_command\",\n        \"description\": \"Prepare the standard `simd start` command.\"\n      },\n      {\n        \"step\": 7,\n        \"tool\": \"execute_shell_command\",\n        \"description\": \"Restart the node from the restored snapshot.\"\n      },\n      {\n        \"step\": 8,\n        \"tool\": \"query_node_status\",\n        \"description\": \"Check that the node reports the restored height and is catching up.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Node starts without snapshot mismatch errors.\",\n      \"Reported height matches or exceeds the snapshot\u2019s height.\"\n    ]\n  },\n  {\n    \"intent\": \"Restore application state from an existing local snapshot\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_node_home\",\n        \"description\": \"Locate the node\u2019s home directory.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"execute_shell_command\",\n        \"description\": \"Run `simd snapshot list --home=<home>` and select a snapshot ID or height.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"stop_node_service\",\n        \"description\": \"Stop the simd node.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"backup_and_remove_data\",\n        \"description\": \"Back up and clear the existing data directory.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"execute_shell_command\",\n        \"description\": \"Run `simd snapshot restore --home=<home> <snapshot-id>` to unpack the chosen snapshot.\"\n      },\n      {\n        \"step\": 6,\n        \"tool\": \"construct_simd_start_command\",\n        \"description\": \"Prepare the `simd start` command.\"\n      },\n      {\n        \"step\": 7,\n        \"tool\": \"execute_shell_command\",\n        \"description\": \"Start the node from the restored state.\"\n      },\n      {\n        \"step\": 8,\n        \"tool\": \"query_node_status\",\n        \"description\": \"Verify via RPC that the node height equals the snapshot\u2019s height and progresses.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"RPC status shows the snapshot height or higher.\",\n      \"Logs confirm successful IAVL and snapshot restoration without errors.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 5018,
+                    "prompt_tokens": 706,
+                    "total_tokens": 5724,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 3520,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-CPpHRJH1L4LWTSc7UPEFU9wNAkSpC",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "run--649b9940-10b9-425d-bf86-1939b3dd8c58-0",
+            "example": false,
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 706,
+                "output_tokens": 5018,
+                "total_tokens": 5724,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 3520
+                }
+            }
+        }
+    ]
+}

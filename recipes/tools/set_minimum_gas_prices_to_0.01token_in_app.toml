@@ -1,0 +1,92 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Fetches the chain\u2019s home directory so you can construct the full path to <home>/config/app.toml.",
+            "function": "get_chain_home(chain_id='simd')",
+            "usage": "home_dir = get_chain_home('neutrond')['chain_home']"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Opens app.toml on disk and returns its contents as a list of lines for editing.",
+            "function": "open_config_file(config_path=None)",
+            "usage": "lines = open_config_file()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Replaces (or inserts) the minimum-gas-prices line with the value \"0.01token\" in the loaded TOML lines.",
+            "function": "modify_minimum_gas_prices(lines, new_value='0.01token')",
+            "usage": "updated_lines = modify_minimum_gas_prices(lines, '0.01token')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Persists the updated configuration back to app.toml, creating a backup before overwriting.",
+            "function": "save_and_close_file(updated_lines, config_path=None)",
+            "usage": "save_and_close_file(updated_lines)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Restarts the node\u2019s systemd service so the new gas-price floor becomes active.",
+            "function": "restart_node_service(daemon_name, wait_seconds=60)",
+            "usage": "restart_node_service('neutrond')"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Verifies that app.toml now contains minimum-gas-prices = \"0.01token\" after the restart.",
+            "function": "validate_file_change(config_path=None, expected_value='0.01token')",
+            "usage": "assert validate_file_change(expected_value='0.01token')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "home_dir = get_chain_home('neutrond')['chain_home']#step: 1 Tool: locate_config_file Desciption: Find <home>/config/app.toml for the running node.",
+        "lines = open_config_file()#step: 2 Tool: load_config_file Desciption: Open app.toml for editing.",
+        "updated_lines = modify_minimum_gas_prices(lines, '0.01token')#step: 3 Tool: update_toml_value Desciption: Set the `minimum-gas-prices` field to the string \"0.01token\".",
+        "save_and_close_file(updated_lines)#step: 4 Tool: save_file Desciption: Write the updated configuration to disk.",
+        "restart_node_service('neutrond')#step: 5 Tool: restart_node_process Desciption: Start the node again so the new gas-price floor takes effect.",
+        "assert validate_file_change(expected_value='0.01token')#step: 6 Tool: verify_config_value Desciption: Tail startup logs or run `<appd> status` to ensure the node reports min-gas-prices = 0.01token."
+    ],
+    "intent": "Set minimum gas prices to 0.01token in app.toml",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "locate_config_file",
+            "description": "Find <home>/config/app.toml for the running node."
+        },
+        {
+            "step": 2,
+            "tool": "load_config_file",
+            "description": "Open app.toml for editing."
+        },
+        {
+            "step": 3,
+            "tool": "update_toml_value",
+            "description": "Set the `minimum-gas-prices` field to the string \"0.01token\"."
+        },
+        {
+            "step": 4,
+            "tool": "save_file",
+            "description": "Write the updated configuration to disk."
+        },
+        {
+            "step": 5,
+            "tool": "restart_node_process",
+            "description": "Start the node again so the new gas-price floor takes effect."
+        },
+        {
+            "step": 6,
+            "tool": "verify_config_value",
+            "description": "Tail startup logs or run `<appd> status` to ensure the node reports min-gas-prices = 0.01token."
+        }
+    ],
+    "outcome_checks": [
+        "Node starts without halting and advertises minimum gas prices of 0.01token.",
+        "Transactions offering less than 0.01token gas price are rejected."
+    ]
+}

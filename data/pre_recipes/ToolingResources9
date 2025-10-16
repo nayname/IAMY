@@ -1,0 +1,137 @@
+[
+    {
+        "intent": "Read a smart-contract\u2019s state on a Cosmos-SDK/Ethermint chain using the viem library",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "select_rpc_endpoint",
+                "description": "Choose a public or self-hosted JSON-RPC endpoint for the target Ethermint-based (EVM) Cosmos chain (e.g., Evmos, Cronos, etc.)."
+            },
+            {
+                "step": 2,
+                "tool": "import_viem",
+                "description": "Add viem (or update to the latest version) in the project: `npm install viem`."
+            },
+            {
+                "step": 3,
+                "tool": "instantiate_public_client",
+                "description": "Create a `publicClient` with viem, passing the selected RPC URL and chain ID that matches the network."
+            },
+            {
+                "step": 4,
+                "tool": "define_contract_abi",
+                "description": "Provide the ABI fragment that contains the read-only function(s) you wish to call."
+            },
+            {
+                "step": 5,
+                "tool": "call_read_function",
+                "description": "Use `publicClient.readContract({ address, abi, functionName, args })` to retrieve on-chain data."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm the returned value matches the expected on-chain state via a block-explorer or another RPC query.",
+            "Ensure no JSON-RPC errors (e.g., `execution reverted`) were thrown by viem."
+        ]
+    },
+    {
+        "intent": "Configure EIP-1559 gas parameters when sending a transaction with ethers.js",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "instantiate_wallet",
+                "description": "Create an `ethers.Wallet` (or `JsonRpcSigner`) connected to the desired Cosmos EVM RPC endpoint."
+            },
+            {
+                "step": 2,
+                "tool": "fetch_fee_data",
+                "description": "Call `provider.getFeeData()` (or `provider.send('eth_feeHistory', ...)`) to obtain current `maxPriorityFeePerGas` and `maxFeePerGas` suggestions."
+            },
+            {
+                "step": 3,
+                "tool": "build_tx_object",
+                "description": "Construct the transaction object including `to`, `value`, `data`, `gasLimit`, plus EIP-1559 fields `maxFeePerGas` and `maxPriorityFeePerGas`."
+            },
+            {
+                "step": 4,
+                "tool": "sign_and_send_tx",
+                "description": "Use `wallet.sendTransaction(txObject)` to sign and broadcast the EIP-1559 transaction."
+            }
+        ],
+        "outcome_checks": [
+            "Verify the transaction\u2019s `type` is `0x2` (EIP-1559) in a block explorer.",
+            "Ensure the transaction was mined without being dropped for insufficient fees."
+        ]
+    },
+    {
+        "intent": "Add a Blockscout block-explorer URL to a local or dApp network configuration",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "identify_network_config_file",
+                "description": "Locate the configuration file or environment section (e.g., `chain-registry`, `walletConnect`, or dApp network list) that defines network metadata."
+            },
+            {
+                "step": 2,
+                "tool": "insert_blockscout_url",
+                "description": "Add or update the `explorer` field with the Blockscout base URL, e.g., `https://blockscout.evmos.org`."
+            },
+            {
+                "step": 3,
+                "tool": "propagate_config",
+                "description": "Reload or redeploy the application so the new explorer link is picked up (restart dev server, clear cache, etc.)."
+            }
+        ],
+        "outcome_checks": [
+            "Clicking the explorer link in the UI opens the Blockscout page for the network.",
+            "Blockscout successfully returns blocks and transactions, confirming the URL is correct."
+        ]
+    },
+    {
+        "intent": "Query the node\u2019s client version using Foundry\u2019s `cast` CLI",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "select_rpc_endpoint",
+                "description": "Export or pass the JSON-RPC URL for the target node through the `--rpc-url` flag or `FOUNDRY_RPC_URL` env variable."
+            },
+            {
+                "step": 2,
+                "tool": "cast_client_version",
+                "description": "Run `cast client --rpc-url $RPC_URL` or `cast client` if the env variable is set."
+            }
+        ],
+        "outcome_checks": [
+            "The command prints the client version string (e.g., `Ethermint/v0.x.x` or `geth/v1.x.x`).",
+            "Exit status is 0 (no error)."
+        ]
+    },
+    {
+        "intent": "Verify the installed versions of Foundry components (forge, cast, anvil)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "foundryup_update",
+                "description": "Optionally run `foundryup` to ensure you\u2019re on the latest release."
+            },
+            {
+                "step": 2,
+                "tool": "check_forge_version",
+                "description": "Run `forge --version` to display the current version."
+            },
+            {
+                "step": 3,
+                "tool": "check_cast_version",
+                "description": "Run `cast --version` to display the current version."
+            },
+            {
+                "step": 4,
+                "tool": "check_anvil_version",
+                "description": "Run `anvil --version` to display the current version."
+            }
+        ],
+        "outcome_checks": [
+            "Each command outputs a semantic version string.",
+            "All versions are within the expected range for your project (e.g., match the CI toolchain)."
+        ]
+    }
+]

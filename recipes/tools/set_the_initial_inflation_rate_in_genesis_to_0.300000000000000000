@@ -1,0 +1,92 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Resolves and verifies the node\u2019s home directory, returning its absolute path.",
+            "function": "get_chain_home(chain_id='simd')",
+            "usage": "home_info = get_chain_home('simd')  # \u2192 {'chain_home': '/home/user/.simd'}"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Finds the genesis.json file inside the home directory and loads its JSON contents.",
+            "function": "locate_genesis(chain_home)",
+            "usage": "genesis_info = locate_genesis(home_info['chain_home'])"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Creates a timestamped backup copy of the existing genesis.json file.",
+            "function": "backup_genesis(genesis_path)",
+            "usage": "backup_meta = backup_genesis(genesis_info['genesis_path'])"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Mutates the in-memory genesis data, setting mint.params.inflation to 0.300000000000000000.",
+            "function": "update_inflation(genesis_data, new_inflation=\"0.300000000000000000\")",
+            "usage": "import asyncio\nupdated = asyncio.run(update_inflation(genesis_info['genesis_data'], \"0.300000000000000000\"))"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Writes the modified genesis structure back to disk, overwriting the original file.",
+            "function": "save_genesis(genesis_path, updated_genesis)",
+            "usage": "asyncio.run(save_genesis(genesis_info['genesis_path'], updated['updated_genesis']))"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Runs the chain binary\u2019s validate-genesis command to ensure the file is still valid.",
+            "function": "validate_genesis(chain_binary='simd', home='.')",
+            "usage": "ok = validate_genesis('simd', home=home_info['chain_home'])  # True \u2192 genesis is sane"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "home_info = get_chain_home('simd')  # \u2192 {'chain_home': '/home/user/.simd'}#step: 1 Tool: get_chain_home Desciption: Resolve the node\u2019s home directory.",
+        "genesis_info = locate_genesis(home_info['chain_home'])#step: 2 Tool: locate_file Desciption: Open config/genesis.json.",
+        "backup_meta = backup_genesis(genesis_info['genesis_path'])#step: 3 Tool: backup_file Desciption: Back up genesis.json.",
+        "import asyncio\nupdated = asyncio.run(update_inflation(genesis_info['genesis_data'], \"0.300000000000000000\"))#step: 4 Tool: update_json_value Desciption: Set mint.params.inflation to \"0.300000000000000000\".",
+        "asyncio.run(save_genesis(genesis_info['genesis_path'], updated['updated_genesis']))#step: 5 Tool: save_file Desciption: Write the change to disk.",
+        "ok = validate_genesis('simd', home=home_info['chain_home'])  # True \u2192 genesis is sane#step: 6 Tool: validate_genesis Desciption: Run \"simd validate-genesis\" for sanity."
+    ],
+    "intent": "Set the initial inflation rate in genesis to 0.300000000000000000",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_chain_home",
+            "description": "Resolve the node\u2019s home directory."
+        },
+        {
+            "step": 2,
+            "tool": "locate_file",
+            "description": "Open config/genesis.json."
+        },
+        {
+            "step": 3,
+            "tool": "backup_file",
+            "description": "Back up genesis.json."
+        },
+        {
+            "step": 4,
+            "tool": "update_json_value",
+            "description": "Set mint.params.inflation to \"0.300000000000000000\"."
+        },
+        {
+            "step": 5,
+            "tool": "save_file",
+            "description": "Write the change to disk."
+        },
+        {
+            "step": 6,
+            "tool": "validate_genesis",
+            "description": "Run \"simd validate-genesis\" for sanity."
+        }
+    ],
+    "outcome_checks": [
+        "`jq '.mint.params.inflation' ~/.simapp/config/genesis.json` outputs \"0.300000000000000000\"",
+        "`simd validate-genesis` reports success"
+    ]
+}

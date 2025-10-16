@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Establish a connection to the local JSON-RPC endpoint and verify it's reachable by calling a lightweight RPC method (web3_clientVersion).",
+            "code": "/*\n * connectRpc.js\n * Checks connectivity to an Ethereum-compatible JSON-RPC endpoint.\n */\nexport const connectRpc = async (rpcUrl = 'http://localhost:8545') => {\n  const payload = {\n    jsonrpc: '2.0',\n    id: 1,\n    method: 'web3_clientVersion',\n    params: []\n  };\n\n  try {\n    const response = await fetch(rpcUrl, {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(payload)\n    });\n\n    if (!response.ok) {\n      throw new Error(`RPC connection failed with status ${response.status}`);\n    }\n\n    const data = await response.json();\n\n    if (data.error) {\n      throw new Error(`RPC error: ${data.error.message}`);\n    }\n\n    console.info('JSON-RPC connection established:', data.result);\n    return rpcUrl; // Return the verified RPC URL for downstream steps\n  } catch (err) {\n    console.error('Failed to connect to JSON-RPC endpoint:', err);\n    throw err; // Re-throw so callers can handle it\n  }\n};",
+            "usage": "const rpcUrl = await connectRpc();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Create a new block filter by sending the eth_newBlockFilter RPC call. The function returns the hexadecimal filter ID.",
+            "code": "/*\n * createBlockFilter.js\n * Requests a new block filter and returns its ID.\n */\nexport const createBlockFilter = async (rpcUrl) => {\n  const payload = {\n    jsonrpc: '2.0',\n    id: 1,\n    method: 'eth_newBlockFilter',\n    params: []\n  };\n\n  try {\n    const response = await fetch(rpcUrl, {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(payload)\n    });\n\n    if (!response.ok) {\n      throw new Error(`RPC request failed with status ${response.status}`);\n    }\n\n    const data = await response.json();\n\n    if (data.error) {\n      throw new Error(`RPC error: ${data.error.message}`);\n    }\n\n    const filterId = data.result;\n    if (!filterId) {\n      throw new Error('eth_newBlockFilter did not return a filter ID');\n    }\n\n    console.info('Created block filter:', filterId);\n    return filterId;\n  } catch (err) {\n    console.error('Failed to create block filter:', err);\n    throw err;\n  }\n};",
+            "usage": "const filterId = await createBlockFilter(rpcUrl);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Persist the filter ID locally so it can be reused across page reloads or other functions.",
+            "code": "/*\n * storeFilterId.js\n * Simple helpers to save and retrieve a filter ID from localStorage.\n */\nexport const storeFilterId = (filterId) => {\n  try {\n    localStorage.setItem('blockFilterId', filterId);\n    console.info('Filter ID stored in localStorage');\n  } catch (err) {\n    console.warn('Unable to write filter ID to localStorage:', err);\n  }\n};\n\nexport const getStoredFilterId = () => {\n  try {\n    return localStorage.getItem('blockFilterId') || null;\n  } catch {\n    return null;\n  }\n};",
+            "usage": "storeFilterId(filterId);\n// ...later\nconst persistedId = getStoredFilterId();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Continuously poll the eth_getFilterChanges method at a specified interval to receive hashes of newly-mined blocks, invoking a callback each time new hashes are found.",
+            "code": "/*\n * pollFilterChanges.js\n * Periodically calls eth_getFilterChanges and delivers new block hashes via callback.\n */\nexport const pollFilterChanges = (\n  rpcUrl,\n  filterId,\n  onNewBlocks = (hashArray) => {},\n  pollIntervalMs = 5000\n) => {\n  if (!filterId) {\n    throw new Error('pollFilterChanges requires a valid filterId');\n  }\n\n  let timerId = null;\n\n  const payload = {\n    jsonrpc: '2.0',\n    id: 1, // the ID can be arbitrary per request\n    method: 'eth_getFilterChanges',\n    params: [filterId]\n  };\n\n  const poll = async () => {\n    try {\n      const response = await fetch(rpcUrl, {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(payload)\n      });\n\n      if (!response.ok) {\n        console.error(`eth_getFilterChanges failed: ${response.status}`);\n        return; // keep polling despite transient errors\n      }\n\n      const data = await response.json();\n      if (data.error) {\n        console.error('RPC error from eth_getFilterChanges:', data.error.message);\n        return;\n      }\n\n      const hashes = data.result || [];\n      if (hashes.length > 0) {\n        onNewBlocks(hashes);\n      }\n    } catch (err) {\n      console.error('Error while polling eth_getFilterChanges:', err);\n    }\n  };\n\n  // Start the interval polling\n  timerId = setInterval(poll, pollIntervalMs);\n  console.info(`Started polling filter ${filterId} every ${pollIntervalMs} ms`);\n\n  // Return a stop function so the caller can cancel polling\n  return () => {\n    if (timerId) {\n      clearInterval(timerId);\n      console.info('Stopped polling filter changes');\n    }\n  };\n};",
+            "usage": "const stopPolling = pollFilterChanges(\n  rpcUrl,\n  filterId,\n  (hashes) => console.log('New block hashes:', hashes),\n  5000 // 5-second interval\n);\n\n// Call stopPolling() when you want to terminate the loop."
+        }
+    ]
+}

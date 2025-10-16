@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Fetches the bech32 address for the key named \u201cmy_validator\u201d from the local test key-ring.",
+            "function": "get_key_address(key_name, keyring_backend)",
+            "usage": "sender_addr = get_key_address('my_validator', 'test')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Checks that the recipient\u2019s bech32 address has the correct prefix and checksum.",
+            "function": "validate_recipient_address(address, expected_prefix)",
+            "usage": "validate_recipient_address(recipient_addr, 'cosmos')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Builds an unsigned MsgSend that moves 1000stake from the sender to the recipient with default fees.",
+            "function": "build_send_tx(sender, recipient, amount, fee, chain_id, outfile)",
+            "usage": "unsigned_tx = build_send_tx(sender_addr, recipient_addr, '1000stake')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Signs the previously generated transaction file using the \u201cmy_validator\u201d key.",
+            "function": "sign_tx(unsigned_tx_path, key_name, keyring_backend, chain_id, outfile)",
+            "usage": "signed_tx = sign_tx(unsigned_tx, 'my_validator', 'test')"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Broadcasts the signed transaction to the network and returns its hash.",
+            "function": "broadcast_tx(signed_tx_path, chain_id, node_rpc)",
+            "usage": "tx_hash = broadcast_tx(signed_tx)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "sender_addr = get_key_address('my_validator', 'test')#step: 1 Tool: get_key_address Desciption: Retrieve the bech32 account address associated with the key name `my_validator` in the test keyring.",
+        "validate_recipient_address(recipient_addr, 'cosmos')#step: 2 Tool: validate_recipient_address Desciption: Ensure the provided recipient address conforms to the chain's bech32 prefix and checksum.",
+        "unsigned_tx = build_send_tx(sender_addr, recipient_addr, '1000stake')#step: 3 Tool: construct_tx_bank_send Desciption: Build a bank send transaction specifying sender address, recipient address, amount 1000stake, and appropriate fees.",
+        "signed_tx = sign_tx(unsigned_tx, 'my_validator', 'test')#step: 4 Tool: sign_tx Desciption: Sign the constructed transaction using the `my_validator` key.",
+        "tx_hash = broadcast_tx(signed_tx)#step: 5 Tool: broadcast_tx Desciption: Broadcast the signed transaction to the network and obtain the transaction hash."
+    ],
+    "intent": "Send 1000stake from key my_validator to a recipient address",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_key_address",
+            "description": "Retrieve the bech32 account address associated with the key name `my_validator` in the test keyring."
+        },
+        {
+            "step": 2,
+            "tool": "validate_recipient_address",
+            "description": "Ensure the provided recipient address conforms to the chain's bech32 prefix and checksum."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_bank_send",
+            "description": "Build a bank send transaction specifying sender address, recipient address, amount 1000stake, and appropriate fees."
+        },
+        {
+            "step": 4,
+            "tool": "sign_tx",
+            "description": "Sign the constructed transaction using the `my_validator` key."
+        },
+        {
+            "step": 5,
+            "tool": "broadcast_tx",
+            "description": "Broadcast the signed transaction to the network and obtain the transaction hash."
+        }
+    ],
+    "outcome_checks": [
+        "Confirm the transaction hash is found in a committed block via `simd q tx`.",
+        "Verify the recipient's balance increased by exactly 1000stake.",
+        "Verify the sender's balance decreased by 1000stake plus gas fees."
+    ]
+}

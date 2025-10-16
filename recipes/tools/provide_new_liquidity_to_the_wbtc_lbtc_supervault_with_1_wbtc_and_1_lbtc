@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Connects to the browser wallet (Keplr/Leap) and returns the user\u2019s Neutron address.",
+            "function": "getUserWalletAddress()",
+            "usage": "const address = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Verifies that the supplied address holds at least one WBTC and one LBTC token.",
+            "function": "validate_token_balances(address)",
+            "usage": "await validate_token_balances(address)"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Fetches the contract address of the WBTC/LBTC Supervault from a predefined constant.",
+            "function": "getSupervaultContractAddress()",
+            "usage": "const supervaultAddr = getSupervaultContractAddress();"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Builds an unsigned transaction containing the deposit of 1 WBTC and 1 LBTC into the Supervault.",
+            "function": "construct_tx_supervault_deposit(address)",
+            "usage": "const txPayload = await construct_tx_supervault_deposit(address);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Signs the prepared transaction with the user\u2019s offline signer and broadcasts it, returning the resulting hash.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo='')",
+            "usage": "const txHash = await signAndBroadcast(signer, address, [txPayload], 'auto');"
+        }
+    ],
+    "frontend": [
+        "const address = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Determine the funding wallet for the deposit.",
+        "const supervaultAddr = getSupervaultContractAddress();//step: 3 Tool: get_supervault_contract_address Desciption: Fetch the contract address for the WBTC/LBTC Supervault.",
+        "const txHash = await signAndBroadcast(signer, address, [txPayload], 'auto');//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the deposit transaction."
+    ],
+    "backend": [
+        "await validate_token_balances(address)#step: 2 Tool: validate_token_balances Desciption: Confirm the wallet holds at least 1 WBTC and 1 LBTC.",
+        "const txPayload = await construct_tx_supervault_deposit(address);#step: 4 Tool: construct_tx_supervault_deposit Desciption: Build the deposit message specifying 1 WBTC and 1 LBTC."
+    ],
+    "intent": "Provide new liquidity to the WBTC/LBTC Supervault with 1 WBTC and 1 LBTC",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_wallet_address",
+            "description": "Determine the funding wallet for the deposit."
+        },
+        {
+            "step": 2,
+            "tool": "validate_token_balances",
+            "description": "Confirm the wallet holds at least 1 WBTC and 1 LBTC."
+        },
+        {
+            "step": 3,
+            "tool": "get_supervault_contract_address",
+            "description": "Fetch the contract address for the WBTC/LBTC Supervault."
+        },
+        {
+            "step": 4,
+            "tool": "construct_tx_supervault_deposit",
+            "description": "Build the deposit message specifying 1 WBTC and 1 LBTC."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the deposit transaction."
+        }
+    ],
+    "outcome_checks": [
+        "Verify a `Deposit` event from the WBTC/LBTC Supervault shows 1 WBTC and 1 LBTC received.",
+        "Confirm the user\u2019s Supervault share balance increased and the wallet balances for WBTC and LBTC decreased by exactly 1 token each."
+    ]
+}

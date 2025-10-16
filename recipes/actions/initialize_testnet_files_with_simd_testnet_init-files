@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that guarantees the output directory for your local-testnet files exists, creating it when necessary.",
+            "code": "import os\n\n\ndef ensure_output_directory(path: str) -> str:\n    \"\"\"Ensure the directory used for validator configs & genesis exists.\n\n    Args:\n        path (str): Relative or absolute path where `simd` will write files.\n\n    Returns:\n        str: An absolute, verified path.\n\n    Raises:\n        RuntimeError: If the directory cannot be created or accessed.\n    \"\"\"\n    try:\n        abs_path = os.path.abspath(os.path.expanduser(path))\n        os.makedirs(abs_path, exist_ok=True)  # idempotent: no error if it already exists\n        return abs_path\n    except Exception as err:\n        raise RuntimeError(f\"[ensure_output_directory] Failed for '{path}': {err}\")\n",
+            "usage": "output_dir = ensure_output_directory(\"./localnet\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 runs `simd testnet init-files` via Python\u2019s `subprocess` module to generate validator configs and a shared genesis file.",
+            "code": "import subprocess\nfrom pathlib import Path\n\n\ndef simd_testnet_init_files(output_dir: str,\n                             chain_id: str = \"localnet-1\",\n                             validators: int = 1,\n                             keyring_backend: str = \"test\") -> None:\n    \"\"\"Bootstraps a local single- or multi-validator testnet.\n\n    Args:\n        output_dir (str): Directory created in Step 1.\n        chain_id  (str): Custom chain-id for the test chain.\n        validators (int): How many validator nodes to initialise.\n        keyring_backend (str): `simd` keyring backend (e.g. \"test\", \"os\").\n\n    Raises:\n        RuntimeError: If the `simd` command returns a non-zero exit code.\n    \"\"\"\n    home_arg = str(Path(output_dir).expanduser())\n    cmd = [\n        \"simd\", \"testnet\", \"init-files\",\n        \"--home\", home_arg,\n        \"--chain-id\", chain_id,\n        \"--v\", str(validators),\n        \"--keyring-backend\", keyring_backend,\n    ]\n\n    try:\n        completed = subprocess.run(cmd, capture_output=True, text=True, check=True)\n        # Optional: print or log stdout for user visibility\n        print(completed.stdout)\n    except subprocess.CalledProcessError as err:\n        print(err.stderr)\n        raise RuntimeError(\"[simd_testnet_init_files] `simd` exited with non-zero code\")\n",
+            "usage": "simd_testnet_init_files(output_dir, chain_id=\"demo-chain\", validators=1)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 walks the generated directory tree and asserts that each critical artifact (genesis file, node ID, validator keys) exists.",
+            "code": "from pathlib import Path\n\n\ndef verify_generated_artifacts(output_dir: str, validators: int = 1) -> bool:\n    \"\"\"Sanity-check that Step 2 produced the expected files.\n\n    Args:\n        output_dir (str): Base directory used by `simd`.\n        validators (int): Number of validator folders expected.\n\n    Returns:\n        bool: `True` if every file is present.\n\n    Raises:\n        FileNotFoundError: When any required artifact is missing.\n    \"\"\"\n    base = Path(output_dir).expanduser().resolve()\n\n    # 1. Shared genesis.json\n    genesis = base / \"genesis.json\"\n    if not genesis.is_file():\n        raise FileNotFoundError(f\"Missing {genesis}\")\n\n    # 2. Per-validator checks\n    for idx in range(validators):\n        node_dir = base / f\"node{idx}\"\n        config_dir = node_dir / \"config\"\n        if not config_dir.is_dir():\n            raise FileNotFoundError(f\"Missing config dir: {config_dir}\")\n\n        node_key = config_dir / \"node_key.json\"\n        priv_val = config_dir / \"priv_validator_key.json\"\n        if not node_key.is_file():\n            raise FileNotFoundError(f\"Missing node_key for validator #{idx}: {node_key}\")\n        if not priv_val.is_file():\n            raise FileNotFoundError(f\"Missing priv_validator_key for validator #{idx}: {priv_val}\")\n\n    return True  # All good\n",
+            "usage": "verify_generated_artifacts(output_dir, validators=1)"
+        }
+    ]
+}

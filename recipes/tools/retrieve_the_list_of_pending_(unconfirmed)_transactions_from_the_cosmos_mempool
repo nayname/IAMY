@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "connect_rpc_endpoint checks that the given CometBFT RPC URL is reachable (via /status) and returns the verified endpoint.",
+            "function": "connect_rpc_endpoint(rpc_endpoint)",
+            "usage": "rpc = connect_rpc_endpoint(\"http://localhost:26657\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No implemented backend function was found that issues the /unconfirmed_txs request.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No implemented backend function was found that parses the unconfirmed_txs JSON response.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "rpc = connect_rpc_endpoint(\"http://localhost:26657\")#step: 1 Tool: set_rpc_endpoint Desciption: Identify the CometBFT RPC address of the node (e.g., http://localhost:26657).",
+        "undef#step: 2 Tool: fetch_unconfirmed_txs Desciption: Issue an HTTP GET request to /unconfirmed_txs?limit=<N> to pull the current mempool contents.",
+        "undef#step: 3 Tool: parse_response Desciption: Parse the JSON response to extract the n_txs count and the txs array (base64-encoded transactions)."
+    ],
+    "intent": "Retrieve the list of pending (unconfirmed) transactions from the Cosmos mempool",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "set_rpc_endpoint",
+            "description": "Identify the CometBFT RPC address of the node (e.g., http://localhost:26657)."
+        },
+        {
+            "step": 2,
+            "tool": "fetch_unconfirmed_txs",
+            "description": "Issue an HTTP GET request to /unconfirmed_txs?limit=<N> to pull the current mempool contents."
+        },
+        {
+            "step": 3,
+            "tool": "parse_response",
+            "description": "Parse the JSON response to extract the n_txs count and the txs array (base64-encoded transactions)."
+        }
+    ],
+    "outcome_checks": [
+        "HTTP status code is 200.",
+        "Field n_txs equals the length of the returned txs array.",
+        "If n_txs is 0, the txs array is empty; otherwise each element is a valid base64 string."
+    ]
+}

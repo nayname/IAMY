@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates and verifies a Web3 connection using the RPC_URL environment variable, effectively pinpointing the node\u2019s JSON-RPC endpoint.",
+            "function": "get_web3()",
+            "usage": "web3_conn = get_web3()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Sends an arbitrary JSON-RPC request (e.g., debug_intermediateRoots) to the previously selected endpoint and returns the result.",
+            "function": "json_rpc_call(method=\"debug_intermediateRoots\", params=[tx_hash])",
+            "usage": "roots = json_rpc_call(\"debug_intermediateRoots\", [\"0xabc\u2026\"])"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "web3_conn = get_web3()#step: 1 Tool: select_rpc_endpoint Desciption: Determine the full node\u2019s JSON-RPC address.",
+        "roots = json_rpc_call(\"debug_intermediateRoots\", [\"0xabc\u2026\"])#step: 2 Tool: json_rpc_call Desciption: Request debug_intermediateRoots with the target transaction hash:\n{\n  \"method\": \"debug_intermediateRoots\",\n  \"params\": [\"<txHash>\"],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+    ],
+    "intent": "Retrieve intermediate state roots for a transaction",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "select_rpc_endpoint",
+            "description": "Determine the full node\u2019s JSON-RPC address."
+        },
+        {
+            "step": 2,
+            "tool": "json_rpc_call",
+            "description": "Request debug_intermediateRoots with the target transaction hash:\n{\n  \"method\": \"debug_intermediateRoots\",\n  \"params\": [\"<txHash>\"],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+        }
+    ],
+    "outcome_checks": [
+        "A successful call returns an array of hex-encoded state root values for each step of the transaction\u2019s execution.",
+        "Validate that the first element matches the pre-state root of the containing block and the last element matches the post-state root recorded in the receipt."
+    ]
+}

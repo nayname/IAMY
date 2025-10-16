@@ -1,0 +1,92 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Stops the running cosmosd validator service via systemd to ensure no writes occur during backup.",
+            "function": "graceful_shutdown(pid=None, use_systemctl=False, service_name=None)",
+            "usage": "graceful_shutdown(use_systemctl=True, service_name='cosmosd')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Checks that the priv_val_state.json file exists and is non-empty before continuing.",
+            "function": "verify_profile_file(profile_path='cpu.prof')",
+            "usage": "verify_profile_file('/home/cosmosd/data/priv_val_state.json')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Creates a timestamped copy of priv_val_state.json as a backup file.",
+            "function": "backup_genesis(genesis_path)",
+            "usage": "backup_genesis('/home/cosmosd/data/priv_val_state.json')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Calculates and compares SHA-256 digests of the original and backup files to confirm integrity.",
+            "function": "compare_checksums(original, backup)",
+            "usage": "compare_checksums('/home/cosmosd/data/priv_val_state.json', '/var/backups/priv_val_state_20231001-123045.json')"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Securely copies the backup file to an off-site server using scp.",
+            "function": "secure_offsite_copy(local_path, remote_user, remote_host, remote_dir)",
+            "usage": "secure_offsite_copy('/var/backups/priv_val_state_20231001-123045.json', 'backupuser', 'backup.example.com', '/backups/cosmos')"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Restarts the cosmosd validator service once the backup process is complete.",
+            "function": "start_cosmos_service(service_name='cosmosd')",
+            "usage": "start_cosmos_service()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "graceful_shutdown(use_systemctl=True, service_name='cosmosd')#step: 1 Tool: stop_cosmos_service Desciption: Gracefully stop the validator process (e.g., `sudo systemctl stop cosmosd`) to avoid writes during backup.",
+        "verify_profile_file('/home/cosmosd/data/priv_val_state.json')#step: 2 Tool: verify_file_exists Desciption: Ensure `data/priv_val_state.json` exists in the node\u2019s home directory.",
+        "backup_genesis('/home/cosmosd/data/priv_val_state.json')#step: 3 Tool: run_shell_command Desciption: Create a timestamped backup: `cp $NODE_HOME/data/priv_val_state.json /var/backups/priv_val_state_$(date +%Y%m%d-%H%M%S).json`.",
+        "compare_checksums('/home/cosmosd/data/priv_val_state.json', '/var/backups/priv_val_state_20231001-123045.json')#step: 4 Tool: compute_checksum Desciption: Generate SHA-256 checksums for both original and backup files and compare them.",
+        "secure_offsite_copy('/var/backups/priv_val_state_20231001-123045.json', 'backupuser', 'backup.example.com', '/backups/cosmos')#step: 5 Tool: secure_offsite_copy Desciption: Optionally copy the backup to an offline or remote secure location (e.g., `scp` to a hardened backup server).",
+        "start_cosmos_service()#step: 6 Tool: start_cosmos_service Desciption: Restart the validator process (e.g., `sudo systemctl start cosmosd`)."
+    ],
+    "intent": "Back up priv_val_state.json to prevent double signing",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "stop_cosmos_service",
+            "description": "Gracefully stop the validator process (e.g., `sudo systemctl stop cosmosd`) to avoid writes during backup."
+        },
+        {
+            "step": 2,
+            "tool": "verify_file_exists",
+            "description": "Ensure `data/priv_val_state.json` exists in the node\u2019s home directory."
+        },
+        {
+            "step": 3,
+            "tool": "run_shell_command",
+            "description": "Create a timestamped backup: `cp $NODE_HOME/data/priv_val_state.json /var/backups/priv_val_state_$(date +%Y%m%d-%H%M%S).json`."
+        },
+        {
+            "step": 4,
+            "tool": "compute_checksum",
+            "description": "Generate SHA-256 checksums for both original and backup files and compare them."
+        },
+        {
+            "step": 5,
+            "tool": "secure_offsite_copy",
+            "description": "Optionally copy the backup to an offline or remote secure location (e.g., `scp` to a hardened backup server)."
+        },
+        {
+            "step": 6,
+            "tool": "start_cosmos_service",
+            "description": "Restart the validator process (e.g., `sudo systemctl start cosmosd`)."
+        }
+    ],
+    "outcome_checks": [
+        "Backup file exists in /var/backups (or chosen directory) with a matching checksum to the original.",
+        "Validator restarts without errors and continues signing new blocks (no evidence of double-signing)."
+    ]
+}

@@ -1,0 +1,197 @@
+[
+    {
+        "intent": "Enable the REST server and expose Swagger documentation",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_chain_home",
+                "description": "Resolve the node\u2019s home directory (default $HOME/.simapp unless --home is set)."
+            },
+            {
+                "step": 2,
+                "tool": "locate_file",
+                "description": "Build the absolute path to config/app.toml inside the chain home."
+            },
+            {
+                "step": 3,
+                "tool": "backup_file",
+                "description": "Create app.toml.bak so changes can be rolled back if needed."
+            },
+            {
+                "step": 4,
+                "tool": "update_toml_value",
+                "description": "Set api.enable = true in app.toml to start the REST server."
+            },
+            {
+                "step": 5,
+                "tool": "update_toml_value",
+                "description": "Set api.swagger = true so the /swagger endpoint is generated."
+            },
+            {
+                "step": 6,
+                "tool": "save_file",
+                "description": "Write the modified app.toml to disk."
+            },
+            {
+                "step": 7,
+                "tool": "restart_node",
+                "description": "Restart the simd process so the new API settings are loaded."
+            },
+            {
+                "step": 8,
+                "tool": "check_http_endpoint",
+                "description": "Query http://localhost:1317/swagger and expect an HTTP 200 response."
+            }
+        ],
+        "outcome_checks": [
+            "Node log shows \"Starting API server\" bound to :1317.",
+            "GET http://localhost:1317/swagger returns the OpenAPI spec (JSON)."
+        ]
+    },
+    {
+        "intent": "Change the chain-id in genesis.json to \"testing\"",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_chain_home",
+                "description": "Resolve the node\u2019s home directory."
+            },
+            {
+                "step": 2,
+                "tool": "locate_file",
+                "description": "Construct the path to config/genesis.json."
+            },
+            {
+                "step": 3,
+                "tool": "backup_file",
+                "description": "Save a copy of genesis.json as genesis.json.bak."
+            },
+            {
+                "step": 4,
+                "tool": "update_json_value",
+                "description": "Set the top-level \"chain_id\" field to \"testing\"."
+            },
+            {
+                "step": 5,
+                "tool": "save_file",
+                "description": "Write the updated genesis.json."
+            },
+            {
+                "step": 6,
+                "tool": "validate_genesis",
+                "description": "Run \"simd validate-genesis\" to be sure the new file is valid."
+            }
+        ],
+        "outcome_checks": [
+            "`simd validate-genesis` exits with \"Everything is okay!\"",
+            "`jq -r .chain_id ~/.simapp/config/genesis.json` returns \"testing\""
+        ]
+    },
+    {
+        "intent": "Update the on-chain voting period in genesis to 600 s",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_chain_home",
+                "description": "Resolve the node\u2019s home directory."
+            },
+            {
+                "step": 2,
+                "tool": "locate_file",
+                "description": "Open config/genesis.json."
+            },
+            {
+                "step": 3,
+                "tool": "backup_file",
+                "description": "Create genesis.json.bak."
+            },
+            {
+                "step": 4,
+                "tool": "update_json_value",
+                "description": "Navigate to gov.params.voting_period (or gov.params.voting_params.voting_period depending on SDK version) and set the value to \"600s\"."
+            },
+            {
+                "step": 5,
+                "tool": "save_file",
+                "description": "Persist the modified genesis.json."
+            },
+            {
+                "step": 6,
+                "tool": "validate_genesis",
+                "description": "Run \"simd validate-genesis\" to confirm structural correctness."
+            }
+        ],
+        "outcome_checks": [
+            "`jq '.gov.params.voting_period' ~/.simapp/config/genesis.json` outputs \"600s\"",
+            "`simd validate-genesis` reports success"
+        ]
+    },
+    {
+        "intent": "Set the initial inflation rate in genesis to 0.300000000000000000",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_chain_home",
+                "description": "Resolve the node\u2019s home directory."
+            },
+            {
+                "step": 2,
+                "tool": "locate_file",
+                "description": "Open config/genesis.json."
+            },
+            {
+                "step": 3,
+                "tool": "backup_file",
+                "description": "Back up genesis.json."
+            },
+            {
+                "step": 4,
+                "tool": "update_json_value",
+                "description": "Set mint.params.inflation to \"0.300000000000000000\"."
+            },
+            {
+                "step": 5,
+                "tool": "save_file",
+                "description": "Write the change to disk."
+            },
+            {
+                "step": 6,
+                "tool": "validate_genesis",
+                "description": "Run \"simd validate-genesis\" for sanity."
+            }
+        ],
+        "outcome_checks": [
+            "`jq '.mint.params.inflation' ~/.simapp/config/genesis.json` outputs \"0.300000000000000000\"",
+            "`simd validate-genesis` reports success"
+        ]
+    },
+    {
+        "intent": "Start the node with the application and CometBFT processes split",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "run_command",
+                "description": "In terminal #1 run `simd start --with-comet=false --home $HOME/.simapp` to launch only the ABCI application."
+            },
+            {
+                "step": 2,
+                "tool": "wait_for_log",
+                "description": "Watch for the log line \"ABCI server started\" indicating the app is listening on tcp://localhost:26658."
+            },
+            {
+                "step": 3,
+                "tool": "run_command",
+                "description": "In terminal #2 run `cometbft start --home $HOME/.simapp --proxy_app tcp://127.0.0.1:26658` to launch the consensus engine."
+            },
+            {
+                "step": 4,
+                "tool": "check_http_endpoint",
+                "description": "Query `curl -s localhost:26657/status` until the JSON status response is received."
+            }
+        ],
+        "outcome_checks": [
+            "Both terminals show blocks being executed (height incrementing).",
+            "localhost:26657/status returns node_info and sync_info without errors."
+        ]
+    }
+]

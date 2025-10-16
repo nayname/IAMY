@@ -1,0 +1,124 @@
+[
+    {
+        "intent": "Delete a local snapshot stored by the node",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "snapshots_list",
+                "description": "Run \"<appd> snapshots list\" to enumerate all local snapshots and note the snapshot height or identifier you wish to remove."
+            },
+            {
+                "step": 2,
+                "tool": "snapshots_delete",
+                "description": "Execute \"<appd> snapshots delete <snapshot_identifier>\" to remove the selected snapshot from the snapshot store."
+            },
+            {
+                "step": 3,
+                "tool": "snapshots_list",
+                "description": "Re-run \"<appd> snapshots list\" to confirm the snapshot no longer appears in the inventory."
+            }
+        ],
+        "outcome_checks": [
+            "The chosen snapshot identifier is absent from the list after deletion.",
+            "Command exits with status code 0 and prints a confirmation message such as \"snapshot deleted\"."
+        ]
+    },
+    {
+        "intent": "List all gRPC services exposed on localhost:9090 using grpcurl",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "verify_grpcurl_installation",
+                "description": "Ensure grpcurl is installed and in PATH by running \"grpcurl -help\"."
+            },
+            {
+                "step": 2,
+                "tool": "grpcurl_list_services",
+                "description": "Run \"grpcurl -plaintext localhost:9090 list\" (add -insecure if TLS is enabled without trusted certs) to query the server\u2019s gRPC reflection service."
+            }
+        ],
+        "outcome_checks": [
+            "Command returns a newline-delimited list of fully-qualified service names (e.g., cosmos.tx.v1beta1.Service, cosmos.bank.v1beta1.Query).",
+            "Exit status is 0 indicating the server responded successfully."
+        ]
+    },
+    {
+        "intent": "Query a wallet\u2019s bank balances via the REST API",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "collect_target_address",
+                "description": "Obtain the bech32 address whose balances you want to query."
+            },
+            {
+                "step": 2,
+                "tool": "rest_get_request",
+                "description": "Send an HTTP GET to \"http://localhost:1317/cosmos/bank/v1beta1/balances/<address>\" using curl or any HTTP client."
+            },
+            {
+                "step": 3,
+                "tool": "parse_json_response",
+                "description": "Decode the JSON payload to view the \"balances\" array containing denomination/amount pairs."
+            }
+        ],
+        "outcome_checks": [
+            "HTTP response code is 200.",
+            "Returned JSON contains a \"balances\" field with at least one entry or an empty array if the account is empty."
+        ]
+    },
+    {
+        "intent": "Broadcast a pre-signed transaction via the REST endpoint",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "construct_unsigned_tx_cli",
+                "description": "Use \"<appd> tx <module> <msg> --generate-only --chain-id=<id> --fees=<amount><denom> -o json > unsigned.json\" to build an unsigned transaction (replace placeholders appropriately)."
+            },
+            {
+                "step": 2,
+                "tool": "sign_tx_cli",
+                "description": "Sign the transaction with \"<appd> tx sign unsigned.json --from=<key_name> --chain-id=<id> -o json > signed.json\" to obtain a base64-encoded tx."
+            },
+            {
+                "step": 3,
+                "tool": "extract_tx_bytes",
+                "description": "Read \"signed.json\" and copy the value of \"tx_bytes\" (base64 string)."
+            },
+            {
+                "step": 4,
+                "tool": "broadcast_tx_rest",
+                "description": "POST the signed bytes: \n  curl -X POST http://localhost:1317/cosmos/tx/v1beta1/txs \\\n       -H \"Content-Type: application/json\" \\\n       -d '{\"tx_bytes\":\"<base64>\",\"mode\":\"BROADCAST_MODE_SYNC\"}'"
+            }
+        ],
+        "outcome_checks": [
+            "HTTP 200 response contains a \"tx_response\" object.",
+            "\"tx_response.code\" equals 0 indicating success or provides an error code if it failed.",
+            "\"tx_response.txhash\" can be searched in a block to confirm inclusion."
+        ]
+    },
+    {
+        "intent": "Broadcast a pre-signed transaction over gRPC",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "construct_unsigned_tx_cli",
+                "description": "Generate an unsigned tx JSON with \"<appd> tx <module> <msg> --generate-only\"."
+            },
+            {
+                "step": 2,
+                "tool": "sign_tx_cli",
+                "description": "Sign the tx with \"<appd> tx sign\" to obtain a base64 \"tx_bytes\" field."
+            },
+            {
+                "step": 3,
+                "tool": "grpcurl_broadcast_tx",
+                "description": "Invoke the gRPC method with: \n  grpcurl -plaintext -d '{\"tx_bytes\":\"<base64>\",\"mode\":\"BROADCAST_MODE_SYNC\"}' \\\n          localhost:9090 cosmos.tx.v1beta1.Service/BroadcastTx"
+            }
+        ],
+        "outcome_checks": [
+            "grpcurl returns JSON containing \"tx_response\" with a non-empty \"txhash\".",
+            "\"tx_response.code\" is 0 for success; non-zero indicates an error.",
+            "Searching the hash via REST or gRPC shows the tx included in a block."
+        ]
+    }
+]

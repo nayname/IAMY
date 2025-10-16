@@ -1,0 +1,113 @@
+[
+    {
+        "intent": "Learn how to register the Msg service for the bank module in a Cosmos SDK chain",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "SearchCosmosDocumentation",
+                "description": "Search for \u201cMsgServer registration bank module RegisterServices HasServices interface\u201d to locate the official guide and example code (v0.50+)."
+            },
+            {
+                "step": 2,
+                "tool": "SearchCosmosDocumentation",
+                "description": "Search for \u201cx/bank tx.proto Msg service example\u201d to obtain the service definition snippet."
+            },
+            {
+                "step": 3,
+                "tool": "compose_response",
+                "description": "Aggregate the two search results, extract the RegisterServices implementation pattern, and present the user with (a) the HasServices interface usage, (b) the call to RegisterMsgServer, and (c) a minimal code snippet showing how the bank keeper implements MsgServer and is wired in app.go."
+            }
+        ],
+        "outcome_checks": [
+            "Response contains a Go code block with RegisterServices that calls types.RegisterMsgServer.",
+            "At least one documentation link is included for further reading."
+        ]
+    },
+    {
+        "intent": "Learn how to register the Query (gRPC) service for the staking module",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "SearchCosmosDocumentation",
+                "description": "Query \u201cRegister Query service staking module RegisterServices\u201d to fetch the staking module\u2019s RegisterServices example."
+            },
+            {
+                "step": 2,
+                "tool": "SearchCosmosDocumentation",
+                "description": "Lookup \u201cHasServices interface staking QueryServer implementation\u201d for additional context on QueryServer wiring."
+            },
+            {
+                "step": 3,
+                "tool": "compose_response",
+                "description": "Merge results and show: (a) proto\u2010generated RegisterQueryServer, (b) how the staking keeper satisfies the QueryServer, and (c) the RegisterServices function snippet used inside the staking AppModule."
+            }
+        ],
+        "outcome_checks": [
+            "Explanation shows RegisterServices with types.RegisterQueryServer for x/staking.",
+            "Links to ADR-063 or the \u2018messages-and-queries\u2019 docs are provided."
+        ]
+    },
+    {
+        "intent": "Configure a custom application encoding config (InterfaceRegistry + TxConfig) in app.go",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "SearchCosmosDocumentation",
+                "description": "Search for \u201cencoding config cosmos sdk app.go MakeEncodingConfig\u201d to retrieve the recommended helper."
+            },
+            {
+                "step": 2,
+                "tool": "SearchCosmosDocumentation",
+                "description": "Search for \u201cRegisterInterfaces InterfaceRegistry example\u201d to collect the interface registration steps."
+            },
+            {
+                "step": 3,
+                "tool": "compose_response",
+                "description": "Explain how to build an EncodingConfig (legacyAmino, interfaceRegistry, txCfg) and return a code snippet that: (i) invokes MakeEncodingConfig, (ii) registers module interfaces, and (iii) injects the config into the app constructor."
+            }
+        ],
+        "outcome_checks": [
+            "Delivered code defines MakeEncodingConfig or its equivalent and plugs it into NewApp(...).",
+            "Mentions both legacy amino (if needed) and proto TxConfig."
+        ]
+    },
+    {
+        "intent": "Build the appd binary from source",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "SearchCosmosDocumentation",
+                "description": "Search for \u201cCosmos SDK make install build binary appd\u201d to fetch the official build instructions."
+            },
+            {
+                "step": 2,
+                "tool": "compose_response",
+                "description": "Summarise prerequisites (Go version, git, make), clone command, checkout tag, and `make install` which produces `$GOBIN/appd`."
+            }
+        ],
+        "outcome_checks": [
+            "Instructions list Go \u2265 1.21, git clone URL, git checkout <tag>, and `make install`.",
+            "`appd version` verification step is included."
+        ]
+    },
+    {
+        "intent": "Create a staking delegate transaction (MsgDelegate) with CLI or programmatically",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "SearchCosmosDocumentation",
+                "description": "Query \u201cstaking delegate transaction MsgDelegate example tx staking\u201d to retrieve CLI and Go examples."
+            },
+            {
+                "step": 2,
+                "tool": "compose_response",
+                "description": "Describe both approaches: (a) CLI (`appd tx staking delegate <val-addr> <amount> --from <delegator>`), and (b) Go code building a MsgDelegate, signing, and broadcasting via tx.Config."
+            }
+        ],
+        "outcome_checks": [
+            "Response shows full CLI command with required flags.",
+            "Go example includes MsgDelegate struct fill-in, txf, and BroadcastTx call.",
+            "Links to staking tx.proto or CLI docs provided."
+        ]
+    }
+]

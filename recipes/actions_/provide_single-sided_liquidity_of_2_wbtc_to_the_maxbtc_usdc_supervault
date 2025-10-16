@@ -1,0 +1,81 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Obtains the connected user\u2019s Neutron bech32 address from the Keplr extension.",
+            "function": "getUserWalletAddress()",
+            "usage": "const userAddress = await getUserWalletAddress();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the chain for the user\u2019s WBTC balance (in satoshis) so it can be compared against the 2 WBTC requirement.",
+            "function": "query_wbtc_balance(neutron_addr, ibc_denom)",
+            "usage": "const { amount_sats } = query_wbtc_balance(userAddress, WBTC_IBC_DENOM);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Creates a MsgExecuteContract object that calls the Supervault\u2019s single-side deposit method with 2 WBTC.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds)",
+            "usage": "const execMsg = constructTxWasmExecute(userAddress, supervaultAddr, { deposit_single_side: { asset: 'WBTC', amount: '2' } }, []);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Signs the execute message with the user\u2019s wallet and broadcasts the transaction to Neutron.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo)",
+            "usage": "const txHash = await signAndBroadcast(signer, userAddress, [execMsg], 'auto');"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Fetches the number of Supervault share tokens minted for the user after the deposit.",
+            "function": "get_supervault_share_balance(address)",
+            "usage": "const { shares } = await get_supervault_share_balance(userAddress);"
+        }
+    ],
+    "frontend": [
+        "const userAddress = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Determine the wallet address from which WBTC will be supplied.",
+        "const execMsg = constructTxWasmExecute(userAddress, supervaultAddr, { deposit_single_side: { asset: 'WBTC', amount: '2' } }, []);//step: 3 Tool: construct_tx_contract_execute Desciption: Craft an ExecuteMsg to the maxBTC/USDC Supervault contract calling its \u201cdeposit_single_side\u201d (or equivalent) method with { asset: \"WBTC\", amount: \"2\" }.",
+        "const txHash = await signAndBroadcast(signer, userAddress, [execMsg], 'auto');//step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the execute message and broadcast it to the network."
+    ],
+    "backend": [
+        "const { amount_sats } = query_wbtc_balance(userAddress, WBTC_IBC_DENOM);#step: 2 Tool: validate_token_balance Desciption: Check that the user holds at least 2 WBTC in the wallet on Neutron.",
+        "const { shares } = await get_supervault_share_balance(userAddress);#step: 5 Tool: query_contract_receipt Desciption: Query the Supervault contract for the resulting vault-share tokens or position ID returned in the execute response."
+    ],
+    "intent": "Provide single-sided liquidity of 2 WBTC to the maxBTC/USDC Supervault",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_user_wallet_address",
+            "description": "Determine the wallet address from which WBTC will be supplied."
+        },
+        {
+            "step": 2,
+            "tool": "validate_token_balance",
+            "description": "Check that the user holds at least 2 WBTC in the wallet on Neutron."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_contract_execute",
+            "description": "Craft an ExecuteMsg to the maxBTC/USDC Supervault contract calling its \u201cdeposit_single_side\u201d (or equivalent) method with { asset: \"WBTC\", amount: \"2\" }."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the execute message and broadcast it to the network."
+        },
+        {
+            "step": 5,
+            "tool": "query_contract_receipt",
+            "description": "Query the Supervault contract for the resulting vault-share tokens or position ID returned in the execute response."
+        }
+    ],
+    "outcome_checks": [
+        "Verify the wallet\u2019s WBTC balance decreased by exactly 2 WBTC.",
+        "Confirm receipt of Supervault LP tokens or position shares representing the deposited WBTC.",
+        "Ensure the transaction events include \u201caction=deposit_single_side\u201d and list the correct amount."
+    ]
+}

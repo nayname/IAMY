@@ -1,0 +1,65 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "No existing helper was found that opens a WebSocket connection to ws://localhost:8546.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "No existing function was located that sends the eth_subscribe payload to the connected WebSocket.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "The supplied codebase does not include a function that stores an Ethereum subscription id.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "There is no implemented listener in the provided files for processing eth_subscription push notifications.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "undef//step: 1 Tool: open_websocket_connection Desciption: Connect to ws://localhost:8546.",
+        "undef//step: 2 Tool: eth_subscribe_pendingTxs Desciption: Send {\"id\":1,\"method\":\"eth_subscribe\",\"params\":[\"newPendingTransactions\"]} to start the subscription.",
+        "undef//step: 3 Tool: store_subscription_id Desciption: Record the returned subscription id.",
+        "undef//step: 4 Tool: listen_for_notifications Desciption: Receive push notifications containing the subscription id and the 0x-hash of each pending transaction."
+    ],
+    "backend": [],
+    "intent": "Subscribe to hashes of new pending transactions via WebSocket",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "open_websocket_connection",
+            "description": "Connect to ws://localhost:8546."
+        },
+        {
+            "step": 2,
+            "tool": "eth_subscribe_pendingTxs",
+            "description": "Send {\"id\":1,\"method\":\"eth_subscribe\",\"params\":[\"newPendingTransactions\"]} to start the subscription."
+        },
+        {
+            "step": 3,
+            "tool": "store_subscription_id",
+            "description": "Record the returned subscription id."
+        },
+        {
+            "step": 4,
+            "tool": "listen_for_notifications",
+            "description": "Receive push notifications containing the subscription id and the 0x-hash of each pending transaction."
+        }
+    ],
+    "outcome_checks": [
+        "Multiple WebSocket messages arrive with 0x-prefixed transaction hashes matching the stored subscription id."
+    ]
+}

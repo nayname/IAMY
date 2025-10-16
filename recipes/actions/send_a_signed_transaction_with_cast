@@ -1,0 +1,47 @@
+{
+    "label": "send",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Verify that the Foundry `cast` CLI is installed and reachable from the server.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport subprocess\n\napp = FastAPI()\n\n@app.get('/api/verify_cast')\nasync def verify_cast():\n    \"\"\"Endpoint that returns the installed version of `cast` or raises an error if it is not found.\"\"\"\n    try:\n        version = subprocess.check_output(['cast', '--version'], text=True).strip()\n        return {'installed': True, 'version': version}\n    except FileNotFoundError:\n        raise HTTPException(status_code=500, detail='Foundry `cast` CLI is not installed or not found in PATH.')\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=f'Error executing cast --version: {err}')",
+            "usage": "await fetch('/api/verify_cast').then(r => r.json());"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Collect or let the user input the RPC URL that will be used for subsequent JSON-RPC calls.",
+            "code": "export const getRpcUrl = () => {\n  // You can hard-code, pull from an env variable, or prompt the user.\n  const defaultRpc = 'https://rpc.evmos.dev'; // Example RPC; replace for your chain\n  const rpc = window.prompt('Enter a Cosmos-EVM RPC URL', defaultRpc);\n  if (!rpc) throw new Error('RPC URL is required.');\n  return rpc.trim();\n};",
+            "usage": "const rpcUrl = getRpcUrl();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Ensure a sender private key is present on the server as the `PRIVATE_KEY` environment variable (never exposed to the client).",
+            "code": "import os\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\n@app.get('/api/check_private_key')\nasync def check_private_key():\n    \"\"\"Verifies that the server has a PRIVATE_KEY env variable configured.\"\"\"\n    if not os.getenv('PRIVATE_KEY'):\n        raise HTTPException(status_code=500, detail='PRIVATE_KEY environment variable is missing.')\n    return {'loaded': True}",
+            "usage": "await fetch('/api/check_private_key').then(r => r.json());"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Build a JavaScript helper that packages all transaction fields into a JSON object to be sent to the backend.",
+            "code": "export const constructTxParams = ({ recipient, amount, gasPrice, gasLimit, data = '' }) => {\n  if (!recipient || !amount || !gasPrice || !gasLimit) {\n    throw new Error('Missing required transaction parameter(s).');\n  }\n  return {\n    recipient,\n    amount,       // Value expressed in wei (e.g., '1000000000000000000' for 1 ETH-denom token)\n    gas_price: gasPrice, // also in wei\n    gas_limit: gasLimit, // integer\n    data          // optional hex data string\n  };\n};",
+            "usage": "const txParams = constructTxParams({ recipient, amount, gasPrice, gasLimit, data });"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Use the Foundry `cast send` command to sign and broadcast the transaction with the server-side private key.",
+            "code": "import os\nimport subprocess\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\nclass TxParams(BaseModel):\n    recipient: str\n    amount: str\n    rpc_url: str\n    gas_price: str\n    gas_limit: int\n    data: str | None = None\n\n@app.post('/api/send_tx')\nasync def send_tx(params: TxParams):\n    \"\"\"Signs & broadcasts a transaction using Foundry's `cast send`.\"\"\"\n    private_key = os.getenv('PRIVATE_KEY')\n    if not private_key:\n        raise HTTPException(status_code=500, detail='PRIVATE_KEY environment variable is not set on the server.')\n\n    # Build the command\n    cmd = [\n        'cast', 'send', params.recipient, params.amount,\n        '--rpc-url', params.rpc_url,\n        '--private-key', private_key,\n        '--gas-price', str(params.gas_price),\n        '--gas-limit', str(params.gas_limit)\n    ]\n    if params.data:\n        cmd.extend(['--data', params.data])\n\n    try:\n        # `cast send` prints the transaction hash on success\n        tx_hash = subprocess.check_output(cmd, text=True).strip().split()[-1]\n        return {'tx_hash': tx_hash}\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=f'Error sending transaction: {err.output}')",
+            "usage": "await fetch('/api/send_tx', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...txParams, rpc_url: rpcUrl }) }).then(r => r.json());"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Poll the chain until the broadcasted transaction is included in a block, then return the receipt.",
+            "code": "import asyncio\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom web3 import Web3\n\napp = FastAPI()\n\nclass WaitParams(BaseModel):\n    tx_hash: str\n    rpc_url: str\n    timeout: int | None = 120  # seconds\n    poll_interval: int | None = 5\n\n@app.post('/api/wait_for_confirmation')\nasync def wait_for_confirmation(params: WaitParams):\n    \"\"\"Waits until the transaction is mined or the timeout is hit.\"\"\"\n    w3 = Web3(Web3.HTTPProvider(params.rpc_url))\n    if not w3.isConnected():\n        raise HTTPException(status_code=500, detail='Unable to connect to the provided RPC URL.')\n\n    elapsed = 0\n    while elapsed < params.timeout:\n        try:\n            receipt = w3.eth.get_transaction_receipt(params.tx_hash)\n            if receipt and receipt.blockNumber:\n                return {\n                    'confirmed': True,\n                    'blockNumber': receipt.blockNumber,\n                    'status': receipt.status,\n                    'tx_hash': params.tx_hash\n                }\n        except Exception:\n            # Transaction not yet mined; ignore and continue polling\n            pass\n        await asyncio.sleep(params.poll_interval)\n        elapsed += params.poll_interval\n\n    raise HTTPException(status_code=504, detail='Timed out waiting for transaction confirmation.')",
+            "usage": "await fetch('/api/wait_for_confirmation', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tx_hash: sent.tx_hash, rpc_url: rpcUrl }) }).then(r => r.json());"
+        }
+    ]
+}

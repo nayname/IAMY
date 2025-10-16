@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Initialises and verifies a connection to the configured Cosmos-EVM JSON-RPC endpoint, returning a ready-to-use Web3 object.",
+            "function": "get_web3()",
+            "usage": "w3 = get_web3()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Executes an arbitrary JSON-RPC request against the selected endpoint, ideal for invoking debug_traceBlockByNumber with custom parameters.",
+            "function": "json_rpc_call(method='txpool_status', params=None, endpoint='http://localhost:8545')",
+            "usage": "trace = json_rpc_call('debug_traceBlockByNumber', ['0xe', {}])"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "w3 = get_web3()#step: 1 Tool: select_rpc_endpoint Desciption: Point to the Cosmos-EVM JSON-RPC endpoint.",
+        "trace = json_rpc_call('debug_traceBlockByNumber', ['0xe', {}])#step: 2 Tool: json_rpc_call Desciption: Invoke debug_traceBlockByNumber with the hex string \"0xe\" and an empty tracer object:\n{\n  \"method\": \"debug_traceBlockByNumber\",\n  \"params\": [\"0xe\", {}],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+    ],
+    "intent": "Trace all transactions in block number 0xE using debug_traceBlockByNumber",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "select_rpc_endpoint",
+            "description": "Point to the Cosmos-EVM JSON-RPC endpoint."
+        },
+        {
+            "step": 2,
+            "tool": "json_rpc_call",
+            "description": "Invoke debug_traceBlockByNumber with the hex string \"0xe\" and an empty tracer object:\n{\n  \"method\": \"debug_traceBlockByNumber\",\n  \"params\": [\"0xe\", {}],\n  \"id\": 1,\n  \"jsonrpc\": \"2.0\"\n}"
+        }
+    ],
+    "outcome_checks": [
+        "According to current Cosmos-EVM docs the implementation is stubbed; the response is expected to be an empty array [].",
+        "If/when full tracing is enabled, verify the array contains one trace object per transaction in block 14 (decimal)."
+    ]
+}

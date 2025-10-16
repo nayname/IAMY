@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "No existing function enables the Remix GitHub plugin in the provided codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "No existing function performs GitHub OAuth authentication for Remix in the provided codebase.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "No existing function commits and pushes a Remix workspace to GitHub in the provided codebase.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "undef//step: 1 Tool: remix_activate_github_plugin Desciption: Enable the Remix \u2018GitHub\u2019 plugin from the Plugin Manager to expose version-control features inside the IDE.",
+        "undef//step: 2 Tool: github_authenticate Desciption: Authenticate the user via GitHub OAuth to grant Remix permission to create or push to repositories.",
+        "undef//step: 3 Tool: remix_github_commit_push Desciption: Select the current Remix workspace, enter a commit message, choose or create the target repository, and push the initial commit."
+    ],
+    "backend": [],
+    "intent": "Save a Remix IDE workspace to a GitHub repository",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "remix_activate_github_plugin",
+            "description": "Enable the Remix \u2018GitHub\u2019 plugin from the Plugin Manager to expose version-control features inside the IDE."
+        },
+        {
+            "step": 2,
+            "tool": "github_authenticate",
+            "description": "Authenticate the user via GitHub OAuth to grant Remix permission to create or push to repositories."
+        },
+        {
+            "step": 3,
+            "tool": "remix_github_commit_push",
+            "description": "Select the current Remix workspace, enter a commit message, choose or create the target repository, and push the initial commit."
+        }
+    ],
+    "outcome_checks": [
+        "The new commit appears in the chosen GitHub repository.",
+        "Opening the repository in a browser shows the Solidity source files from the Remix workspace."
+    ]
+}

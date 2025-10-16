@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "construct_and_sign(req) creates and signs a transaction, returning the 0x-prefixed, RLP-encoded raw-transaction hex string.",
+            "function": "construct_and_sign(req)",
+            "usage": "raw_tx = asyncio.run(construct_and_sign(user_payload))[\"signed_tx_hex\"]"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "connect_rpc_endpoint(rpc_endpoint) verifies that a chosen Cosmos-EVM JSON-RPC node is reachable and returns the usable URL.",
+            "function": "connect_rpc_endpoint(rpc_endpoint=\"https://rpc-kralum.neutron.org\")",
+            "usage": "rpc_url = connect_rpc_endpoint(\"https://rpc-kralum.neutron.org\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "json_rpc_call(method, params, endpoint) issues a JSON-RPC request, here invoking eth_sendRawTransaction to broadcast the signed bytes.",
+            "function": "json_rpc_call(method=\"eth_sendRawTransaction\", params=None, endpoint=\"http://localhost:8545\")",
+            "usage": "tx_hash = json_rpc_call(\"eth_sendRawTransaction\", [raw_tx], rpc_url)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "No implemented helper specifically stores the returned transaction hash for later use.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "raw_tx = asyncio.run(construct_and_sign(user_payload))[\"signed_tx_hex\"]#step: 1 Tool: get_signed_raw_tx Desciption: Obtain the full 0x-prefixed, RLP-encoded transaction string from the user or upstream wallet.",
+        "rpc_url = connect_rpc_endpoint(\"https://rpc-kralum.neutron.org\")#step: 2 Tool: select_rpc_endpoint Desciption: Choose a Cosmos EVM JSON-RPC endpoint that accepts writes.",
+        "tx_hash = json_rpc_call(\"eth_sendRawTransaction\", [raw_tx], rpc_url)#step: 3 Tool: eth_sendRawTransaction Desciption: POST {\"method\":\"eth_sendRawTransaction\",\"params\":[<rawTx>],\"id\":1,\"jsonrpc\":\"2.0\"} to broadcast the transaction.",
+        "undef#step: 4 Tool: capture_tx_hash Desciption: Store the 32-byte transaction hash returned by the node for later tracking."
+    ],
+    "intent": "Broadcast a raw, RLP-encoded signed transaction to the network",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_signed_raw_tx",
+            "description": "Obtain the full 0x-prefixed, RLP-encoded transaction string from the user or upstream wallet."
+        },
+        {
+            "step": 2,
+            "tool": "select_rpc_endpoint",
+            "description": "Choose a Cosmos EVM JSON-RPC endpoint that accepts writes."
+        },
+        {
+            "step": 3,
+            "tool": "eth_sendRawTransaction",
+            "description": "POST {\"method\":\"eth_sendRawTransaction\",\"params\":[<rawTx>],\"id\":1,\"jsonrpc\":\"2.0\"} to broadcast the transaction."
+        },
+        {
+            "step": 4,
+            "tool": "capture_tx_hash",
+            "description": "Store the 32-byte transaction hash returned by the node for later tracking."
+        }
+    ],
+    "outcome_checks": [
+        "A 0x-prefixed 66-character hash is returned immediately by eth_sendRawTransaction.",
+        "Subsequent eth_getTransactionReceipt calls eventually return a non-null receipt indicating block inclusion."
+    ]
+}

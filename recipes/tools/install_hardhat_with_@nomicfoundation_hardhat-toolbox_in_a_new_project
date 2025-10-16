@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "main() checks the local machine for Node.js \u226516 and npm, exiting with an error if the versions are insufficient.",
+            "function": "main()",
+            "usage": "main()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "init(projectName) creates (or re-uses) the chosen folder and runs \u201cnpm init -y\u201d to generate a package.json file.",
+            "function": "init(projectName='hardhat-project')",
+            "usage": "init('my-hardhat-project')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "install() installs Hardhat along with the @nomicfoundation/hardhat-toolbox as development dependencies.",
+            "function": "install()",
+            "usage": "install()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "initHardhat() runs \u201cnpx hardhat\u201d, launching the interactive scaffold that sets up a basic Hardhat project.",
+            "function": "initHardhat()",
+            "usage": "initHardhat()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "main()#step: 1 Tool: node_environment_check Desciption: Ensure Node.js \u226516 and npm (or pnpm/yarn) are installed: `node -v && npm -v`.",
+        "init('my-hardhat-project')#step: 2 Tool: npm_init Desciption: Create a project folder and run `npm init -y` (or the preferred package-manager equivalent) to generate package.json.",
+        "install()#step: 3 Tool: npm_install_hardhat_toolbox Desciption: Execute `npm install --save-dev hardhat @nomicfoundation/hardhat-toolbox` to install Hardhat core and the toolbox plugin set.",
+        "initHardhat()#step: 4 Tool: hardhat_init Desciption: Run `npx hardhat` and follow the prompt to create a basic project, selecting TypeScript or JavaScript as preferred."
+    ],
+    "intent": "Install Hardhat with @nomicfoundation/hardhat-toolbox in a new project",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "node_environment_check",
+            "description": "Ensure Node.js \u226516 and npm (or pnpm/yarn) are installed: `node -v && npm -v`."
+        },
+        {
+            "step": 2,
+            "tool": "npm_init",
+            "description": "Create a project folder and run `npm init -y` (or the preferred package-manager equivalent) to generate package.json."
+        },
+        {
+            "step": 3,
+            "tool": "npm_install_hardhat_toolbox",
+            "description": "Execute `npm install --save-dev hardhat @nomicfoundation/hardhat-toolbox` to install Hardhat core and the toolbox plugin set."
+        },
+        {
+            "step": 4,
+            "tool": "hardhat_init",
+            "description": "Run `npx hardhat` and follow the prompt to create a basic project, selecting TypeScript or JavaScript as preferred."
+        }
+    ],
+    "outcome_checks": [
+        "`node_modules` contains hardhat and hardhat-toolbox packages.",
+        "hardhat.config.(ts|js) exists and reports no errors when running `npx hardhat compile`."
+    ]
+}

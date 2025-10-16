@@ -1,0 +1,47 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 resolves the simd node\u2019s home directory, first checking the SIMD_HOME environment variable and falling back to ~/.simapp.",
+            "code": "import os\n\n\ndef get_chain_home() -> str:\n    \"\"\"\n    Resolve the simd chain\u2019s home directory.\n\n    Order of precedence:\n      1. Environment variable `SIMD_HOME`.\n      2. Default path `~/.simapp`.\n    \"\"\"\n    chain_home = os.getenv(\"SIMD_HOME\", os.path.expanduser(\"~/.simapp\"))\n    if not os.path.isdir(chain_home):\n        raise FileNotFoundError(f\"Chain home directory not found: {chain_home}\")\n    return chain_home\n",
+            "usage": "chain_home = get_chain_home()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 locates the genesis.json file inside the chain home\u2019s config directory.",
+            "code": "import os\n\n\ndef locate_genesis_file(chain_home: str) -> str:\n    \"\"\"Return the absolute path to config/genesis.json and verify its existence.\"\"\"\n    genesis_path = os.path.join(chain_home, \"config\", \"genesis.json\")\n    if not os.path.isfile(genesis_path):\n        raise FileNotFoundError(f\"genesis.json not found at {genesis_path}\")\n    return genesis_path\n",
+            "usage": "genesis_path = locate_genesis_file(chain_home)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 creates a safety backup of the current genesis.json.",
+            "code": "import shutil\nimport os\n\n\ndef backup_genesis(genesis_path: str) -> str:\n    \"\"\"Copy genesis.json to genesis.json.bak in the same directory.\"\"\"\n    backup_path = genesis_path + \".bak\"\n    shutil.copy2(genesis_path, backup_path)\n    if not os.path.isfile(backup_path):\n        raise IOError(\"Failed to create backup file\")\n    return backup_path\n",
+            "usage": "backup_path = backup_genesis(genesis_path)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 loads the genesis JSON and updates the voting_period to 600s, accounting for both old and new SDK layouts.",
+            "code": "import json\nfrom typing import Dict\n\n\ndef update_voting_period(genesis_path: str, new_period: str = \"600s\") -> Dict:\n    \"\"\"\n    Modify `voting_period` in-place within the genesis JSON structure.\n    Handles both:\n      \u2022 app_state.gov.params.voting_period  (newer SDK)\n      \u2022 app_state.gov.voting_params.voting_period  (older SDK)\n    Returns the updated Python dict (not yet persisted).\n    \"\"\"\n    with open(genesis_path, \"r\", encoding=\"utf-8\") as fp:\n        genesis = json.load(fp)\n\n    app_state = genesis.get(\"app_state\", {})\n    gov_state = app_state.get(\"gov\", {})\n    updated = False\n\n    # Newer SDK layout\n    params = gov_state.get(\"params\", {})\n    if \"voting_period\" in params:\n        params[\"voting_period\"] = new_period\n        updated = True\n\n    # Older SDK layout\n    voting_params = gov_state.get(\"voting_params\", {})\n    if \"voting_period\" in voting_params:\n        voting_params[\"voting_period\"] = new_period\n        updated = True\n\n    if not updated:\n        raise KeyError(\"voting_period field not found in genesis.json\")\n\n    return genesis\n",
+            "usage": "genesis_obj = update_voting_period(genesis_path, \"600s\")"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 persists the modified genesis data atomically to disk to avoid corruption.",
+            "code": "import json\nimport os\nimport tempfile\n\n\ndef save_genesis(genesis_obj: dict, genesis_path: str) -> None:\n    \"\"\"\n    Atomically write out the updated genesis.json by first writing to a temp file\n    and then replacing the original.\n    \"\"\"\n    dir_name = os.path.dirname(genesis_path)\n    with tempfile.NamedTemporaryFile(mode=\"w\", dir=dir_name, delete=False, encoding=\"utf-8\") as tmp:\n        json.dump(genesis_obj, tmp, indent=2, ensure_ascii=False)\n        tmp_name = tmp.name\n    os.replace(tmp_name, genesis_path)\n",
+            "usage": "save_genesis(genesis_obj, genesis_path)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Step 6 validates the updated genesis file by running `simd validate-genesis`.",
+            "code": "import subprocess\n\n\ndef validate_genesis(chain_home: str) -> str:\n    \"\"\"Execute `simd validate-genesis` and return its stdout on success.\"\"\"\n    try:\n        completed = subprocess.run(\n            [\"simd\", \"validate-genesis\", \"--home\", chain_home],\n            check=True,\n            stdout=subprocess.PIPE,\n            stderr=subprocess.PIPE,\n            text=True\n        )\n        return completed.stdout\n    except subprocess.CalledProcessError as err:\n        # Surface compiler or JSON errors cleanly\n        error_output = err.stderr or err.stdout\n        raise RuntimeError(f\"validate-genesis failed: {error_output.strip()}\") from err\n",
+            "usage": "result = validate_genesis(chain_home)\nprint(result)"
+        }
+    ]
+}

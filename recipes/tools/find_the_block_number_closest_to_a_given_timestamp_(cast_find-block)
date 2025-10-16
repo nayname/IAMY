@@ -1,0 +1,41 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Opens a browser prompt and returns the user-typed string, which can be reused here to collect either the target timestamp or the RPC URL.",
+            "function": "getUserEvmAddressInput()",
+            "usage": "const timestampOrRpc = getUserEvmAddressInput();"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No fully-implemented backend helper was found that wraps the `cast find-block` command.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "const timestampOrRpc = getUserEvmAddressInput();//step: 1 Tool: prompt_user Desciption: Ask the user for the target UNIX timestamp or RFC-3339 date/time string and an RPC endpoint URL for the desired (Cosmos-EVM) chain."
+    ],
+    "backend": [
+        "undef#step: 2 Tool: cast_cli Desciption: Run `cast find-block --timestamp <ts> --rpc-url <url>` to locate the nearest block."
+    ],
+    "intent": "Find the block number closest to a given timestamp (cast find-block)",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "prompt_user",
+            "description": "Ask the user for the target UNIX timestamp or RFC-3339 date/time string and an RPC endpoint URL for the desired (Cosmos-EVM) chain."
+        },
+        {
+            "step": 2,
+            "tool": "cast_cli",
+            "description": "Run `cast find-block --timestamp <ts> --rpc-url <url>` to locate the nearest block."
+        }
+    ],
+    "outcome_checks": [
+        "Command returns a valid integer block height.",
+        "Querying the block via the same RPC endpoint shows a timestamp within \u00b115 seconds of the requested value."
+    ]
+}

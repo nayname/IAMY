@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 creates a Go file with blank imports so that each module\u2019s `simulation` package is added to `go.mod`, making them available when the simulator compiles.",
+            "code": "// tools/sim.go\n//go:build tools\n// +build tools\n\n// This file guarantees simulation packages are kept in the module graph even\n// though they are not referenced in production code.\npackage tools\n\nimport (\n    _ \"github.com/cosmos/cosmos-sdk/x/auth/simulation\"\n    _ \"github.com/cosmos/cosmos-sdk/x/bank/simulation\"\n    // _ \"github.com/cosmos/cosmos-sdk/x/staking/simulation\" // add more as needed\n)\n",
+            "usage": "Add this file to your repository (e.g., `tools/sim.go`) and run `go mod tidy` so the simulation packages appear in `go.sum`."
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 builds a `SimulationManager` that wires every module\u2019s simulation logic together.",
+            "code": "// app/simulation.go\npackage app\n\nimport (\n    \"github.com/cosmos/cosmos-sdk/types/module\"\n    authmodule \"github.com/cosmos/cosmos-sdk/x/auth\"\n    bankmodule \"github.com/cosmos/cosmos-sdk/x/bank\"\n    // import additional modules here\n)\n\n// newSimulationManager assembles the SimulationManager once and caches it.\nfunc (app *App) newSimulationManager() *module.SimulationManager {\n    if app.sm != nil {\n        return app.sm\n    }\n\n    simManager := module.NewSimulationManager(\n        authmodule.NewAppModule(app.AppCodec(), app.AccountKeeper, nil),\n        bankmodule.NewAppModule(app.AppCodec(), app.BankKeeper, app.AccountKeeper),\n        // add further AppModule instances here\n    )\n\n    app.sm = simManager\n    return simManager\n}\n",
+            "usage": "Place this file in `app/simulation.go`. Call `app.newSimulationManager()` from your main app constructor after keepers are initialised."
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 registers KV-store decoders so simulation logs are human-readable.",
+            "code": "// app/simulation.go (continued)\n\nfunc (app *App) registerStoreDecoders() {\n    if app.sm == nil {\n        panic(\"simulation manager has not been initialised\")\n    }\n\n    // This enables pretty-printing of store keys during simulation runs.\n    app.sm.RegisterStoreDecoders()\n}\n",
+            "usage": "Invoke `app.registerStoreDecoders()` immediately after `newSimulationManager()` so the decoders are ready before tests run."
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 links the freshly built `SimulationManager` to the application instance.",
+            "code": "// app/app.go (excerpt)\n\nfunc NewApp(/* existing params */) *App {\n    // ... keeper and module wiring ...\n\n    // Build & attach the simulation manager.\n    simMgr := app.newSimulationManager()\n    app.registerStoreDecoders()\n    app.SetSimulationManager(simMgr)\n\n    return app\n}\n",
+            "usage": "Ensure these lines appear in your `NewApp` function after all modules are configured but before the app is returned."
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 runs the full simulation test suite from the command line.",
+            "code": "#!/usr/bin/env bash\n# Run application simulations with verbose output\n\ngo test ./... -run TestFullAppSimulation -v\n",
+            "usage": "From the project root, execute `bash ./run_simulations.sh` (or copy-paste the command) to launch the default simulation tests."
+        }
+    ]
+}

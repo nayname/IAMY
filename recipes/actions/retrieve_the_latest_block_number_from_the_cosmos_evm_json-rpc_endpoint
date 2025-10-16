@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 provides a tiny helper that returns the JSON-RPC URL of a reachable Cosmos-SDK EVM (Ethermint/evmos, etc.) node. In a real project you would read this from environment variables or user input; here we hard-code a sensible default.",
+            "code": "/* selectRpcEndpoint.js\n * Returns a JSON-RPC URL that any browser can reach.\n * Replace the placeholder with an actual public endpoint or an\n * environment-specific value if needed.\n */\nexport const selectRpcEndpoint = () => {\n  // Fallback public RPC; change to your preferred provider.\n  const defaultRpc = 'https://evmos-jsonrpc.publicnode.com';\n\n  // Basic runtime validation.\n  if (!defaultRpc.startsWith('http')) {\n    throw new Error('Invalid RPC endpoint. Please supply a valid HTTP/WS URL.');\n  }\n\n  return defaultRpc;\n};",
+            "usage": "const rpcUrl = selectRpcEndpoint();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 sends the JSON-RPC request {\"method\":\"eth_blockNumber\"} to the selected endpoint and returns the raw hex string (e.g., \"0xabcdef\").",
+            "code": "/* fetchLatestBlockNumber.js\n * Issues an `eth_blockNumber` JSON-RPC call and returns the result as a hex string.\n */\nexport const fetchLatestBlockNumber = async (rpcUrl) => {\n  const payload = {\n    jsonrpc: '2.0',\n    id: 1,\n    method: 'eth_blockNumber',\n    params: []\n  };\n\n  try {\n    const response = await fetch(rpcUrl, {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json'\n      },\n      body: JSON.stringify(payload)\n    });\n\n    // Network-level error handling.\n    if (!response.ok) {\n      throw new Error(`RPC request failed with status ${response.status}`);\n    }\n\n    const data = await response.json();\n\n    // JSON-RPC-level error handling.\n    if (data.error) {\n      throw new Error(`RPC error: ${data.error.message || JSON.stringify(data.error)}`);\n    }\n\n    return data.result; // e.g., \"0x1a2b3c\"\n  } catch (err) {\n    console.error('[fetchLatestBlockNumber] \u2192', err);\n    throw err;\n  }\n};",
+            "usage": "const hexBlock = await fetchLatestBlockNumber(rpcUrl);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 converts the 0x-prefixed hexadecimal block number into a human-readable decimal integer.",
+            "code": "/* hexToDecimal.js\n * Safely converts a 0x-prefixed hex string to a JavaScript number.\n * Note: For extremely large block heights, use BigInt instead of Number.\n */\nexport const hexToDecimal = (hexString) => {\n  if (typeof hexString !== 'string' || !/^0x[0-9a-fA-F]+$/.test(hexString)) {\n    throw new Error('Invalid hex string supplied to hexToDecimal');\n  }\n\n  // Use BigInt for correctness on 64-bit+ values.\n  return Number(BigInt(hexString));\n};",
+            "usage": "const latestBlockHeight = hexToDecimal(hexBlock);\nconsole.log(`Current EVM block height: ${latestBlockHeight}`);"
+        }
+    ]
+}

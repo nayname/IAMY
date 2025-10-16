@@ -1,0 +1,195 @@
+[
+    {
+        "intent": "Deploy a smart contract to a Cosmos EVM testnet with Hardhat",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "hardhat_init_project",
+                "description": "Run `npm init -y && npm install --save-dev hardhat` then execute `npx hardhat` to scaffold a new Hardhat project."
+            },
+            {
+                "step": 2,
+                "tool": "install_solidity_dependencies",
+                "description": "Add the Solidity compiler and Cosmos-EVM plugins: `npm install --save-dev @nomicfoundation/hardhat-toolbox @evmos/hardhat-evmos` (or the specific plugin for your chain)."
+            },
+            {
+                "step": 3,
+                "tool": "configure_hardhat_network",
+                "description": "Edit `hardhat.config.js` to add the testnet RPC URL, chainId, gas price, and the deployer\u2019s private key in the `networks` section."
+            },
+            {
+                "step": 4,
+                "tool": "hardhat_compile_contracts",
+                "description": "Run `npx hardhat compile` to compile all Solidity contracts and generate type artifacts."
+            },
+            {
+                "step": 5,
+                "tool": "create_deployment_script",
+                "description": "Create a deployment script inside `scripts/` that calls `await ContractFactory.deploy()` for the desired contract."
+            },
+            {
+                "step": 6,
+                "tool": "hardhat_run_deployment",
+                "description": "Execute `npx hardhat run scripts/deploy.js --network <cosmosTestnet>` to broadcast the deployment transaction."
+            },
+            {
+                "step": 7,
+                "tool": "hardhat_verify_contract",
+                "description": "Optional: Verify the contract on an explorer (if supported) with `npx hardhat verify --network <cosmosTestnet> <contractAddress> <constructorArgs>`."
+            }
+        ],
+        "outcome_checks": [
+            "Deployment script returns a non-zero contract address.",
+            "Transaction hash appears on the Cosmos EVM testnet explorer and shows status \u2018success\u2019.",
+            "Calling a public getter on the new contract returns expected data."
+        ]
+    },
+    {
+        "intent": "Install the Foundry toolchain using foundryup",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "check_system_prerequisites",
+                "description": "Verify that `curl`, `bash`, and a recent version of `git` are installed on the system."
+            },
+            {
+                "step": 2,
+                "tool": "download_foundryup",
+                "description": "Execute `curl -L https://foundry.paradigm.xyz | bash` to download and install the `foundryup` installer script."
+            },
+            {
+                "step": 3,
+                "tool": "source_environment",
+                "description": "Reload your shell profile (`source ~/.bashrc` or `source ~/.zshrc`) so that the `foundryup` binary is in your PATH."
+            },
+            {
+                "step": 4,
+                "tool": "run_foundryup_install",
+                "description": "Run `foundryup` to download the latest stable versions of `forge`, `cast`, and other Foundry binaries."
+            },
+            {
+                "step": 5,
+                "tool": "verify_foundry_installation",
+                "description": "Check tool availability by running `forge --version` and `cast --version`."
+            }
+        ],
+        "outcome_checks": [
+            "`forge --version` and `cast --version` return valid semantic versions.",
+            "The `~/.foundry/bin` (or equivalent) directory contains the Forge and Cast binaries."
+        ]
+    },
+    {
+        "intent": "Use ethers.js to send a transaction on Cosmos EVM",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "install_ethers",
+                "description": "Run `npm install ethers` (or `yarn add ethers`) inside your project."
+            },
+            {
+                "step": 2,
+                "tool": "create_json_rpc_provider",
+                "description": "Instantiate a provider with `new ethers.JsonRpcProvider('<RPC_URL>', { chainId: <id>, name: 'CosmosEVM' })`."
+            },
+            {
+                "step": 3,
+                "tool": "initialize_wallet",
+                "description": "Create a wallet object with `new ethers.Wallet('<privateKey>', provider)`."
+            },
+            {
+                "step": 4,
+                "tool": "build_transaction",
+                "description": "Form a raw transaction object specifying `to`, `value`, `gasLimit`, and `gasPrice` (or `maxFeePerGas` + `maxPriorityFeePerGas`)."
+            },
+            {
+                "step": 5,
+                "tool": "estimate_gas_with_ethers",
+                "description": "Call `wallet.estimateGas(tx)` to get an accurate gas estimate from the Cosmos EVM node."
+            },
+            {
+                "step": 6,
+                "tool": "sign_and_send_transaction",
+                "description": "Send the transaction with `wallet.sendTransaction(tx)` and store the returned transaction response."
+            },
+            {
+                "step": 7,
+                "tool": "await_transaction_receipt",
+                "description": "Wait for confirmation using `provider.waitForTransaction(tx.hash, confirmations)` and capture the receipt."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction receipt has status `1` (success).",
+            "Explorer shows the balance change for both sender and recipient addresses.",
+            "Nonce for the sender wallet increments by one."
+        ]
+    },
+    {
+        "intent": "Estimate gas for a contract call with cast estimate",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "verify_foundry_installation",
+                "description": "Ensure Foundry\u2019s `cast` CLI is installed by running `cast --help`."
+            },
+            {
+                "step": 2,
+                "tool": "gather_call_parameters",
+                "description": "Collect the RPC URL, contract address, function signature, and any ABI-encoded arguments required for the call."
+            },
+            {
+                "step": 3,
+                "tool": "run_cast_estimate",
+                "description": "Execute `cast estimate --rpc-url <RPC_URL> <contractAddress> \"<functionSignature>\" <arg1> <arg2>` to get the gas estimate."
+            },
+            {
+                "step": 4,
+                "tool": "interpret_output",
+                "description": "Read the returned integer value (gas units) and translate it into gas cost using current gas price."
+            }
+        ],
+        "outcome_checks": [
+            "`cast estimate` returns a positive integer.",
+            "A subsequent call using that gas limit succeeds without running out of gas."
+        ]
+    },
+    {
+        "intent": "Connect Remix IDE to Cosmos EVM via Injected Provider",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "install_metamask_extension",
+                "description": "Ensure the MetaMask browser extension is installed and unlocked."
+            },
+            {
+                "step": 2,
+                "tool": "add_cosmos_evm_network",
+                "description": "In MetaMask, add the Cosmos EVM network with correct RPC URL, chainId, symbol, and explorer URL."
+            },
+            {
+                "step": 3,
+                "tool": "open_remix_ide",
+                "description": "Navigate to https://remix.ethereum.org and allow MetaMask to connect when prompted."
+            },
+            {
+                "step": 4,
+                "tool": "select_injected_provider",
+                "description": "In Remix\u2019s Deploy & Run module, choose \u2018Injected Provider - MetaMask\u2019, which should display the Cosmos EVM chainId."
+            },
+            {
+                "step": 5,
+                "tool": "compile_contract_in_remix",
+                "description": "Use the Solidity compiler tab to compile the desired contract with the target Solidity version."
+            },
+            {
+                "step": 6,
+                "tool": "deploy_contract_via_remix",
+                "description": "Click \u2018Deploy\u2019 in the Deploy & Run module; MetaMask will pop up to confirm the transaction which is sent to the Cosmos EVM network."
+            }
+        ],
+        "outcome_checks": [
+            "MetaMask shows the correct network (chainId matches Cosmos EVM).",
+            "Deployment transaction appears in the Cosmos EVM explorer with status \u2018success\u2019.",
+            "Remix\u2019s console logs the new contract address."
+        ]
+    }
+]

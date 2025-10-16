@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Adds a new inbound firewall rule via UFW (the function is hard-coded for SSH but is the closest fully-implemented match for allowing a port).",
+            "function": "allow_ssh_via_ufw()",
+            "usage": "result = allow_ssh_via_ufw()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Reloads UFW so that the recently-added rule is applied immediately.",
+            "function": "reload_ufw()",
+            "usage": "result = reload_ufw()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "result = allow_ssh_via_ufw()#step: 1 Tool: ufw_command Desciption: Run `sudo ufw allow 26656/tcp comment 'Cosmos P2P'`.",
+        "result = reload_ufw()#step: 2 Tool: ufw_reload Desciption: Execute `sudo ufw reload` to apply the new rule."
+    ],
+    "intent": "Allow p2p port 26656 through ufw",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "ufw_command",
+            "description": "Run `sudo ufw allow 26656/tcp comment 'Cosmos P2P'`."
+        },
+        {
+            "step": 2,
+            "tool": "ufw_reload",
+            "description": "Execute `sudo ufw reload` to apply the new rule."
+        }
+    ],
+    "outcome_checks": [
+        "`sudo ufw status numbered` lists a rule allowing TCP port 26656.",
+        "External peers can establish P2P connections (check increasing peer count in node logs)."
+    ]
+}

@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 creates a Python utility that guarantees the Foundry configuration file (`~/.foundry/foundry.toml`) exists, creating the directory and file when missing.",
+            "code": "from pathlib import Path\n\n\ndef open_or_create_foundry_config() -> Path:\n    \"\"\"Ensure ~/.foundry/foundry.toml exists and return its Path object.\"\"\"\n    home_dir = Path.home()\n    foundry_dir = home_dir / \".foundry\"\n    foundry_dir.mkdir(parents=True, exist_ok=True)  # Create ~/.foundry if it doesn't exist\n\n    config_path = foundry_dir / \"foundry.toml\"\n    if not config_path.exists():\n        config_path.touch()  # Create an empty file\n        print(f\"Created new Foundry config at {config_path}\")\n    else:\n        print(f\"Found Foundry config at {config_path}\")\n\n    return config_path",
+            "usage": "config_path = open_or_create_foundry_config()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 inserts or updates the `rpc_endpoint` key in `foundry.toml` with the supplied URL.",
+            "code": "from pathlib import Path\n\n\ndef edit_toml_key_value(key: str, value: str, config_path: Path) -> bool:\n    \"\"\"Insert or update a \"key = \\\"value\\\"\" line in a TOML file.\n\n    Args:\n        key:    The TOML key to add or update, e.g. \"rpc_endpoint\".\n        value:  The value to associate with the key, e.g. \"https://my.rpc.node:8545\".\n        config_path: Path to the target foundry.toml file.\n\n    Returns:\n        True when the file was modified successfully.\n    \"\"\"\n    key_line = f\"{key} = \\\"{value}\\\"\\n\"\n\n    # Read current contents (if any)\n    try:\n        existing_lines = config_path.read_text().splitlines(keepends=True)\n    except FileNotFoundError:\n        existing_lines = []\n\n    updated = False\n    new_lines: list[str] = []\n    for line in existing_lines:\n        if line.strip().startswith(f\"{key} =\"):\n            new_lines.append(key_line)\n            updated = True\n        else:\n            new_lines.append(line)\n\n    if not updated:\n        # Key not present; append it.\n        new_lines.append(key_line)\n\n    # Persist changes.\n    config_path.write_text(\"\".join(new_lines))\n    print(f\"{'Updated' if updated else 'Added'} '{key}' in {config_path}\")\n    return True",
+            "usage": "edit_toml_key_value('rpc_endpoint', 'https://my.rpc.node:8545', config_path)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 is logically about saving and closing the file; Python\u2019s context managers already did that. This helper merely verifies the key-value pair exists on disk.",
+            "code": "from pathlib import Path\n\n\ndef save_and_close_file(config_path: Path, key: str, expected_value: str) -> bool:\n    \"\"\"Confirm that `key = \\\"expected_value\\\"` is present in the file.\"\"\"\n    target_line = f\"{key} = \\\"{expected_value}\\\"\"\n    if target_line in config_path.read_text():\n        print(\"Configuration written successfully.\")\n        return True\n    raise ValueError(\"Configuration write failed: expected line not found.\")",
+            "usage": "save_and_close_file(config_path, 'rpc_endpoint', 'https://my.rpc.node:8545')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 validates that Forge recognises the new default RPC endpoint by running `forge config --json` and inspecting its output.",
+            "code": "import json\nimport subprocess\n\n\ndef validate_configuration(key: str = 'rpc_endpoint', expected_value: str | None = None) -> bool:\n    \"\"\"Run `forge config --json` and confirm `key` exists (and equals `expected_value` if provided).\"\"\"\n    try:\n        result = subprocess.run([\n            'forge', 'config', '--json'\n        ], capture_output=True, text=True, check=True)\n    except FileNotFoundError as err:\n        raise RuntimeError(\"`forge` CLI not found. Is Foundry installed?\") from err\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"`forge config` failed: {err.stderr}\") from err\n\n    # Try JSON parsing first.\n    try:\n        cfg = json.loads(result.stdout)\n        current_value = cfg.get(key)\n    except json.JSONDecodeError:\n        # Fallback to plain-text parsing.\n        current_value = None\n        for ln in result.stdout.splitlines():\n            if ln.strip().startswith(key):\n                current_value = ln.split('=')[-1].strip().strip('\"')\n                break\n\n    if current_value is None:\n        raise ValueError(f\"`{key}` not found in Forge configuration output.\")\n\n    if expected_value and current_value != expected_value:\n        raise ValueError(\n            f\"`{key}` mismatch: expected '{expected_value}', got '{current_value}'.\")\n\n    print(f\"Forge is configured with {key} = {current_value}\")\n    return True",
+            "usage": "validate_configuration('rpc_endpoint', 'https://my.rpc.node:8545')"
+        }
+    ]
+}

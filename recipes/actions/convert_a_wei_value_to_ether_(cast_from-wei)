@@ -1,0 +1,19 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 provides a small helper that prompts the user for a Wei amount and validates the input before returning it to the caller.",
+            "code": "/* utils/weiPrompt.js */\nexport const promptWeiAmount = () => {\n  return new Promise((resolve, reject) => {\n    try {\n      // Ask the user for a Wei amount\n      const wei = window.prompt(\n        \"Enter a Wei amount (e.g., 420000000000000000):\"\n      );\n\n      // Basic validations ---------------------------------------------------\n      if (wei === null) {\n        return reject(new Error(\"Prompt was cancelled by the user.\"));\n      }\n      const trimmed = wei.trim();\n      if (!/^\\d+$/.test(trimmed)) {\n        return reject(\n          new Error(\"Wei amount must be a non-negative integer in string form.\")\n        );\n      }\n\n      // Return the clean, validated value\n      resolve(trimmed);\n    } catch (err) {\n      reject(err);\n    }\n  });\n};",
+            "usage": "// Example usage in a React/Vue/Svelte component or plain JS\nconst weiAmount = await promptWeiAmount();\n// Pass `weiAmount` to the backend in the next step"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 exposes a simple FastAPI endpoint that receives a Wei amount and returns its Ether equivalent. It prefers the `cast from-wei` CLI for conversion but falls back to manual division if the CLI is unavailable.",
+            "code": "''' api/convert_wei.py\nFastAPI route to convert Wei \u2192 Ether.\n'''\nfrom fastapi import FastAPI, HTTPException\nfrom fastapi.responses import JSONResponse\nfrom pydantic import BaseModel\nfrom decimal import Decimal, getcontext\nimport subprocess\nimport shutil\n\napp = FastAPI()\n\ngetcontext().prec = 36  # high-precision arithmetic\n\nclass WeiRequest(BaseModel):\n    wei_amount: str  # keep as str to avoid Python int size limits\n\n@app.post(\"/api/convert_wei\")\nasync def convert_wei(req: WeiRequest):\n    wei = req.wei_amount.strip()\n\n    # Validate ---------------------------------------------------------------\n    if not wei.isdigit():\n        raise HTTPException(\n            status_code=400,\n            detail=\"Wei amount must be a positive integer represented as a string.\"\n        )\n\n    # Prefer the `cast` CLI if available ------------------------------------\n    cast_path = shutil.which(\"cast\")\n    if cast_path:\n        try:\n            result = subprocess.run(\n                [cast_path, \"from-wei\", wei],\n                capture_output=True,\n                text=True,\n                check=True\n            )\n            ether_value = result.stdout.strip()\n        except subprocess.CalledProcessError as err:\n            # Fall back in case cast exits with non-zero status\n            ether_value = str(Decimal(wei) / Decimal(10 ** 18))\n    else:\n        # Fallback: pure-Python conversion ---------------------------------\n        ether_value = str(Decimal(wei) / Decimal(10 ** 18))\n\n    return JSONResponse({\n        \"wei\": wei,\n        \"ether\": ether_value\n    })",
+            "usage": "// Front-end call example\nconst response = await fetch(\"/api/convert_wei\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\" },\n  body: JSON.stringify({ wei_amount })\n});\nif (!response.ok) throw new Error(await response.text());\nconst { wei, ether } = await response.json();\nconsole.log(`${wei} Wei = ${ether} Ether`);"
+        }
+    ]
+}

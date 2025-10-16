@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Prepares the shell environment for Cosmos-SDK simulation tests by unsetting $GOFLAGS and (optionally) exporting SIMAPP_RANDOM_SEED.",
+            "code": "import os\nfrom typing import Optional, Dict\n\n\ndef prepare_simulation_env(random_seed: Optional[int] = None) -> Dict[str, Optional[str]]:\n    \"\"\"\n    Sets environment variables required for Cosmos SDK simulation tests.\n\n    Args:\n        random_seed (Optional[int]): Fixed seed to reproduce a run. If None, any\n            previously-set SIMAPP_RANDOM_SEED is removed so the test harness can\n            choose a random seed.\n\n    Returns:\n        Dict[str, Optional[str]]: Snapshot of key environment variables after\n            mutation so callers can log them.\n    \"\"\"\n    try:\n        # Ensure $GOFLAGS is completely unset \u2013 it can change go-test behaviour.\n        os.environ.pop(\"GOFLAGS\", None)\n\n        if random_seed is not None:\n            os.environ[\"SIMAPP_RANDOM_SEED\"] = str(random_seed)\n        else:\n            os.environ.pop(\"SIMAPP_RANDOM_SEED\", None)\n\n        return {\n            \"SIMAPP_RANDOM_SEED\": os.getenv(\"SIMAPP_RANDOM_SEED\"),\n            \"GOFLAGS\": os.getenv(\"GOFLAGS\"),\n        }\n    except Exception as e:\n        raise RuntimeError(f\"Failed to prepare simulation environment: {e}\") from e",
+            "usage": "env_state = prepare_simulation_env(random_seed=123456)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Executes the simulation test suite (either Make target or raw go-test command) and streams the logs while capturing them.",
+            "code": "import subprocess\nimport shlex\nimport os\nfrom typing import List, Tuple\n\n\ndef run_simulation_tests(command: str = \"make test-sim-nondeterminism\") -> Tuple[int, List[str]]:\n    \"\"\"\n    Runs Cosmos SDK simulation tests and captures stdout/stderr.\n\n    Args:\n        command (str): Shell command to run. Defaults to the Make target that\n            wraps `go test ./sim/... -run TestFullAppSimulation -v`.\n\n    Returns:\n        Tuple[int, List[str]]: (exit_code, list_of_output_lines)\n    \"\"\"\n    try:\n        process = subprocess.Popen(\n            shlex.split(command),\n            stdout=subprocess.PIPE,\n            stderr=subprocess.STDOUT,\n            env=os.environ,     # inherits SIMAPP_RANDOM_SEED, GOFLAGS unset\n            text=True,\n            bufsize=1,\n        )\n\n        output_lines: List[str] = []\n        for line in process.stdout:\n            print(line, end=\"\")           # realtime feedback in CI/logs\n            output_lines.append(line.rstrip(\"\\n\"))\n\n        process.wait()\n        return process.returncode, output_lines\n    except FileNotFoundError as e:\n        raise RuntimeError(f\"Simulation command not found: {e}\") from e\n    except Exception as e:\n        raise RuntimeError(f\"Error running simulation tests: {e}\") from e",
+            "usage": "exit_code, logs = run_simulation_tests()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Parses the raw simulation logs to extract each run\u2019s random seed and executed block height.",
+            "code": "import re\nfrom typing import List, Dict\n\n\ndef parse_simulation_output(output_lines: List[str]) -> List[Dict[str, int]]:\n    \"\"\"\n    Extracts seed and block-height information printed by the test runner.\n\n    Looks for lines such as:\n        --- RUN   TestFullAppSimulation_Seed=169314843_Blocks=500\n    or separate `Seed:` / `Block height:` lines.\n\n    Args:\n        output_lines (List[str]): Captured stdout/stderr lines.\n\n    Returns:\n        List[Dict[str, int]]: One dict per simulation, e.g. [{\"seed\": 169314843,\n            \"blocks\": 500}].\n    \"\"\"\n    pattern = re.compile(r\".*Seed[=:\\s](\\d+).*(?:Blocks?|Block height)[=:\\s](\\d+)\")\n    results: List[Dict[str, int]] = []\n\n    for line in output_lines:\n        match = pattern.match(line)\n        if match:\n            seed = int(match.group(1))\n            blocks = int(match.group(2))\n            results.append({\"seed\": seed, \"blocks\": blocks})\n\n    return results",
+            "usage": "runs = parse_simulation_output(logs)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Validates that the simulation finished successfully: exit-code zero, no panics, and no broken invariants.",
+            "code": "def verify_simulation_results(exit_code: int, output_lines: list) -> None:\n    \"\"\"\n    Verifies success criteria for Cosmos SDK simulations.\n\n    Raises RuntimeError if any check fails.\n    \"\"\"\n    if exit_code != 0:\n        raise RuntimeError(f\"Simulation tests terminated with exit code {exit_code}.\")\n\n    log_blob = \"\\n\".join(output_lines).lower()\n\n    # Fail fast if any panic occurred.\n    if \"panic\" in log_blob:\n        raise RuntimeError(\"'panic' detected in simulation logs.\")\n\n    # Check invariants: allow either explicit success line or absence of failures.\n    if \"invariants broken\" in log_blob and \"invariants broken: 0\" not in log_blob:\n        raise RuntimeError(\"Invariants were broken during simulation.\")\n\n    print(\"\u2705 All simulations passed without panics and with invariants intact.\")",
+            "usage": "verify_simulation_results(exit_code, logs)"
+        }
+    ]
+}

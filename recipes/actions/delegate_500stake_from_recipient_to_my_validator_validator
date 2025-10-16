@@ -1,0 +1,33 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Validate that the delegator (cosmos\u2026) and validator (cosmosvaloper\u2026) strings are well-formed Bech32 addresses before doing anything else.",
+            "code": "export const validateAddresses = (delegatorAddress, validatorAddress) => {\n  // Generic Bech32 address shape: <prefix>1<38-char lowercase bech32 body>\n  const buildRegex = (prefix) => new RegExp(`^${prefix}1[0-9a-z]{38}$`);\n\n  if (!buildRegex('cosmos').test(delegatorAddress)) {\n    throw new Error('Invalid delegator Bech32 address');\n  }\n  if (!buildRegex('cosmosvaloper').test(validatorAddress)) {\n    throw new Error('Invalid validator Bech32 address');\n  }\n  return true; // everything looks good\n};",
+            "usage": "validateAddresses(delegatorAddr, validatorAddr);"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Query the delegator\u2019s liquid balance from the chain\u2019s LCD and be sure at least 500 stake (plus a small fee buffer) is available.",
+            "code": "export const checkBalance = async (\n  address,\n  lcdEndpoint = 'https://lcd.cosmos.directory/gaia',\n  minAmount = 500 /* stake */\n) => {\n  const url = `${lcdEndpoint}/cosmos/bank/v1beta1/balances/${address}`;\n  const res = await fetch(url);\n  if (!res.ok) {\n    throw new Error(`LCD error: ${res.status} ${res.statusText}`);\n  }\n\n  const { balances } = await res.json();\n  const stakeObj = balances.find((b) => b.denom === 'stake');\n  const available = stakeObj ? BigInt(stakeObj.amount) : 0n;\n\n  const estimatedFee = 5000n; // tweak for your chain\n  if (available < BigInt(minAmount) + estimatedFee) {\n    throw new Error('Insufficient balance for 500stake delegation plus fees');\n  }\n  return Number(available);\n};",
+            "usage": "await checkBalance(delegatorAddr);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Build an unsigned MsgDelegate transaction with cosmpy. This keeps complex protobuf-packing away from the browser.",
+            "code": "import os\nfrom cosmpy.aerial.client import LCDClient, NetworkConfig\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.protos.cosmos.staking.v1beta1.tx_pb2 import MsgDelegate\nfrom google.protobuf.any_pb2 import Any\n\n# --- chain configuration (override with env if desired) ---\nLCD_ENDPOINT = os.getenv('LCD_ENDPOINT', 'https://lcd.cosmos.directory/gaia')\nCHAIN_ID    = os.getenv('CHAIN_ID',    'cosmoshub-4')\nDENOM       = os.getenv('DENOM',       'stake')\n\nnetwork_cfg = NetworkConfig(\n    chain_id=CHAIN_ID,\n    url=LCD_ENDPOINT,\n    fee_minimum_gas_price=0.025,\n    fee_denomination=DENOM,\n    staking_denomination=DENOM,\n)\n\nlcd = LCDClient(network_cfg)\n\ndef construct_delegate_tx(delegator: str, validator: str, amount: int) -> Transaction:\n    \"\"\"Return an unsigned Transaction object carrying MsgDelegate.\"\"\"\n    coin = {\"denom\": DENOM, \"amount\": str(amount)}\n    msg = MsgDelegate(\n        delegator_address = delegator,\n        validator_address = validator,\n        amount            = coin,\n    )\n\n    # Pack into protobuf Any so the tx can hold heterogeneous messages\n    any_msg = Any()\n    any_msg.Pack(msg, type_url_prefix='/')\n\n    tx = Transaction()\n    tx.add_message(any_msg)\n    tx.seal_network_info(network_cfg)  # embeds chain-id etc.\n    return tx",
+            "usage": "unsigned_tx = construct_delegate_tx(delegatorAddr, validatorAddr, 500);"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Sign the delegation transaction with the delegator\u2019s private key (kept server-side) and broadcast it. Exposed as a simple REST endpoint that the frontend can call with fetch().",
+            "code": "import os\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom cosmpy.aerial.wallet import PrivateKey\nfrom cosmpy.aerial.client.utils import prepare_and_broadcast\n\nfrom tx_delegate_builder import construct_delegate_tx, lcd  # Step-3 helper\n\napp = FastAPI()\n\nclass DelegateRequest(BaseModel):\n    delegator: str\n    validator: str\n    amount: int  # 500 (stake) in smallest units\n\n@app.post('/api/delegate')\nasync def delegate(req: DelegateRequest):\n    try:\n        pk_hex = os.getenv('DELEGATOR_PRIVATE_KEY_HEX')\n        if not pk_hex:\n            raise ValueError('Backend mis-configuration: set DELEGATOR_PRIVATE_KEY_HEX env var')\n\n        priv_key = PrivateKey.from_hex(pk_hex)\n        tx = construct_delegate_tx(req.delegator, req.validator, req.amount)\n\n        # Sign & broadcast in one go\n        result = prepare_and_broadcast(lcd, tx, priv_key)\n\n        if result.code != 0:\n            raise RuntimeError(f\"Tx failed (code {result.code}): {result.raw_log}\")\n\n        return {\"tx_hash\": result.txhash}\n    except Exception as e:\n        raise HTTPException(status_code=400, detail=str(e))",
+            "usage": "await fetch('/api/delegate', { method: 'POST', body: JSON.stringify({ delegator, validator, amount: 500 }) });"
+        }
+    ]
+}

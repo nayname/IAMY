@@ -1,0 +1,142 @@
+[
+    {
+        "intent": "Sign typed data with eth_signTypedData",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_rpc_endpoint",
+                "description": "Locate the JSON-RPC endpoint of the EVM-compatible Cosmos chain (for example, http://localhost:8545)."
+            },
+            {
+                "step": 2,
+                "tool": "get_wallet_address",
+                "description": "Obtain the address that will sign the typed data."
+            },
+            {
+                "step": 3,
+                "tool": "build_eip712_typed_data",
+                "description": "Construct the EIP-712 typed-data JSON object (domain, types, message) that should be signed."
+            },
+            {
+                "step": 4,
+                "tool": "call_json_rpc_method",
+                "description": "Invoke eth_signTypedData with parameters [<wallet_address>, <typedDataJSON>]."
+            },
+            {
+                "step": 5,
+                "tool": "verify_eip712_signature",
+                "description": "Verify that the returned signature matches the typed data using the signer's public key."
+            }
+        ],
+        "outcome_checks": [
+            "The RPC response includes a 0x-prefixed 65-byte signature.",
+            "Local verification of the signature succeeds for the provided typed data and signer address."
+        ]
+    },
+    {
+        "intent": "Enable the debug namespace on the RPC server",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "check_node_rpc_config",
+                "description": "Inspect the node's configuration (e.g., app.toml or command-line flags) to see if the debug namespace is already enabled (e.g., --rpc.api debug,eth,net)."
+            },
+            {
+                "step": 2,
+                "tool": "modify_node_rpc_config",
+                "description": "If the debug namespace is absent, add \"debug\" to the list of exposed RPC modules."
+            },
+            {
+                "step": 3,
+                "tool": "restart_node",
+                "description": "Restart the node so the configuration changes take effect."
+            },
+            {
+                "step": 4,
+                "tool": "call_json_rpc_method",
+                "description": "Test availability by calling a lightweight debug method such as debug_getBlockRlp on the latest block."
+            }
+        ],
+        "outcome_checks": [
+            "The test call to a debug method returns a valid response (HTTP 200, non-error).",
+            "Subsequent debug-namespace calls no longer return the error \"the method debug_XXX does not exist/is not available\"."
+        ]
+    },
+    {
+        "intent": "Run debug_traceTransaction on a transaction hash",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_tx_hash_format",
+                "description": "Ensure the provided transaction hash is a 0x-prefixed 32-byte value."
+            },
+            {
+                "step": 2,
+                "tool": "get_rpc_endpoint",
+                "description": "Identify the RPC endpoint where the debug namespace is enabled."
+            },
+            {
+                "step": 3,
+                "tool": "call_json_rpc_method",
+                "description": "Invoke debug_traceTransaction with parameters [<tx_hash>, {\"tracer\": \"callTracer\"}] (or other desired trace options)."
+            },
+            {
+                "step": 4,
+                "tool": "store_trace_output",
+                "description": "Persist or display the returned trace data for further analysis."
+            }
+        ],
+        "outcome_checks": [
+            "The RPC response contains a detailed trace object instead of an error.",
+            "The trace includes expected opcode execution steps and gas usage details for the specified transaction."
+        ]
+    },
+    {
+        "intent": "Force garbage collection via debug_freeOSMemory",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_rpc_endpoint",
+                "description": "Confirm connection to a node with the debug namespace enabled."
+            },
+            {
+                "step": 2,
+                "tool": "call_json_rpc_method",
+                "description": "Issue debug_freeOSMemory with no parameters to trigger Go runtime GC and return unused memory to the OS."
+            },
+            {
+                "step": 3,
+                "tool": "call_json_rpc_method",
+                "description": "Immediately query debug_memStats to capture post-GC memory statistics."
+            }
+        ],
+        "outcome_checks": [
+            "The debug_freeOSMemory call returns successfully (no RPC error).",
+            "Post-GC debug_memStats shows reduced 'Alloc' or 'HeapInuse' values compared to pre-GC metrics."
+        ]
+    },
+    {
+        "intent": "Get runtime memory statistics of the node",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_rpc_endpoint",
+                "description": "Ensure connection to a node exposing the debug namespace."
+            },
+            {
+                "step": 2,
+                "tool": "call_json_rpc_method",
+                "description": "Invoke debug_memStats (or debug_getGoMetrics on newer geth versions) to retrieve Go runtime memory metrics."
+            },
+            {
+                "step": 3,
+                "tool": "parse_memory_stats",
+                "description": "Parse the returned JSON to extract key fields such as Alloc, Sys, HeapInuse, and NumGC."
+            }
+        ],
+        "outcome_checks": [
+            "The RPC response contains valid numeric fields representing memory statistics.",
+            "Parsed values are recorded or displayed to the user for monitoring purposes."
+        ]
+    }
+]

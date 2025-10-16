@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "queryBoostTarget fetches the current wallet address that is receiving boost emissions from the boost contract.",
+            "function": "queryBoostTarget(contractAddress)",
+            "usage": "const currentDelegate = await queryBoostTarget(BOOST_CONTRACT_ADDRESS);"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "getUserWalletAddress returns the bech32 address of the Neutron wallet that the user has connected in their browser.",
+            "function": "getUserWalletAddress()",
+            "usage": "const myAddress = await getUserWalletAddress();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "constructTxWasmExecute builds a MsgExecuteContract object that updates the boost delegate to the connected wallet.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds = [])",
+            "usage": "const execMsg = constructTxWasmExecute(myAddress, veNTRN_CONTRACT, { update_delegate: { to: myAddress } }, []);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "signAndBroadcastTx signs the prepared transaction with the user\u2019s wallet and broadcasts it to the Neutron network.",
+            "function": "signAndBroadcastTx({ chainId, signDoc, offlineSigner })",
+            "usage": "const result = await signAndBroadcastTx({ chainId: 'neutron-1', signDoc, offlineSigner });"
+        }
+    ],
+    "frontend": [
+        "const currentDelegate = await queryBoostTarget(BOOST_CONTRACT_ADDRESS);//step: 1 Tool: get_current_boost_delegate Desciption: Retrieve the wallet currently receiving the boost delegation.",
+        "const myAddress = await getUserWalletAddress();//step: 2 Tool: get_user_wallet_address Desciption: Determine the connected Neutron wallet that should receive the boost.",
+        "const execMsg = constructTxWasmExecute(myAddress, veNTRN_CONTRACT, { update_delegate: { to: myAddress } }, []);//step: 3 Tool: construct_tx_contract_execute Desciption: Build an `update_delegate` (or equivalent) message on the veNTRN contract to redirect boost emissions to the connected wallet.",
+        "const result = await signAndBroadcastTx({ chainId: 'neutron-1', signDoc, offlineSigner });//step: 4 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the delegate-update transaction."
+    ],
+    "backend": [],
+    "intent": "Update my boost to point at my connected Neutron wallet",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_current_boost_delegate",
+            "description": "Retrieve the wallet currently receiving the boost delegation."
+        },
+        {
+            "step": 2,
+            "tool": "get_user_wallet_address",
+            "description": "Determine the connected Neutron wallet that should receive the boost."
+        },
+        {
+            "step": 3,
+            "tool": "construct_tx_contract_execute",
+            "description": "Build an `update_delegate` (or equivalent) message on the veNTRN contract to redirect boost emissions to the connected wallet."
+        },
+        {
+            "step": 4,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign and broadcast the delegate-update transaction."
+        }
+    ],
+    "outcome_checks": [
+        "Verify the delegate-update transaction was executed successfully.",
+        "Query the veNTRN contract to confirm the new delegate address equals the connected wallet."
+    ]
+}

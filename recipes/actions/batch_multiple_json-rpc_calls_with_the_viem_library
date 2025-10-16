@@ -1,0 +1,33 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Instantiate a viem Public Client that points to the desired Cosmos-EVM RPC endpoint. All subsequent steps rely on this client instance.",
+            "code": "// backend/utils/viemClient.js\nimport { createPublicClient, http } from 'viem';\n\n/**\n * Returns a viem Public Client connected to the given RPC URL.\n * @param {string} rpcUrl \u2013 Full HTTP(s) URL of the Cosmos-EVM JSON-RPC endpoint.\n * @returns {import('viem').PublicClient}\n */\nexport const createViemClient = (rpcUrl) => {\n  try {\n    if (!rpcUrl) throw new Error('RPC URL is required to create a viem client.');\n\n    // Because we are talking to a Cosmos-EVM chain, we can omit the chain\n    // definition and rely on RPC introspection. If you know the chain Id\n    // you may pass a custom Chain object here instead.\n    const client = createPublicClient({\n      transport: http(rpcUrl)\n    });\n\n    return client;\n  } catch (error) {\n    console.error('[createViemClient] Unable to create client:', error);\n    throw error;\n  }\n};",
+            "usage": "import { createViemClient } from './utils/viemClient.js';\n\nconst rpcUrl = process.env.COSMOS_EVM_RPC_URL || 'https://evmos-rpc.publicnode.com';\nconst client = createViemClient(rpcUrl);"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Create a lightweight batch context that will collect JSON-RPC read calls before they are executed in a single request.",
+            "code": "// backend/utils/batchContext.js\n/**\n * Generates a batch context around a viem client. The context exposes two\n * helper functions: `add(call)` for queuing RPC calls and `execute()` for\n * sending them in a single batched HTTP request.\n *\n * @param {import('viem').PublicClient} client \u2013 The viem client created in Step 1.\n */\nexport const createBatchContext = (client) => {\n  if (!client || typeof client.batch !== 'function') {\n    throw new Error('A valid viem PublicClient must be supplied to createBatchContext().');\n  }\n\n  // Internal queue of call Promises (NOT awaited yet)\n  const queue = [];\n\n  return {\n    /**\n     * Enqueue a viem call (e.g., client.getBalance(...)). The call should be\n     * invoked but NOT awaited \u2013 the returned promise is what we queue up.\n     * @param {Promise<any>} callPromise\n     */\n    add: (callPromise) => {\n      queue.push(callPromise);\n    },\n\n    /**\n     * Executes the queued calls in a single JSON-RPC batch. Returns the ordered\n     * array of results.\n     * @returns {Promise<any[]>}\n     */\n    execute: async () => {\n      try {\n        if (!queue.length) return [];\n        const results = await client.batch(queue);\n        return results;\n      } catch (error) {\n        console.error('[batchContext.execute] Batch execution failed:', error);\n        throw error;\n      }\n    }\n  };\n};",
+            "usage": "import { createBatchContext } from './utils/batchContext.js';\n\nconst batch = createBatchContext(client);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Queue up multiple read-only RPC calls such as `getBalance`, `getBlockNumber`, and `readContract` inside the batch context created in Step 2.",
+            "code": "// backend/batch/addCalls.js\nimport { erc20Abi } from 'viem';\n\n/**\n * Demonstrates how to enqueue several read-only calls onto the batch queue.\n * @param {ReturnType<typeof import('./utils/batchContext.js').createBatchContext>} batch \u2013 Batch context from Step 2.\n * @param {import('viem').PublicClient} client \u2013 The viem client.\n * @param {string} address \u2013 Bech32 / 0x-address to query.\n */\nexport const addReadOnlyCallsToBatch = (batch, client, address) => {\n  if (!address) throw new Error('Target address is required to queue read calls.');\n\n  // 1. Latest block number (promise is returned immediately, NOT awaited)\n  batch.add(client.getBlockNumber());\n\n  // 2. Native token balance of the address\n  batch.add(\n    client.getBalance({\n      address\n    })\n  );\n\n  // 3. Example ERC-20 totalSupply() read \u2013 replace with a real contract address\n  const exampleTokenAddress = '0x0000000000000000000000000000000000000000';\n  batch.add(\n    client.readContract({\n      address: exampleTokenAddress,\n      abi: erc20Abi,\n      functionName: 'totalSupply'\n    })\n  );\n};",
+            "usage": "import { addReadOnlyCallsToBatch } from './batch/addCalls.js';\n\naddReadOnlyCallsToBatch(batch, client, '0xYourAddressHere');"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Execute all queued RPC calls in a single JSON-RPC request and handle the ordered results array.",
+            "code": "// backend/batch/executeBatch.js\n/**\n * Executes the queued batch and handles the results.\n * @param {ReturnType<typeof import('./utils/batchContext.js').createBatchContext>} batch \u2013 Batch context containing queued calls.\n * @returns {Promise<void>}\n */\nexport const executeBatch = async (batch) => {\n  try {\n    const results = await batch.execute();\n\n    // The results array is ordered in the same sequence the calls were queued.\n    // Example unpacking for the three calls added in Step 3.\n    const [blockNumber, balance, totalSupply] = results;\n\n    console.log('Block Number :', blockNumber);\n    console.log('Account Bal. :', balance.toString());\n    console.log('Token Supply :', totalSupply.toString());\n  } catch (error) {\n    console.error('[executeBatch] Failed to execute batch:', error);\n    throw error;\n  }\n};",
+            "usage": "import { executeBatch } from './batch/executeBatch.js';\n\nawait executeBatch(batch);"
+        }
+    ]
+}

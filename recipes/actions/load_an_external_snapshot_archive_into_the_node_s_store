@@ -1,0 +1,61 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 locates the simd node\u2019s home directory by checking an environment variable (SIMD_HOME) and falling back to ~/.simapp.",
+            "code": "import os\n\n\ndef get_node_home():\n    \"\"\"\n    Determine the simd node's home directory.\n\n    Priority order:\n      1. SIMD_HOME environment variable\n      2. Default to ~/.simapp\n\n    Returns:\n        str: Absolute path to the node home directory.\n\n    Raises:\n        FileNotFoundError: If the directory cannot be located.\n    \"\"\"\n    # Use environment override when provided\n    home_dir = os.environ.get(\"SIMD_HOME\", os.path.expanduser(\"~/.simapp\"))\n    if not os.path.isdir(home_dir):\n        raise FileNotFoundError(f\"Unable to locate node home directory at {home_dir}\")\n    return home_dir",
+            "usage": "node_home = get_node_home()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 gracefully stops the running simd process. It first tries to stop the systemd service (`sudo systemctl stop simd`); if systemd is unavailable it searches for the `simd` process and terminates it.",
+            "code": "import subprocess\nimport psutil\n\n\ndef stop_node_service():\n    \"\"\"\n    Gracefully stop the running simd service or process.\n\n    Returns:\n        str: A human-readable message describing how the node was stopped.\n\n    Raises:\n        RuntimeError: If no running simd process could be found or stopped.\n    \"\"\"\n    # Try systemd first\n    try:\n        systemctl_check = subprocess.run([\"systemctl\", \"is-active\", \"--quiet\", \"simd\"], check=False)\n        if systemctl_check.returncode == 0:\n            result = subprocess.run([\"sudo\", \"systemctl\", \"stop\", \"simd\"], capture_output=True, text=True)\n            if result.returncode == 0:\n                return \"simd service stopped via systemctl\"\n    except FileNotFoundError:\n        # systemctl not installed; fall back\n        pass\n\n    # Fallback: manually kill the simd process\n    for proc in psutil.process_iter([\"pid\", \"name\"]):\n        if proc.info[\"name\"] == \"simd\":\n            proc.terminate()\n            try:\n                proc.wait(timeout=30)\n                return f\"simd process {proc.pid} terminated\"\n            except psutil.TimeoutExpired:\n                proc.kill()\n                return f\"simd process {proc.pid} killed\"\n\n    raise RuntimeError(\"No running simd process or service found.\")",
+            "usage": "stop_node_service()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 verifies that the snapshot archive exists, matches an optional SHA-256 checksum, and (optionally) contains the expected chain-ID.",
+            "code": "import hashlib\nimport tarfile\nimport json\nfrom pathlib import Path\n\n\ndef validate_snapshot_archive(archive_path: str, expected_checksum: str = None, expected_chain_id: str = None):\n    \"\"\"\n    Validate a snapshot archive by checking file existence, SHA-256 checksum, and chain-id.\n\n    Args:\n        archive_path (str): Path to the snapshot .tar.gz file.\n        expected_checksum (str, optional): Expected SHA-256 hex string.\n        expected_chain_id (str, optional): Expected chain-id to compare with the genesis inside the archive.\n\n    Returns:\n        dict: Validation summary containing the computed checksum.\n\n    Raises:\n        FileNotFoundError: If the archive is missing.\n        ValueError: On checksum or chain-id mismatch.\n    \"\"\"\n    archive = Path(archive_path)\n    if not archive.is_file():\n        raise FileNotFoundError(f\"Snapshot archive {archive} not found.\")\n\n    # Compute SHA-256\n    sha256 = hashlib.sha256()\n    with archive.open(\"rb\") as f:\n        for chunk in iter(lambda: f.read(8192), b\"\"):\n            sha256.update(chunk)\n    computed_checksum = sha256.hexdigest()\n\n    if expected_checksum and computed_checksum.lower() != expected_checksum.lower():\n        raise ValueError(f\"Checksum mismatch. Expected {expected_checksum}, got {computed_checksum}\")\n\n    if expected_chain_id:\n        # Peek inside the archive for a genesis.json file\n        try:\n            with tarfile.open(archive, \"r:gz\") as tar:\n                for member in tar.getmembers():\n                    if member.name.endswith(\"genesis.json\"):\n                        f = tar.extractfile(member)\n                        if f:\n                            genesis = json.load(f)\n                            chain_id = genesis.get(\"chain_id\")\n                            if chain_id != expected_chain_id:\n                                raise ValueError(f\"Chain-ID mismatch. Expected {expected_chain_id}, got {chain_id}\")\n                            break\n        except tarfile.TarError as err:\n            raise ValueError(f\"Unable to inspect archive: {err}\")\n\n    return {\n        \"archive\": str(archive),\n        \"checksum\": computed_checksum,\n        \"valid\": True\n    }",
+            "usage": "validate_snapshot_archive(\"/path/to/snapshot.tar.gz\", expected_checksum=\"<sha256>\", expected_chain_id=\"sim-testnet-1\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 backs up the existing `<home>/data` directory (with a timestamped folder) and then removes the original to make room for the new snapshot.",
+            "code": "import shutil\nfrom pathlib import Path\nfrom datetime import datetime\n\n\ndef backup_and_remove_data(node_home: str, backup_root: str = None):\n    \"\"\"\n    Copy `<home>/data` to a timestamped backup directory and then remove the original.\n\n    Args:\n        node_home (str): Path returned by `get_node_home()`.\n        backup_root (str, optional): Directory where backups will be stored. Defaults to `<home>/backup-<timestamp>`.\n\n    Returns:\n        str: Path to the backup directory that was created.\n    \"\"\"\n    data_dir = Path(node_home) / \"data\"\n    if not data_dir.exists():\n        raise FileNotFoundError(f\"Data directory {data_dir} does not exist.\")\n\n    timestamp = datetime.utcnow().strftime(\"%Y%m%d-%H%M%S\")\n    backup_root = Path(backup_root) if backup_root else Path(node_home) / f\"backup-{timestamp}\"\n    backup_root.mkdir(parents=True, exist_ok=True)\n\n    shutil.copytree(data_dir, backup_root / \"data\", dirs_exist_ok=True)\n    # Remove original data directory after successful copy\n    shutil.rmtree(data_dir)\n\n    return str(backup_root)",
+            "usage": "backup_path = backup_and_remove_data(node_home)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 restores the snapshot archive into the node\u2019s home directory using `simd snapshot restore`.",
+            "code": "import subprocess\n\n\ndef restore_snapshot(archive_path: str, node_home: str):\n    \"\"\"\n    Execute `simd snapshot restore` to populate the `<home>/data` directory from a snapshot.\n    Raises an exception if the command returns a non-zero exit status.\n    \"\"\"\n    cmd = [\"simd\", \"snapshot\", \"restore\", archive_path, f\"--home={node_home}\"]\n    result = subprocess.run(cmd, capture_output=True, text=True)\n    if result.returncode != 0:\n        raise RuntimeError(f\"Snapshot restore failed:\\n{result.stderr}\")\n    return result.stdout.strip()",
+            "usage": "restore_snapshot(\"/path/to/snapshot.tar.gz\", node_home)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Step 6 constructs the canonical `simd start` command so that it can be reused by other tools (e.g., systemd or a supervisor).",
+            "code": "def construct_simd_start_command(node_home: str, extra_flags: str = \"\") -> str:\n    \"\"\"\n    Build a fully-qualified `simd start` command string.\n    \"\"\"\n    base_cmd = f\"simd start --home={node_home}\"\n    full_cmd = f\"{base_cmd} {extra_flags}\".strip()\n    return full_cmd",
+            "usage": "start_cmd = construct_simd_start_command(node_home)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Step 7 (re)starts the simd node with either systemd or a background process using the command produced in Step 6.",
+            "code": "import subprocess\n\n\ndef start_node_service(node_home: str, use_systemd: bool = True):\n    \"\"\"\n    Start the simd node after the snapshot restore.\n\n    Args:\n        node_home (str): Path to the node's home directory.\n        use_systemd (bool): Whether to attempt `systemctl start simd` first.\n\n    Returns:\n        str: Message describing the action taken.\n    \"\"\"\n    if use_systemd:\n        result = subprocess.run([\"sudo\", \"systemctl\", \"start\", \"simd\"], capture_output=True, text=True)\n        if result.returncode == 0:\n            return \"simd service started via systemd\"\n        # fall back to manual start if systemd fails\n\n    # Manual background start\n    cmd = [\"simd\", \"start\", f\"--home={node_home}\"]\n    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n    return f\"simd node started with PID {proc.pid}\"",
+            "usage": "start_node_service(node_home)"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Step 8 queries the Tendermint RPC `/status` endpoint to confirm that the node is running, shows the restored block height, and is catching up.",
+            "code": "import requests\n\n\ndef query_node_status(rpc_url: str = \"http://localhost:26657\"):\n    \"\"\"\n    Fetch `/status` from the local Tendermint RPC and return selected fields.\n    \"\"\"\n    try:\n        response = requests.get(f\"{rpc_url}/status\", timeout=5)\n        response.raise_for_status()\n        data = response.json()\n        info = data[\"result\"]\n        return {\n            \"network\": info[\"node_info\"][\"network\"],\n            \"latest_height\": int(info[\"sync_info\"][\"latest_block_height\"]),\n            \"catching_up\": info[\"sync_info\"][\"catching_up\"]\n        }\n    except Exception as err:\n        raise RuntimeError(f\"Failed to query node status: {err}\")",
+            "usage": "status = query_node_status()"
+        }
+    ]
+}

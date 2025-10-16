@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Exposes an HTTP GET endpoint that proxies a documentation search so the frontend can look up the correct CLI syntax without leaving the app.",
+            "code": "from fastapi import FastAPI, HTTPException, Query\nimport requests\n\napp = FastAPI()\n\n@app.get(\"/api/search_docs\")\ndef search_docs(query: str = Query(..., min_length=3)):\n    \"\"\"\n    Searches Cosmos-related documentation. This example uses DuckDuckGo\u2019s open API\n    to keep the implementation simple while avoiding CORS issues for the frontend.\n    \"\"\"\n    try:\n        search_url = f\"https://duckduckgo.com/?q={query}&format=json\"\n        response = requests.get(search_url, timeout=10)\n        response.raise_for_status()\n        data = response.json()\n        # Return the first five hits to keep payloads small.\n        results = data.get(\"RelatedTopics\", [])[:5]\n        return {\"query\": query, \"results\": results}\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=f\"Search failed: {e}\")",
+            "usage": "fetch('/api/search_docs?query=cosmosd%20export%20app%20state%20and%20validators')\n  .then(r => r.json())\n  .then(console.log);"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Provides a POST endpoint that gracefully stops the running Cosmos SDK node so the database is in a consistent state before exporting.",
+            "code": "import asyncio, os\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\n@app.post(\"/api/stop_node\")\nasync def stop_node(service_name: str = os.getenv(\"COSMOS_SERVICE_NAME\", \"cosmosd\")):\n    \"\"\"\n    Invokes `systemctl stop <service_name>` to shut down the node. The service\n    name can be passed in the request body or taken from the COSMOS_SERVICE_NAME\n    environment variable (default: \"cosmosd\").\n    \"\"\"\n    try:\n        proc = await asyncio.create_subprocess_shell(\n            f\"systemctl stop {service_name}\",\n            stdout=asyncio.subprocess.PIPE,\n            stderr=asyncio.subprocess.PIPE,\n        )\n        stdout, stderr = await proc.communicate()\n        if proc.returncode != 0:\n            raise RuntimeError(stderr.decode())\n        return {\"service\": service_name, \"status\": \"stopped\", \"stdout\": stdout.decode()}\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=f\"Failed to stop node: {e}\")",
+            "usage": "await fetch('/api/stop_node', { method: 'POST' })\n  .then(r => r.json())\n  .then(console.log);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Runs the CLI export command and writes the genesis JSON to disk, returning the file path to the caller.",
+            "code": "import asyncio, os\nfrom pathlib import Path\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\n@app.post(\"/api/export_state\")\nasync def export_state(height: int, home: str, output_path: str = \"state.json\", binary: str = os.getenv(\"COSMOS_BINARY\", \"cosmosd\")):\n    \"\"\"\n    Executes `<binary> export --home <home> --height <height>` and saves the\n    output to `output_path`.\n    \"\"\"\n    try:\n        cmd = f\"{binary} export --home {home} --height {height}\"\n        proc = await asyncio.create_subprocess_shell(\n            cmd,\n            stdout=asyncio.subprocess.PIPE,\n            stderr=asyncio.subprocess.PIPE,\n        )\n        stdout, stderr = await proc.communicate()\n        if proc.returncode != 0:\n            raise RuntimeError(stderr.decode())\n        Path(output_path).write_text(stdout.decode())\n        return {\"output_file\": output_path, \"height\": height}\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=f\"Export failed: {e}\")",
+            "usage": "await fetch('/api/export_state', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ height: 123456, home: '/home/validator/.cosmosd' })\n}).then(r => r.json()).then(console.log);"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Loads the exported genesis file and verifies that the required top-level keys are present.",
+            "code": "import json\nfrom pathlib import Path\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\n@app.post(\"/api/validate_state\")\nasync def validate_state(file_path: str = \"state.json\"):\n    \"\"\"\n    Confirms that `app_state` and `validators` exist at the top level of the\n    exported JSON file.\n    \"\"\"\n    try:\n        if not Path(file_path).is_file():\n            raise FileNotFoundError(f\"{file_path} not found\")\n        with open(file_path, \"r\", encoding=\"utf-8\") as fp:\n            data = json.load(fp)\n        missing = [k for k in (\"app_state\", \"validators\") if k not in data]\n        return {\"valid\": len(missing) == 0, \"missing\": missing}\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=f\"Validation failed: {e}\")",
+            "usage": "await fetch('/api/validate_state', { method: 'POST' })\n  .then(r => r.json())\n  .then(console.log);"
+        }
+    ]
+}

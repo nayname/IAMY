@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates an API endpoint that detects the host\u2019s package manager (apt-get, yum, dnf, pacman, apk).",
+            "code": "########################################################\n# backend/ufw_setup.py  \u25b8  STEP 1                      #\n########################################################\nfrom fastapi import FastAPI, HTTPException\nimport shutil\n\napp = FastAPI()\n\n\ndef _detect_package_manager() -> str:\n    \"\"\"Return the first supported package-manager binary found in PATH.\"\"\"\n    for manager in (\"apt-get\", \"yum\", \"dnf\", \"pacman\", \"apk\"):\n        if shutil.which(manager):\n            return manager\n    raise FileNotFoundError(\"No supported package manager found on this host.\")\n\n\n@app.get(\"/api/detect-package-manager\")\nasync def detect_package_manager():\n    \"\"\"HTTP GET \u2192 { \"package_manager\": \"apt-get\" }\"\"\"\n    try:\n        manager = _detect_package_manager()\n        return {\"package_manager\": manager}\n    except FileNotFoundError as err:\n        raise HTTPException(status_code=500, detail=str(err))",
+            "usage": "// Front-end call example\nconst { package_manager } = await fetch(\"/api/detect-package-manager\").then(r => r.json());"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Refreshes the package index so the latest UFW version is available.",
+            "code": "########################################################\n# backend/ufw_setup.py  \u25b8  STEP 2                      #\n########################################################\nimport subprocess\nfrom fastapi import HTTPException\n\n# Map managers \u2192 cache-refresh commands\nCMD_CACHE = {\n    \"apt-get\": [\"sudo\", \"apt-get\", \"update\", \"-y\"],\n    \"yum\":     [\"sudo\", \"yum\", \"makecache\"],\n    \"dnf\":     [\"sudo\", \"dnf\", \"makecache\"],\n    \"pacman\":  [\"sudo\", \"pacman\", \"-Sy\"],\n    \"apk\":     [\"sudo\", \"apk\", \"update\"],\n}\n\n@app.post(\"/api/update-package-cache\")\nasync def update_package_cache(manager: str):\n    \"\"\"HTTP POST body \u21d2 {\"manager\":\"apt-get\"}. Runs the correct cache update command.\"\"\"\n    if manager not in CMD_CACHE:\n        raise HTTPException(status_code=400, detail=f\"Unsupported package manager: {manager}\")\n    try:\n        proc = subprocess.run(CMD_CACHE[manager], check=True, capture_output=True, text=True)\n        return {\"stdout\": proc.stdout}\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=err.stderr or str(err))",
+            "usage": "// Front-end call example\nawait fetch(\"/api/update-package-cache\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\" },\n  body: JSON.stringify({ manager: package_manager })\n}).then(r => r.json());"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Installs the Uncomplicated Firewall (ufw) package using the detected package manager.",
+            "code": "########################################################\n# backend/ufw_setup.py  \u25b8  STEP 3                      #\n########################################################\n# Map managers \u2192 install-UFW commands\nCMD_INSTALL_UFW = {\n    \"apt-get\": [\"sudo\", \"apt-get\", \"install\", \"ufw\", \"-y\"],\n    \"yum\":     [\"sudo\", \"yum\", \"install\", \"ufw\", \"-y\"],\n    \"dnf\":     [\"sudo\", \"dnf\", \"install\", \"ufw\", \"-y\"],\n    \"pacman\":  [\"sudo\", \"pacman\", \"-S\", \"ufw\", \"--noconfirm\"],\n    \"apk\":     [\"sudo\", \"apk\", \"add\", \"ufw\"],\n}\n\n@app.post(\"/api/install-ufw\")\nasync def install_ufw(manager: str):\n    \"\"\"HTTP POST body \u21d2 {\"manager\":\"apt-get\"}. Installs UFW.\"\"\"\n    if manager not in CMD_INSTALL_UFW:\n        raise HTTPException(status_code=400, detail=f\"Unsupported package manager: {manager}\")\n    try:\n        proc = subprocess.run(CMD_INSTALL_UFW[manager], check=True, capture_output=True, text=True)\n        return {\"stdout\": proc.stdout}\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=err.stderr or str(err))",
+            "usage": "// Front-end call example\nawait fetch(\"/api/install-ufw\", {\n  method: \"POST\",\n  headers: { \"Content-Type\": \"application/json\" },\n  body: JSON.stringify({ manager: package_manager })\n}).then(r => r.json());"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Runs `ufw enable` to activate the firewall.",
+            "code": "########################################################\n# backend/ufw_setup.py  \u25b8  STEP 4                      #\n########################################################\nCMD_ENABLE = [\"sudo\", \"ufw\", \"enable\"]\n\n@app.post(\"/api/enable-firewall\")\nasync def enable_firewall():\n    \"\"\"HTTP POST \u21d2 enables UFW.\"\"\"\n    try:\n        proc = subprocess.run(CMD_ENABLE, check=True, capture_output=True, text=True)\n        return {\"stdout\": proc.stdout}\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=err.stderr or str(err))",
+            "usage": "// Front-end call example\nawait fetch(\"/api/enable-firewall\", { method: \"POST\" }).then(r => r.json());"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Retrieves the verbose UFW status to confirm rules and default policies.",
+            "code": "########################################################\n# backend/ufw_setup.py  \u25b8  STEP 5                      #\n########################################################\nCMD_STATUS = [\"sudo\", \"ufw\", \"status\", \"verbose\"]\n\n@app.get(\"/api/firewall-status\")\nasync def firewall_status():\n    \"\"\"HTTP GET \u2192 returns `ufw status verbose`.\"\"\"\n    try:\n        proc = subprocess.run(CMD_STATUS, check=True, capture_output=True, text=True)\n        return {\"status\": proc.stdout}\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=err.stderr or str(err))",
+            "usage": "// Front-end call example\nconst { status } = await fetch(\"/api/firewall-status\").then(r => r.json());"
+        }
+    ]
+}

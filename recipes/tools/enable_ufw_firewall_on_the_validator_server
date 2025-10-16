@@ -1,0 +1,79 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No implemented backend function was found that detects the operating-system package manager (apt, yum, etc.).",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No implemented backend function was found that refreshes the host\u2019s package index.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No implemented backend function was located that installs the UFW package on the server.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "No implemented backend function was found that runs the command `sudo ufw enable` to activate the firewall.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "get_ufw_status executes `sudo ufw status` and returns information indicating whether UFW is active, allowing the script to verify the firewall state.",
+            "function": "get_ufw_status()",
+            "usage": "status_info = get_ufw_status()"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: detect_os_package_manager Desciption: Identify whether the host uses apt, yum, or another package manager.",
+        "undef#step: 2 Tool: update_package_cache Desciption: Refresh the package index so the latest UFW version is available.",
+        "undef#step: 3 Tool: install_package Desciption: Install the Uncomplicated Firewall package (ufw). Example: `sudo apt-get install ufw -y`.",
+        "undef#step: 4 Tool: run_shell_command Desciption: Enable the firewall: `sudo ufw enable`.",
+        "status_info = get_ufw_status()#step: 5 Tool: run_shell_command Desciption: Verify status and default policies: `sudo ufw status verbose`."
+    ],
+    "intent": "Enable UFW firewall on the validator server",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "detect_os_package_manager",
+            "description": "Identify whether the host uses apt, yum, or another package manager."
+        },
+        {
+            "step": 2,
+            "tool": "update_package_cache",
+            "description": "Refresh the package index so the latest UFW version is available."
+        },
+        {
+            "step": 3,
+            "tool": "install_package",
+            "description": "Install the Uncomplicated Firewall package (ufw). Example: `sudo apt-get install ufw -y`."
+        },
+        {
+            "step": 4,
+            "tool": "run_shell_command",
+            "description": "Enable the firewall: `sudo ufw enable`."
+        },
+        {
+            "step": 5,
+            "tool": "run_shell_command",
+            "description": "Verify status and default policies: `sudo ufw status verbose`."
+        }
+    ],
+    "outcome_checks": [
+        "The command `sudo ufw status` returns `Status: active`.",
+        "Default incoming policy is set to `deny` (or another desired policy)."
+    ]
+}

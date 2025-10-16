@@ -1,0 +1,106 @@
+[
+    {
+        "intent": "Configure Hardhat networks for Cosmos EVM in hardhat.config.ts",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_file",
+                "description": "Open hardhat.config.ts so the Cosmos EVM network definition can be added."
+            },
+            {
+                "step": 2,
+                "tool": "update_file",
+                "description": "Inside the exported HardhatUserConfig object, append a new entry under networks:\n\nnetworks: {\n  cosmos: {\n    url: process.env.COSMOS_RPC || \"https://rpc.cosmos.network\",   // RPC endpoint for the target Cosmos-SDK EVM chain\n    chainId: Number(process.env.COSMOS_CHAIN_ID) || 118,           // Replace with the chain\u2019s EVM chainId\n    accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []\n  },\n  /* existing networks \u2026 */\n}"
+            },
+            {
+                "step": 3,
+                "tool": "install_npm_packages",
+                "description": "Install any missing dependencies used in the config (e.g. dotenv and Hardhat toolbox):\n  npm i -D @nomicfoundation/hardhat-toolbox dotenv"
+            },
+            {
+                "step": 4,
+                "tool": "run_command",
+                "description": "Compile the workspace to confirm the config is syntactically correct:\n  npx hardhat compile"
+            },
+            {
+                "step": 5,
+                "tool": "run_command",
+                "description": "Ping the configured network to ensure Hardhat can reach it:\n  npx hardhat --network cosmos block-number"
+            }
+        ],
+        "outcome_checks": [
+            "Compilation finishes with no errors.",
+            "The command in step 5 returns a positive block number, confirming connectivity to the Cosmos EVM RPC."
+        ]
+    },
+    {
+        "intent": "Get the latest block number with cast block-number",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "run_command",
+                "description": "Execute Foundry\u2019s CLI query against the desired RPC endpoint:\n  cast block-number --rpc-url $COSMOS_RPC_URL"
+            }
+        ],
+        "outcome_checks": [
+            "STDOUT is a single integer > 0 (e.g. 101234), representing the most recent block height."
+        ]
+    },
+    {
+        "intent": "Get details of the latest block with cast block latest",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "run_command",
+                "description": "Request the latest block and return it as JSON:\n  cast block latest --rpc-url $COSMOS_RPC_URL --json"
+            }
+        ],
+        "outcome_checks": [
+            "The JSON payload contains fields such as number, hash, parentHash, gasUsed, and timestamp.",
+            "number matches the value retrieved in the previous recipe (or block-number \u00b11 if the chain advanced)."
+        ]
+    },
+    {
+        "intent": "Publish a raw signed transaction with cast publish",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "input_raw_tx",
+                "description": "Obtain (or prompt the user for) the 0x-prefixed RLP-encoded signed transaction string."
+            },
+            {
+                "step": 2,
+                "tool": "run_command",
+                "description": "Broadcast the raw transaction:\n  cast publish $RAW_TX_HEX --rpc-url $COSMOS_RPC_URL"
+            },
+            {
+                "step": 3,
+                "tool": "capture_output",
+                "description": "Store the transaction hash returned by cast."
+            },
+            {
+                "step": 4,
+                "tool": "run_command",
+                "description": "Confirm inclusion by fetching the receipt:\n  cast receipt $TX_HASH --rpc-url $COSMOS_RPC_URL --json"
+            }
+        ],
+        "outcome_checks": [
+            "Receipt status equals 1 (success) and includes a blockNumber field.",
+            "gasUsed and logs fields are present, confirming the tx was fully processed."
+        ]
+    },
+    {
+        "intent": "Run Hardhat tests with npx hardhat test",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "run_command",
+                "description": "Execute the project\u2019s test suite:\n  npx hardhat test"
+            }
+        ],
+        "outcome_checks": [
+            "The summary shows 0 failing tests.",
+            "Hardhat exits with status code 0."
+        ]
+    }
+]

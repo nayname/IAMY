@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No matching backend function was found that installs or updates Foundry.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "save_config_file writes a TOML configuration dictionary to disk, effectively creating $HOME/.foundry/foundry.toml.",
+            "function": "save_config_file(path, config_dict)",
+            "usage": "save_config_file(os.path.expanduser('~/.foundry/foundry.toml'), {})"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "update_mempool_max_txs mutates an in-memory TOML dict, letting you add or change settings before persisting the file.",
+            "function": "update_mempool_max_txs(config_dict, new_value=-1)",
+            "usage": "cfg = update_mempool_max_txs(cfg, new_value=200)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "validate_file_change checks that a specific line exists in the edited foundry.toml, confirming the config was applied.",
+            "function": "validate_file_change(config_path, expected_value='0stake')",
+            "usage": "validate_file_change(os.path.expanduser('~/.foundry/foundry.toml'), expected_value='optimizer = true')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: ensure_foundryup Desciption: Run `foundryup` (or install Foundry if missing) so `forge`, `cast`, and default templates are available.",
+        "save_config_file(os.path.expanduser('~/.foundry/foundry.toml'), {})#step: 2 Tool: create_foundry_toml Desciption: In your $HOME directory, run `forge config --global` or manually create `$HOME/.foundry/foundry.toml`.",
+        "cfg = update_mempool_max_txs(cfg, new_value=200)#step: 3 Tool: edit_foundry_toml Desciption: Add common settings, e.g.: `rpc_endpoints = { cosmos_evm = \"https://rpc.my-chain.com\" }`, `default_rpc_endpoint = \"cosmos_evm\"`, `optimizer = true`, `optimizer_runs = 200`.",
+        "validate_file_change(os.path.expanduser('~/.foundry/foundry.toml'), expected_value='optimizer = true')#step: 4 Tool: validate_foundry_config Desciption: Run `forge config --show --global` to verify the file is discovered and values are parsed."
+    ],
+    "intent": "Create a global foundry.toml configuration file",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "ensure_foundryup",
+            "description": "Run `foundryup` (or install Foundry if missing) so `forge`, `cast`, and default templates are available."
+        },
+        {
+            "step": 2,
+            "tool": "create_foundry_toml",
+            "description": "In your $HOME directory, run `forge config --global` or manually create `$HOME/.foundry/foundry.toml`."
+        },
+        {
+            "step": 3,
+            "tool": "edit_foundry_toml",
+            "description": "Add common settings, e.g.: `rpc_endpoints = { cosmos_evm = \"https://rpc.my-chain.com\" }`, `default_rpc_endpoint = \"cosmos_evm\"`, `optimizer = true`, `optimizer_runs = 200`."
+        },
+        {
+            "step": 4,
+            "tool": "validate_foundry_config",
+            "description": "Run `forge config --show --global` to verify the file is discovered and values are parsed."
+        }
+    ],
+    "outcome_checks": [
+        "Running any `forge` or `cast` command without local project overrides uses the global configuration.",
+        "The path `$HOME/.foundry/foundry.toml` (or equivalent) exists and contains the expected key/value pairs."
+    ]
+}

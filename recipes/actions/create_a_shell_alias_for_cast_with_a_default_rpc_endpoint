@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 defines a small helper that obtains the user\u2019s Cosmos EVM HTTP JSON-RPC endpoint\u2014either from an environment variable or via a browser prompt\u2014and persists it to localStorage for reuse.",
+            "code": "export const getRpcEndpoint = () => {\n  // Attempt to read from a build-time environment variable first\n  const envUrl = process.env.NEXT_PUBLIC_RPC_URL || '';\n  if (envUrl) {\n    localStorage.setItem('COSMOS_RPC_URL', envUrl);\n    return envUrl;\n  }\n\n  // Fallback: ask the user\n  const url = window.prompt(\n    'Enter the HTTP JSON-RPC URL of your Cosmos EVM node (e.g., http://localhost:8545)',\n    'http://localhost:8545'\n  );\n\n  if (!url) {\n    throw new Error('RPC URL is required to proceed.');\n  }\n\n  // Persist so later steps can reuse it\n  localStorage.setItem('COSMOS_RPC_URL', url);\n  return url;\n};",
+            "usage": "const rpcUrl = getRpcEndpoint();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 validates that the supplied RPC endpoint is reachable by performing a JSON-RPC `eth_blockNumber` call and returns the latest block height.",
+            "code": "export const validateRpcEndpoint = async (rpcUrl) => {\n  const payload = {\n    jsonrpc: '2.0',\n    id: 1,\n    method: 'eth_blockNumber',\n    params: []\n  };\n\n  try {\n    const response = await fetch(rpcUrl, {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(payload)\n    });\n\n    if (!response.ok) {\n      throw new Error(`Endpoint returned HTTP ${response.status}`);\n    }\n\n    const data = await response.json();\n\n    if (data.error) {\n      throw new Error(`RPC error: ${data.error.message}`);\n    }\n\n    // Convert the hex string (e.g., \"0x10d4f\") to an integer\n    const blockNumber = parseInt(data.result, 16);\n    console.info(`RPC endpoint is healthy. Current block: ${blockNumber}`);\n    return blockNumber;\n  } catch (error) {\n    console.error(error);\n    throw new Error(`Failed to validate RPC endpoint: ${error.message}`);\n  }\n};",
+            "usage": "const latestBlock = await validateRpcEndpoint(rpcUrl);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 is a Python script that appends an alias for Foundry\u2019s `cast` command\u2014pre-configured with the user\u2019s RPC URL\u2014to the appropriate shell profile (`~/.bashrc` or `~/.zshrc`). The script is idempotent and skips duplication if the alias already exists.",
+            "code": "#!/usr/bin/env python3\n\"\"\"\nadd_cast_alias.py\n\nAppends an alias for the `cast` command that includes the supplied\nRPC endpoint to the user's shell profile (either ~/.zshrc or ~/.bashrc).\n\"\"\"\n\nimport os\nfrom pathlib import Path\n\n\ndef detect_profile() -> Path:\n    \"\"\"Infer which shell profile should be modified.\"\"\"\n    shell = os.environ.get(\"SHELL\", \"\")\n    if shell.endswith(\"zsh\"):\n        return Path.home() / \".zshrc\"\n    return Path.home() / \".bashrc\"\n\n\ndef add_cast_alias(rpc_url: str, profile_path: Path | None = None) -> None:\n    \"\"\"Append (or skip if present) the alias line to the profile file.\"\"\"\n    if not rpc_url:\n        raise ValueError(\"rpc_url is required\")\n\n    profile_path = profile_path or detect_profile()\n    alias_line = f'alias cast=\"cast --rpc-url {rpc_url}\"'\n\n    # Skip if alias already exists\n    if profile_path.exists() and alias_line in profile_path.read_text():\n        print(\"Alias already present; nothing to do.\")\n        return\n\n    with profile_path.open(\"a\", encoding=\"utf-8\") as fp:\n        fp.write(\"\\n# Added by Cosmos EVM setup script\\n\")\n        fp.write(alias_line + \"\\n\")\n\n    print(f\"Alias successfully written to {profile_path}\")\n\n\nif __name__ == \"__main__\":\n    rpc_url = os.environ.get(\"COSMOS_RPC_URL\") or input(\"Enter the RPC URL: \").strip()\n    add_cast_alias(rpc_url)",
+            "usage": "python3 add_cast_alias.py   # set COSMOS_RPC_URL env-var or provide input when prompted"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 provides a small Python utility that launches a new login shell so the updated profile (and thus the new `cast` alias) is immediately available.",
+            "code": "#!/usr/bin/env python3\n\"\"\"\nreload_shell.py\n\nStarts a new login shell so that any recently modified shell profile\n(e.g., ~/.bashrc or ~/.zshrc) is reloaded, making the 'cast' alias\nimmediately available.\n\"\"\"\n\nimport os\nimport subprocess\nimport sys\n\n\ndef reload_shell() -> None:\n    shell_path = os.environ.get(\"SHELL\", \"/bin/bash\")\n    print(f\"Spawning a fresh login shell ({shell_path} -l)...\")\n    print(\"After this command finishes, verify the alias with `type cast`.\")\n    try:\n        subprocess.run([shell_path, \"-l\"], check=True)\n    except subprocess.CalledProcessError as exc:\n        print(f\"Failed to reload shell: {exc}\", file=sys.stderr)\n        sys.exit(1)\n\n\nif __name__ == \"__main__\":\n    reload_shell()",
+            "usage": "python3 reload_shell.py   # a new shell session opens; exit it to return"
+        }
+    ]
+}

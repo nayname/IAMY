@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Displays a browser prompt and returns whatever string the user types\u2014in this case the Ether amount we want to convert.",
+            "function": "getUserEvmAddressInput()",
+            "usage": "const etherAmount = getUserEvmAddressInput();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Transforms a human-readable token amount into its smallest unit; passing 18 decimals turns the Ether value into Wei.",
+            "function": "convertToBaseUnits(amount, decimals)",
+            "usage": "const weiAmount = convertToBaseUnits(etherAmount, 18);"
+        }
+    ],
+    "frontend": [
+        "const etherAmount = getUserEvmAddressInput();//step: 1 Tool: prompt_user Desciption: Request the decimal Ether amount to convert (e.g., \"0.42\").",
+        "const weiAmount = convertToBaseUnits(etherAmount, 18);//step: 2 Tool: cast_cli Desciption: Execute `cast to-wei <amount>` to convert the supplied Ether value into Wei units."
+    ],
+    "backend": [],
+    "intent": "Convert an Ether value to Wei (cast to-wei)",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "prompt_user",
+            "description": "Request the decimal Ether amount to convert (e.g., \"0.42\")."
+        },
+        {
+            "step": 2,
+            "tool": "cast_cli",
+            "description": "Execute `cast to-wei <amount>` to convert the supplied Ether value into Wei units."
+        }
+    ],
+    "outcome_checks": [
+        "The command returns a single integer with no decimal point.",
+        "Verify that the integer equals <amount> \u00d7 10^18 (standard 18-decimal conversion)."
+    ]
+}

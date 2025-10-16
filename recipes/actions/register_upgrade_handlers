@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Defines a small Python helper that programmatically searches the Cosmos SDK documentation for any SetUpgradeHandler examples.  This is useful when preparing an upgrade implementation.",
+            "code": "# backend/search_docs.py\nimport requests\nfrom typing import List, Dict\n\n\ndef search_cosmos_docs(query: str, limit: int = 10) -> List[Dict[str, str]]:\n    '''\n    Simple wrapper around the public ReadTheDocs search endpoint used by the\n    Cosmos SDK documentation site.\n\n    Args:\n        query (str): search string, e.g. \"SetUpgradeHandler example\".\n        limit (int): maximum number of results to return.\n\n    Returns:\n        list[dict]: Each dict contains 'title' and 'link' keys.\n\n    Raises:\n        RuntimeError: if the request fails or the endpoint is unreachable.\n    '''\n    base_url = 'https://evm.cosmos.network/search'\n    try:\n        resp = requests.get(base_url, params={'q': query}, timeout=10)\n        resp.raise_for_status()\n    except Exception as e:\n        raise RuntimeError(f'Failed to search Cosmos docs: {e}') from e\n\n    # The HTML response contains <a class=\\\"result-link\\\" href=\\\"URL\\\">Title</a>\n    results = []\n    for line in resp.text.splitlines():\n        if 'class=\\\"result-link\\\"' in line:\n            try:\n                href_part = line.split('href=\\\"')[1]\n                link = href_part.split('\\\"')[0]\n                title = href_part.split('\\\">')[1].split('</a>')[0]\n                results.append({'title': title.strip(), 'link': link.strip()})\n                if len(results) >= limit:\n                    break\n            except IndexError:\n                continue\n    return results\n",
+            "usage": "results = search_cosmos_docs('Cosmos SDK SetUpgradeHandler example')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Adds an upgrade name/height constant and wires a SetUpgradeHandler call into the application so migrations can execute once the chain reaches the voted height.",
+            "code": "/* app/upgrades.go */\npackage app\n\nimport (\n    \"context\"\n\n    upgradetypes \"cosmossdk.io/x/upgrade/types\"\n    sdk \"github.com/cosmos/cosmos-sdk/types\"\n    \"github.com/cosmos/cosmos-sdk/types/module\"\n)\n\n// Upgrade metadata\nconst (\n    UpgradeName   = \"v1.2.0\"\n    UpgradeHeight = 1234567 // replace with governance-defined height\n)\n\n// RegisterUpgradeHandlers wires the upgrade handler into the binary.\nfunc (app *App) RegisterUpgradeHandlers() {\n    app.UpgradeKeeper.SetUpgradeHandler(\n        UpgradeName,\n        func(ctx context.Context, plan upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {\n            sdkCtx := sdk.UnwrapSDKContext(ctx)\n            sdkCtx.Logger().Info(\"Running upgrade handler\", \"plan\", plan.Name)\n\n            // Run in-place module migrations\n            newVM, err := app.ModuleManager.RunMigrations(ctx, app.configurator, fromVM)\n            if err != nil {\n                return nil, err\n            }\n\n            // --- add any custom migration logic below ---\n\n            sdkCtx.Logger().Info(\"Upgrade handler completed\", \"plan\", plan.Name)\n            return newVM, nil\n        },\n    )\n}\n",
+            "usage": "Copy the code into app/upgrades.go, update UpgradeName/UpgradeHeight, then `go vet ./... && go test ./...` to confirm it compiles."
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Registers a StoreLoader so the binary knows the exact height at which it must perform the store upgrade.",
+            "code": "/* app/app.go */\n\nimport (\n    upgradetypes \"cosmossdk.io/x/upgrade/types\"\n)\n\n/*\ninside NewApp (or your app constructor) add the store loader so the daemon\nknows when to apply the migrations.\n*/\n\nif err := app.UpgradeKeeper.SetStoreLoader(\n    upgradetypes.UpgradeStoreLoader(UpgradeHeight, &upgradetypes.Plan{Name: UpgradeName}),\n); err != nil {\n    panic(err)\n}\n",
+            "usage": "Place the snippet inside your `NewApp` function, just after the UpgradeKeeper is instantiated."
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Shell script that rebuilds the binary with the freshly-added upgrade logic.",
+            "code": "# scripts/build.sh\n#!/usr/bin/env bash\nset -euo pipefail\n\necho \"Tidying go.mod...\"\ngo mod tidy\n\necho \"Compiling application...\"\ngo build -o build/mychaind ./cmd/mychaind\n\necho \"\u2705 Binary ready at build/mychaind\"\n",
+            "usage": "Run `chmod +x scripts/build.sh && ./scripts/build.sh` to produce the new binary."
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "End-to-end script that boots a single-node network, fast-forwards to the upgrade height, and verifies the handler fired by grepping the logs.",
+            "code": "# scripts/simulate_upgrade.sh\n#!/usr/bin/env bash\nset -euo pipefail\n\nBINARY=${BINARY:-mychaind}\nCHAIN_ID=upgrade-sim\nUPGRADE_HEIGHT=${UPGRADE_HEIGHT:-1234567}\n\n# 0. Cleanup\nrm -rf ~/.${BINARY}\n\n# 1. Initialise a single-node chain\n$BINARY init local --chain-id $CHAIN_ID\n\n# 2. Create a local key\necho -e \"12345678\\n12345678\\n\" | $BINARY keys add validator --keyring-backend test\n\n# 3. Allocate genesis funds\n$BINARY add-genesis-account $($BINARY keys show validator -a --keyring-backend test) 100000000stake\n\n# 4. Generate and collect a gentx so the node starts with a validator\n$BINARY gentx validator 100000000stake --keyring-backend test --chain-id $CHAIN_ID\n$BINARY collect-gentxs\n\necho \"Starting node\u2026 (logs will be saved to node.log)\"\n$BINARY start --minimum-gas-prices 0stake --pruning=nothing --log_level info 2>&1 | tee node.log &\nNODE_PID=$!\n\n# 5. Wait until the chain reaches the upgrade height\necho \"Waiting until block height >= $UPGRADE_HEIGHT\"\nwhile true; do\n    HEIGHT=$(curl -s localhost:26657/status | jq -r .result.sync_info.latest_block_height)\n    echo \"Current height: $HEIGHT\"\n    if [ \"$HEIGHT\" -ge \"$UPGRADE_HEIGHT\" ]; then\n        echo \"Reached target height, shutting down\u2026\"\n        break\n    fi\n    sleep 5\ndone\n\nkill $NODE_PID\necho \"Node stopped. Check node.log for \\\"Upgrade handler completed\\\" to confirm successful migration.\"\n",
+            "usage": "Make executable (`chmod +x scripts/simulate_upgrade.sh`) then run `UPGRADE_HEIGHT=1234567 ./scripts/simulate_upgrade.sh` and inspect `node.log`."
+        }
+    ]
+}

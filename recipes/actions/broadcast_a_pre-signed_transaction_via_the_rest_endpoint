@@ -1,0 +1,33 @@
+{
+    "label": "send",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 creates a Python helper that invokes the chain CLI to build an unsigned transaction and stores it as `unsigned.json`.",
+            "code": "import subprocess\nfrom typing import List\n\n\ndef construct_unsigned_tx_cli(appd_cmd: str,\n                               module: str,\n                               msg: str,\n                               msg_args: List[str],\n                               chain_id: str,\n                               fees: str,\n                               unsigned_path: str = \"unsigned.json\") -> str:\n    \"\"\"Construct an unsigned transaction using the <appd> CLI.\n\n    Args:\n        appd_cmd:  Binary name or full path to the chain CLI (e.g., `neutrond`).\n        module:    Cosmos SDK module (e.g., `bank`).\n        msg:       Message within that module (e.g., `send`).\n        msg_args:  Additional positional CLI arguments for the message.\n        chain_id:  Target chain-id.\n        fees:      Fee string, e.g. `2000untrn`.\n        unsigned_path: Output path for the unsigned JSON.\n\n    Returns:\n        Path to the unsigned JSON on success.\n    \"\"\"\n\n    cmd = [\n        appd_cmd, \"tx\", module, msg,\n        *msg_args,\n        \"--generate-only\",\n        f\"--chain-id={chain_id}\",\n        f\"--fees={fees}\",\n        \"-o\", \"json\"\n    ]\n\n    try:\n        result = subprocess.run(cmd, check=True, capture_output=True, text=True)\n        with open(unsigned_path, \"w\", encoding=\"utf-8\") as f:\n            f.write(result.stdout)\n        return unsigned_path\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f\"Failed to construct unsigned tx: {e.stderr}\") from e",
+            "usage": "# Example\nunsigned_tx_path = construct_unsigned_tx_cli(\n    appd_cmd=\"neutrond\",\n    module=\"bank\",\n    msg=\"send\",\n    msg_args=[\"<from_addr>\", \"<to_addr>\", \"10000untrn\"],\n    chain_id=\"neutron-1\",\n    fees=\"2000untrn\"\n)\nprint(f\"Unsigned TX saved to {unsigned_tx_path}\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 signs the unsigned transaction using a key in the node\u2019s local keyring, producing `signed.json` that contains the base-64 encoded `tx_bytes` field.",
+            "code": "import subprocess\n\n\ndef sign_tx_cli(appd_cmd: str,\n                unsigned_path: str,\n                from_key: str,\n                chain_id: str,\n                signed_path: str = \"signed.json\") -> str:\n    \"\"\"Sign an unsigned transaction using the <appd> CLI.\n\n    Args:\n        appd_cmd:    Binary name or full path to the chain CLI.\n        unsigned_path: Path to the unsigned JSON produced in Step 1.\n        from_key:    Name of the key in the CLI keyring.\n        chain_id:    Target chain-id.\n        signed_path: Output file for the signed JSON.\n\n    Returns:\n        Path to the signed JSON on success.\n    \"\"\"\n\n    cmd = [\n        appd_cmd, \"tx\", \"sign\", unsigned_path,\n        f\"--from={from_key}\",\n        f\"--chain-id={chain_id}\",\n        \"-o\", \"json\"\n    ]\n    try:\n        result = subprocess.run(cmd, check=True, capture_output=True, text=True)\n        with open(signed_path, \"w\", encoding=\"utf-8\") as f:\n            f.write(result.stdout)\n        return signed_path\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f\"Failed to sign tx: {e.stderr}\") from e",
+            "usage": "# Example\nsigned_tx_path = sign_tx_cli(\n    appd_cmd=\"neutrond\",\n    unsigned_path=\"unsigned.json\",\n    from_key=\"my-key\",\n    chain_id=\"neutron-1\"\n)\nprint(f\"Signed TX saved to {signed_tx_path}\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 parses `signed.json` and extracts the base-64 encoded `tx_bytes` ready for broadcasting.",
+            "code": "import json\nfrom pathlib import Path\n\n\ndef extract_tx_bytes(signed_path: str = \"signed.json\") -> str:\n    \"\"\"Extract the `tx_bytes` field from the signed transaction JSON.\n\n    Args:\n        signed_path: Path to the signed JSON produced in Step 2.\n\n    Returns:\n        Base-64 encoded transaction bytes.\n    \"\"\"\n    try:\n        data = json.loads(Path(signed_path).read_text(encoding=\"utf-8\"))\n        tx_bytes = data.get(\"tx_bytes\")\n        if not tx_bytes:\n            raise ValueError(\"`tx_bytes` not found in signed JSON.\")\n        return tx_bytes\n    except (json.JSONDecodeError, FileNotFoundError, ValueError) as e:\n        raise RuntimeError(f\"Failed to extract tx_bytes: {str(e)}\") from e",
+            "usage": "# Example\nbase64_bytes = extract_tx_bytes(\"signed.json\")\nprint(f\"tx_bytes: {base64_bytes[:30]}\u2026\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 broadcasts the base-64 transaction bytes to the chain\u2019s REST endpoint and returns the node\u2019s response.",
+            "code": "import requests\n\n\ndef broadcast_tx_rest(tx_bytes: str,\n                       endpoint: str = \"http://localhost:1317/cosmos/tx/v1beta1/txs\",\n                       mode: str = \"BROADCAST_MODE_SYNC\",\n                       timeout: int = 30) -> dict:\n    \"\"\"Broadcast `tx_bytes` to a Cosmos SDK REST endpoint.\n\n    Args:\n        tx_bytes:  Base-64 encoded transaction bytes from Step 3.\n        endpoint:  REST endpoint for broadcasting transactions.\n        mode:      Broadcast mode (`BROADCAST_MODE_SYNC`, `BROADCAST_MODE_BLOCK`, or `BROADCAST_MODE_ASYNC`).\n        timeout:   HTTP request timeout in seconds.\n\n    Returns:\n        JSON response from the node.\n    \"\"\"\n    payload = {\n        \"tx_bytes\": tx_bytes,\n        \"mode\": mode\n    }\n    headers = {\"Content-Type\": \"application/json\"}\n    try:\n        resp = requests.post(endpoint, json=payload, headers=headers, timeout=timeout)\n        resp.raise_for_status()\n        return resp.json()\n    except requests.RequestException as e:\n        raise RuntimeError(f\"Failed to broadcast tx: {str(e)}\") from e",
+            "usage": "# Example\nbroadcast_result = broadcast_tx_rest(base64_bytes, mode=\"BROADCAST_MODE_SYNC\")\nprint(broadcast_result)"
+        }
+    ]
+}

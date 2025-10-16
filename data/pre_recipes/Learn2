@@ -1,0 +1,153 @@
+[
+    {
+        "intent": "Create and add a custom module to the app wiring config",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "scaffold_module",
+                "description": "Generate the boiler-plate for a new Cosmos SDK module (e.g. `ignite scaffold module mymodule`) or manually create the `x/mymodule` folder with keeper, types, and `module.go` files."
+            },
+            {
+                "step": 2,
+                "tool": "define_proto_module_config",
+                "description": "Create `x/mymodule/module/v1/module.proto` that declares the `mymodule.v1.Module` config message and adds the `cosmos.app.v1alpha1.module` option so depinject can discover it."
+            },
+            {
+                "step": 3,
+                "tool": "generate_protobuf_code",
+                "description": "Run `make proto-gen` (or `buf generate`) to generate Go types from the new proto definitions."
+            },
+            {
+                "step": 4,
+                "tool": "update_app_config",
+                "description": "Open `app_config.go` (or `app.yaml`) and append the new module entry:  \n```\nmodules = append(modules, &mymodulev1.Module{})\n```  \nIf you need custom begin/end/\u200binit ordering, also add the module\u2019s name to the corresponding slices in the runtime/baseapp config."
+            },
+            {
+                "step": 5,
+                "tool": "wire_module_in_app_builder",
+                "description": "If the module is depinject-ready nothing else is required; otherwise call `app.RegisterModules(&mymodule)` and `app.RegisterStores(storetypes.NewKVStoreKey(mymodule.ModuleName))` before `appBuilder.Build()`."
+            },
+            {
+                "step": 6,
+                "tool": "build_and_run_app",
+                "description": "Run `go mod tidy && go test ./...` then start the node (`mychaind start`) to ensure the custom module is recognized."
+            }
+        ],
+        "outcome_checks": [
+            "The application compiles without errors and the node starts.",
+            "`app_config.go` (or `app.yaml`) lists `mymodule` in the modules section.",
+            "Querying `grpcurl \u2026 mymodule.v1.Query/Params` returns a valid response."
+        ]
+    },
+    {
+        "intent": "Set the order of BeginBlockers for modules",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_app_config",
+                "description": "Locate `app_config.go` (or the YAML equivalent) and find the runtime / baseapp module configuration that contains the `begin_blockers` slice."
+            },
+            {
+                "step": 2,
+                "tool": "edit_begin_blockers",
+                "description": "List module short names in the exact execution order you want, e.g.  \n```\nbegin_blockers: [upgrade, capability, auth, bank, staking, mymodule]\n```"
+            },
+            {
+                "step": 3,
+                "tool": "rebuild_application",
+                "description": "Run `go build ./...` to verify the config compiles."
+            },
+            {
+                "step": 4,
+                "tool": "restart_node",
+                "description": "Start the chain so BaseApp\u2019s `BeginBlocker` order is applied at runtime."
+            }
+        ],
+        "outcome_checks": [
+            "The node boots without panics related to missing BeginBlockers.",
+            "Startup logs (set `--trace`) show modules executing in the new order."
+        ]
+    },
+    {
+        "intent": "Run the InitChainer to initialize state from genesis",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prepare_genesis_state",
+                "description": "Populate `genesis.json` with the desired state for each module, including your custom module\u2019s GenesisState."
+            },
+            {
+                "step": 2,
+                "tool": "ensure_init_genesis_registration",
+                "description": "Confirm the module\u2019s `AppModule` implements `InitGenesis` and that the module name appears in the `init_genesis` slice (app config or ModuleManager)."
+            },
+            {
+                "step": 3,
+                "tool": "start_chain",
+                "description": "Run `mychaind start --home <path>`; the ABCI `InitChain` call will execute the aggregated InitGenesis functions."
+            }
+        ],
+        "outcome_checks": [
+            "Chain starts from an empty data directory without errors.",
+            "A state query (e.g. `grpcurl \u2026 mymodule.v1.Query/Params`) returns the values seeded in genesis."
+        ]
+    },
+    {
+        "intent": "Mount KV stores for new module",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "create_store_key",
+                "description": "Add `var KeyMyModule = storetypes.NewKVStoreKey(mymoduletypes.StoreKey)` in the module and export it."
+            },
+            {
+                "step": 2,
+                "tool": "register_store_with_app",
+                "description": "If using depinject, nothing extra is required\u2014stores are mounted automatically.  \nFor non-depinject paths, call `app.RegisterStores(KeyMyModule)` before building the app."
+            },
+            {
+                "step": 3,
+                "tool": "inject_store_service_in_keeper",
+                "description": "Instantiate the keeper with `runtime.NewKVStoreService(app.GetKey(mymoduletypes.StoreKey))` so it can read/write state."
+            },
+            {
+                "step": 4,
+                "tool": "compile_and_run",
+                "description": "`go test ./...` then run the node to verify the store mounts."
+            }
+        ],
+        "outcome_checks": [
+            "The node boots without the panic: \"unregistered store key\".",
+            "State writes through the keeper persist across blocks (confirmed via query)."
+        ]
+    },
+    {
+        "intent": "Register gRPC gateway routes for my module",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "implement_grpc_services",
+                "description": "Define `Query` and (optionally) `Msg` services in `proto/mymodule/v1/query.proto` and implement them in the keeper."
+            },
+            {
+                "step": 2,
+                "tool": "register_services_in_app_module",
+                "description": "Inside `AppModule.RegisterServices`, call  \n```\nquerypb.RegisterQueryServer(cfg.QueryServer(), keeper)\n```  \n(and the Msg server if applicable)."
+            },
+            {
+                "step": 3,
+                "tool": "register_grpc_gateway_routes",
+                "description": "In `cmd/mychaind/main.go` (or the server package), add  \n```\nquerypb.RegisterQueryHandlerClient(ctx, mux, querypb.NewQueryClient(grpcConn))\n```  \nso REST endpoints are generated by grpc-gateway."
+            },
+            {
+                "step": 4,
+                "tool": "run_rest_server",
+                "description": "Start the node with REST enabled (`--grpc-web` or separate gateway binary) to expose `/cosmos/mymodule/v1/...` HTTP routes."
+            }
+        ],
+        "outcome_checks": [
+            "`grpcurl` calls to the gRPC service succeed.",
+            "HTTP GET on the corresponding REST path returns the same data (confirming gateway registration)."
+        ]
+    }
+]

@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "No single implemented function in the provided codebase gathers sender, recipient and value simultaneously.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "No implemented helper was found that creates the exact {from,to,value,data:\"0x\"} JSON payload needed for gas-estimation.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "connect_rpc_endpoint verifies that a supplied JSON-RPC URL is reachable and returns it for subsequent calls.",
+            "function": "connect_rpc_endpoint(rpc_endpoint)",
+            "usage": "rpc_url = connect_rpc_endpoint('https://mainnet.infura.io/v3/YOUR_KEY')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "json_rpc_call performs an arbitrary JSON-RPC request, allowing us to invoke eth_estimateGas with the previously built transaction object.",
+            "function": "json_rpc_call(method, params, endpoint='http://localhost:8545')",
+            "usage": "gas_hex = json_rpc_call('eth_estimateGas', [txObject], rpc_url)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "No utility function exists in the codebase to convert the returned hex gas value to decimal and add a safety buffer.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [
+        "undef//step: 1 Tool: collect_transfer_parameters Desciption: Gather sender address, recipient address, and value (in Wei).",
+        "undef//step: 2 Tool: construct_tx_object Desciption: Build a JSON object {from,to,value,data:\"0x\"} suitable for gas estimation."
+    ],
+    "backend": [
+        "rpc_url = connect_rpc_endpoint('https://mainnet.infura.io/v3/YOUR_KEY')#step: 3 Tool: select_rpc_endpoint Desciption: Point to a JSON-RPC node that supports eth_estimateGas.",
+        "gas_hex = json_rpc_call('eth_estimateGas', [txObject], rpc_url)#step: 4 Tool: eth_estimateGas Desciption: Send {\"method\":\"eth_estimateGas\",\"params\":[<txObject>],\"id\":1,\"jsonrpc\":\"2.0\"} to obtain the gas needed.",
+        "undef#step: 5 Tool: parse_hex_to_decimal Desciption: Convert the returned gas value from hex to decimal and optionally add a safety buffer (e.g., +10%)."
+    ],
+    "intent": "Estimate the gas required for a simple native-token transfer",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "collect_transfer_parameters",
+            "description": "Gather sender address, recipient address, and value (in Wei)."
+        },
+        {
+            "step": 2,
+            "tool": "construct_tx_object",
+            "description": "Build a JSON object {from,to,value,data:\"0x\"} suitable for gas estimation."
+        },
+        {
+            "step": 3,
+            "tool": "select_rpc_endpoint",
+            "description": "Point to a JSON-RPC node that supports eth_estimateGas."
+        },
+        {
+            "step": 4,
+            "tool": "eth_estimateGas",
+            "description": "Send {\"method\":\"eth_estimateGas\",\"params\":[<txObject>],\"id\":1,\"jsonrpc\":\"2.0\"} to obtain the gas needed."
+        },
+        {
+            "step": 5,
+            "tool": "parse_hex_to_decimal",
+            "description": "Convert the returned gas value from hex to decimal and optionally add a safety buffer (e.g., +10%)."
+        }
+    ],
+    "outcome_checks": [
+        "Returned gas is a 0x-prefixed hex string that converts to an integer \u2265 21000.",
+        "If the sender has sufficient balance, the same gas value should allow the real transaction to succeed without out-of-gas errors."
+    ]
+}

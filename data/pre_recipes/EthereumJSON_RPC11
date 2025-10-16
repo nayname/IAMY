@@ -1,0 +1,112 @@
+[
+    {
+        "intent": "Lock a specific account so it can no longer send transactions",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_account_address",
+                "description": "Obtain the Ethereum-style address of the account the user wishes to lock."
+            },
+            {
+                "step": 2,
+                "tool": "authenticate_rpc",
+                "description": "Ensure the JSON-RPC endpoint is accessed with the required authentication headers or bearer token (the personal_* namespace is private)."
+            },
+            {
+                "step": 3,
+                "tool": "personal_lockAccount",
+                "description": "Invoke the personal_lockAccount RPC method with the target address to remove the decrypted key from memory."
+            }
+        ],
+        "outcome_checks": [
+            "RPC call returns a JSON-RPC success response (no error field).",
+            "Subsequent attempts to sign or send a transaction from that address fail unless the account is unlocked again."
+        ]
+    },
+    {
+        "intent": "Initialize a new wallet at a provided URL",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_wallet_url",
+                "description": "Collect and validate the remote URL where the wallet keystore will be created."
+            },
+            {
+                "step": 2,
+                "tool": "authenticate_rpc",
+                "description": "Authenticate to the node because personal_initializeWallet is a private method."
+            },
+            {
+                "step": 3,
+                "tool": "personal_initializeWallet",
+                "description": "Call personal_initializeWallet(url) to generate a new private key and create a wallet at the specified location. Capture the returned key details."
+            }
+        ],
+        "outcome_checks": [
+            "RPC response includes the newly\u2013generated private key or wallet identifier with no error.",
+            "A follow-up personal_listWallets or key-listing command shows the newly initialized wallet or its accounts."
+        ]
+    },
+    {
+        "intent": "List all wallets managed by the node",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "authenticate_rpc",
+                "description": "Authenticate to the JSON-RPC endpoint (personal namespace)."
+            },
+            {
+                "step": 2,
+                "tool": "personal_listWallets",
+                "description": "Invoke personal_listWallets with an empty parameter array to retrieve the wallet list."
+            }
+        ],
+        "outcome_checks": [
+            "RPC call completes without error (result may be an array or null depending on node support).",
+            "If wallets are supported, array length matches the number of initialized wallets; if not supported, result is null as documented."
+        ]
+    },
+    {
+        "intent": "Run mutex profiling for 10 seconds and write output to mutex.prof",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "authenticate_rpc",
+                "description": "Obtain privileged access needed for debug_* RPC calls."
+            },
+            {
+                "step": 2,
+                "tool": "prepare_profile_parameters",
+                "description": "Set duration = 10 (seconds) and outputPath = \"mutex.prof\"."
+            },
+            {
+                "step": 3,
+                "tool": "debug_mutexProfile",
+                "description": "Call debug_mutexProfile(outputPath, duration) to start profiling and write the contention profile to disk after 10 s."
+            }
+        ],
+        "outcome_checks": [
+            "RPC response confirms profiling started (typically returns \"true\" or an OK message).",
+            "After ~10 s, the file mutex.prof exists at the node working directory and is non-empty."
+        ]
+    },
+    {
+        "intent": "Set the mutex profile sampling rate to 1 (enable full sampling)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "authenticate_rpc",
+                "description": "Authenticate with the node; debug_setMutexProfileFraction is private."
+            },
+            {
+                "step": 2,
+                "tool": "debug_setMutexProfileFraction",
+                "description": "Call debug_setMutexProfileFraction(1) to enable mutex contention sampling on every operation."
+            }
+        ],
+        "outcome_checks": [
+            "RPC call succeeds and returns the previous sampling fraction.",
+            "A subsequent call to debug_setMutexProfileFraction with no arguments or to retrieve the fraction reports the new value as 1."
+        ]
+    }
+]

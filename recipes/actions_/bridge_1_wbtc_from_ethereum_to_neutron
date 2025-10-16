@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Requests the user to connect MetaMask and verifies they hold at least 1 WBTC and enough ETH for gas.",
+            "function": "connectEthWallet()",
+            "usage": "const { account, wbtcBalance } = await connectEthWallet();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Submits an ERC-20 approve transaction so the bridge contract can spend 1 WBTC from the user\u2019s wallet.",
+            "function": "approveErc20Spend({ ownerAddress, bridgeAddress, amountSats })",
+            "usage": "await approveErc20Spend({ ownerAddress: account, bridgeAddress: BRIDGE_ADDR, amountSats: \"100000000\" });"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Calls the bridge\u2019s deposit method to lock 1 WBTC on Ethereum and embed the destination Neutron address.",
+            "function": "depositWbtcToBridge({ ownerAddress, bridgeAddress, neutronAddress, amountSats })",
+            "usage": "const txHash = await depositWbtcToBridge({ ownerAddress: account, bridgeAddress: BRIDGE_ADDR, neutronAddress: NEUTRON_ADDR, amountSats: \"100000000\" });"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Polls the Ethereum network until the deposit transaction reaches the desired confirmation depth.",
+            "function": "wait_for_confirmations(tx_hash, confirmations=12, poll=15)",
+            "usage": "const receipt = wait_for_confirmations(txHash, 12);"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Monitors Neutron for the IBC packet that corresponds to the locked WBTC, confirming relay completion.",
+            "function": "wait_for_ibc_transfer(neutron_addr, source_tx, poll=15, timeout=1800)",
+            "usage": "const relayStatus = wait_for_ibc_transfer(NEUTRON_ADDR, txHash);"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Queries the user\u2019s Neutron balance to detect the arrival of bridged WBTC (IBC denom).",
+            "function": "query_wbtc_balance(neutron_addr, ibc_denom)",
+            "usage": "const balance = query_wbtc_balance(NEUTRON_ADDR, IBC_WBTC_DENOM);"
+        }
+    ],
+    "frontend": [
+        "const { account, wbtcBalance } = await connectEthWallet();//step: 1 Tool: connect_eth_wallet Desciption: Prompt the user to connect MetaMask (or compatible) with at least 1 WBTC + gas on Ethereum mainnet.",
+        "await approveErc20Spend({ ownerAddress: account, bridgeAddress: BRIDGE_ADDR, amountSats: \"100000000\" });//step: 2 Tool: approve_erc20_spend Desciption: Call WBTC `approve()` allowing the Bridge contract to transfer 1 WBTC.",
+        "const txHash = await depositWbtcToBridge({ ownerAddress: account, bridgeAddress: BRIDGE_ADDR, neutronAddress: NEUTRON_ADDR, amountSats: \"100000000\" });//step: 3 Tool: call_ethereum_bridge_deposit Desciption: Invoke the Bridge contract\u2019s `deposit` or `lock` method for 1 WBTC, specifying the destination Neutron address in the payload."
+    ],
+    "backend": [
+        "const receipt = wait_for_confirmations(txHash, 12);#step: 4 Tool: monitor_eth_tx_confirmation Desciption: Wait for the Ethereum transaction to reach the required confirmation depth.",
+        "const relayStatus = wait_for_ibc_transfer(NEUTRON_ADDR, txHash);#step: 5 Tool: listen_bridge_relay Desciption: Track the bridge relayer or IBC relay status until a corresponding IBC packet is observed on Neutron.",
+        "const balance = query_wbtc_balance(NEUTRON_ADDR, IBC_WBTC_DENOM);#step: 6 Tool: query_neutron_bank_balance Desciption: Poll the user\u2019s Neutron address for the IBC-denominated WBTC balance (`ibc/\u2026wbtc`)."
+    ],
+    "intent": "Bridge 1 WBTC from Ethereum to Neutron",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "connect_eth_wallet",
+            "description": "Prompt the user to connect MetaMask (or compatible) with at least 1 WBTC + gas on Ethereum mainnet."
+        },
+        {
+            "step": 2,
+            "tool": "approve_erc20_spend",
+            "description": "Call WBTC `approve()` allowing the Bridge contract to transfer 1 WBTC."
+        },
+        {
+            "step": 3,
+            "tool": "call_ethereum_bridge_deposit",
+            "description": "Invoke the Bridge contract\u2019s `deposit` or `lock` method for 1 WBTC, specifying the destination Neutron address in the payload."
+        },
+        {
+            "step": 4,
+            "tool": "monitor_eth_tx_confirmation",
+            "description": "Wait for the Ethereum transaction to reach the required confirmation depth."
+        },
+        {
+            "step": 5,
+            "tool": "listen_bridge_relay",
+            "description": "Track the bridge relayer or IBC relay status until a corresponding IBC packet is observed on Neutron."
+        },
+        {
+            "step": 6,
+            "tool": "query_neutron_bank_balance",
+            "description": "Poll the user\u2019s Neutron address for the IBC-denominated WBTC balance (`ibc/\u2026wbtc`)."
+        }
+    ],
+    "outcome_checks": [
+        "Ethereum transaction succeeded and reached finality.",
+        "An IBC packet acknowledgement is logged on Neutron.",
+        "Neutron bank balance increased by exactly 1 WBTC (IBC denom)."
+    ]
+}

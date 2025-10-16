@@ -1,0 +1,19 @@
+{
+    "label": "send",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 exposes a FastAPI POST endpoint that broadcasts a pre-signed, base64-encoded Cosmos transaction via the REST (gRPC-gateway) route and returns the resulting txhash.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom typing import Optional\nimport httpx\n\napp = FastAPI()\n\n# Default LCD; override per-request if you run your own full node\nLCD_URL = \"https://lcd.cosmos.network\"\n\nclass BroadcastRequest(BaseModel):\n    tx_bytes: str                 # Base64-encoded signed transaction bytes (TxRaw)\n    mode: str = \"BROADCAST_MODE_SYNC\"   # sync | async | block\n    lcd_url: Optional[str] = None         # Optional custom REST endpoint\n\n@app.post(\"/api/broadcast_tx\")\nasync def broadcast_tx(req: BroadcastRequest):\n    \"\"\"Broadcast a signed tx and return the txhash.\"\"\"\n    lcd = req.lcd_url or LCD_URL\n    payload = {\"tx_bytes\": req.tx_bytes, \"mode\": req.mode}\n\n    async with httpx.AsyncClient(timeout=15.0) as client:\n        try:\n            res = await client.post(f\"{lcd}/cosmos/tx/v1beta1/txs\", json=payload)\n            res.raise_for_status()\n        except httpx.HTTPError as e:\n            raise HTTPException(status_code=502, detail=f\"Failed to broadcast tx: {e}\")\n\n    data = res.json()\n    txhash = data.get(\"tx_response\", {}).get(\"txhash\")\n    if not txhash:\n        raise HTTPException(status_code=500, detail=\"Broadcast response missing txhash\")\n\n    return {\"txhash\": txhash, \"raw_response\": data}",
+            "usage": "await fetch('/api/broadcast_tx', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ tx_bytes: base64Tx })\n}).then(r => r.json()).then(({ txhash }) => console.log(txhash));"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 adds a GET endpoint that polls the LCD until the transaction is included in a block (or a timeout is reached) and then returns the full TxResponse object.",
+            "code": "import asyncio\nfrom typing import Optional\nimport httpx\nfrom fastapi import HTTPException\n\n# Re-use the FastAPI `app` instance from Step 1\n\n@app.get(\"/api/wait_tx/{txhash}\")\nasync def wait_tx(\n    txhash: str,\n    lcd_url: Optional[str] = None,\n    timeout: int = 60,           # seconds before giving up\n    interval: float = 2.0        # seconds between polls\n):\n    \"\"\"Poll /cosmos/tx/v1beta1/txs/{txhash} until it appears in a block.\"\"\"\n    lcd = lcd_url or LCD_URL\n    deadline = asyncio.get_event_loop().time() + timeout\n\n    async with httpx.AsyncClient(timeout=10.0) as client:\n        while True:\n            try:\n                res = await client.get(f\"{lcd}/cosmos/tx/v1beta1/txs/{txhash}\")\n                if res.status_code == 200:\n                    data = res.json()\n                    height = int(data.get(\"tx_response\", {}).get(\"height\", \"0\"))\n                    if height > 0:\n                        return data  # Success!\n            except httpx.HTTPError:\n                # Network hiccup; ignore and retry\n                pass\n\n            if asyncio.get_event_loop().time() >= deadline:\n                raise HTTPException(status_code=504, detail=\"Timed out waiting for transaction to be included in a block\")\n\n            await asyncio.sleep(interval)",
+            "usage": "await fetch(`/api/wait_tx/${txhash}`)\n  .then(r => r.json())\n  .then(console.log)\n  .catch(console.error);"
+        }
+    ]
+}

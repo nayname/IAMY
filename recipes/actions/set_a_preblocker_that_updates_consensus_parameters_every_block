@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates a Python helper that inserts a Go `PreBlocker` function into `app/app.go`, allowing the application to update consensus parameters right before every block.",
+            "code": "# create_preblocker_fn.py\nimport os\nimport sys\nimport textwrap\n\n\ndef create_preblocker_fn(app_dir: str) -> None:\n    \"\"\"\n    Inserts a PreBlocker function in app/app.go that updates consensus params\n    at the beginning of every block.\n    \"\"\"\n    app_go_path = os.path.join(app_dir, \"app\", \"app.go\")\n    if not os.path.exists(app_go_path):\n        raise FileNotFoundError(f\"{app_go_path} not found\")\n\n    preblocker_code = textwrap.dedent('''\n\n// -------------------------- PreBlocker ----------------------------------\n// PreBlocker updates consensus parameters before every block is processed.\n//\n// Required imports (add to the import block in app/app.go):\n//   \"github.com/cosmos/cosmos-sdk/types\"\n//   abci \"github.com/cometbft/cometbft/abci/types\"\n//   tmtypes \"github.com/cometbft/cometbft/proto/tendermint/types\"\n//   \"time\"\nfunc PreBlocker(ctx sdk.Context, req abci.RequestPreBlock) {\n    // Example mutation: increase MaxGas every block\n    newParams := &tmtypes.ConsensusParams{\n        Block: &tmtypes.BlockParams{\n            MaxBytes: 22020096, // 21 MB\n            MaxGas:   10000000,\n        },\n        Evidence: &tmtypes.EvidenceParams{\n            MaxAgeDuration: 48 * time.Hour,\n            MaxAgeNumBlocks: 100000,\n        },\n        Validator: &tmtypes.ValidatorParams{\n            PubKeyTypes: []string{\"ed25519\"},\n        },\n    }\n\n    if err := app.BaseApp.UpdateConsensusParams(ctx, newParams); err != nil {\n        ctx.Logger().Error(\"failed to update consensus params\", \"err\", err)\n    }\n}\n// ------------------------------------------------------------------------\n''')\n\n    with open(app_go_path, \"r+\") as f:\n        content = f.read()\n        if \"func PreBlocker(\" in content:\n            print(\"PreBlocker already exists in file, skipping.\")\n            return\n        f.write(preblocker_code)\n    print(\"\u2705 PreBlocker function added to app/app.go\")\n\n\nif __name__ == \"__main__\":\n    # Usage: python create_preblocker_fn.py /absolute/path/to/your/app\n    target = sys.argv[1] if len(sys.argv) > 1 else \".\"\n    create_preblocker_fn(os.path.abspath(target))",
+            "usage": "python create_preblocker_fn.py /path/to/your/app"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Registers the newly-created `PreBlocker` by injecting `app.SetPreBlocker(PreBlocker)` inside the `NewApp` constructor.",
+            "code": "# register_preblocker.py\nimport os\nimport sys\nimport re\n\n\ndef register_preblocker(app_dir: str) -> None:\n    \"\"\"\n    Adds app.SetPreBlocker(PreBlocker) to the NewApp constructor so the PreBlocker executes every block.\n    \"\"\"\n    app_go_path = os.path.join(app_dir, \"app\", \"app.go\")\n    if not os.path.exists(app_go_path):\n        raise FileNotFoundError(f\"{app_go_path} not found\")\n\n    with open(app_go_path, \"r+\") as f:\n        content = f.read()\n        if \"SetPreBlocker(PreBlocker)\" in content:\n            print(\"PreBlocker already registered, skipping.\")\n            return\n\n        # Insert right before the final return statement inside NewApp\n        pattern = r\"func\\s+NewApp[\\s\\S]+?return\\s+app\"\n        match = re.search(pattern, content)\n        if not match:\n            print(\"Could not locate NewApp function; please register manually.\")\n            return\n\n        insert_idx = match.end() - len(\"return app\")\n        insertion = \"\\n    // Register the PreBlocker\\n    app.SetPreBlocker(PreBlocker)\\n\"\n        new_content = content[:insert_idx] + insertion + content[insert_idx:]\n\n        f.seek(0)\n        f.write(new_content)\n        f.truncate()\n\n    print(\"\u2705 PreBlocker registered in NewApp\")\n\n\nif __name__ == \"__main__\":\n    target = sys.argv[1] if len(sys.argv) > 1 else \".\"\n    register_preblocker(os.path.abspath(target))",
+            "usage": "python register_preblocker.py /path/to/your/app"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Builds the modified blockchain binary so the PreBlocker logic is embedded.",
+            "code": "# compile_binary.py\nimport os\nimport sys\nimport subprocess\n\n\ndef compile_binary(app_dir: str = \".\") -> None:\n    \"\"\"\n    Compiles the modified binary and installs it to $GOBIN.\n    \"\"\"\n    print(\"\ud83d\udd28 Compiling the blockchain binary \u2026\")\n    proc = subprocess.run([\"go\", \"install\", \"./...\"], cwd=app_dir, capture_output=True, text=True)\n    if proc.returncode != 0:\n        print(proc.stderr)\n        raise RuntimeError(\"Compilation failed\")\n    print(\"\u2705 Compilation successful. Binary available in your GOPATH/bin directory.\")\n\n\nif __name__ == \"__main__\":\n    compile_binary(sys.argv[1] if len(sys.argv) > 1 else \".\")",
+            "usage": "python compile_binary.py /path/to/your/app"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Bootstraps a single-node local network using the newly-built binary and keeps it running so blocks can be produced.",
+            "code": "# start_local_chain.py\nimport subprocess\nimport sys\nimport os\n\n\ndef start_local_chain(home: str = \"./data\", chain_id: str = \"localnet\", binary: str = \"appd\") -> None:\n    \"\"\"\n    Starts a single-node chain using the rebuilt binary.\n    \"\"\"\n    if not os.path.exists(home):\n        print(\"\ud83d\udd27 Initializing home directory\")\n        subprocess.run([binary, \"init\", \"validator\", \"--chain-id\", chain_id, \"--home\", home], check=True)\n        subprocess.run([binary, \"config\", \"chain-id\", chain_id, \"--home\", home], check=True)\n\n    print(\"\u26d3\ufe0f  Starting node \u2026 (Ctrl+C to stop)\")\n    try:\n        subprocess.run([binary, \"start\", \"--home\", home], check=True)\n    except KeyboardInterrupt:\n        print(\"Node stopped by user\")\n\n\nif __name__ == \"__main__\":\n    # Usage: python start_local_chain.py [home_dir] [chain_id] [binary]\n    start_local_chain(*(sys.argv[1:]))",
+            "usage": "python start_local_chain.py ./data localnet appd"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Queries the chain at successive block heights to confirm that consensus parameters were updated by the PreBlocker.",
+            "code": "# query_consensus_params.py\nimport subprocess\nimport sys\n\n\ndef query_consensus_params(height: int, binary: str = \"appd\") -> None:\n    \"\"\"\n    Queries consensus parameters for a given block height.\n    \"\"\"\n    cmd = [\n        binary,\n        \"query\",\n        \"params\",\n        \"subspace\",\n        \"consensus\",\n        \"1\",\n        \"--height\",\n        str(height),\n        \"--output\",\n        \"json\",\n    ]\n    result = subprocess.run(cmd, capture_output=True, text=True)\n    if result.returncode != 0:\n        print(result.stderr)\n        raise RuntimeError(\"Query failed\")\n    print(result.stdout)\n\n\nif __name__ == \"__main__\":\n    height = int(sys.argv[1]) if len(sys.argv) > 1 else 1\n    query_consensus_params(height)",
+            "usage": "python query_consensus_params.py 10"
+        }
+    ]
+}

@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Install all required EVM-compatibility libraries so your React app can talk to Cosmos-EVM chains via Wagmi/RainbowKit.",
+            "code": "# Using npm\nnpm install wagmi @rainbow-me/rainbowkit viem react react-dom\n\n# Or, if you prefer yarn\nyarn add wagmi @rainbow-me/rainbowkit viem react react-dom",
+            "usage": "Run these commands in your terminal from the root of your React (Vite, CRA, Next.js, etc.) project."
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Configure the chain(s) and RPC providers that Wagmi should use. Here we show Evmos as an example Cosmos-EVM chain.",
+            "code": "// src/lib/wagmi.ts\nimport { configureChains } from \"wagmi\";\nimport { evmos } from \"wagmi/chains\";                // Cosmos-EVM example\nimport { jsonRpcProvider } from \"wagmi/providers/jsonRpc\";\nimport { publicProvider } from \"wagmi/providers/public\";\n\n// 1\ufe0f\u20e3  Declare which chains your dApp supports\nconst supportedChains = [evmos];\n\n// 2\ufe0f\u20e3  Point Wagmi at at least one RPC provider\nexport const { chains, publicClient, webSocketPublicClient } = configureChains(\n  supportedChains,\n  [\n    jsonRpcProvider({\n      rpc: () => ({\n        http: \"https://eth.bd.evmos.org:8545\"      // Public Evmos RPC\n      })\n    }),\n    publicProvider()                                 // Fallback public provider\n  ]\n);\n",
+            "usage": "Import { chains, publicClient } from \"./lib/wagmi\" in any file that needs chain data or a client."
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Create a Wagmi client, wrap the entire React tree with WagmiConfig and RainbowKitProvider so every component can access wallet context.",
+            "code": "// src/App.tsx\nimport React from \"react\";\nimport \"@rainbow-me/rainbowkit/styles.css\";\n\nimport { WagmiConfig, createConfig } from \"wagmi\";\nimport { RainbowKitProvider, getDefaultWallets } from \"@rainbow-me/rainbowkit\";\n\nimport { chains, publicClient } from \"./lib/wagmi\";   // Step-2 exports\nimport ConnectWallet from \"./components/ConnectWallet\"; // Step-4 component\n\n// Generate default connectors (MetaMask, WalletConnect, etc.)\nconst { connectors } = getDefaultWallets({\n  appName: \"My Cosmos/EVM dApp\",\n  projectId: \"YOUR_WALLETCONNECT_PROJECT_ID\",       // \u2190 Replace with real ID\n  chains\n});\n\n// Create Wagmi client instance\nexport const wagmiConfig = createConfig({\n  autoConnect: true,\n  connectors,\n  publicClient\n});\n\nfunction App() {\n  return (\n    <WagmiConfig config={wagmiConfig}>\n      <RainbowKitProvider chains={chains}>\n        {/* Your routes / components go here */}\n        <ConnectWallet />\n      </RainbowKitProvider>\n    </WagmiConfig>\n  );\n}\n\nexport default App;\n",
+            "usage": "Use <App /> as the root component (e.g., render it in main.tsx or index.tsx) so all children gain wallet functionality."
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Display the RainbowKit connect button inside a React component and show the user\u2019s connected address using Wagmi hooks.",
+            "code": "// src/components/ConnectWallet.tsx\nimport React from \"react\";\nimport { ConnectButton } from \"@rainbow-me/rainbowkit\";\nimport { useAccount } from \"wagmi\";\n\nconst ConnectWallet: React.FC = () => {\n  const { address, isConnected } = useAccount();\n\n  return (\n    <div>\n      {/* RainbowKit component opens the wallet modal */}\n      <ConnectButton />\n\n      {/* Optional UI feedback */}\n      {isConnected && (\n        <p style={{ marginTop: \"1rem\" }}>\n          Connected address: {address}\n        </p>\n      )}\n    </div>\n  );\n};\n\nexport default ConnectWallet;\n",
+            "usage": "Just place <ConnectWallet /> anywhere in your JSX tree; the button will handle connection flows and display the connected address."
+        }
+    ]
+}

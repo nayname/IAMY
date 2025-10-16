@@ -1,0 +1,143 @@
+[
+    {
+        "intent": "Add a new wallet key to the local keyring",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "select_keyring_backend",
+                "description": "Determine and set the keyring backend (os, file, or memory) via the --keyring-backend flag or KEYRING_BACKEND env variable."
+            },
+            {
+                "step": 2,
+                "tool": "key_add",
+                "description": "Run '<chaind> keys add <key_name>' to generate a new key and store it in the chosen keyring."
+            },
+            {
+                "step": 3,
+                "tool": "securely_store_mnemonic",
+                "description": "Display the generated mnemonic and prompt the user to back it up in a secure location."
+            },
+            {
+                "step": 4,
+                "tool": "key_list",
+                "description": "Execute '<chaind> keys list' to verify the new key appears in the keyring."
+            }
+        ],
+        "outcome_checks": [
+            "The new key name is present in the key list output.",
+            "No errors were returned during key creation."
+        ]
+    },
+    {
+        "intent": "Query the current status of a running full node",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "rpc_call_status",
+                "description": "Call the Tendermint RPC endpoint GET /status or run '<chaind> status --node <rpc_url>'."
+            },
+            {
+                "step": 2,
+                "tool": "parse_node_status",
+                "description": "Extract latest block height, syncing status, and network ID from the returned JSON."
+            }
+        ],
+        "outcome_checks": [
+            "The response JSON contains non-zero latest_block_height.",
+            "sync_info.catching_up is false (or expected value) indicating machine health."
+        ]
+    },
+    {
+        "intent": "Query block at height 0 and confirm the node returns an error",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "rpc_call_block_by_height",
+                "description": "Request GET /block?height=0 (or '<chaind> query block 0')."
+            },
+            {
+                "step": 2,
+                "tool": "assert_error_for_height_0",
+                "description": "Expect and validate that the RPC response returns error code for invalid height (height must be > 0)."
+            }
+        ],
+        "outcome_checks": [
+            "RPC response contains an error object with code != 0.",
+            "Error message explicitly mentions height must be greater than 0."
+        ]
+    },
+    {
+        "intent": "Enable streaming services for KV stores",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "enable_state_streaming_config",
+                "description": "In app.toml, set 'streamers = [\"kinesis\", \"fs\", ...]' or programmatically pass 'streaming' options in app.go."
+            },
+            {
+                "step": 2,
+                "tool": "integrate_streaming_module",
+                "description": "Import the 'state/streaming' packages and register them with the BaseApp using 'app.SetStreamingManager(...)'."
+            },
+            {
+                "step": 3,
+                "tool": "rebuild_app_binary",
+                "description": "Compile the modified chain binary so the streaming manager is included."
+            },
+            {
+                "step": 4,
+                "tool": "restart_node_with_streaming",
+                "description": "Start the node with the new binary and updated configuration."
+            },
+            {
+                "step": 5,
+                "tool": "verify_streaming_output",
+                "description": "Confirm that KV store changes are being sent to the configured streaming sink (file system directory, Kinesis stream, etc.)."
+            }
+        ],
+        "outcome_checks": [
+            "Node logs show 'Streaming service enabled' at startup.",
+            "Streaming sink receives key-value change events in real time."
+        ]
+    },
+    {
+        "intent": "Create and sign a multi-signature transaction",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "create_multisig_pubkey_from_parties",
+                "description": "Combine individual public keys with '<chaind> keys add <name> --multisig=<key1>,<key2>,<key3> --multisig-threshold=<N>'."
+            },
+            {
+                "step": 2,
+                "tool": "add_multisig_signer_to_keyring",
+                "description": "Store the resulting multisig address in the keyring for future use."
+            },
+            {
+                "step": 3,
+                "tool": "construct_transaction",
+                "description": "Build an unsigned transaction (e.g., bank send) using the multisig address as the sender: '<chaind> tx bank send ... --generate-only'."
+            },
+            {
+                "step": 4,
+                "tool": "sign_tx_with_individual_keys",
+                "description": "Distribute the unsigned tx file and have each signer run '<chaind> tx sign ... --sign-mode=direct --from <signer_key>'."
+            },
+            {
+                "step": 5,
+                "tool": "combine_multisig_signatures",
+                "description": "Merge the partial signatures with '<chaind> tx multisign <unsigned.json> <multisig_account_name> <sig1.json> <sig2.json> ...'."
+            },
+            {
+                "step": 6,
+                "tool": "broadcast_combined_tx",
+                "description": "Broadcast the fully-signed transaction with '<chaind> tx broadcast <multisig_tx.json>'."
+            }
+        ],
+        "outcome_checks": [
+            "The combined transaction successfully passes CheckTx and is included in a block.",
+            "All required signatures (threshold) are present in the final tx.",
+            "Balances or state changes produced by the transaction are reflected on-chain."
+        ]
+    }
+]
