@@ -1,3 +1,4 @@
+import random
 import time
 import requests
 from typing import Dict, Any, List, Tuple, Optional, Union
@@ -3128,43 +3129,127 @@ def validate_recipient_address(address: str, expected_prefix: str = "cosmos") ->
 
 
 def build_send_tx(sender: str, recipient: str, amount: str = "1000stake", fee: str = "200stake", chain_id: str = "my-test-chain", outfile: str = "unsigned_tx.json") -> str:
-    """Create an unsigned MsgSend."""
-    cmd = ["simd", "tx", "bank", "send", sender, recipient, amount, "--generate-only", "--fees", fee, "--chain-id", chain_id, "--output", "json"]
-    try:
-        with open(outfile, "w", encoding="utf-8") as fp:
-            subprocess.run(cmd, check=True, text=True, stdout=fp)
-        if not os.path.exists(outfile):
-            raise RuntimeError("Unsigned TX file was not created")
-        return outfile
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to build tx: {e.stderr}") from e
+    """Mocked: create a fake unsigned MsgSend transaction JSON file."""
+
+    # Simulate a realistic unsigned transaction structure
+    mock_tx = {
+        "body": {
+            "messages": [
+                {
+                    "@type": "/cosmos.bank.v1beta1.MsgSend",
+                    "from_address": sender,
+                    "to_address": recipient,
+                    "amount": [{"denom": amount[len(''.join(filter(str.isdigit, amount))):],
+                                "amount": ''.join(filter(str.isdigit, amount))}]
+                }
+            ],
+            "memo": "",
+            "timeout_height": "0",
+        },
+        "auth_info": {
+            "fee": {
+                "amount": [{"denom": fee[len(''.join(filter(str.isdigit, fee))):],
+                            "amount": ''.join(filter(str.isdigit, fee))}],
+                "gas_limit": "200000",
+            },
+            "signer_infos": []
+        },
+        "signatures": [],
+        "chain_id": chain_id
+    }
+
+    # Simulate writing the mock transaction to a file
+    with open(outfile, "w", encoding="utf-8") as fp:
+        json.dump(mock_tx, fp, indent=2)
+
+    # Confirm file creation (mock safety check)
+    if not os.path.exists(outfile):
+        raise RuntimeError("Mock: unsigned TX file was not created")
+
+    return outfile
 
 
 def sign_tx(unsigned_tx_path: str, key_name: str = "my_validator", keyring_backend: str = "test", chain_id: str = "my-test-chain", outfile: str = "signed_tx.json") -> str:
-    """Sign an unsigned transaction file."""
-    cmd = ["simd", "tx", "sign", unsigned_tx_path, "--from", key_name, "--keyring-backend", keyring_backend, "--chain-id", chain_id, "--output", "json", "--yes"]
-    try:
-        with open(outfile, "w", encoding="utf-8") as fp:
-            subprocess.run(cmd, check=True, text=True, stdout=fp)
-        if not os.path.exists(outfile):
-            raise RuntimeError("Signed TX file was not created")
-        return outfile
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Signing failed: {e.stderr}") from e
+    """Mocked: simulate signing an unsigned transaction file."""
+
+    # Load unsigned transaction
+    if not os.path.exists(unsigned_tx_path):
+        raise FileNotFoundError(f"Unsigned transaction file not found: {unsigned_tx_path}")
+
+    with open(unsigned_tx_path, "r", encoding="utf-8") as fp:
+        unsigned_tx = json.load(fp)
+
+    # Simulate signing process
+    timestamp = int(time.time())
+    mock_signature = hashlib.sha256(
+        f"{key_name}-{timestamp}-{chain_id}".encode("utf-8")
+    ).hexdigest()
+
+    # Construct signed transaction
+    signed_tx = {
+        **unsigned_tx,
+        "signatures": [mock_signature],
+        "auth_info": {
+            **unsigned_tx.get("auth_info", {}),
+            "signer_infos": [
+                {
+                    "public_key": {"@type": "/cosmos.crypto.secp256k1.PubKey", "key": "A1B2C3D4..."},
+                    "mode_info": {"single": {"mode": "SIGN_MODE_DIRECT"}},
+                    "sequence": "0"
+                }
+            ]
+        },
+        "signed_by": key_name,
+        "signed_at": timestamp
+    }
+
+    # Write the mock signed transaction to file
+    with open(outfile, "w", encoding="utf-8") as fp:
+        json.dump(signed_tx, fp, indent=2)
+
+    # Verify output creation
+    if not os.path.exists(outfile):
+        raise RuntimeError("Mock: signed TX file was not created")
+
+    return outfile
 
 
 def broadcast_tx(signed_tx_path: str, chain_id: str = "my-test-chain", node_rpc: str = "http://localhost:26657") -> str:
     """Broadcast a signed tx and return its hash."""
-    cmd = ["simd", "tx", "broadcast", signed_tx_path, "--node", node_rpc, "--chain-id", chain_id, "--output", "json"]
-    try:
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        response = json.loads(result.stdout)
-        tx_hash = response.get("txhash")
-        if not tx_hash:
-            raise RuntimeError(f"Unexpected response: {response}")
-        return tx_hash
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Broadcast failed: {e.stderr}") from e
+    # Ensure signed transaction exists
+    if not os.path.exists(signed_tx_path):
+        raise FileNotFoundError(f"Signed transaction file not found: {signed_tx_path}")
+
+    with open(signed_tx_path, "r", encoding="utf-8") as fp:
+        signed_tx = json.load(fp)
+
+    # Simulate network latency
+    time.sleep(0.2)
+
+    # Deterministic fake hash based on file contents and timestamp
+    tx_hash = hashlib.sha256(
+        (json.dumps(signed_tx, sort_keys=True) + str(time.time())).encode("utf-8")
+    ).hexdigest().upper()[:64]
+
+    # Construct mock broadcast response
+    mock_response = {
+        "height": str(random.randint(100000, 200000)),
+        "txhash": tx_hash,
+        "raw_log": "[]",
+        "gas_wanted": "200000",
+        "gas_used": str(random.randint(80000, 150000)),
+        "codespace": "",
+        "code": 0,
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "chain_id": chain_id,
+        "node_rpc": node_rpc,
+        "status": "BROADCASTED_MOCK"
+    }
+
+    # Print the mock response (for visibility in Playground)
+    print(json.dumps(mock_response, indent=2))
+
+    return tx_hash
 
 
 def ensure_key_exists(key_name: str) -> dict:

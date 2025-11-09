@@ -38,7 +38,10 @@ from recipes.backend import extract_code_id_from_tx, select_data_provider, build
     extract_last_execution_height, amber_positions, construct_supervault_deposit_tx, \
     sign_and_broadcast_tx_, check_balance, get_supervault_details, build_deposit, get_controller_address, \
     _query_wasm_smart, supervault_address, validate_balances, construct_and_sign, broadcast_signed_tx, \
-    parse_balance_response
+    parse_balance_response, build_send_tx, sign_tx, broadcast_tx, get_chain_home, locate_genesis, backup_genesis, \
+    update_inflation, save_genesis, validate_genesis, get_ufw_status, allow_ssh_via_ufw, reload_ufw, \
+    list_ufw_rules_numbered, gather_gentx_files, collect_gentxs, open_config_file, update_mempool_max_txs, \
+    save_config_file, restart_node_service
 
 
 # --- Placeholder for your generation logic ---
@@ -76,7 +79,15 @@ app = FastAPI(
 
 origins = [
    "https://thousandmonkeystypewriter.org", # The domain for Neutron docs
+   "https://cosmos.thousandmonkeystypewriter.org", # The domain for Neutron docs
+   "https://neutron.thousandmonkeystypewriter.org",
+   "http://88.198.17.207",
+   "http://88.198.17.207:4000",
 ]
+
+SUPER_VAULT_CONTRACT_ADDRESS = os.getenv("SUPER_VAULT_CONTRACT_ADDRESS", "neutron1vaultxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+WBTC_DENOM = os.getenv("WBTC_DENOM", "ibc/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+USDC_DENOM = os.getenv("USDC_DENOM", "uusdc")
 
 app.add_middleware(
    CORSMiddleware,
@@ -308,7 +319,29 @@ async def handle_generate(request_data: GenerateRequest):
     ensure_cosmopark_installed()
 
     return JSONResponse(content=state)
-    # return templates.TemplateResponse("table.html", {"request": request, "table": map})
+
+
+@app.post("/chat")
+async def handle_chat(request_data: Request):
+    """
+    Receives text from the frontend, generates a response,
+    and returns it as JSON.
+    """
+    # Get the text from the request body
+    req = await request_data.json()
+    input_text = req["query"]
+    print("QUERY: "+input_text)
+
+    return JSONResponse(content={
+               "mode": "mixed",
+               "answer": "this is a test answer",
+               "workflow": {
+                   "steps": [
+                       {"title": "✅ Mock execution complete.\nTx: mock_tx_ABC123"},
+                       {"title": "🔄 Running mock execution…"}
+                   ]
+               }
+           })
 
 
 @app.post("/generate_")
@@ -387,6 +420,253 @@ async def generate_reponse(request_data: Request):
     else:
         return {"label": "Others", "params": glue(ner_), "workflow": "undef"}
 
+async def query_supervault_details():
+    return {
+        "contract_address": SUPER_VAULT_CONTRACT_ADDRESS,
+        "tokens": [
+            {"denom": WBTC_DENOM, "symbol": "WBTC"},
+            {"denom": USDC_DENOM, "symbol": "USDC"}
+        ]
+    }
+
+async def tamples_recipes(input_text, req):
+    match input_text:
+        case "Query transaction history for my address":
+            try:
+                provider = select_data_provider()  # step: 1 Tool: select_data_provider Desciption: Choose a data source (Celatone API, SubQuery, or LCD /txs endpoint) based on latency and pagination needs.",
+                query, vars = build_history_query(provider, req[
+                    "address"])  # step: 2 Tool: build_history_query Desciption: Construct a REST or GraphQL query filtering by `message.sender={address}` and order by timestamp descending.",
+                raw_results, next_token = execute_query_request(provider, query,
+                                                                vars)  # step: 3 Tool: execute_query_request Desciption: Send the HTTP request (fetch/axios) and handle pagination via `offset` or `pageInfo.endCursor`.",
+                table_rows = normalize_tx_results(provider,
+                                                  raw_results)  # step: 4 Tool: normalize_tx_results Desciption: Map raw results into a uniform schema (hash, blockHeight, action, fee, success) for the frontend table."
+                return table_rows
+            except Exception as e:
+                return "No data provider is reachable at the moment."
+        case "Show details for the cron schedule \"dasset-updator\"":
+            metadata = query_cron_schedule(
+                "dasset-updator")  # step: 1 Tool: query_cron_show_schedule Desciption: Run `neutrond query cron show-schedule protocol_update` to fetch the schedule's full metadata.
+            return metadata
+        case "List all existing cron schedules":
+            metadata = query_all_cron_schedules()  # step: 1 Tool: query_cron_show_schedule Desciption: Run `neutrond query cron show-schedule protocol_update` to fetch the schedule's full metadata.
+            return metadata
+        case "Query the cron schedule named \"dasset-updator\"":
+            res = []
+            schedule = query_cron_schedule(
+                "dasset-updator")  # step: 1 Tool: query_cron_schedule Desciption: Invoke `neutrond query cron schedule daily_maintenance` (or REST `/neutron/cron/schedule/daily_maintenance`).",
+            res.append("Schedule: " + json.dumps(schedule))
+
+            last_height = extract_last_execution_height(
+                schedule)  # step: 2 Tool: parse_json_response Desciption: Parse the returned schedule details: `name`, `period`, `msgs`, `last_execution_height`."
+            res.append("Last execution height: " + str(last_height))
+
+            return res
+        case "Remove the existing schedule named protocol_update":
+            res = []
+            authority_addr = query_cron_params()[
+                "security_address"]  # step: 1 Tool: get_dao_authority_address Desciption: Fetch the Main DAO authority address (required to delete schedules).",
+            res.append("Main DAO authority address: " + authority_addr)
+
+            delete_msg = build_msg_delete_schedule(authority_addr,
+                                                   'protocol_update')  # step: 2 Tool: build_msg_delete_schedule Desciption: Create a MsgDeleteSchedule with: name=\"protocol_update\".",
+            res.append("MsgDeleteSchedule: " + json.dumps(delete_msg))
+
+            proposal = build_dao_proposal(delete_msg, 'Remove protocol_update schedule',
+                                          'This proposal removes the obsolete protocol_update cron schedule.')  # step: 3 Tool: package_into_gov_proposal Desciption: Embed the MsgDeleteSchedule in a DAO governance proposal explaining why the schedule should be removed.",
+            res.append("Proposal: " + json.dumps(proposal))
+
+            return res
+        case "Query contract metadata on Celatone":
+            driver = open_celatone_explorer('neutron-1',
+                                            '/tmp')  # step: 1 Tool: open_celatone_explorer Desciption: Launch the Celatone explorer in a web browser and select the correct Neutron network (mainnet: neutron-1 or testnet: pion-1).",
+            search_contract_address(driver, req[
+                "address"])  # step: 2 Tool: search_contract_address Desciption: Paste the target contract address into the Celatone search bar and press Enter.",
+            navigate_to_metadata_tab(
+                driver)  # step: 3 Tool: navigate_to_metadata_tab Desciption: Click the \u201cMetadata\u201d (or equivalent) tab in Celatone\u2019s contract view to load stored contract information.",
+            metadata_path = download_metadata_json(driver,
+                                                   '/tmp')  # step: 4 Tool: download_metadata_json Desciption: Use Celatone\u2019s \u201cDownload\u201d (</>) button to fetch the raw metadata JSON for local inspection or downstream processing."
+            return metadata_path
+        case "List all smart contracts deployed by my account":
+            page_data = query_contracts_by_creator(req[
+                                                       "address"])  # step: 3 Tool: query_contracts_by_creator Desciption: Execute `neutrond query wasm list-contract-by-creator <creator-address> --limit 1000` to retrieve contracts deployed by the user.",
+            # all_contracts = await fetch_all_contracts_by_creator(req["address"]);#step: 4 Tool: handle_pagination Desciption: If the response includes a `pagination.next_key`, repeat the query with `--page-key` until all contracts are collected."
+            return page_data
+        case "Query the code hash of a specific smart contract":
+            # UNDEF
+            contract_info = query_contract_info(
+                'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')  # step: 2 Tool: query_contract_info Desciption: Execute `neutrond query wasm contract <contract-address>` to obtain the contract\u2019s metadata, including its `code_id`.",
+            # undef#step: 3 Tool: extract_code_id Desciption: Read the `code_id` field from the contract info response.",
+            # code_info = query_code_info(code_id)#step: 4 Tool: query_code_info Desciption: Run `neutrond query wasm code-info <code_id>` to fetch the code information that contains the `code_hash`.",
+            # code_hash = extract_code_hash(code_info)#step: 5 Tool: extract_code_hash Desciption: Parse the `code_hash` value from the code-info JSON response."
+        case "Withdraw 50 NTRN from the smart contract":
+            new_balance = query_bank_balance(req[
+                                                 "address"])  # step: 6 Tool: query_bank_balance Desciption: After confirmation, re-query the user\u2019s bank balance to reflect the incoming 50 NTRN."
+            return new_balance
+        case "Show the current block height of the Neutron chain":
+            res = []
+            rpc = connect_rpc_endpoint(
+                'https://rpc-kralum.neutron-1.neutron.org')  # step: 1 Tool: connect_rpc_endpoint Desciption: Connect to a reachable Neutron RPC endpoint (e.g., https://rpc-kralum.neutron.org) to ensure the CLI can query chain data.",
+            res.append("RPC endpoint: " + rpc)
+
+            status_json = neutrond_status(
+                rpc)  # step: 2 Tool: neutrond_status Desciption: Run `neutrond status --node <rpc-endpoint>` to fetch the node\u2019s sync information.",
+            res.append("Status: " + json.dumps(status_json))
+
+            latest_height = extract_block_height(
+                status_json)  # step: 3 Tool: extract_block_height Desciption: Parse the JSON response and read `result.sync_info.latest_block_height`."
+            res.append("latest_height: " + str(latest_height))
+
+            return res
+        case "Check my health factor on Amber Finance":
+            positions = await amber_positions(req[
+                                                  "address"])  # step: 6 Tool: query_bank_balance Desciption: After confirmation, re-query the user\u2019s bank balance to reflect the incoming 50 NTRN."
+            return positions
+        case "Deposit 3 eBTC into the maxBTC/eBTC Supervault":
+            res = []
+            details = await query_supervault_details()  # step: 3 Tool: query_supervault_details Desciption: Look up the maxBTC/eBTC Supervault contract address and confirm single-sided deposits with eBTC are permissible.",
+            res.append("Supervault details: " + json.dumps(details))
+
+            unsigned_tx = construct_supervault_deposit_tx({'address': req['address'], 'wbtc_amount': 3000000,
+                                                           'usdc_amount': 0})  # step: 4 Tool: construct_supervault_deposit_tx Desciption: Build a deposit message specifying 3 eBTC as the amount and the vault address from step 3.",
+            res.append("Unsigned_tx: " + json.dumps(unsigned_tx))
+
+            tx_hash = await sign_and_broadcast_tx_(
+                unsigned_tx)  # step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the deposit transaction."
+            res.append("Tx_hash: " + json.dumps(tx_hash))
+
+            return res
+        case "Execute an emergency withdrawal for the user's Amber trading position":
+            positions = await amber_positions(req[
+                                                  "address"])  # step: 6 Tool: query_bank_balance Desciption: After confirmation, re-query the user\u2019s bank balance to reflect the incoming 50 NTRN."
+            return positions
+        case "Increase the user's deposit in the WBTC/USDC Supervault by 0.2 WBTC and 12 000 USDC":
+            res = []
+
+            # await validate_balances(userAddress)#step: 2 Tool: validate_token_balances Desciption: Ensure the wallet has at least 0.2 WBTC and 12 000 USDC available.",
+            vault_addr = supervault_address()[
+                "address"]  # step: 3 Tool: get_supervault_contract_address Desciption: Look up the contract address for the WBTC/USDC Supervault.",
+            res.append("Vault details: " + json.dumps(vault_addr))
+
+            tx_pkg = construct_supervault_deposit_tx({"address": vault_addr, "wbtc_amount": 20000000,
+                                                      "usdc_amount": 12000000000})  # step: 4 Tool: construct_tx_supervault_deposit Desciption: Create the deposit message specifying 0.2 WBTC and 12 000 USDC as the amounts.",
+            res.append("Deposit message: " + json.dumps(tx_pkg))
+
+            tx_hash = await sign_and_broadcast_tx_({"tx_base64": tx_pkg[
+                "tx_base64"]})  # step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the deposit transaction."
+            res.append("Tx_hash: " + json.dumps(tx_hash))
+
+            return res
+        case "Enable USDC gas payments for my next transaction":
+            res = []
+            signed_tx = await construct_and_sign(
+                "")  # step: 4 Tool: construct_and_sign_next_tx Desciption: When building the user\u2019s next transaction, set `--fees <amount>uusdc` where `<amount>` \u2265 Step 2\u2019s minimum threshold, then sign.",
+            res.append("Signed_tx: " + json.dumps(signed_tx))
+
+            tx_hash = await broadcast_signed_tx()  # step: 5 Tool: broadcast_tx Desciption: Broadcast the signed transaction to Neutron and await inclusion in a block."
+            res.append("Tx_hash: " + json.dumps(tx_hash))
+
+            return res
+        case "Query a wallet’s bank balances via the REST API":
+            parsed = parse_balance_response(req["balance"],
+                                            denom='untrn')  # step: 3 Tool: parse_json_response Desciption: Decode the JSON payload to view the \"balances\" array containing denomination/amount pairs.
+            return parsed
+        case "Broadcast a pre-signed transaction over gRPC":
+            res = []
+            unsigned_file = build_send_tx('cosmos1from...', 'cosmos1to...', '100stake', '50stake', 'cosmoshub-4',
+                                          'unsigned_tx.json')  # step: 1 Tool: construct_unsigned_tx_cli Desciption: Generate an unsigned tx JSON with \"<appd> tx <module> <msg> --generate-only\".",
+            res.append("Unsigned tx JSON: " + json.dumps(unsigned_file))
+
+            signed_file = sign_tx(unsigned_file, 'mykey', 'test', 'cosmoshub-4',
+                                  'signed_tx.json')  # step: 2 Tool: sign_tx_cli Desciption: Sign the tx with \"<appd> tx sign\" to obtain a base64 \"tx_bytes\" field.",
+            res.append("Sign the tx with: " + json.dumps(signed_file))
+
+            tx_hash = broadcast_tx(signed_file, 'cosmoshub-4',
+                                   'http://localhost:26657')  # step: 3 Tool: grpcurl_broadcast_tx Desciption: Invoke the gRPC method with: \n  grpcurl -plaintext -d '{\"tx_bytes\":\"<base64>\",\"mode\":\"BROADCAST_MODE_SYNC\"}' \\\n          localhost:9090 cosmos.tx.v1beta1.Service/BroadcastTx"
+            res.append("Invoke the gRPC method: " + json.dumps(tx_hash))
+
+            return res
+
+        case "Update the on-chain voting period in genesis to 600 s":
+            res = []
+            home_dir = get_chain_home()[
+                "chain_home"]  # step: 1 Tool: get_chain_home Desciption: Resolve the node\u2019s home directory.",
+            res.append("Node's home directory: " + json.dumps(home_dir))
+
+            genesis_meta = locate_genesis(home_dir)  # step: 2 Tool: locate_file Desciption: Open config/genesis.json.",
+            res.append("Open config/genesis.json: " + json.dumps(genesis_meta))
+
+            backup_genesis(
+                genesis_meta["genesis_path"])  # step: 3 Tool: backup_file Desciption: Create genesis.json.bak.",
+            res.append("Create genesis.json.bak")
+
+            updated = await update_inflation(genesis_meta["genesis_data"], "600s")[
+                "updated_genesis"]  # step: 4 Tool: update_json_value Desciption: Navigate to gov.params.voting_period (or gov.params.voting_params.voting_period depending on SDK version) and set the value to \"600s\".",
+            res.append("Set value: " + json.dumps(updated))
+
+            await save_genesis(genesis_meta["genesis_path"],
+                               updated)  # step: 5 Tool: save_file Desciption: Persist the modified genesis.json.",
+            res.append("Persist the modified genesis.json")
+
+            validate_genesis(chain_binary="simd",
+                             home=home_dir)  # step: 6 Tool: validate_genesis Desciption: Run \"simd validate-genesis\" to confirm structural correctness."
+            res.append("Structurally correct")
+
+            return res
+
+        case "Add a UFW rule to allow SSH on port 22":
+            res = []
+            ufw_status = get_ufw_status()  # step: 1 Tool: run_shell_command Desciption: Confirm UFW is active: `sudo ufw status`.  If inactive, prompt user to enable it first.",
+            res.append("UFW is active")
+
+            add_rule_result = allow_ssh_via_ufw()  # step: 2 Tool: run_shell_command Desciption: Allow SSH traffic: `sudo ufw allow 22/tcp comment 'Allow SSH'`.",
+            res.append("SSH traffic allowed")
+
+            reload_result = reload_ufw()  # step: 3 Tool: run_shell_command Desciption: Reload UFW to apply rule set changes (optional on most systems): `sudo ufw reload`.",
+            res.append("UFW reload")
+
+            rules_list = list_ufw_rules_numbered()  # step: 4 Tool: run_shell_command Desciption: List numbered rules to confirm insertion: `sudo ufw status numbered`."
+            res.append("List UFW rules: " + json.dumps(rules_list))
+
+            return res
+        case "Collect all gentxs into the genesis file":
+            res = []
+            gather_gentx_files(["/path/to/val1/gentx",
+                                "/path/to/val2/gentx"])  # step: 1 Tool: gather_gentx_files Desciption: Ensure all validator gentx JSON files are placed inside the `config/gentx/` directory.",
+            res.append("Validator gentx JSON files")
+
+            genesis_file = collect_gentxs(
+                chain_binary="neutrond")  # step: 2 Tool: collect_gentxs Desciption: Run `<chain_binary> collect-gentxs` to merge every gentx into the genesis file.",
+            res.append("Gentx merged")
+
+            is_valid = validate_genesis(
+                chain_binary="neutrond")  # step: 3 Tool: validate_genesis Desciption: Re-run `<chain_binary> validate-genesis` to verify the final genesis is consistent and ready for launch."
+            res.append("Genesis validated")
+
+            return res
+        case "Set mempool max-txs to -1 in app.toml":
+            res = []
+            lines = open_config_file(
+                config_path='~/.neutrond/config/app.toml')  # step: 1 Tool: open_config_file Desciption: Open `$HOME/.<daemon>/config/app.toml` for editing.",
+            cfg = update_mempool_max_txs(cfg,
+                                         new_value=-1)  # step: 2 Tool: update_toml_value Desciption: Under the `[mempool]` section change `max_txs = 5000` (or whatever it is) to `max_txs = -1` to disable the cap.",
+            save_config_file('~/.neutrond/config/app.toml',
+                             cfg)  # step: 3 Tool: save_and_close_file Desciption: Write the file and exit the editor.",
+            restart_node_service(
+                'neutrond')  # step: 4 Tool: restart_node_service Desciption: Restart the node service, e.g., `sudo systemctl restart <daemon>`. Wait until the node is fully synced again."
+
+            return res
+        case "Allow p2p port 26656 through ufw":
+            res = []
+            result = allow_ssh_via_ufw()  # step: 1 Tool: ufw_command Desciption: Run `sudo ufw allow 26656/tcp comment 'Cosmos P2P'`.",
+            result = reload_ufw()  # step: 2 Tool: ufw_reload Desciption: Execute `sudo ufw reload` to apply the new rule."
+
+            return res
+
+
+def propose_recipe(query):
+    print("Predict for "+query)
+
+
 @app.post("/generate")
 async def handle_generate(request_data: Request):
     """
@@ -394,130 +674,16 @@ async def handle_generate(request_data: Request):
     and returns it as JSON.
     """
     # Get the text from the request body
-    req = await request_data.json();
+    req = await request_data.json()
     input_text = req["text"]
     print("QUERY: "+input_text)
 
-    match input_text:
-        case "Query transaction history for my address":
-            try:
-                provider = select_data_provider()#step: 1 Tool: select_data_provider Desciption: Choose a data source (Celatone API, SubQuery, or LCD /txs endpoint) based on latency and pagination needs.",
-                query, vars = build_history_query(provider, req["address"])#step: 2 Tool: build_history_query Desciption: Construct a REST or GraphQL query filtering by `message.sender={address}` and order by timestamp descending.",
-                raw_results, next_token = execute_query_request(provider, query, vars)#step: 3 Tool: execute_query_request Desciption: Send the HTTP request (fetch/axios) and handle pagination via `offset` or `pageInfo.endCursor`.",
-                table_rows = normalize_tx_results(provider, raw_results)#step: 4 Tool: normalize_tx_results Desciption: Map raw results into a uniform schema (hash, blockHeight, action, fee, success) for the frontend table."
-                return JSONResponse(content=table_rows)
-            except Exception as e:
-                return JSONResponse(content="No data provider is reachable at the moment.")
-        case "Show details for the cron schedule \"dasset-updator\"":
-            metadata = query_cron_schedule("dasset-updator")#step: 1 Tool: query_cron_show_schedule Desciption: Run `neutrond query cron show-schedule protocol_update` to fetch the schedule's full metadata.
-            return JSONResponse(content=metadata)
-        case "List all existing cron schedules":
-            metadata = query_all_cron_schedules()  # step: 1 Tool: query_cron_show_schedule Desciption: Run `neutrond query cron show-schedule protocol_update` to fetch the schedule's full metadata.
-            return JSONResponse(content=metadata)
-        case "Query the cron schedule named \"dasset-updator\"":
-            res = []
-            schedule = query_cron_schedule("dasset-updator")#step: 1 Tool: query_cron_schedule Desciption: Invoke `neutrond query cron schedule daily_maintenance` (or REST `/neutron/cron/schedule/daily_maintenance`).",
-            res.append("Schedule: " + json.dumps(schedule))
+    response = await tamples_recipes(input_text, req)
 
-            last_height = extract_last_execution_height(schedule)#step: 2 Tool: parse_json_response Desciption: Parse the returned schedule details: `name`, `period`, `msgs`, `last_execution_height`."
-            res.append("Last execution height: " + str(last_height))
-
-            return JSONResponse(content=res)
-        case "Remove the existing schedule named protocol_update":
-            res = []
-            authority_addr = query_cron_params()["security_address"]#step: 1 Tool: get_dao_authority_address Desciption: Fetch the Main DAO authority address (required to delete schedules).",
-            res.append("Main DAO authority address: " + authority_addr)
-
-            delete_msg = build_msg_delete_schedule(authority_addr, 'protocol_update')#step: 2 Tool: build_msg_delete_schedule Desciption: Create a MsgDeleteSchedule with: name=\"protocol_update\".",
-            res.append("MsgDeleteSchedule: " + json.dumps(delete_msg))
-
-            proposal = build_dao_proposal(delete_msg, 'Remove protocol_update schedule', 'This proposal removes the obsolete protocol_update cron schedule.')#step: 3 Tool: package_into_gov_proposal Desciption: Embed the MsgDeleteSchedule in a DAO governance proposal explaining why the schedule should be removed.",
-            res.append("Proposal: " + json.dumps(proposal))
-
-            return JSONResponse(content=res)
-        case "Query contract metadata on Celatone":
-            driver = open_celatone_explorer('neutron-1', '/tmp')#step: 1 Tool: open_celatone_explorer Desciption: Launch the Celatone explorer in a web browser and select the correct Neutron network (mainnet: neutron-1 or testnet: pion-1).",
-            search_contract_address(driver, req["address"])#step: 2 Tool: search_contract_address Desciption: Paste the target contract address into the Celatone search bar and press Enter.",
-            navigate_to_metadata_tab(driver)#step: 3 Tool: navigate_to_metadata_tab Desciption: Click the \u201cMetadata\u201d (or equivalent) tab in Celatone\u2019s contract view to load stored contract information.",
-            metadata_path = download_metadata_json(driver, '/tmp')#step: 4 Tool: download_metadata_json Desciption: Use Celatone\u2019s \u201cDownload\u201d (</>) button to fetch the raw metadata JSON for local inspection or downstream processing."
-            return JSONResponse(content=metadata_path)
-        case "List all smart contracts deployed by my account":
-            page_data = query_contracts_by_creator(req["address"])#step: 3 Tool: query_contracts_by_creator Desciption: Execute `neutrond query wasm list-contract-by-creator <creator-address> --limit 1000` to retrieve contracts deployed by the user.",
-            # all_contracts = await fetch_all_contracts_by_creator(req["address"]);#step: 4 Tool: handle_pagination Desciption: If the response includes a `pagination.next_key`, repeat the query with `--page-key` until all contracts are collected."
-            return JSONResponse(content=page_data)
-        case "Query the code hash of a specific smart contract":
-            # UNDEF
-            contract_info = query_contract_info('neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')#step: 2 Tool: query_contract_info Desciption: Execute `neutrond query wasm contract <contract-address>` to obtain the contract\u2019s metadata, including its `code_id`.",
-            # undef#step: 3 Tool: extract_code_id Desciption: Read the `code_id` field from the contract info response.",
-            # code_info = query_code_info(code_id)#step: 4 Tool: query_code_info Desciption: Run `neutrond query wasm code-info <code_id>` to fetch the code information that contains the `code_hash`.",
-            # code_hash = extract_code_hash(code_info)#step: 5 Tool: extract_code_hash Desciption: Parse the `code_hash` value from the code-info JSON response."
-        case "Withdraw 50 NTRN from the smart contract":
-            new_balance = query_bank_balance(req["address"])#step: 6 Tool: query_bank_balance Desciption: After confirmation, re-query the user\u2019s bank balance to reflect the incoming 50 NTRN."
-            return JSONResponse(content=new_balance)
-        case "Show the current block height of the Neutron chain":
-            res = []
-            rpc = connect_rpc_endpoint('https://rpc-kralum.neutron-1.neutron.org')#step: 1 Tool: connect_rpc_endpoint Desciption: Connect to a reachable Neutron RPC endpoint (e.g., https://rpc-kralum.neutron.org) to ensure the CLI can query chain data.",
-            res.append("RPC endpoint: "+rpc)
-
-            status_json = neutrond_status(rpc)#step: 2 Tool: neutrond_status Desciption: Run `neutrond status --node <rpc-endpoint>` to fetch the node\u2019s sync information.",
-            res.append("Status: " + json.dumps(status_json))
-
-            latest_height = extract_block_height(status_json)#step: 3 Tool: extract_block_height Desciption: Parse the JSON response and read `result.sync_info.latest_block_height`."
-            res.append("latest_height: " + str(latest_height))
-
-            return JSONResponse(content=res)
-        case "Check my health factor on Amber Finance":
-            positions = await amber_positions(req["address"])  # step: 6 Tool: query_bank_balance Desciption: After confirmation, re-query the user\u2019s bank balance to reflect the incoming 50 NTRN."
-            return JSONResponse(content=positions)
-        case "Deposit 3 eBTC into the maxBTC/eBTC Supervault":
-            res = []
-            details = await query_supervault_details()  # step: 3 Tool: query_supervault_details Desciption: Look up the maxBTC/eBTC Supervault contract address and confirm single-sided deposits with eBTC are permissible.",
-            res.append("Supervault details: " + json.dumps(details))
-
-            unsigned_tx = construct_supervault_deposit_tx({'address': req['address'], 'wbtc_amount': 3000000, 'usdc_amount': 0})  # step: 4 Tool: construct_supervault_deposit_tx Desciption: Build a deposit message specifying 3 eBTC as the amount and the vault address from step 3.",
-            res.append("Unsigned_tx: " + json.dumps(unsigned_tx))
-
-            tx_hash = await sign_and_broadcast_tx_(unsigned_tx)  # step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the deposit transaction."
-            res.append("Tx_hash: " + json.dumps(tx_hash))
-
-            return JSONResponse(content=res)
-        case "Execute an emergency withdrawal for the user's Amber trading position":
-            positions = await amber_positions(req["address"])  # step: 6 Tool: query_bank_balance Desciption: After confirmation, re-query the user\u2019s bank balance to reflect the incoming 50 NTRN."
-            return JSONResponse(content=positions)
-        case "Increase the user's deposit in the WBTC/USDC Supervault by 0.2 WBTC and 12 000 USDC":
-            res = []
-
-            # await validate_balances(userAddress)#step: 2 Tool: validate_token_balances Desciption: Ensure the wallet has at least 0.2 WBTC and 12 000 USDC available.",
-            vault_addr = supervault_address()["address"]#step: 3 Tool: get_supervault_contract_address Desciption: Look up the contract address for the WBTC/USDC Supervault.",
-            res.append("Vault details: " + json.dumps(vault_addr))
-
-            tx_pkg = construct_supervault_deposit_tx({"address": vault_addr, "wbtc_amount": 20000000, "usdc_amount": 12000000000})#step: 4 Tool: construct_tx_supervault_deposit Desciption: Create the deposit message specifying 0.2 WBTC and 12 000 USDC as the amounts.",
-            res.append("Deposit message: " + json.dumps(tx_pkg))
-
-            tx_hash = await sign_and_broadcast_tx_({"tx_base64": tx_pkg["tx_base64"]})#step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the deposit transaction."
-            res.append("Tx_hash: " + json.dumps(tx_hash))
-
-            return JSONResponse(content=res)
-        case "Enable USDC gas payments for my next transaction":
-            res = []
-            signed_tx = await construct_and_sign("")#step: 4 Tool: construct_and_sign_next_tx Desciption: When building the user\u2019s next transaction, set `--fees <amount>uusdc` where `<amount>` \u2265 Step 2\u2019s minimum threshold, then sign.",
-            res.append("Signed_tx: " + json.dumps(signed_tx))
-
-            tx_hash = await broadcast_signed_tx()#step: 5 Tool: broadcast_tx Desciption: Broadcast the signed transaction to Neutron and await inclusion in a block."
-            res.append("Tx_hash: " + json.dumps(tx_hash))
-
-            return JSONResponse(content=res)
-        case "Query a wallet’s bank balances via the REST API":
-            parsed = parse_balance_response(req["balance"], denom='untrn')#step: 3 Tool: parse_json_response Desciption: Decode the JSON payload to view the \"balances\" array containing denomination/amount pairs.
-            return JSONResponse(content=parsed)
-
-# case _:
-        #     # Default case (optional), executed if no other pattern matches
-        # Call your generation logic
-    # response_data = generate_code(input_text)
-    # print(response_data)
-
-    # return templates.TemplateResponse("table.html", {"request": request, "table": map})
+    if response:
+        return JSONResponse(content=response)
+    else:
+        return propose_recipe(input_text)
 
 
 @app.get("/queryBankBalance")

@@ -11,7 +11,7 @@ from mcp.client.stdio import stdio_client
 from mcp.client.streamable_http import streamablehttp_client
 
 from lib.query_w_tools import create_graph
-from langchain.globals import set_verbose
+import langchain
 
 intents = [("Query Specific Balance", "neutrond query bank balance <address> --node <grpc_node>"),
            ("Query All User Balances", "neutrond query bank balances <address> --node <grpc_node>"),
@@ -54,11 +54,12 @@ synthesize_query_intents = open("prompts/synthesize_query_intents").read()
 synthesize_query_oneliner = open("prompts/synthesize_query_oneliner").read()
 synthesize_recipes = open("prompts/synthesize_recipes").read()
 synthesize_cosmwasm = open("prompts/synthesize_cosmwasm").read()
+synthesize_playground = open("prompts/synthesize_playground").read()
 synthesize_picking_functions = open("prompts/synthesize_picking_functions").read()
 
 server_params = StdioServerParameters(
     command="node",
-    args=["/root/neutron/cosmos-docs/docs/mcp/mcp-server.js"],
+    args=["/root/neutron/cosmos-docs_/docs/mcp/mcp-server.js"],
     env=None,
 )
 
@@ -171,7 +172,7 @@ async def create_pre_recipe(session, config):
     for batch in create_batch(pages, 5):
         if not os.path.exists('data/pre_recipes/' + batch[0]['label'] + str(count)):
             agent = await create_graph(session, synthesize_recipes)
-            set_verbose(True)
+            langchain.verbose = True
             response = await agent.ainvoke({"messages": json.dumps(batch)}, config=config)
             print(response["messages"][-1].content)
 
@@ -198,7 +199,7 @@ async def create_ner(session, config):
     for batch in create_ner_dataset(onliners, 5):
         if not os.path.exists('data/rephrases/' + str(count) + 'result.txt'):
             agent = await create_graph(session, synthesize_ners)
-            set_verbose(True)
+            langchain.verbose = True
             response = await agent.ainvoke({"messages": json.dumps(batch)}, config=config)
             print(response["messages"][-1].content)
 
@@ -257,6 +258,44 @@ async def create_actions(session, config):
 
                                 print("Page:"+title+", count: "+str(count))
                                 time.sleep(30)
+
+
+async def label_execution(session, config):
+    # count = 0
+    # with os.scandir("data/pre_recipes") as entries:
+    #     for entry in entries:
+    #         if entry.is_file():  # Check if it's a file
+    #             if not entry.path.endswith("result.txt"):
+    #                 found = False
+    #                 title = ""
+    #
+    #                 for key in pages.keys():
+    #                     if key in entry.path:
+    #                         found = True
+    #                         title = key
+    #                         break
+    #
+    #                 if found:
+    #                     print(entry.path)
+        with open('/root/neutron/IAMY/recipes/tools/check_my_health_factor_on_amber_finance', 'r') as f:
+            items = json.load(f)
+
+
+        tools = items['tools']
+
+        agent = await create_graph(session, synthesize_playground, "Anthropic")
+        response = await agent.ainvoke({"messages": json.dumps(tools)}, config=config)
+        print(response["messages"][-1].content)
+
+
+        agent = await create_graph(session, synthesize_playground)
+        response = await agent.ainvoke({"messages": json.dumps(tools)}, config=config)
+        print(response["messages"][-1].content)
+
+        # with open('recipes/actions/' + escape(key['intent']), 'w') as f:
+        #     json.dump(json.loads(response["messages"][-1].content), f, indent=4)
+
+        # print("Page:"+title+", count: "+str(count))
 
 
 async def pick_tools(session, config):
@@ -320,6 +359,21 @@ async def pick_tools(session, config):
                                 time.sleep(30)
 
 
+async def check_mcp(session):
+    tools = await session.list_tools()
+    print("Tools:", [t.name for t in tools.tools])
+
+    search_tool = next((t for t in tools.tools if "search" in t.name.lower()), None)
+    if not search_tool:
+        print("No 'search' tool found")
+        return
+
+    # try common arg names; adjust to the tool’s inputSchema if needed
+    args = {"query": "neutron cron module"}
+    result = await session.call_tool(search_tool.name, args)
+    print("Result:", getattr(result, "content", None) or getattr(result, "data", None))
+
+
 async def main(flag):
     config = {"configurable": {"thread_id": 1234}}
     async with stdio_client(server_params) as (read, write):
@@ -328,9 +382,13 @@ async def main(flag):
             # Handshake
             await session.initialize()
 
+            if flag == "check":
+                await check_mcp(session)
+            if flag == "label_execution":
+                await label_execution(session, config)
             # parser = argparse.ArgumentParser(description="Client")
             # parser.add_argument("intent", type=str, help="User intent")
-            if flag == "oneliner":
+            elif flag == "oneliner":
                 await create_oneliner(session, config)
             elif flag == "ner":
                 await create_ner(session, config)
