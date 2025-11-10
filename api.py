@@ -15,6 +15,8 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
+from qdrant_client import QdrantClient
+from sentence_transformers import SentenceTransformer
 from starlette.middleware.cors import CORSMiddleware
 from cosmpy.protos.cosmwasm.wasm.v1.query_pb2_grpc import QueryStub
 from cosmpy.protos.cosmwasm.wasm.v1.query_pb2 import QuerySmartContractStateRequest
@@ -29,6 +31,7 @@ from sympy.strategies.core import switch
 from create import generate_code, glue
 from ner.inference import NERExtractor
 from prepare_data import escape
+from rag.retrieve import retrieve
 from recipes.backend import extract_code_id_from_tx, select_data_provider, build_history_query, execute_query_request, \
     normalize_tx_results, open_celatone_explorer, search_contract_address, navigate_to_metadata_tab, \
     download_metadata_json, query_contract_info, query_code_info, extract_code_hash, query_bank_balance, \
@@ -42,35 +45,6 @@ from recipes.backend import extract_code_id_from_tx, select_data_provider, build
     update_inflation, save_genesis, validate_genesis, get_ufw_status, allow_ssh_via_ufw, reload_ufw, \
     list_ufw_rules_numbered, gather_gentx_files, collect_gentxs, open_config_file, update_mempool_max_txs, \
     save_config_file, restart_node_service
-
-
-# --- Placeholder for your generation logic ---
-# This function simulates the work of your generate_code() and NER model.
-# In your real application, you would replace this with your actual model inference.
-def generate_mock_response(text: str):
-    """
-    Takes text and returns a mock dictionary with label, params, and command.
-    """
-    # Simple logic to choose a response based on keywords
-    if "send" in text.lower() and "token" in text.lower():
-        return {
-            "label": "Send Tokens",
-            "params": {"amount": "10 NTRN", "recipient": "ntrn1...", "wallet": "mywallet"},
-            "command": "neutrond tx bank send mywallet ntrn1bobaddress... 100000000000000000000000000000000000000000000000000000000000000000000000000000untrn --gas auto"
-        }
-    elif "balance" in text.lower():
-        return {
-            "label": "Query Balance",
-            "params": {"wallet": "$WALLET_ADDR"},
-            "command": "neutrond query bank balances $WALLET_ADDR --node https://grpc-kaiyo-1.neutron.org:443"
-        }
-    else:
-        return {
-            "label": "Unknown Intent",
-            "params": {},
-            "command": "Could not generate a command for the given text."
-        }
-
 
 # --- FastAPI App Setup ---
 app = FastAPI(
@@ -101,6 +75,9 @@ app.add_middleware(
 # app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
+embedding_model = SentenceTransformer("BAAI/bge-large-en-v1.5")
+quadrant_client = QdrantClient("localhost", port=6333)
+
 # Pydantic model for the request body to ensure type safety
 class GenerateRequest(BaseModel):
     text: str
@@ -114,6 +91,30 @@ cfg = NetworkConfig(
     staking_denomination="untrn",
 )
 client = LedgerClient(cfg)
+
+def generate_mock_response(text: str):
+    """
+    Takes text and returns a mock dictionary with label, params, and command.
+    """
+    # Simple logic to choose a response based on keywords
+    if "send" in text.lower() and "token" in text.lower():
+        return {
+            "label": "Send Tokens",
+            "params": {"amount": "10 NTRN", "recipient": "ntrn1...", "wallet": "mywallet"},
+            "command": "neutrond tx bank send mywallet ntrn1bobaddress... 100000000000000000000000000000000000000000000000000000000000000000000000000000untrn --gas auto"
+        }
+    elif "balance" in text.lower():
+        return {
+            "label": "Query Balance",
+            "params": {"wallet": "$WALLET_ADDR"},
+            "command": "neutrond query bank balances $WALLET_ADDR --node https://grpc-kaiyo-1.neutron.org:443"
+        }
+    else:
+        return {
+            "label": "Unknown Intent",
+            "params": {},
+            "command": "Could not generate a command for the given text."
+        }
 
 def format_amount(micro_amount: int, decimals: int = 6) -> str:
     """
@@ -332,9 +333,11 @@ async def handle_chat(request_data: Request):
     input_text = req["query"]
     print("QUERY: "+input_text)
 
+    response = retrieve(input_text, quadrant_client, embedding_model)
+
     return JSONResponse(content={
                "mode": "mixed",
-               "answer": "this is a test answer",
+               "answer": response,
                "workflow": {
                    "steps": [
                        {"title": "✅ Mock execution complete.\nTx: mock_tx_ABC123"},
