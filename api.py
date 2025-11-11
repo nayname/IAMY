@@ -28,6 +28,7 @@ from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgStoreCode, MsgInstantiateCo
 from cosmpy.aerial.client import LedgerClient
 from sympy.strategies.core import switch
 
+from chat.chat import response
 from create import generate_code, glue
 from ner.inference import NERExtractor
 from prepare_data import escape
@@ -324,27 +325,8 @@ async def handle_generate(request_data: GenerateRequest):
 
 @app.post("/chat")
 async def handle_chat(request_data: Request):
-    """
-    Receives text from the frontend, generates a response,
-    and returns it as JSON.
-    """
-    # Get the text from the request body
-    req = await request_data.json()
-    input_text = req["query"]
-    print("QUERY: "+input_text)
+    return await response(request_data, quadrant_client, embedding_model)
 
-    response = retrieve(input_text, quadrant_client, embedding_model)
-
-    return JSONResponse(content={
-               "mode": "mixed",
-               "answer": response,
-               "workflow": {
-                   "steps": [
-                       {"title": "✅ Mock execution complete.\nTx: mock_tx_ABC123"},
-                       {"title": "🔄 Running mock execution…"}
-                   ]
-               }
-           })
 
 
 @app.post("/generate_")
