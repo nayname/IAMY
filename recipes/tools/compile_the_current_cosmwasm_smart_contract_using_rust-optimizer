@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Compiles the CosmWasm smart-contract in the specified folder and outputs an optimized .wasm file.",
+            "function": "compile_wasm_contract(contract_dir)",
+            "usage": "wasm_path = compile_wasm_contract('.')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Checks that the build artifacts folder contains all the expected files after compilation.",
+            "function": "verify_generated_artifacts(output_dir, validators=1)",
+            "usage": "is_valid = verify_generated_artifacts('./artifacts')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "wasm_path = compile_wasm_contract('.')#step: 1 Tool: docker_run_rust_optimizer Desciption: Execute `docker run --rm -v $(pwd):/code --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/rust-optimizer:0.12.11` from the project root.",
+        "is_valid = verify_generated_artifacts('./artifacts')#step: 2 Tool: verify_artifacts_directory Desciption: Confirm the ./artifacts directory now holds <crate_name>.wasm and contracts.txt."
+    ],
+    "intent": "Compile the current CosmWasm smart contract using rust-optimizer",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "docker_run_rust_optimizer",
+            "description": "Execute `docker run --rm -v $(pwd):/code --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/rust-optimizer:0.12.11` from the project root."
+        },
+        {
+            "step": 2,
+            "tool": "verify_artifacts_directory",
+            "description": "Confirm the ./artifacts directory now holds <crate_name>.wasm and contracts.txt."
+        }
+    ],
+    "outcome_checks": [
+        "artifacts/<crate_name>.wasm exists and is non-zero in size.",
+        "contracts.txt lists the correct SHA256 checksum for the new wasm."
+    ]
+}

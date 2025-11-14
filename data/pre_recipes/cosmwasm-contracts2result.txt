@@ -1,0 +1,60 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"cosmwasm-contracts\", \"query\": \"Query the transaction hash 38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085 to get the code id\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Send 1000000ujuno to contract address CONTRACT_ADDRESS using some_endpoint\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Query all_tokens list from NFT contract CONTRACT_ADDRESS\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Query nft_info for token 8 on contract CONTRACT_ADDRESS\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Create a new Juno wallet named MyWalletName\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "917eba0a-d968-4650-bdbc-8d71bcf9f32a"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Fetch the code ID from a given transaction hash\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"query_tx_by_hash\",\n        \"description\": \"Retrieve the full JSON details of transaction 38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085 from the Juno RPC or LCD endpoint.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"parse_code_id_from_tx\",\n        \"description\": \"Scan the returned transaction logs/events for an attribute named \\\"code_id\\\" and capture its numeric value.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Ensure a positive integer code_id was extracted.\",\n      \"Confirm the transaction contains a MsgStoreCode or MsgInstantiateContract message (where code_id is expected).\"\n    ]\n  },\n  {\n    \"intent\": \"Send 1,000,000 ujuno to a CosmWasm contract via an execute endpoint\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_sender_address\",\n        \"description\": \"Identify the user\u2019s wallet address that holds at least 1,000,000 ujuno.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"validate_contract_address\",\n        \"description\": \"Verify that CONTRACT_ADDRESS is a valid Juno bech32 address for a smart contract.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_execute_msg\",\n        \"description\": \"Build the JSON payload for the contract call (e.g., {\\\"some_endpoint\\\": {}}).\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"construct_tx_wasm_execute\",\n        \"description\": \"Create a MsgExecuteContract that targets CONTRACT_ADDRESS, attaches 1,000,000ujuno as funds, and embeds the JSON payload.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"sign_and_broadcast_tx\",\n        \"description\": \"Sign the transaction with the sender\u2019s key and broadcast it to the network.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Verify the transaction is included in a block with success status.\",\n      \"Check the logs for a transfer event showing 1,000,000ujuno sent to the contract.\"\n    ]\n  },\n  {\n    \"intent\": \"Query the all_tokens list from an NFT contract\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"validate_contract_address\",\n        \"description\": \"Ensure CONTRACT_ADDRESS is a valid CW721 contract address.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"build_query_json\",\n        \"description\": \"Prepare the query JSON: {\\\"all_tokens\\\": {}}.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"wasm_smart_query\",\n        \"description\": \"Execute a smart query against CONTRACT_ADDRESS with the prepared JSON.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"parse_tokens_list\",\n        \"description\": \"Extract and return the array of token IDs from the query response.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Confirm the response contains a \\\"tokens\\\" field that is an array.\",\n      \"If a limit is provided, ensure the number of tokens returned does not exceed that limit.\"\n    ]\n  },\n  {\n    \"intent\": \"Query nft_info for token ID 8 from an NFT contract\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"validate_contract_address\",\n        \"description\": \"Verify that CONTRACT_ADDRESS is a valid CW721 contract address.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"validate_token_id\",\n        \"description\": \"Ensure the provided token ID (8) is a non-negative integer or valid string identifier.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"build_query_json\",\n        \"description\": \"Create the query JSON: {\\\"nft_info\\\": {\\\"token_id\\\": \\\"8\\\"}}.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"wasm_smart_query\",\n        \"description\": \"Execute the smart query against CONTRACT_ADDRESS with the constructed JSON.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"parse_nft_info\",\n        \"description\": \"Parse the response to obtain metadata fields such as owner, name, and token_uri.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Verify the response includes owner, token_uri, and any extension data.\",\n      \"Ensure the returned token_id matches \\\"8\\\".\"\n    ]\n  },\n  {\n    \"intent\": \"Create a new Juno wallet named MyWalletName\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"create_wallet\",\n        \"description\": \"Generate a new key in the local keyring with the name MyWalletName (e.g., via `junod keys add MyWalletName`).\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"store_mnemonic_securely\",\n        \"description\": \"Display the mnemonic once, prompt the user to back it up, and never store it in plaintext after confirmation.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"show_wallet_address\",\n        \"description\": \"Return the bech32 address associated with MyWalletName so it can receive funds.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Ensure the key list now contains an entry named MyWalletName.\",\n      \"Validate that the generated address starts with the correct Juno prefix (\\\"juno1\\\").\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2968,
+                    "prompt_tokens": 800,
+                    "total_tokens": 3768,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1728,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6ZTIul77UUPHGb3abGbITSThgjA",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--364aca2c-1aa5-4405-b58a-cf0f7ba0efab-0",
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 800,
+                "output_tokens": 2968,
+                "total_tokens": 3768,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1728
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,33 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Creates a minified JSON string for the smart-contract query (e.g., {\"get_config\":{}}).",
+            "code": "export const prepareQueryPayload = (method, params = {}) => {\n  if (typeof method !== 'string' || !method.length) {\n    throw new Error('method must be a non-empty string');\n  }\n  // Build the query object dynamically\n  const queryObj = {};\n  queryObj[method] = params;\n  // Return compact (no extra whitespace) JSON\n  return JSON.stringify(queryObj);\n};",
+            "usage": "const jsonQuery = prepareQueryPayload('get_config');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Base64-encodes the JSON query string so it can be appended to the LCD REST path.",
+            "code": "export const encodeToBase64 = (jsonStr) => {\n  if (typeof jsonStr !== 'string') {\n    throw new Error('Argument must be a JSON string');\n  }\n  try {\n    // Handle Unicode safely before base64-encoding\n    const binary = unescape(encodeURIComponent(jsonStr));\n    return btoa(binary);\n  } catch (err) {\n    console.error('Base64 encoding failed', err);\n    throw err;\n  }\n};",
+            "usage": "const base64Query = encodeToBase64(jsonQuery);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Python FastAPI endpoint that proxies the GET request to the chain\u2019s LCD, avoiding CORS issues on the frontend.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport httpx\nimport os\n\napp = FastAPI()\n\n# Change or override via environment variable for different chains/networks\nLCD_ENDPOINT = os.getenv('LCD_ENDPOINT', 'https://rest.cosmos.directory/juno')\n\n@app.get('/api/contract/query')\nasync def contract_query(contract_addr: str, base64_query: str):\n    \"\"\"\n    Forward a base64-encoded smart-contract query to the chain's LCD REST endpoint\n    and return the JSON response back to the caller.\n    \"\"\"\n    lcd_url = f\"{LCD_ENDPOINT}/cosmwasm/wasm/v1/contract/{contract_addr}/smart/{base64_query}\"\n    try:\n        async with httpx.AsyncClient(timeout=10) as client:\n            response = await client.get(lcd_url)\n    except httpx.RequestError as e:\n        raise HTTPException(status_code=500, detail=f'Network error: {str(e)}')\n\n    if response.status_code != 200:\n        raise HTTPException(status_code=response.status_code, detail=response.text)\n\n    return response.json()",
+            "usage": "const lcdResult = await fetch(`/api/contract/query?contract_addr=${contractAddr}&base64_query=${base64Query}`)\n  .then(res => res.json());"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Parses the JSON returned by the backend and pretty-prints it for display in the UI or console.",
+            "code": "export const parseResponse = (rawJson) => {\n  if (!rawJson) {\n    throw new Error('Empty response received from backend');\n  }\n  // Convert to a readable, indented string\n  return JSON.stringify(rawJson, null, 2);\n};",
+            "usage": "const prettyJson = parseResponse(lcdResult);\nconsole.log(prettyJson);  // Or render in your component"
+        }
+    ]
+}

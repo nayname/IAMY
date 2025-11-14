@@ -1,0 +1,33 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 fetches the address of the server-managed wallet (the signer that is authorized to execute the contract).",
+            "code": "export const fetchExecutorAddress = async () => {\n  try {\n    const response = await fetch('/api/executor_address');\n    if (!response.ok) {\n      throw new Error(`Backend responded with ${response.status}`);\n    }\n    const data = await response.json();\n    if (!data.address) {\n      throw new Error('Invalid response: address missing');\n    }\n    return data.address;\n  } catch (error) {\n    console.error('fetchExecutorAddress error:', error);\n    throw error;\n  }\n};",
+            "usage": "const executorAddress = await fetchExecutorAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 builds the CosmWasm execute message that will reset the on-chain counter to a given value.",
+            "code": "export const buildResetMsg = (count = 0) => {\n  return {\n    reset: {\n      count,\n    },\n  };\n};",
+            "usage": "const execMsg = buildResetMsg();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 implements the FastAPI backend that (a) reveals the executor address for Step 1 and (b) signs & broadcasts the MsgExecuteContract using a server-side key managed via an environment variable.",
+            "code": "# backend/main.py\n\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport os, json\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import LocalWallet\nfrom cosmpy.aerial.contract import MsgExecuteContract\nfrom cosmpy.aerial.tx import Transaction\n\napp = FastAPI()\n\n# ---------------- Chain / Wallet configuration ----------------\nCHAIN_ID = os.getenv(\"CHAIN_ID\", \"neutron-1\")\nRPC_ENDPOINT = os.getenv(\"RPC_ENDPOINT\", \"https://rpc.neutron-1.neutron.org:443\")\nGAS_PRICE = os.getenv(\"GAS_PRICE\", \"0.0025untrn\")\nMNEMONIC = os.getenv(\"EXECUTOR_MNEMONIC\")  # keep this secret!\nif MNEMONIC is None:\n    raise RuntimeError(\"EXECUTOR_MNEMONIC environment variable not set\")\n\nnetwork_cfg = NetworkConfig(\n    chain_id=CHAIN_ID,\n    url=RPC_ENDPOINT,\n    fee_minimum_gas_price=GAS_PRICE,\n    fee_denomination=GAS_PRICE.lstrip(\"0123456789.\")  # naive extraction\n)\nclient = LedgerClient(network_cfg)\nwallet = LocalWallet(MNEMONIC)\n\n# ---------------- Pydantic models ----------------\nclass ExecuteResetPayload(BaseModel):\n    contract_address: str\n    msg: dict                      # e.g. {\"reset\": {\"count\": 0}}\n    gas: str | None = \"auto\"        # \"auto\" or an explicit integer string\n    fees: str | None = None         # e.g. \"5000untrn\"\n    memo: str | None = None\n\n# ---------------- Routes ----------------\n@app.get(\"/api/executor_address\")\ndef executor_address():\n    \"\"\"Returns the address of the server-side signer used for transactions.\"\"\"\n    return {\"address\": wallet.address()}\n\n@app.post(\"/api/execute_reset\")\ndef execute_reset(payload: ExecuteResetPayload):\n    \"\"\"Signs and broadcasts a MsgExecuteContract that resets the counter.\"\"\"\n    try:\n        execute_msg = MsgExecuteContract(\n            sender=wallet.address(),\n            contract=payload.contract_address,\n            msg=json.dumps(payload.msg).encode(),  # cosmpy expects bytes\n            funds=[]\n        )\n\n        tx = (Transaction()\n              .with_messages(execute_msg)\n              .with_chain_id(CHAIN_ID)\n              .with_sequence(client.get_sequence(wallet.address()))\n              .with_account_num(client.get_number(wallet.address())))\n\n        if payload.gas != \"auto\":\n            tx = tx.with_gas(int(payload.gas))\n        if payload.fees:\n            tx = tx.with_fee(payload.fees)\n        if payload.memo:\n            tx = tx.with_memo(payload.memo)\n\n        signed_tx = tx.sign(wallet)\n        res = client.broadcast_tx_block(signed_tx)\n\n        if res.is_successful():\n            return {\n                \"tx_hash\": res.tx_hash,\n                \"height\": res.height,\n                \"raw_log\": res.raw_log\n            }\n        raise HTTPException(status_code=400, detail=res.raw_log)\n\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "const response = await fetch('/api/execute_reset', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({\n    contract_address: '<CONTRACT_ADDRESS>',\n    msg: execMsg\n  })\n});\nconst { tx_hash } = await response.json();"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 adds an endpoint that clients can poll to determine whether a transaction has been included in a block.",
+            "code": "# backend/main.py  (continued)\n\nfrom cosmpy.aerial.client import NetworkError\n\n@app.get(\"/api/tx_status/{tx_hash}\")\ndef tx_status(tx_hash: str):\n    \"\"\"Returns confirmation details for the supplied transaction hash.\"\"\"\n    try:\n        tx_info = client.get_tx(tx_hash)\n        if tx_info is None:\n            return {\"confirmed\": False, \"tx_hash\": tx_hash}\n        return {\n            \"confirmed\": True,\n            \"tx_hash\": tx_hash,\n            \"height\": tx_info.height,\n            \"raw_log\": tx_info.raw_log\n        }\n    except NetworkError as ne:\n        raise HTTPException(status_code=503, detail=str(ne))\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "const status = await fetch(`/api/tx_status/${txHash}`).then(r => r.json());\nif (status.confirmed) {\n  console.log('Tx included in block', status.height);\n}"
+        }
+    ]
+}

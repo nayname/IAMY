@@ -1,0 +1,142 @@
+[
+    {
+        "intent": "Fetch the code ID from a given transaction hash",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_tx_by_hash",
+                "description": "Retrieve the full JSON details of transaction 38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085 from the Juno RPC or LCD endpoint."
+            },
+            {
+                "step": 2,
+                "tool": "parse_code_id_from_tx",
+                "description": "Scan the returned transaction logs/events for an attribute named \"code_id\" and capture its numeric value."
+            }
+        ],
+        "outcome_checks": [
+            "Ensure a positive integer code_id was extracted.",
+            "Confirm the transaction contains a MsgStoreCode or MsgInstantiateContract message (where code_id is expected)."
+        ]
+    },
+    {
+        "intent": "Send 1,000,000 ujuno to a CosmWasm contract via an execute endpoint",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_sender_address",
+                "description": "Identify the user\u2019s wallet address that holds at least 1,000,000 ujuno."
+            },
+            {
+                "step": 2,
+                "tool": "validate_contract_address",
+                "description": "Verify that CONTRACT_ADDRESS is a valid Juno bech32 address for a smart contract."
+            },
+            {
+                "step": 3,
+                "tool": "construct_execute_msg",
+                "description": "Build the JSON payload for the contract call (e.g., {\"some_endpoint\": {}})."
+            },
+            {
+                "step": 4,
+                "tool": "construct_tx_wasm_execute",
+                "description": "Create a MsgExecuteContract that targets CONTRACT_ADDRESS, attaches 1,000,000ujuno as funds, and embeds the JSON payload."
+            },
+            {
+                "step": 5,
+                "tool": "sign_and_broadcast_tx",
+                "description": "Sign the transaction with the sender\u2019s key and broadcast it to the network."
+            }
+        ],
+        "outcome_checks": [
+            "Verify the transaction is included in a block with success status.",
+            "Check the logs for a transfer event showing 1,000,000ujuno sent to the contract."
+        ]
+    },
+    {
+        "intent": "Query the all_tokens list from an NFT contract",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_contract_address",
+                "description": "Ensure CONTRACT_ADDRESS is a valid CW721 contract address."
+            },
+            {
+                "step": 2,
+                "tool": "build_query_json",
+                "description": "Prepare the query JSON: {\"all_tokens\": {}}."
+            },
+            {
+                "step": 3,
+                "tool": "wasm_smart_query",
+                "description": "Execute a smart query against CONTRACT_ADDRESS with the prepared JSON."
+            },
+            {
+                "step": 4,
+                "tool": "parse_tokens_list",
+                "description": "Extract and return the array of token IDs from the query response."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm the response contains a \"tokens\" field that is an array.",
+            "If a limit is provided, ensure the number of tokens returned does not exceed that limit."
+        ]
+    },
+    {
+        "intent": "Query nft_info for token ID 8 from an NFT contract",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_contract_address",
+                "description": "Verify that CONTRACT_ADDRESS is a valid CW721 contract address."
+            },
+            {
+                "step": 2,
+                "tool": "validate_token_id",
+                "description": "Ensure the provided token ID (8) is a non-negative integer or valid string identifier."
+            },
+            {
+                "step": 3,
+                "tool": "build_query_json",
+                "description": "Create the query JSON: {\"nft_info\": {\"token_id\": \"8\"}}."
+            },
+            {
+                "step": 4,
+                "tool": "wasm_smart_query",
+                "description": "Execute the smart query against CONTRACT_ADDRESS with the constructed JSON."
+            },
+            {
+                "step": 5,
+                "tool": "parse_nft_info",
+                "description": "Parse the response to obtain metadata fields such as owner, name, and token_uri."
+            }
+        ],
+        "outcome_checks": [
+            "Verify the response includes owner, token_uri, and any extension data.",
+            "Ensure the returned token_id matches \"8\"."
+        ]
+    },
+    {
+        "intent": "Create a new Juno wallet named MyWalletName",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "create_wallet",
+                "description": "Generate a new key in the local keyring with the name MyWalletName (e.g., via `junod keys add MyWalletName`)."
+            },
+            {
+                "step": 2,
+                "tool": "store_mnemonic_securely",
+                "description": "Display the mnemonic once, prompt the user to back it up, and never store it in plaintext after confirmation."
+            },
+            {
+                "step": 3,
+                "tool": "show_wallet_address",
+                "description": "Return the bech32 address associated with MyWalletName so it can receive funds."
+            }
+        ],
+        "outcome_checks": [
+            "Ensure the key list now contains an entry named MyWalletName.",
+            "Validate that the generated address starts with the correct Juno prefix (\"juno1\")."
+        ]
+    }
+]

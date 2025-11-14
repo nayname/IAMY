@@ -1,0 +1,33 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 prompts the user for the CosmWasm contract address and performs a basic bech32 validity check before returning it.",
+            "code": "export const requestContractAddress = () => {\n  // Ask the user for the target contract address.\n  const address = window.prompt('Enter the CosmWasm contract address (bech32):', '');\n  if (!address) {\n    throw new Error('No contract address provided.');\n  }\n  const trimmed = address.trim();\n  // Very lightweight bech32 check: <prefix>1<38+chars>\n  const bech32Regex = /^[a-z]{2,63}1[0-9a-z]{38,}$/;\n  if (!bech32Regex.test(trimmed)) {\n    throw new Error('Provided string does not look like a valid bech32 address.');\n  }\n  return trimmed;\n};",
+            "usage": "const contractAddress = requestContractAddress();"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 constructs the exact JSON payload {\"abcde\":{}} as a compressed one-line string ready to be sent to the backend.",
+            "code": "export const constructCustomQueryPayload = () => {\n  // Build the custom query object\n  const payload = { abcde: {} };\n  // Return it as a minified JSON string => '{\"abcde\":{}}'\n  return JSON.stringify(payload);\n};",
+            "usage": "const queryPayload = constructCustomQueryPayload();"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Backend FastAPI endpoint that receives the contract address and raw payload, encodes the payload to base64 and performs the smart-contract query against the provided Cosmos RPC/REST endpoint.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport httpx, json, base64, os\n\napp = FastAPI()\n\nclass ContractQueryRequest(BaseModel):\n    contract_address: str\n    query_payload: str  # '{\"abcde\":{}}'\n    rpc_endpoint: str | None = os.getenv('COSMOS_RPC', 'https://rpc.cosmos.directory/cosmoshub/rpc')\n\n@app.post('/api/query_contract')\nasync def query_contract(req: ContractQueryRequest):\n    \"\"\"Queries a CosmWasm smart contract and returns the decoded JSON response.\"\"\"\n    # Validate JSON payload\n    try:\n        query_dict = json.loads(req.query_payload)\n    except json.JSONDecodeError as e:\n        raise HTTPException(status_code=400, detail=f'Invalid JSON payload: {e}')\n\n    # Encode query to base64 as required for REST endpoint /smart/{data}\n    query_b64 = base64.b64encode(json.dumps(query_dict).encode()).decode()\n\n    url = f\"{req.rpc_endpoint}/cosmwasm/wasm/v1/contract/{req.contract_address}/smart/{query_b64}\"\n\n    try:\n        async with httpx.AsyncClient(timeout=10.0) as client:\n            resp = await client.get(url)\n            resp.raise_for_status()\n            return {\"data\": resp.json()}\n    except httpx.HTTPError as err:\n        raise HTTPException(status_code=502, detail=f'Upstream RPC error: {err}')",
+            "usage": "const smartResponse = await fetch('/api/query_contract', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({\n    contract_address: contractAddress,\n    query_payload: queryPayload\n  })\n}).then(r => r.json());"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 pretty-prints the JSON returned from the backend so it can be inspected in the browser console or rendered in the UI.",
+            "code": "export const prettyPrintResponse = (jsonResponse) => {\n  // Convert object to an indented string for readability\n  return JSON.stringify(jsonResponse, null, 2);\n};",
+            "usage": "console.log(prettyPrintResponse(smartResponse));"
+        }
+    ]
+}

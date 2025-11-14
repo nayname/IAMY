@@ -1,0 +1,33 @@
+{
+    "label": "upload",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 checks that the compiled WASM file exists in the local `artifacts/` folder and (optionally) validates its SHA-256 hash to ensure it was built by a trusted optimizer.",
+            "code": "import os\nimport hashlib\n\n\ndef verify_wasm_artifact(contract_name: str, artifacts_dir: str = 'artifacts', expected_sha256: str | None = None) -> dict:\n    \"\"\"Verify local CosmWasm binary integrity.\n\n    Parameters\n    ----------\n    contract_name : str\n        Name of the contract (without `.wasm`).\n    artifacts_dir : str, optional\n        Relative path where build artifacts reside.\n    expected_sha256 : str | None, optional\n        If provided, the function will compare the on-disk hash to this value.\n\n    Returns\n    -------\n    dict\n        { 'file_path': str, 'sha256': str }\n    \"\"\"\n    file_path = os.path.join(artifacts_dir, f'{contract_name}.wasm')\n\n    if not os.path.isfile(file_path):\n        raise FileNotFoundError(f'WASM artifact not found at {file_path}')\n\n    sha256 = hashlib.sha256()\n    with open(file_path, 'rb') as f:\n        for chunk in iter(lambda: f.read(8192), b''):\n            sha256.update(chunk)\n    file_hash = sha256.hexdigest()\n\n    if expected_sha256 and file_hash.lower() != expected_sha256.lower():\n        raise ValueError('SHA-256 hash mismatch: artifact may not be trusted.')\n\n    return {\"file_path\": file_path, \"sha256\": file_hash}",
+            "usage": "await fetch('/api/verify_wasm?contract_name=my_contract').then(r => r.json());"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 uploads the verified WASM to chain by shelling out to `junod tx wasm store`, then returns the resulting transaction hash.",
+            "code": "import json\nimport subprocess\nimport shlex\n\n\ndef store_wasm(contract_name: str, key_name: str, chain_id: str, gas_adjustment: float = 1.3) -> dict:\n    \"\"\"Call `junod tx wasm store` and return the tx hash.\"\"\"\n    wasm_path = f'artifacts/{contract_name}.wasm'\n    cmd = (\n        f'junod tx wasm store {wasm_path} '\n        f'--from {key_name} --chain-id {chain_id} '\n        f'--gas auto --gas-adjustment {gas_adjustment} -y -o json'\n    )\n\n    try:\n        output = subprocess.check_output(shlex.split(cmd), stderr=subprocess.STDOUT)\n        cli_response = json.loads(output.decode())\n        tx_hash = cli_response.get('txhash') or cli_response.get('tx_response', {}).get('txhash')\n        if not tx_hash:\n            raise RuntimeError('Could not parse tx hash from CLI output.')\n        return {\"tx_hash\": tx_hash}\n    except subprocess.CalledProcessError as e:\n        raise RuntimeError(f'junod CLI error: {e.output.decode()}') from e",
+            "usage": "await fetch('/api/store_wasm', { method: 'POST', body: JSON.stringify({ contract_name: 'my_contract', key_name: 'my-key', chain_id: 'neutron-1' }) }).then(r => r.json());"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 continually polls the REST endpoint for the submitted transaction until it is committed to a block (or times out).",
+            "code": "import time\nimport requests\n\n\ndef wait_for_tx_commit(tx_hash: str, rest_endpoint: str, timeout: int = 180, poll_interval: int = 6) -> dict:\n    \"\"\"Block until the transaction lands or raise TimeoutError.\"\"\"\n    url = f\"{rest_endpoint}/cosmos/tx/v1beta1/txs/{tx_hash}\"\n    start = time.time()\n    while time.time() - start < timeout:\n        resp = requests.get(url)\n        if resp.status_code == 200:\n            data = resp.json()\n            if data.get('tx_response', {}).get('height', '0') != '0':\n                return data\n        time.sleep(poll_interval)\n    raise TimeoutError(f'Transaction {tx_hash} not found within {timeout} seconds')",
+            "usage": "await fetch('/api/wait_tx?hash=' + txHash).then(r => r.json());"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 fetches the current on-chain code list so the newly assigned code ID can be displayed to the user after upload.",
+            "code": "import requests\n\n\ndef fetch_code_list(rest_endpoint: str) -> dict:\n    \"\"\"Return array of all CosmWasm code infos from the chain.\"\"\"\n    url = f\"{rest_endpoint}/cosmwasm/wasm/v1/code\"\n    resp = requests.get(url)\n    resp.raise_for_status()\n    return resp.json()",
+            "usage": "await fetch('/api/code_list').then(r => r.json());"
+        }
+    ]
+}

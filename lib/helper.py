@@ -121,4 +121,4 @@ def create_functions_json():
 
 
 if __name__ == "__main__":
-    count_actions()
+    create_actions()

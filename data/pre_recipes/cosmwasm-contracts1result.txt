@@ -1,0 +1,270 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"cosmwasm-contracts\", \"query\": \"Upload the compiled wasm file artifacts/CONTRACT_NAME.wasm to the Juno chain\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Compile the current CosmWasm smart contract using rust-optimizer\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Instantiate the contract with code id 13 and init message {\\\"count\\\":0}\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Execute increment on contract address CONTRACT_ADDRESS with 10ujuno\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Compile all workspace contracts with workspace-optimizer\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "6922176f-f912-42f6-9ee1-fae627b871da"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 683,
+                    "prompt_tokens": 778,
+                    "total_tokens": 1461,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 640,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6XXJ5e0HpeLqUw5ya6EQS1NMjeZ",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--dbbf9fca-16e8-4b76-950a-4fbeaafa22f0-0",
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "rust-optimizer cosmwasm",
+                        "section": "developer-guides",
+                        "max_results": 10
+                    },
+                    "id": "call_PrvPGIut2Zb3WyqfTxVbK0n6",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 778,
+                "output_tokens": 683,
+                "total_tokens": 1461,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 640
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"rust-optimizer cosmwasm\":\n\n## 1. Cosmwasm\n**File:** /root/neutron/juno/developer-guides/api-endpoints/cosmwasm/README.md\n**Section:** developer-guides\n**Relevance Score:** 13\n\n**Matching lines:**\n- Line 1: # Cosmwasm\n\n**Content Preview:**\n```\n# Cosmwasm\n\n```\n\n---\n\n## 2. CosmWasm Contracts\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/README.md\n**Section:** developer-guides\n**Relevance Score:** 13\n\n**Matching lines:**\n- Line 1: # CosmWasm Contracts\n\n**Content Preview:**\n```\n# CosmWasm Contracts\n\n```\n\n---\n\n## 3. Cosmwasm\n**File:** /root/neutron/juno/developer-guides/api-endpoints/cosmwasm/README.md\n**Section:** developer-guides\n**Relevance Score:** 13\n\n**Matching lines:**\n- Line 1: # Cosmwasm\n\n**Content Preview:**\n```\n# Cosmwasm\n\n```\n\n---\n\n## 4. CosmWasm Contracts\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/README.md\n**Section:** developer-guides\n**Relevance Score:** 13\n\n**Matching lines:**\n- Line 1: # CosmWasm Contracts\n\n**Content Preview:**\n```\n# CosmWasm Contracts\n\n```\n\n---\n\n## 5. Compile a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/compile-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 2: description: How to Compile CosmWasm Smart Contracts\n- Line 7: [This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n- Line 9: Example contracts for this can be found at [https://github.com/CosmWasm/cw-examples](https://github.com/CosmWasm/cw-examples). This repository [requires this section to compile](compile-a-contract.md#multiple-contract-repository-mono-repo) since multiple contracts are involved in a single repository.\n- Line 15: The easiest way is to simply use the [published docker image](https://hub.docker.com/r/cosmwasm/rust-optimizer). You must run this in the root of the smart contract repository you wish to compile. It will produce an `artifacts` directory with `<crate_name>.wasm` and `contracts.txt` containing the hashes. This is just one file.\n- Line 21: cosmwasm/rust-optimizer:0.12.11\n\n**Content Preview:**\n```\n---\ndescription: How to Compile CosmWasm Smart Contracts\n---\n\n---\n\n\n[This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n\n\n---\n\n\nExample contracts for this can be found at [https://github.com/CosmWasm/cw-examples](https://github.com/CosmWasm/cw-examples). This repository [requires this section to compile](compile-a-contract.md#multiple-contract-repository-mono-repo) since multiple contracts are involved in a single repository.\n\n```\n\n---\n\n## 6. Compile a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/compile-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 2: description: How to Compile CosmWasm Smart Contracts\n- Line 7: [This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n- Line 9: Example contracts for this can be found at [https://github.com/CosmWasm/cw-examples](https://github.com/CosmWasm/cw-examples). This repository [requires this section to compile](compile-a-contract.md#multiple-contract-repository-mono-repo) since multiple contracts are involved in a single repository.\n- Line 15: The easiest way is to simply use the [published docker image](https://hub.docker.com/r/cosmwasm/rust-optimizer). You must run this in the root of the smart contract repository you wish to compile. It will produce an `artifacts` directory with `<crate_name>.wasm` and `contracts.txt` containing the hashes. This is just one file.\n- Line 21: cosmwasm/rust-optimizer:0.12.11\n\n**Content Preview:**\n```\n---\ndescription: How to Compile CosmWasm Smart Contracts\n---\n\n---\n\n\n[This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n\n\n---\n\n\nExample contracts for this can be found at [https://github.com/CosmWasm/cw-examples](https://github.com/CosmWasm/cw-examples). This repository [requires this section to compile](compile-a-contract.md#multiple-contract-repository-mono-repo) since multiple contracts are involved in a single repository.\n\n```\n\n---\n\n## 7. Query A Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/query-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 2: description: Describes how to query a cosmwasm smart contract with the CLI & REST API.\n- Line 9: The most common way to query a cosmwasm smart contract is within the junod wasm smart query command. This follows the following format where query is a JSON string with no spaces. By default, the least amount of data this can be is an empty JSON payload `'{}'.`\n- Line 25: </strong><strong>#    cw721_base::msg::QueryMsg&#x3C;cosmwasm_std::results::empty::Empty>\n- Line 80: This query endpoint can be found via Juno's SwaggerUI. However, some modules you will not be able to easily find the endpoint. To do this, you will need to search through the proto files. Here we know we want to query the cosmwasm module, which is called wasmd on chain. This repo is found at [https://github.com/cosmwasm/wasmd](https://github.com/cosmwasm/wasmd).\\\n- Line 83: [https://github.com/CosmWasm/wasmd/blob/main/proto/cosmwasm/wasm/v1/query.proto](https://github.com/CosmWasm/wasmd/blob/main/proto/cosmwasm/wasm/v1/query.proto)\\\\\n\n**Content Preview:**\n```\n---\ndescription: Describes how to query a cosmwasm smart contract with the CLI & REST API.\n---\n\n---\n\n\nThe most common way to query a cosmwasm smart contract is within the junod wasm smart query command. This follows the following format where query is a JSON string with no spaces. By default, the least amount of data this can be is an empty JSON payload `'{}'.`\n\n\n---\n\n<strong># Error parsing into type \n</strong><strong>#    cw721_base::msg::QueryMsg&#x3C;cosmwasm_std::results::empty::Empty>\n</strong>#    unknown variant `abcde`, \n```\n\n---\n\n## 8. Send Tokens to a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/send-tokens-to-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 24: import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';\n- Line 46: let from_client = await SigningCosmWasmClient.connectWithSigner(RPC, wallet, {\n- Line 76: The cosmology toolkit has some useful typescript tools for interacting with your smart contracts. The repo can be found at [https://github.com/CosmWasm/ts-codegen](https://github.com/CosmWasm/ts-codegen), with setup and query tutorials in [Query A Contract section of this documentation](query-a-contract.md#cosmology-smart-contract-query).\n- Line 80: * [How to Execute a cosmwasm smart contract](https://cosmology.tech/learn/video/how-to-execute-cosmwasm-smart-contract-messages)\n- Line 81: * [Advanced execution with a cosmwasm message composer](https://cosmology.tech/learn/video/how-to-compose-messages-for-interacting-with-cosmwasm-smart-contracts)\n\n**Content Preview:**\n```\n\nimport { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';\n\n\n---\n\n\nlet from_client = await SigningCosmWasmClient.connectWithSigner(RPC, wallet, {\n\tprefix: \"juno\"\n\n---\n\n\nThe cosmology toolkit has some useful typescript tools for interacting with your smart contracts. The repo can be found at [https://github.com/CosmWasm/ts-codegen](https://github.com/CosmWasm/ts-codegen), with setup and query tutorials in [Query A Contract section of this documentation](query-a-contract.md#cosmology-smart-contract-query).\n\n```\n\n---\n\n## 9. Junod Local Dev Setup\n**File:** /root/neutron/juno/developer-guides/junod-local-dev-setup.md\n**Section:** developer-guides\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 74: cosmwasm/rust-optimizer:0.12.11\n- Line 101: For additional information on CosmWasm, check out the [official docs](https://docs.cosmwasm.com/docs/1.0/) and their [tutorials](https://docs.cosmwasm.com/tutorials/hijack-escrow/intro).\n- Line 103: For a video that guides you through the above steps, some Juno contributors made a series called _CosmWasm By Dummies_ that guides you through writing your first contract after setting up Juno:\n\n**Content Preview:**\n```\n  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \\\n  cosmwasm/rust-optimizer:0.12.11\n\n\n---\n\n\nFor additional information on CosmWasm, check out the [official docs](https://docs.cosmwasm.com/docs/1.0/) and their [tutorials](https://docs.cosmwasm.com/tutorials/hijack-escrow/intro).\n\n\n---\n\n\nFor a video that guides you through the above steps, some Juno contributors made a series called _CosmWasm By Dummies_ that guides you through writing your first contract after setting up Juno:\n\n```\n\n---\n\n## 10. Local Interchain Rust Example\n**File:** /root/neutron/juno/developer-guides/local-interchain/local-interchain-rust-example.md\n**Section:** developer-guides\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 3: Learn how to seamlessly integrate Rust CosmWasm contracts into your GitHub\n- Line 18: 1. Make sure you have Rust and CosmWasm contract development environment set up on your local machine.\n- Line 19: 2. Create a GitHub repository where you want to host your Rust CosmWasm contract project.\n- Line 23: * Clone or create a new GitHub repository for your Rust CosmWasm contract project.\n- Line 27: * Inside your project, create a `source` folder. This folder will contain your standard CosmWasm contract with messages (e.g., increment and reset).\n\n**Content Preview:**\n```\ndescription: >-\n  Learn how to seamlessly integrate Rust CosmWasm contracts into your GitHub\n  workflow. Follow our step-by-step guide to set up your project, configure\n\n---\n\n\n1. Make sure you have Rust and CosmWasm contract development environment set up on your local machine.\n2. Create a GitHub repository where you want to host your Rust CosmWasm contract project.\n\n---\n\n1. Make sure you have Rust and CosmWasm contract development environment set up on your local machine.\n2. Create a GitHub repository where you want to host your Rust CosmWasm contract project.\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "067109f2-020a-4644-a6e9-ac13a4522cee",
+            "tool_call_id": "call_PrvPGIut2Zb3WyqfTxVbK0n6",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 683,
+                    "prompt_tokens": 4144,
+                    "total_tokens": 4827,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 640,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6Xh0lsqmmaQQzF70Yhhw3zt6Hbm",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--73d94220-6e27-4f42-b0b8-3ff05d2630b9-0",
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "workspace-optimizer CosmWasm",
+                        "section": "developer-guides",
+                        "max_results": 10
+                    },
+                    "id": "call_i7ttADZdZvgd7ubhIaFBOCay",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 4144,
+                "output_tokens": 683,
+                "total_tokens": 4827,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 640
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"workspace-optimizer CosmWasm\":\n\n## 1. Cosmwasm\n**File:** /root/neutron/juno/developer-guides/api-endpoints/cosmwasm/README.md\n**Section:** developer-guides\n**Relevance Score:** 13\n\n**Matching lines:**\n- Line 1: # Cosmwasm\n\n**Content Preview:**\n```\n# Cosmwasm\n\n```\n\n---\n\n## 2. CosmWasm Contracts\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/README.md\n**Section:** developer-guides\n**Relevance Score:** 13\n\n**Matching lines:**\n- Line 1: # CosmWasm Contracts\n\n**Content Preview:**\n```\n# CosmWasm Contracts\n\n```\n\n---\n\n## 3. Cosmwasm\n**File:** /root/neutron/juno/developer-guides/api-endpoints/cosmwasm/README.md\n**Section:** developer-guides\n**Relevance Score:** 13\n\n**Matching lines:**\n- Line 1: # Cosmwasm\n\n**Content Preview:**\n```\n# Cosmwasm\n\n```\n\n---\n\n## 4. CosmWasm Contracts\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/README.md\n**Section:** developer-guides\n**Relevance Score:** 13\n\n**Matching lines:**\n- Line 1: # CosmWasm Contracts\n\n**Content Preview:**\n```\n# CosmWasm Contracts\n\n```\n\n---\n\n## 5. Compile a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/compile-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 2: description: How to Compile CosmWasm Smart Contracts\n- Line 7: [This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n- Line 9: Example contracts for this can be found at [https://github.com/CosmWasm/cw-examples](https://github.com/CosmWasm/cw-examples). This repository [requires this section to compile](compile-a-contract.md#multiple-contract-repository-mono-repo) since multiple contracts are involved in a single repository.\n- Line 15: The easiest way is to simply use the [published docker image](https://hub.docker.com/r/cosmwasm/rust-optimizer). You must run this in the root of the smart contract repository you wish to compile. It will produce an `artifacts` directory with `<crate_name>.wasm` and `contracts.txt` containing the hashes. This is just one file.\n- Line 21: cosmwasm/rust-optimizer:0.12.11\n\n**Content Preview:**\n```\n---\ndescription: How to Compile CosmWasm Smart Contracts\n---\n\n---\n\n\n[This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n\n\n---\n\n\nExample contracts for this can be found at [https://github.com/CosmWasm/cw-examples](https://github.com/CosmWasm/cw-examples). This repository [requires this section to compile](compile-a-contract.md#multiple-contract-repository-mono-repo) since multiple contracts are involved in a single repository.\n\n```\n\n---\n\n## 6. Query A Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/query-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 2: description: Describes how to query a cosmwasm smart contract with the CLI & REST API.\n- Line 9: The most common way to query a cosmwasm smart contract is within the junod wasm smart query command. This follows the following format where query is a JSON string with no spaces. By default, the least amount of data this can be is an empty JSON payload `'{}'.`\n- Line 25: </strong><strong>#    cw721_base::msg::QueryMsg&#x3C;cosmwasm_std::results::empty::Empty>\n- Line 80: This query endpoint can be found via Juno's SwaggerUI. However, some modules you will not be able to easily find the endpoint. To do this, you will need to search through the proto files. Here we know we want to query the cosmwasm module, which is called wasmd on chain. This repo is found at [https://github.com/cosmwasm/wasmd](https://github.com/cosmwasm/wasmd).\\\n- Line 83: [https://github.com/CosmWasm/wasmd/blob/main/proto/cosmwasm/wasm/v1/query.proto](https://github.com/CosmWasm/wasmd/blob/main/proto/cosmwasm/wasm/v1/query.proto)\\\\\n\n**Content Preview:**\n```\n---\ndescription: Describes how to query a cosmwasm smart contract with the CLI & REST API.\n---\n\n---\n\n\nThe most common way to query a cosmwasm smart contract is within the junod wasm smart query command. This follows the following format where query is a JSON string with no spaces. By default, the least amount of data this can be is an empty JSON payload `'{}'.`\n\n\n---\n\n<strong># Error parsing into type \n</strong><strong>#    cw721_base::msg::QueryMsg&#x3C;cosmwasm_std::results::empty::Empty>\n</strong>#    unknown variant `abcde`, \n```\n\n---\n\n## 7. Send Tokens to a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/send-tokens-to-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 24: import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';\n- Line 46: let from_client = await SigningCosmWasmClient.connectWithSigner(RPC, wallet, {\n- Line 76: The cosmology toolkit has some useful typescript tools for interacting with your smart contracts. The repo can be found at [https://github.com/CosmWasm/ts-codegen](https://github.com/CosmWasm/ts-codegen), with setup and query tutorials in [Query A Contract section of this documentation](query-a-contract.md#cosmology-smart-contract-query).\n- Line 80: * [How to Execute a cosmwasm smart contract](https://cosmology.tech/learn/video/how-to-execute-cosmwasm-smart-contract-messages)\n- Line 81: * [Advanced execution with a cosmwasm message composer](https://cosmology.tech/learn/video/how-to-compose-messages-for-interacting-with-cosmwasm-smart-contracts)\n\n**Content Preview:**\n```\n\nimport { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';\n\n\n---\n\n\nlet from_client = await SigningCosmWasmClient.connectWithSigner(RPC, wallet, {\n\tprefix: \"juno\"\n\n---\n\n\nThe cosmology toolkit has some useful typescript tools for interacting with your smart contracts. The repo can be found at [https://github.com/CosmWasm/ts-codegen](https://github.com/CosmWasm/ts-codegen), with setup and query tutorials in [Query A Contract section of this documentation](query-a-contract.md#cosmology-smart-contract-query).\n\n```\n\n---\n\n## 8. Local Interchain Rust Example\n**File:** /root/neutron/juno/developer-guides/local-interchain/local-interchain-rust-example.md\n**Section:** developer-guides\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 3: Learn how to seamlessly integrate Rust CosmWasm contracts into your GitHub\n- Line 18: 1. Make sure you have Rust and CosmWasm contract development environment set up on your local machine.\n- Line 19: 2. Create a GitHub repository where you want to host your Rust CosmWasm contract project.\n- Line 23: * Clone or create a new GitHub repository for your Rust CosmWasm contract project.\n- Line 27: * Inside your project, create a `source` folder. This folder will contain your standard CosmWasm contract with messages (e.g., increment and reset).\n\n**Content Preview:**\n```\ndescription: >-\n  Learn how to seamlessly integrate Rust CosmWasm contracts into your GitHub\n  workflow. Follow our step-by-step guide to set up your project, configure\n\n---\n\n\n1. Make sure you have Rust and CosmWasm contract development environment set up on your local machine.\n2. Create a GitHub repository where you want to host your Rust CosmWasm contract project.\n\n---\n\n1. Make sure you have Rust and CosmWasm contract development environment set up on your local machine.\n2. Create a GitHub repository where you want to host your Rust CosmWasm contract project.\n\n```\n\n---\n\n## 9. Multi Message Transaction\n**File:** /root/neutron/juno/developer-guides/miscellaneous/multi-message-transaction.md\n**Section:** developer-guides\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 151: ## Multi Message NFT Mint (CosmWasm)\n- Line 153: After reading the above guide, the same steps can be applied to mint cosmwasm based NFTs (CW721s). This requires you to submit an NFT contract to chain first, and setup with your collections values before moving on to this step. We will link to that guide HERE in the future.\n- Line 167: \"@type\": \"/cosmwasm.wasm.v1.MsgExecuteContract\",\n- Line 211: \"@type\": \"/cosmwasm.wasm.v1.MsgExecuteContract\",\n- Line 224: \"@type\": \"/cosmwasm.wasm.v1.MsgExecuteContract\",\n\n**Content Preview:**\n```\n\n## Multi Message NFT Mint (CosmWasm)\n\n\n---\n\n\nAfter reading the above guide, the same steps can be applied to mint cosmwasm based NFTs (CW721s). This requires you to submit an NFT contract to chain first, and setup with your collections values before moving on to this step. We will link to that guide HERE in the future.\n\n\n---\n\n      {\n        \"@type\": \"/cosmwasm.wasm.v1.MsgExecuteContract\",\n        \"sender\": \"juno16g2rahf5846rxzp3fwlswy08fz8ccuwk03k57y\",\n```\n\n---\n\n## 10. Compile a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/compile-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 2: description: How to Compile CosmWasm Smart Contracts\n- Line 7: [This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n- Line 9: Example contracts for this can be found at [https://github.com/CosmWasm/cw-examples](https://github.com/CosmWasm/cw-examples). This repository [requires this section to compile](compile-a-contract.md#multiple-contract-repository-mono-repo) since multiple contracts are involved in a single repository.\n- Line 15: The easiest way is to simply use the [published docker image](https://hub.docker.com/r/cosmwasm/rust-optimizer). You must run this in the root of the smart contract repository you wish to compile. It will produce an `artifacts` directory with `<crate_name>.wasm` and `contracts.txt` containing the hashes. This is just one file.\n- Line 21: cosmwasm/rust-optimizer:0.12.11\n\n**Content Preview:**\n```\n---\ndescription: How to Compile CosmWasm Smart Contracts\n---\n\n---\n\n\n[This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n\n\n---\n\n\nExample contracts for this can be found at [https://github.com/CosmWasm/cw-examples](https://github.com/CosmWasm/cw-examples). This repository [requires this section to compile](compile-a-contract.md#multiple-contract-repository-mono-repo) since multiple contracts are involved in a single repository.\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "d869a397-62bc-42de-b400-93e3f04e0d74",
+            "tool_call_id": "call_i7ttADZdZvgd7ubhIaFBOCay",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 234,
+                    "prompt_tokens": 7523,
+                    "total_tokens": 7757,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 192,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 4096
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6XuFCEn4Ql8BmB2lmQ8TzEa2rnw",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--7a1cd385-a129-47b3-b6cc-de9af5dd5e2d-0",
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "junod wasm store contract",
+                        "section": "developer-guides",
+                        "max_results": 10
+                    },
+                    "id": "call_OJOXJteA8p75gpSQpy2MGlX3",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 7523,
+                "output_tokens": 234,
+                "total_tokens": 7757,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 4096
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 192
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"junod wasm store contract\":\n\n## 1. Query A Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/query-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 21\n\n**Matching lines:**\n- Line 2: description: Describes how to query a cosmwasm smart contract with the CLI & REST API.\n- Line 5: # Query A Contract\n- Line 9: The most common way to query a cosmwasm smart contract is within the junod wasm smart query command. This follows the following format where query is a JSON string with no spaces. By default, the least amount of data this can be is an empty JSON payload `'{}'.`\n- Line 12: junod query wasm contract-state smart [contract_bech32] [query] [flags]\n- Line 15: For this example, we are going to use a random NFT contract on the juno chain. This will show you how to brute force query a contract if you have no idea what the query schema of the contract is. At this time, there is no way to query the format of a contract's requests, but this is something many are actively working on.\n\n**Content Preview:**\n```\n---\ndescription: Describes how to query a cosmwasm smart contract with the CLI & REST API.\n---\n\n---\n\n\n# Query A Contract\n\n\n---\n\n\nThe most common way to query a cosmwasm smart contract is within the junod wasm smart query command. This follows the following format where query is a JSON string with no spaces. By default, the least amount of data this can be is an empty JSON payload `'{}'.`\n\n```\n\n---\n\n## 2. Send Tokens to a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/send-tokens-to-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 21\n\n**Matching lines:**\n- Line 1: # Send Tokens to a Contract\n- Line 5: When you execute a message, a user can also pass through a flag which sends funds from their account to the contract to do logic. You can check if a user sends any funds in your contract's execute endpoint with the `info.funds` array of Coins sent by the user. These funds then get added to the contracts balance just like any other account. So it is up to you as the developer to ensure to save how many funds each user has sent via a BTreeMap or other object storage in state (if they can redeem funds back at a later time).\n- Line 7: To send funds to a contract with some arbitrary endpoint, you use the `--amount` flag.\n- Line 10: junod tx wasm execute CONTRACT '{\"some_endpoint\":{}}' --amount 1000000ujuno\n- Line 24: import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';\n\n**Content Preview:**\n```\n# Send Tokens to a Contract\n\n\n---\n\n\nWhen you execute a message, a user can also pass through a flag which sends funds from their account to the contract to do logic. You can check if a user sends any funds in your contract's execute endpoint with the `info.funds` array of Coins sent by the user. These funds then get added to the contracts balance just like any other account. So it is up to you as the developer to ensure to save how many funds each user has sent via a BTreeMap or other object storage in state (if they can redeem funds back at a later time).\n\n\n---\n\n\nTo send funds to a contract with some arbitrary endpoint, you use the `--amount` flag.\n\n```\n\n---\n\n## 3. Query A Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/query-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 21\n\n**Matching lines:**\n- Line 2: description: Describes how to query a cosmwasm smart contract with the CLI & REST API.\n- Line 5: # Query A Contract\n- Line 9: The most common way to query a cosmwasm smart contract is within the junod wasm smart query command. This follows the following format where query is a JSON string with no spaces. By default, the least amount of data this can be is an empty JSON payload `'{}'.`\n- Line 12: junod query wasm contract-state smart [contract_bech32] [query] [flags]\n- Line 15: For this example, we are going to use a random NFT contract on the juno chain. This will show you how to brute force query a contract if you have no idea what the query schema of the contract is. At this time, there is no way to query the format of a contract's requests, but this is something many are actively working on.\n\n**Content Preview:**\n```\n---\ndescription: Describes how to query a cosmwasm smart contract with the CLI & REST API.\n---\n\n---\n\n\n# Query A Contract\n\n\n---\n\n\nThe most common way to query a cosmwasm smart contract is within the junod wasm smart query command. This follows the following format where query is a JSON string with no spaces. By default, the least amount of data this can be is an empty JSON payload `'{}'.`\n\n```\n\n---\n\n## 4. Send Tokens to a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/send-tokens-to-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 21\n\n**Matching lines:**\n- Line 1: # Send Tokens to a Contract\n- Line 5: When you execute a message, a user can also pass through a flag which sends funds from their account to the contract to do logic. You can check if a user sends any funds in your contract's execute endpoint with the `info.funds` array of Coins sent by the user. These funds then get added to the contracts balance just like any other account. So it is up to you as the developer to ensure to save how many funds each user has sent via a BTreeMap or other object storage in state (if they can redeem funds back at a later time).\n- Line 7: To send funds to a contract with some arbitrary endpoint, you use the `--amount` flag.\n- Line 10: junod tx wasm execute CONTRACT '{\"some_endpoint\":{}}' --amount 1000000ujuno\n- Line 24: import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';\n\n**Content Preview:**\n```\n# Send Tokens to a Contract\n\n\n---\n\n\nWhen you execute a message, a user can also pass through a flag which sends funds from their account to the contract to do logic. You can check if a user sends any funds in your contract's execute endpoint with the `info.funds` array of Coins sent by the user. These funds then get added to the contracts balance just like any other account. So it is up to you as the developer to ensure to save how many funds each user has sent via a BTreeMap or other object storage in state (if they can redeem funds back at a later time).\n\n\n---\n\n\nTo send funds to a contract with some arbitrary endpoint, you use the `--amount` flag.\n\n```\n\n---\n\n## 5. Compile a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/compile-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: description: How to Compile CosmWasm Smart Contracts\n- Line 5: # Compile a Contract\n- Line 7: [This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n- Line 9: Example contracts for this can be found at [https://github.com/CosmWasm/cw-examples](https://github.com/CosmWasm/cw-examples). This repository [requires this section to compile](compile-a-contract.md#multiple-contract-repository-mono-repo) since multiple contracts are involved in a single repository.\n- Line 13: ## Single Contract Repository\n\n**Content Preview:**\n```\n---\ndescription: How to Compile CosmWasm Smart Contracts\n---\n\n---\n\n\n# Compile a Contract\n\n\n---\n\n\n[This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n\n```\n\n---\n\n## 6. Deploy a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/deploy-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: description: Submit the code of a smart contract to chain and get its code id\n- Line 5: # Deploy a Contract\n- Line 9: Make sure you follow the [compile a contract](compile-a-contract.md) guide first for your project. Once you have a contract compiled in the artifacts/\\*.wasm directory, you are ready for this guide.\n- Line 11: This guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n- Line 16: You need to upload the contract via the CLI to chain. To do this, perform the following\n\n**Content Preview:**\n```\n---\ndescription: Submit the code of a smart contract to chain and get its code id\n---\n\n---\n\n\n# Deploy a Contract\n\n\n---\n\n\nMake sure you follow the [compile a contract](compile-a-contract.md) guide first for your project. Once you have a contract compiled in the artifacts/\\*.wasm directory, you are ready for this guide.\n\n```\n\n---\n\n## 7. Junod Local Dev Setup\n**File:** /root/neutron/juno/developer-guides/junod-local-dev-setup.md\n**Section:** developer-guides\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 6: # Junod Local Dev Setup\n- Line 10: Want to use `junod` locally for development, or to work with smart contracts? You're in the right place. Running locally is a much easier solution than interacting with a testnet.\n- Line 19: junod keys add <unsafe-test-key-name> --recover\n- Line 32: There is a prebuilt docker image [for you to use](https://github.com/CosmosContracts/juno/pkgs/container/juno). This will start a container with a seeded user. The address and mnemonic used here can be found in the `docker/` directory of the repo. When you're done, you can use `ctrl+c` to stop the container running.\n- Line 34: Always pick a tagged version to run, ideally one that matches mainnet. The example below may be outdated as Juno releases frequently - you should check the [Juno GitHub repository](https://github.com/CosmosContracts/juno/releases) to see which is current for you.\n\n**Content Preview:**\n```\n\n# Junod Local Dev Setup\n\n\n---\n\n\nWant to use `junod` locally for development, or to work with smart contracts? You're in the right place. Running locally is a much easier solution than interacting with a testnet.\n\n\n---\n\n```bash\njunod keys add <unsafe-test-key-name> --recover\n```\n```\n\n---\n\n## 8. Compile a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/compile-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: description: How to Compile CosmWasm Smart Contracts\n- Line 5: # Compile a Contract\n- Line 7: [This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n- Line 9: Example contracts for this can be found at [https://github.com/CosmWasm/cw-examples](https://github.com/CosmWasm/cw-examples). This repository [requires this section to compile](compile-a-contract.md#multiple-contract-repository-mono-repo) since multiple contracts are involved in a single repository.\n- Line 13: ## Single Contract Repository\n\n**Content Preview:**\n```\n---\ndescription: How to Compile CosmWasm Smart Contracts\n---\n\n---\n\n\n# Compile a Contract\n\n\n---\n\n\n[This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n\n```\n\n---\n\n## 9. Deploy a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/deploy-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: description: Submit the code of a smart contract to chain and get its code id\n- Line 5: # Deploy a Contract\n- Line 9: Make sure you follow the [compile a contract](compile-a-contract.md) guide first for your project. Once you have a contract compiled in the artifacts/\\*.wasm directory, you are ready for this guide.\n- Line 11: This guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n- Line 16: You need to upload the contract via the CLI to chain. To do this, perform the following\n\n**Content Preview:**\n```\n---\ndescription: Submit the code of a smart contract to chain and get its code id\n---\n\n---\n\n\n# Deploy a Contract\n\n\n---\n\n\nMake sure you follow the [compile a contract](compile-a-contract.md) guide first for your project. Once you have a contract compiled in the artifacts/\\*.wasm directory, you are ready for this guide.\n\n```\n\n---\n\n## 10. Junod Local Dev Setup\n**File:** /root/neutron/juno/developer-guides/junod-local-dev-setup.md\n**Section:** developer-guides\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 6: # Junod Local Dev Setup\n- Line 10: Want to use `junod` locally for development, or to work with smart contracts? You're in the right place. Running locally is a much easier solution than interacting with a testnet.\n- Line 19: junod keys add <unsafe-test-key-name> --recover\n- Line 32: There is a prebuilt docker image [for you to use](https://github.com/CosmosContracts/juno/pkgs/container/juno). This will start a container with a seeded user. The address and mnemonic used here can be found in the `docker/` directory of the repo. When you're done, you can use `ctrl+c` to stop the container running.\n- Line 34: Always pick a tagged version to run, ideally one that matches mainnet. The example below may be outdated as Juno releases frequently - you should check the [Juno GitHub repository](https://github.com/CosmosContracts/juno/releases) to see which is current for you.\n\n**Content Preview:**\n```\n\n# Junod Local Dev Setup\n\n\n---\n\n\nWant to use `junod` locally for development, or to work with smart contracts? You're in the right place. Running locally is a much easier solution than interacting with a testnet.\n\n\n---\n\n```bash\njunod keys add <unsafe-test-key-name> --recover\n```\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "b3be6748-be50-42aa-8229-573aaa7d95a4",
+            "tool_call_id": "call_OJOXJteA8p75gpSQpy2MGlX3",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Upload the compiled wasm file artifacts/CONTRACT_NAME.wasm to the Juno chain\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"verify_local_wasm_artifact\",\n        \"description\": \"Confirm that artifacts/CONTRACT_NAME.wasm exists and was produced by a trusted optimizer build.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"junod_tx_wasm_store\",\n        \"description\": \"Run `junod tx wasm store artifacts/CONTRACT_NAME.wasm --from <key> --chain-id <chain-id> --gas auto --gas-adjustment 1.3 -y` to submit the code to chain.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"wait_for_tx_commit\",\n        \"description\": \"Poll the Tx hash until it is included in a block.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"junod_query_wasm_list_code\",\n        \"description\": \"Fetch the on-chain code list to retrieve and display the new code ID.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Transaction returns code 0 (success).\",\n      \"New code ID appears in `junod query wasm list-code` with the correct checksum.\"\n    ]\n  },\n  {\n    \"intent\": \"Compile the current CosmWasm smart contract using rust-optimizer\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"docker_run_rust_optimizer\",\n        \"description\": \"Execute `docker run --rm -v $(pwd):/code --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/rust-optimizer:0.12.11` from the project root.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"verify_artifacts_directory\",\n        \"description\": \"Confirm the ./artifacts directory now holds <crate_name>.wasm and contracts.txt.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"artifacts/<crate_name>.wasm exists and is non-zero in size.\",\n      \"contracts.txt lists the correct SHA256 checksum for the new wasm.\"\n    ]\n  },\n  {\n    \"intent\": \"Instantiate the contract with code id 13 and init message {\\\"count\\\":0}\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"prepare_instantiate_msg\",\n        \"description\": \"Create/validate the JSON init message: `{\\\"count\\\":0}`.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"junod_tx_wasm_instantiate\",\n        \"description\": \"Run `junod tx wasm instantiate 13 '{\\\"count\\\":0}' --label \\\"counter-v1\\\" --from <key> --chain-id <chain-id> --gas auto --gas-adjustment 1.3 --admin <admin_addr> -y`.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"wait_for_tx_commit\",\n        \"description\": \"Await block inclusion and extract the new contract address from logs.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Tx succeeds with code 0.\",\n      \"`junod query wasm contract-state smart <contract_addr> '{\\\"get_count\\\":{}}'` returns `{ \\\"count\\\": 0 }`.\"\n    ]\n  },\n  {\n    \"intent\": \"Execute increment on contract address CONTRACT_ADDRESS with 10ujuno\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"construct_execute_msg\",\n        \"description\": \"Prepare the execute JSON: `{\\\"increment\\\":{}}`.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"junod_tx_wasm_execute\",\n        \"description\": \"Run `junod tx wasm execute CONTRACT_ADDRESS '{\\\"increment\\\":{}}' --amount 10ujuno --from <key> --chain-id <chain-id> --gas auto --gas-adjustment 1.3 -y`.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"wait_for_tx_commit\",\n        \"description\": \"Monitor the transaction until it is finalized.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"junod_query_wasm_contract_state\",\n        \"description\": \"Query the contract: `junod query wasm contract-state smart CONTRACT_ADDRESS '{\\\"get_count\\\":{}}'` to verify the new count.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Tx success code 0 and 10ujuno shown in the transaction logs as transferred.\",\n      \"Returned count value is original +1.\",\n      \"Contract\u2019s on-chain balance increased by 10ujuno.\"\n    ]\n  },\n  {\n    \"intent\": \"Compile all workspace contracts with workspace-optimizer\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"docker_run_workspace_optimizer\",\n        \"description\": \"Execute `docker run --rm -it -v $(pwd):/code --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/workspace-optimizer:0.12.11` at the repository root.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"verify_workspace_artifacts\",\n        \"description\": \"Check that ./artifacts now contains a .wasm file for each contract in the Cargo workspace.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"No build errors reported by workspace-optimizer.\",\n      \"A .wasm artifact is produced for every Cargo.toml member and each file size is > 0 bytes.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2377,
+                    "prompt_tokens": 11620,
+                    "total_tokens": 13997,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1152,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6Y7KmZxPrAJsHJKaXjxLWJosbyf",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--d053e0b4-2139-412c-94bd-07499f6366a1-0",
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 11620,
+                "output_tokens": 2377,
+                "total_tokens": 13997,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1152
+                }
+            }
+        }
+    ]
+}

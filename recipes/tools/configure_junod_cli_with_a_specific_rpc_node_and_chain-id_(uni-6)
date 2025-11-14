@@ -1,0 +1,66 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "connect_rpc_endpoint() tries to reach a provided RPC URL via its /status route and returns the URL if the node responds successfully.",
+            "function": "connect_rpc_endpoint(rpc_endpoint)",
+            "usage": "connect_rpc_endpoint(\"https://rpc.uni.juno.orbits.com\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No implemented function was found that sets the default RPC node in the junod CLI configuration.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "No implemented function was found that sets the chain-id for the junod CLI configuration.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "No implemented function was located to display or verify junod CLI configuration values.",
+            "function": "undef",
+            "usage": "undef"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "connect_rpc_endpoint(\"https://rpc.uni.juno.orbits.com\")#step: 1 Tool: check_rpc_reachability Desciption: Ping `NODE_URL` (e.g., `curl NODE_URL/status`) to verify the endpoint is online.",
+        "undef#step: 2 Tool: junod_config_node Desciption: Execute `junod config node NODE_URL` to set the default RPC endpoint.",
+        "undef#step: 3 Tool: junod_config_chain_id Desciption: Execute `junod config chain-id uni-6` to target the Juno testnet.",
+        "undef#step: 4 Tool: junod_config_view Desciption: Run `junod config` (or `junod config get node` / `get chain-id`) to confirm the new values."
+    ],
+    "intent": "Configure junod CLI with a specific RPC node and chain-id (uni-6)",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "check_rpc_reachability",
+            "description": "Ping `NODE_URL` (e.g., `curl NODE_URL/status`) to verify the endpoint is online."
+        },
+        {
+            "step": 2,
+            "tool": "junod_config_node",
+            "description": "Execute `junod config node NODE_URL` to set the default RPC endpoint."
+        },
+        {
+            "step": 3,
+            "tool": "junod_config_chain_id",
+            "description": "Execute `junod config chain-id uni-6` to target the Juno testnet."
+        },
+        {
+            "step": 4,
+            "tool": "junod_config_view",
+            "description": "Run `junod config` (or `junod config get node` / `get chain-id`) to confirm the new values."
+        }
+    ],
+    "outcome_checks": [
+        "`junod config` shows `node = NODE_URL` and `chain-id = \"uni-6\"`.",
+        "`junod status --node NODE_URL` returns sync info without error."
+    ]
+}

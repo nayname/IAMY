@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "getOfflineSignerAndAddress connects the user\u2019s browser wallet, enables the requested chain and returns both the OfflineSigner and its first account address.",
+            "function": "getOfflineSignerAndAddress(chainId)",
+            "usage": "const { signer, address } = await getOfflineSignerAndAddress('juno-1');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "No implemented function was found that establishes a SigningCosmWasmClient connection with a signer.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "constructTxWasmExecute wraps the bare `{ increment: {} }` payload into a MsgExecuteContract object ready for signing or broadcasting.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds)",
+            "usage": "const execMsg = constructTxWasmExecute(address, contractAddr, { increment: {} });"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "signAndBroadcast signs the prepared execute message with the provided signer and submits it to the backend relayer for broadcasting to the chain.",
+            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo)",
+            "usage": "const txHash = await signAndBroadcast(signer, address, [execMsg], 'auto');"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "get_formatted_tx retrieves a transaction from the LCD and returns its raw log and other fields so the \"increment\" wasm event can be inspected.",
+            "function": "get_formatted_tx(tx_hash)",
+            "usage": "const details = await get_formatted_tx(txHash);"
+        }
+    ],
+    "frontend": [
+        "const { signer, address } = await getOfflineSignerAndAddress('juno-1');//step: 1 Tool: initialize_signing_wallet Desciption: Create or load a wallet (e.g., from mnemonic) using @cosmjs/proto-signing's DirectSecp256k1HdWallet.",
+        "undef//step: 2 Tool: connect_signing_cosmwasm_client Desciption: Use SigningCosmWasmClient.connectWithSigner('https://rpc.juno.strange.love', signer) to get a client instance.",
+        "const execMsg = constructTxWasmExecute(address, contractAddr, { increment: {} });//step: 3 Tool: construct_increment_execute_msg Desciption: Prepare JavaScript object: { increment: {} }.",
+        "const txHash = await signAndBroadcast(signer, address, [execMsg], 'auto');//step: 4 Tool: execute_contract_via_client Desciption: client.execute(senderAddress, contractAddress, { increment: {} }, 'auto', '') and await the result."
+    ],
+    "backend": [
+        "const details = await get_formatted_tx(txHash);#step: 5 Tool: verify_execution_events Desciption: Check the returned logs for an event with type \"wasm\" and attribute action=\"increment\"."
+    ],
+    "intent": "Connect a SigningCosmWasmClient to RPC https://rpc.juno.strange.love and execute an increment on the contract",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "initialize_signing_wallet",
+            "description": "Create or load a wallet (e.g., from mnemonic) using @cosmjs/proto-signing's DirectSecp256k1HdWallet."
+        },
+        {
+            "step": 2,
+            "tool": "connect_signing_cosmwasm_client",
+            "description": "Use SigningCosmWasmClient.connectWithSigner('https://rpc.juno.strange.love', signer) to get a client instance."
+        },
+        {
+            "step": 3,
+            "tool": "construct_increment_execute_msg",
+            "description": "Prepare JavaScript object: { increment: {} }."
+        },
+        {
+            "step": 4,
+            "tool": "execute_contract_via_client",
+            "description": "client.execute(senderAddress, contractAddress, { increment: {} }, 'auto', '') and await the result."
+        },
+        {
+            "step": 5,
+            "tool": "verify_execution_events",
+            "description": "Check the returned logs for an event with type \"wasm\" and attribute action=\"increment\"."
+        }
+    ],
+    "outcome_checks": [
+        "Execution result has height and transactionHash defined.",
+        "Subsequent get_count query shows the count increased by 1."
+    ]
+}

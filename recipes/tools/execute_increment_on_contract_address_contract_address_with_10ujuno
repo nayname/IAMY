@@ -1,0 +1,68 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Builds a CosmWasm MsgExecuteContract object that wraps the raw execute JSON (`{\"increment\":{}}`) and optional funds.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds = [])",
+            "usage": "const execMsg = constructTxWasmExecute(sender, CONTRACT_ADDRESS, { increment: {} }, [{ denom: 'ujuno', amount: '10' }]);"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Signs the prepared execute message and broadcasts it to the chain, replicating the `junod tx wasm execute` CLI action.",
+            "function": "sign_and_broadcast_tx__(execute_msg, gas = 350_000)",
+            "usage": "const { tx_hash } = sign_and_broadcast_tx__(execMsg);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Polls the blockchain until the submitted transaction is finalized and committed.",
+            "function": "wait_for_tx_commit(tx_hash, client, timeout = 120, poll = 2.0)",
+            "usage": "const commitInfo = wait_for_tx_commit(tx_hash, client);"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Queries the smart-contract\u2019s `get_count` entry to verify that the counter was incremented.",
+            "function": "query_contract_state(client, contract_address, query_msg)",
+            "usage": "const state = query_contract_state(client, CONTRACT_ADDRESS, { get_count: {} });"
+        }
+    ],
+    "frontend": [
+        "const execMsg = constructTxWasmExecute(sender, CONTRACT_ADDRESS, { increment: {} }, [{ denom: 'ujuno', amount: '10' }]);//step: 1 Tool: construct_execute_msg Desciption: Prepare the execute JSON: `{\"increment\":{}}`."
+    ],
+    "backend": [
+        "const { tx_hash } = sign_and_broadcast_tx__(execMsg);#step: 2 Tool: junod_tx_wasm_execute Desciption: Run `junod tx wasm execute CONTRACT_ADDRESS '{\"increment\":{}}' --amount 10ujuno --from <key> --chain-id <chain-id> --gas auto --gas-adjustment 1.3 -y`.",
+        "const commitInfo = wait_for_tx_commit(tx_hash, client);#step: 3 Tool: wait_for_tx_commit Desciption: Monitor the transaction until it is finalized.",
+        "const state = query_contract_state(client, CONTRACT_ADDRESS, { get_count: {} });#step: 4 Tool: junod_query_wasm_contract_state Desciption: Query the contract: `junod query wasm contract-state smart CONTRACT_ADDRESS '{\"get_count\":{}}'` to verify the new count."
+    ],
+    "intent": "Execute increment on contract address CONTRACT_ADDRESS with 10ujuno",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "construct_execute_msg",
+            "description": "Prepare the execute JSON: `{\"increment\":{}}`."
+        },
+        {
+            "step": 2,
+            "tool": "junod_tx_wasm_execute",
+            "description": "Run `junod tx wasm execute CONTRACT_ADDRESS '{\"increment\":{}}' --amount 10ujuno --from <key> --chain-id <chain-id> --gas auto --gas-adjustment 1.3 -y`."
+        },
+        {
+            "step": 3,
+            "tool": "wait_for_tx_commit",
+            "description": "Monitor the transaction until it is finalized."
+        },
+        {
+            "step": 4,
+            "tool": "junod_query_wasm_contract_state",
+            "description": "Query the contract: `junod query wasm contract-state smart CONTRACT_ADDRESS '{\"get_count\":{}}'` to verify the new count."
+        }
+    ],
+    "outcome_checks": [
+        "Tx success code 0 and 10ujuno shown in the transaction logs as transferred.",
+        "Returned count value is original +1.",
+        "Contract\u2019s on-chain balance increased by 10ujuno."
+    ]
+}

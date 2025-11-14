@@ -40,10 +40,10 @@ onliners = {
 pages = {
     # "NeutronTemplate":"data/pages/NeutronTemplate",
     # "Cron": "data/pages/Cron",
-    #***
+    # ***
     # COSMOS
-    #***
-    "UserGuides": "data/pages/UserGuides",
+    # ***
+    "cosmwasm-contracts": "data/pages/cosmwasm-contracts",
     # "ToolingResources": "data/pages/ToolingResources",
     # "EthereumJSON_RPC": "data/pages/EthereumJSON_RPC",
     # "Learn": "data/pages/Learn",
@@ -56,14 +56,16 @@ synthesize_recipes = open("prompts/synthesize_recipes").read()
 synthesize_cosmwasm = open("prompts/synthesize_cosmwasm").read()
 synthesize_playground = open("prompts/synthesize_playground").read()
 synthesize_picking_functions = open("prompts/synthesize_picking_functions").read()
+synthesize_classified_intent = open("prompts/synthesize_classified_intent").read()
 
 server_params = StdioServerParameters(
     command="node",
-    args=["/root/neutron/cosmos-docs_/docs/mcp/mcp-server.js"],
+    args=["/root/neutron/juno/mcp/mcp-server.js"],
     env=None,
 )
 
 MCP_ENDPOINT = "https://evm.cosmos.network/mcp"
+
 
 def create_ner_dataset(filepaths, num):
     """Loads data from all provided CLI files and creates a unified NER dataset."""
@@ -219,8 +221,8 @@ async def create_ner(session, config):
 
 
 def escape(param):
-    return param.lower().replace(" ", "_").replace("'", "_").replace('"', '_').replace("\n", "_")\
-            .replace("\t", "_").replace("\r", "_").replace("/", "_").replace("\\", "_")
+    return param.lower().replace(" ", "_").replace("'", "_").replace('"', '_').replace("\n", "_") \
+        .replace("\t", "_").replace("\r", "_").replace("/", "_").replace("\\", "_")
 
 
 async def create_actions(session, config):
@@ -256,7 +258,7 @@ async def create_actions(session, config):
                                 with open('recipes/actions/' + escape(key['intent']), 'w') as f:
                                     json.dump(json.loads(response["messages"][-1].content), f, indent=4)
 
-                                print("Page:"+title+", count: "+str(count))
+                                print("Page:" + title + ", count: " + str(count))
                                 time.sleep(30)
 
 
@@ -277,25 +279,23 @@ async def label_execution(session, config):
     #
     #                 if found:
     #                     print(entry.path)
-        with open('/root/neutron/IAMY/recipes/tools/check_my_health_factor_on_amber_finance', 'r') as f:
-            items = json.load(f)
+    with open('/root/neutron/IAMY/recipes/tools/check_my_health_factor_on_amber_finance', 'r') as f:
+        items = json.load(f)
 
+    tools = items['tools']
 
-        tools = items['tools']
+    agent = await create_graph(session, synthesize_playground, "Anthropic")
+    response = await agent.ainvoke({"messages": json.dumps(tools)}, config=config)
+    print(response["messages"][-1].content)
 
-        agent = await create_graph(session, synthesize_playground, "Anthropic")
-        response = await agent.ainvoke({"messages": json.dumps(tools)}, config=config)
-        print(response["messages"][-1].content)
+    agent = await create_graph(session, synthesize_playground)
+    response = await agent.ainvoke({"messages": json.dumps(tools)}, config=config)
+    print(response["messages"][-1].content)
 
+    # with open('recipes/actions/' + escape(key['intent']), 'w') as f:
+    #     json.dump(json.loads(response["messages"][-1].content), f, indent=4)
 
-        agent = await create_graph(session, synthesize_playground)
-        response = await agent.ainvoke({"messages": json.dumps(tools)}, config=config)
-        print(response["messages"][-1].content)
-
-        # with open('recipes/actions/' + escape(key['intent']), 'w') as f:
-        #     json.dump(json.loads(response["messages"][-1].content), f, indent=4)
-
-        # print("Page:"+title+", count: "+str(count))
+    # print("Page:"+title+", count: "+str(count))
 
 
 async def pick_tools(session, config):
@@ -320,43 +320,80 @@ async def pick_tools(session, config):
                         for key in items:
                             count += 1
                             if not os.path.exists('recipes/tools/' + escape(key['intent'])) \
-                                and os.path.exists('recipes/actions/' + escape(key['intent'])):  #action == key['intent'] and
+                                    and os.path.exists(
+                                'recipes/actions/' + escape(key['intent'])):  # action == key['intent'] and
                                 with open("/root/neutron/IAMY/recipes/frontend.jsx", "r") as f:
                                     frontend_tools = f.read()
 
                                 with open("/root/neutron/IAMY/recipes/backend.py", "r") as f:
                                     backend_tools = f.read()
 
-                                agent = await create_graph(session, synthesize_picking_functions
-                                       .replace("*#*INPUT_JSON*#*", json.dumps(key['workflow'])).replace("{", "{{")
-                                       .replace("}", "}}").replace("*#*INTENT*#*", key['intent']))
-                                response = await agent.ainvoke({
-                                    "messages": "FILE: frontend.jsx Content: " + frontend_tools + "\n\n\n FILE: backend.py Content: " + backend_tools},
-                                    config=config)
+                                # f = open("generated/test", "a")
+                                # f.write(synthesize_picking_functions
+                                #        .replace("*#*INPUT_JSON*#*", json.dumps(key['workflow'])).replace("{", "{{")
+                                #        .replace("}", "}}").replace("*#*INTENT*#*", key['intent']))
 
-                                frontend = []
-                                backend = []
-                                for l in json.loads(response["messages"][-1].content)['workflow']:
-                                    for t in key['workflow']:
-                                        if t['step'] == l['step']:
-                                            d = t.copy()
-                                    if l['label'] == 'frontend':
-                                        frontend.append(l['usage'] + "//step: " + str(d['step']) + " Tool: " + d[
-                                            'tool'] + " Desciption: " + d['description'])
-                                    elif l['label'] == 'backend':
-                                        backend.append(l['usage'] + "#step: " + str(l['step']) + " Tool: " + d[
-                                            'tool'] + " Desciption: " + d['description'])
+                                try:
+                                    agent = await create_graph(session, synthesize_picking_functions
+                                                               .replace("*#*INPUT_JSON*#*",
+                                                                        json.dumps(key['workflow'])).replace("{", "{{")
+                                                               .replace("}", "}}").replace("*#*INTENT*#*",
+                                                                                           key['intent']))
+                                    response = await agent.ainvoke({
+                                        "messages": "FILE: frontend.jsx Content: " + frontend_tools + "\n\n\n FILE: backend.py Content: " + backend_tools},
+                                        config=config)
 
-                                res = {"tools": json.loads(response["messages"][-1].content)['workflow'],
-                                       "frontend": frontend, "backend": backend,
-                                       "intent": key['intent'], "workflow": key['workflow'],
-                                       "outcome_checks": key['outcome_checks']}
+                                    frontend = []
+                                    backend = []
+                                    for l in json.loads(response["messages"][-1].content)['workflow']:
+                                        for t in key['workflow']:
+                                            if t['step'] == l['step']:
+                                                d = t.copy()
+                                        if l['label'] == 'frontend':
+                                            frontend.append(l['usage'] + "//step: " + str(d['step']) + " Tool: " + d[
+                                                'tool'] + " Desciption: " + d['description'])
+                                        elif l['label'] == 'backend':
+                                            backend.append(l['usage'] + "#step: " + str(l['step']) + " Tool: " + d[
+                                                'tool'] + " Desciption: " + d['description'])
 
-                                with open('recipes/tools/' + escape(key['intent']), 'w') as f:
-                                    json.dump(res, f, indent=4)
+                                    res = {"tools": json.loads(response["messages"][-1].content)['workflow'],
+                                           "frontend": frontend, "backend": backend,
+                                           "intent": key['intent'], "workflow": key['workflow'],
+                                           "outcome_checks": key['outcome_checks']}
 
-                                print("Page:" + title + ", count: " + str(count))
+                                    with open('recipes/tools/' + escape(key['intent']), 'w') as f:
+                                        json.dump(res, f, indent=4)
+
+                                    print("Page:" + title + ", count: " + str(count))
+                                except Exception as e:
+                                    print("Unexpected error:", e)
                                 time.sleep(30)
+
+
+async def pick_intent(query, tools):
+    config = {"configurable": {"thread_id": 1234}}
+
+    async with stdio_client(server_params) as (read, write):
+        # async with streamablehttp_client(MCP_ENDPOINT) as (read, write, _):
+        async with ClientSession(read, write) as session:
+            # Handshake
+            await session.initialize()
+
+            # with open("/root/neutron/IAMY/generated/test", "r") as f:
+            #     tools = f.read()
+
+            try:
+                agent = await create_graph(session, synthesize_classified_intent
+                                           .replace("*#*INPUT_JSON*#*", json.dumps(tools))
+                                           .replace("{", "{{").replace("}", "}}"))
+                response = await agent.ainvoke({
+                    "messages": query},
+                    config=config)
+
+                print(json.loads(response["messages"][-1].content)['recipe'], response["messages"][-1].content)
+                return json.loads(response["messages"][-1].content)['recipe']
+            except Exception as e:
+                return "none"
 
 
 async def check_mcp(session):
@@ -377,7 +414,7 @@ async def check_mcp(session):
 async def main(flag):
     config = {"configurable": {"thread_id": 1234}}
     async with stdio_client(server_params) as (read, write):
-    # async with streamablehttp_client(MCP_ENDPOINT) as (read, write, _):
+        # async with streamablehttp_client(MCP_ENDPOINT) as (read, write, _):
         async with ClientSession(read, write) as session:
             # Handshake
             await session.initialize()
@@ -409,11 +446,11 @@ async def main(flag):
 
 if __name__ == "__main__":
     # try:
-        asyncio.run(main(sys.argv[1]))
-    # except Exception as e:
-    #     print("ERROR SLEEEPING")
-    #     time.sleep(100)
-    #     asyncio.run(main(sys.argv[1]))
+    asyncio.run(main(sys.argv[1]))
+# except Exception as e:
+#     print("ERROR SLEEEPING")
+#     time.sleep(100)
+#     asyncio.run(main(sys.argv[1]))
 
 
 # Agent(queries['crowdfund'][0], 'crowdfund')

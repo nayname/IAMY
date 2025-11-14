@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Retrieves the currently-connected wallet\u2019s bech32 address (and signer) from the browser extension.",
+            "function": "getOfflineSignerAndAddress(chainId = 'neutron-1')",
+            "usage": "const { address, signer } = await getOfflineSignerAndAddress('juno-1');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Calls a backend endpoint to make sure the provided CONTRACT_ADDRESS is a syntactically valid bech32 contract address.",
+            "function": "validateAddressFormat(address)",
+            "usage": "await validateAddressFormat(CONTRACT_ADDRESS);"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Produces the JSON execute payload that will be embedded in the MsgExecuteContract.",
+            "function": "construct_execute_msg()",
+            "usage": "const execMsg = construct_execute_msg();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Wraps the execute payload, sender, contract and funds (1,000,000 ujuno) into a MsgExecuteContract object ready for signing.",
+            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds = [])",
+            "usage": "const msgExecute = constructTxWasmExecute(address, CONTRACT_ADDRESS, execMsg, [{ denom: 'ujuno', amount: '1000000' }]);"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Signs the prepared transaction with the given wallet key and broadcasts it to the Juno network.",
+            "function": "sign_and_broadcast_tx(tx, wallet, client)",
+            "usage": "const result = sign_and_broadcast_tx(tx, wallet, client);"
+        }
+    ],
+    "frontend": [
+        "const { address, signer } = await getOfflineSignerAndAddress('juno-1');//step: 1 Tool: get_sender_address Desciption: Identify the user\u2019s wallet address that holds at least 1,000,000 ujuno.",
+        "await validateAddressFormat(CONTRACT_ADDRESS);//step: 2 Tool: validate_contract_address Desciption: Verify that CONTRACT_ADDRESS is a valid Juno bech32 address for a smart contract.",
+        "const msgExecute = constructTxWasmExecute(address, CONTRACT_ADDRESS, execMsg, [{ denom: 'ujuno', amount: '1000000' }]);//step: 4 Tool: construct_tx_wasm_execute Desciption: Create a MsgExecuteContract that targets CONTRACT_ADDRESS, attaches 1,000,000ujuno as funds, and embeds the JSON payload."
+    ],
+    "backend": [
+        "const execMsg = construct_execute_msg();#step: 3 Tool: construct_execute_msg Desciption: Build the JSON payload for the contract call (e.g., {\"some_endpoint\": {}}).",
+        "const result = sign_and_broadcast_tx(tx, wallet, client);#step: 5 Tool: sign_and_broadcast_tx Desciption: Sign the transaction with the sender\u2019s key and broadcast it to the network."
+    ],
+    "intent": "Send 1,000,000 ujuno to a CosmWasm contract via an execute endpoint",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_address",
+            "description": "Identify the user\u2019s wallet address that holds at least 1,000,000 ujuno."
+        },
+        {
+            "step": 2,
+            "tool": "validate_contract_address",
+            "description": "Verify that CONTRACT_ADDRESS is a valid Juno bech32 address for a smart contract."
+        },
+        {
+            "step": 3,
+            "tool": "construct_execute_msg",
+            "description": "Build the JSON payload for the contract call (e.g., {\"some_endpoint\": {}})."
+        },
+        {
+            "step": 4,
+            "tool": "construct_tx_wasm_execute",
+            "description": "Create a MsgExecuteContract that targets CONTRACT_ADDRESS, attaches 1,000,000ujuno as funds, and embeds the JSON payload."
+        },
+        {
+            "step": 5,
+            "tool": "sign_and_broadcast_tx",
+            "description": "Sign the transaction with the sender\u2019s key and broadcast it to the network."
+        }
+    ],
+    "outcome_checks": [
+        "Verify the transaction is included in a block with success status.",
+        "Check the logs for a transfer event showing 1,000,000ujuno sent to the contract."
+    ]
+}

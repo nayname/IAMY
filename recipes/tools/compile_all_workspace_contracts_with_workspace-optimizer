@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Compiles a CosmWasm contract (running the optimisation step) and returns the path to the produced .wasm binary.",
+            "function": "compile_wasm_contract(contract_dir)",
+            "usage": "optimized_wasm = compile_wasm_contract(\"./contracts/counter\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Verifies that a generated .wasm file exists and is within the permitted size limit.",
+            "function": "ensure_wasm_file(path)",
+            "usage": "ensure_wasm_file(\"./artifacts/counter.optimized.wasm\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "optimized_wasm = compile_wasm_contract(\"./contracts/counter\")#step: 1 Tool: docker_run_workspace_optimizer Desciption: Execute `docker run --rm -it -v $(pwd):/code --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/workspace-optimizer:0.12.11` at the repository root.",
+        "ensure_wasm_file(\"./artifacts/counter.optimized.wasm\")#step: 2 Tool: verify_workspace_artifacts Desciption: Check that ./artifacts now contains a .wasm file for each contract in the Cargo workspace."
+    ],
+    "intent": "Compile all workspace contracts with workspace-optimizer",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "docker_run_workspace_optimizer",
+            "description": "Execute `docker run --rm -it -v $(pwd):/code --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/workspace-optimizer:0.12.11` at the repository root."
+        },
+        {
+            "step": 2,
+            "tool": "verify_workspace_artifacts",
+            "description": "Check that ./artifacts now contains a .wasm file for each contract in the Cargo workspace."
+        }
+    ],
+    "outcome_checks": [
+        "No build errors reported by workspace-optimizer.",
+        "A .wasm artifact is produced for every Cargo.toml member and each file size is > 0 bytes."
+    ]
+}

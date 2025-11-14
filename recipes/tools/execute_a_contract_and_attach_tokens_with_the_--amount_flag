@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Returns a ready-made JSON body that can be passed as the execute message when calling the contract.",
+            "function": "construct_execute_msg()",
+            "usage": "msg = construct_execute_msg()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Signs the supplied execute message with the backend wallet and broadcasts it, performing the on-chain wasm execute (amounts can be embedded in the message/funds).",
+            "function": "sign_and_broadcast_tx__(execute_msg, gas=350_000)",
+            "usage": "tx_result = sign_and_broadcast_tx__(msg)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Polls the chain until the given transaction hash is found in a block, confirming finalisation.",
+            "function": "wait_for_tx_commit(tx_hash, client, timeout=120, poll=2.0)",
+            "usage": "receipt = wait_for_tx_commit(tx_result['tx_hash'], client)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "msg = construct_execute_msg()#step: 1 Tool: construct_execute_msg Desciption: Prepare the JSON execute message for the desired contract endpoint.",
+        "tx_result = sign_and_broadcast_tx__(msg)#step: 2 Tool: junod_tx_wasm_execute Desciption: Run  junod tx wasm execute <CONTRACT_ADDR> '<MSG_JSON>' --amount <NUMBER><DENOM> --from <KEY> --gas=auto -y.",
+        "receipt = wait_for_tx_commit(tx_result['tx_hash'], client)#step: 3 Tool: poll_tx_hash Desciption: Wait until the execute transaction is finalized in a block."
+    ],
+    "intent": "Execute a contract and attach tokens with the --amount flag",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "construct_execute_msg",
+            "description": "Prepare the JSON execute message for the desired contract endpoint."
+        },
+        {
+            "step": 2,
+            "tool": "junod_tx_wasm_execute",
+            "description": "Run  junod tx wasm execute <CONTRACT_ADDR> '<MSG_JSON>' --amount <NUMBER><DENOM> --from <KEY> --gas=auto -y."
+        },
+        {
+            "step": 3,
+            "tool": "poll_tx_hash",
+            "description": "Wait until the execute transaction is finalized in a block."
+        }
+    ],
+    "outcome_checks": [
+        "Transaction success flag true in the Tx response.",
+        "The contract balance increases by the specified amount and/or the contract logic emits the expected event."
+    ]
+}

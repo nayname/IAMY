@@ -1,0 +1,142 @@
+[
+    {
+        "intent": "Query a CosmWasm contract\u2019s smart state with custom payload {\"abcde\":{}} to explore/confirm schema",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "request_contract_address",
+                "description": "Prompt the user for (or look up) the target contract\u2019s address."
+            },
+            {
+                "step": 2,
+                "tool": "construct_custom_query_payload",
+                "description": "Create the JSON payload {\"abcde\":{}} exactly as a single-line string."
+            },
+            {
+                "step": 3,
+                "tool": "cli_wasm_query_smart",
+                "description": "Run: wasmd query wasm contract-state smart <CONTRACT_ADDRESS> '{\"abcde\":{}}' --node <RPC> --output json"
+            },
+            {
+                "step": 4,
+                "tool": "pretty_print_response",
+                "description": "Format the returned JSON so the user can inspect any keys (schema discovery)."
+            }
+        ],
+        "outcome_checks": [
+            "Command exits with code 0 (no CLI error).",
+            "Returned JSON is valid and not empty (schema or error message present)."
+        ]
+    },
+    {
+        "intent": "Execute a reset on the contract at CONTRACT_ADDRESS, setting count to 0",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "get_signer_address",
+                "description": "Identify the wallet that has permission to execute the contract."
+            },
+            {
+                "step": 2,
+                "tool": "construct_execute_msg_reset",
+                "description": "Create message JSON: '{\"reset\":{\"count\":0}}'."
+            },
+            {
+                "step": 3,
+                "tool": "sign_broadcast_wasm_execute_tx",
+                "description": "CLI: wasmd tx wasm execute <CONTRACT_ADDRESS> '{\"reset\":{\"count\":0}}' --from <SIGNER> --gas auto --fees <AMOUNT><DENOM> --node <RPC> --broadcast-mode block"
+            },
+            {
+                "step": 4,
+                "tool": "await_tx_confirmation",
+                "description": "Wait until the transaction is included in a block and capture the tx hash."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction height and hash are returned without error.",
+            "Subsequent query of the count returns 0."
+        ]
+    },
+    {
+        "intent": "Get the current count value from the contract at CONTRACT_ADDRESS",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "request_contract_address",
+                "description": "Obtain the contract address to be queried."
+            },
+            {
+                "step": 2,
+                "tool": "construct_get_count_query",
+                "description": "Prepare JSON payload '{\"get_count\":{}}'."
+            },
+            {
+                "step": 3,
+                "tool": "cli_wasm_query_smart",
+                "description": "Execute: wasmd query wasm contract-state smart <CONTRACT_ADDRESS> '{\"get_count\":{}}' --node <RPC> --output json"
+            }
+        ],
+        "outcome_checks": [
+            "Returned JSON includes a numeric \"count\" field.",
+            "No error strings like \"unknown variant\" appear."
+        ]
+    },
+    {
+        "intent": "Store the returned code ID from a wasm store transaction into a shell variable CODE_ID",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "upload_contract_code",
+                "description": "Run: wasmd tx wasm store <PATH_TO_WASM> --from <SIGNER> --gas auto --fees <AMOUNT><DENOM> --node <RPC> --broadcast-mode block --output json > tx.json"
+            },
+            {
+                "step": 2,
+                "tool": "extract_code_id_from_tx_response",
+                "description": "Parse tx.json with: CODE_ID=$(jq -r '.logs[0].events[] | select(.type==\"store_code\") | .attributes[-1].value' tx.json)"
+            },
+            {
+                "step": 3,
+                "tool": "export_shell_variable_CODE_ID",
+                "description": "Export the variable so subsequent shell commands can reference it: export CODE_ID"
+            }
+        ],
+        "outcome_checks": [
+            "echo $CODE_ID prints a non-empty numeric value.",
+            "CODE_ID matches the code_id reported by wasmd query wasm list-code --node <RPC>."
+        ]
+    },
+    {
+        "intent": "Connect a SigningCosmWasmClient to RPC https://rpc.juno.strange.love and execute an increment on the contract",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "initialize_signing_wallet",
+                "description": "Create or load a wallet (e.g., from mnemonic) using @cosmjs/proto-signing's DirectSecp256k1HdWallet."
+            },
+            {
+                "step": 2,
+                "tool": "connect_signing_cosmwasm_client",
+                "description": "Use SigningCosmWasmClient.connectWithSigner('https://rpc.juno.strange.love', signer) to get a client instance."
+            },
+            {
+                "step": 3,
+                "tool": "construct_increment_execute_msg",
+                "description": "Prepare JavaScript object: { increment: {} }."
+            },
+            {
+                "step": 4,
+                "tool": "execute_contract_via_client",
+                "description": "client.execute(senderAddress, contractAddress, { increment: {} }, 'auto', '') and await the result."
+            },
+            {
+                "step": 5,
+                "tool": "verify_execution_events",
+                "description": "Check the returned logs for an event with type \"wasm\" and attribute action=\"increment\"."
+            }
+        ],
+        "outcome_checks": [
+            "Execution result has height and transactionHash defined.",
+            "Subsequent get_count query shows the count increased by 1."
+        ]
+    }
+]

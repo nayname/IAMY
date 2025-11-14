@@ -1,2818 +1,4 @@
-# step:1 file: lend_3_solvbtc_on_amber_finance
-from fastapi import FastAPI, HTTPException
-import os
-
-app = FastAPI()
-
-@app.get('/api/wallet/address')
-async def get_sender_address(wallet_alias: str = 'lender'):
-    """Return the Bech32 address for a configured backend wallet."""
-    env_key = f"{wallet_alias.upper()}_ADDRESS"
-    address = os.getenv(env_key)
-    if not address:
-        raise HTTPException(status_code=404, detail=f'Wallet alias {wallet_alias} not configured')
-    return {"wallet": wallet_alias, "address": address}
-
-
-# step:2 file: lend_3_solvbtc_on_amber_finance
-import base64, json, os, requests
-from fastapi import FastAPI, HTTPException
-
-REST_ENDPOINT = os.getenv('NEUTRON_REST', 'https://rest-kralum.neutron-1.neutron.org')
-app = FastAPI()
-
-@app.get('/api/cw20/balance')
-async def check_token_balance(address: str, cw20_contract: str):
-    """Return the CW20 balance for a given address."""
-    query = {"balance": {"address": address}}
-    encoded_query = base64.b64encode(json.dumps(query).encode()).decode()
-    url = f"{REST_ENDPOINT}/cosmwasm/wasm/v1/contract/{cw20_contract}/smart/{encoded_query}"
-    try:
-        resp = requests.get(url, timeout=10)
-        resp.raise_for_status()
-        balance = int(resp.json().get('data', {}).get('balance', '0'))
-        return {"address": address, "cw20_contract": cw20_contract, "balance": balance}
-    except requests.RequestException as err:
-        raise HTTPException(status_code=500, detail=str(err))
-
-
-# step:3 file: lend_3_solvbtc_on_amber_finance
-def construct_cw20_approve(spender: str, amount_micro: int) -> dict:
-    """Build the CW20 increase_allowance message."""
-    return {
-        'increase_allowance': {
-            'spender': spender,
-            'amount': str(amount_micro)
-        }
-    }
-
-
-# step:4 file: lend_3_solvbtc_on_amber_finance
-import os, json
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.wallet import PrivateKey
-from cosmpy.aerial.tx import Transaction
-from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgExecuteContract
-
-
-def sign_and_broadcast_approval() -> dict:
-    """Signs and broadcasts the CW20 approve (increase_allowance) transaction."""
-    network = NetworkConfig(
-        chain_id='neutron-1',
-        url=os.getenv('NEUTRON_GRPC', 'grpc://grpc-kralum.neutron-1.neutron.org:443'),
-        fee_minimum_gas_price=0.025,
-        fee_denom='untrn'
-    )
-    client = LedgerClient(network)
-
-    private_key_hex = os.getenv('LENDER_PRIVKEY')
-    if not private_key_hex:
-        raise RuntimeError('Missing LENDER_PRIVKEY environment variable')
-    wallet = PrivateKey(bytes.fromhex(private_key_hex))
-
-    cw20_contract = os.getenv('SOLVBTC_CONTRACT')
-    spender = os.getenv('AMBER_MARKET_CONTRACT')
-    amount_micro = int(os.getenv('APPROVE_AMOUNT', '300000000'))  # 3 solvBTC * 1e8 (assuming 8 decimals)
-
-    # Build execute message
-    msg = MsgExecuteContract(
-        sender=wallet.address(),
-        contract=cw20_contract,
-        msg=json.dumps({'increase_allowance': {'spender': spender, 'amount': str(amount_micro)}}).encode(),
-        funds=[]
-    )
-
-    tx = (
-        Transaction()
-        .with_messages(msg)
-        .with_chain_id(network.chain_id)
-        .with_gas_estimate(client)
-        .sign(wallet)
-        .broadcast(client, mode='block')
-    )
-    return {'tx_hash': tx.tx_hash}
-
-
-if __name__ == '__main__':
-    print(sign_and_broadcast_approval())
-
-
-# step:5 file: lend_3_solvbtc_on_amber_finance
-def construct_amber_lend_tx(amount_micro: int) -> dict:
-    """Build the lend (supply) message for Amber Finance market contract."""
-    return {
-        'lend': {
-            'amount': str(amount_micro)
-        }
-    }
-
-
-# step:6 file: lend_3_solvbtc_on_amber_finance
-import os, json
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.wallet import PrivateKey
-from cosmpy.aerial.tx import Transaction
-from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgExecuteContract
-
-
-def sign_and_broadcast_lend() -> dict:
-    """Signs and broadcasts the lend (supply) transaction to Amber Finance."""
-    network = NetworkConfig(
-        chain_id='neutron-1',
-        url=os.getenv('NEUTRON_GRPC', 'grpc://grpc-kralum.neutron-1.neutron.org:443'),
-        fee_minimum_gas_price=0.025,
-        fee_denom='untrn'
-    )
-    client = LedgerClient(network)
-
-    private_key_hex = os.getenv('LENDER_PRIVKEY')
-    if not private_key_hex:
-        raise RuntimeError('Missing LENDER_PRIVKEY environment variable')
-    wallet = PrivateKey(bytes.fromhex(private_key_hex))
-
-    amber_market_contract = os.getenv('AMBER_MARKET_CONTRACT')
-    amount_micro = int(os.getenv('LEND_AMOUNT', '300000000'))  # 3 solvBTC * 1e8
-
-    # Build execute message
-    msg = MsgExecuteContract(
-        sender=wallet.address(),
-        contract=amber_market_contract,
-        msg=json.dumps({'lend': {'amount': str(amount_micro)}}).encode(),
-        funds=[]
-    )
-
-    tx = (
-        Transaction()
-        .with_messages(msg)
-        .with_chain_id(network.chain_id)
-        .with_gas_estimate(client)
-        .sign(wallet)
-        .broadcast(client, mode='block')
-    )
-    return {'tx_hash': tx.tx_hash}
-
-
-if __name__ == '__main__':
-    print(sign_and_broadcast_lend())
-
-
-# step:2 file: increase_the_user’s_deposit_in_the_wbtc_usdc_supervault_by_0.2_wbtc_and_12_000_usdc
-# backend/validate_balances.py
-# FastAPI route that ensures the user owns enough WBTC & USDC for the deposit.
-
-import os
-import base64
-import json
-from fastapi import APIRouter, HTTPException
-import httpx
-
-router = APIRouter()
-
-NODE_LCD = os.getenv('NEUTRON_LCD', 'https://rest.cosmos.directory/neutron')
-WBTC_CONTRACT = os.getenv('WBTC_CONTRACT', 'neutron1wbtcxxxxxxxxxxxxxxxxxxxxxxx')
-USDC_CONTRACT = os.getenv('USDC_CONTRACT', 'neutron1usdcxxxxxxxxxxxxxxxxxxxxxxx')
-
-MIN_WBTC = 0.2       # WBTC (human-readable)
-WBTC_DECIMALS = 8    # WBTC has 8 decimals
-MIN_USDC = 12_000    # USDC (human-readable)
-USDC_DECIMALS = 6    # USDC has 6 decimals
-
-def _b64(query: dict) -> str:
-    """Base64-encode a JSON query for /smart/ LCD endpoints."""
-    return base64.b64encode(json.dumps(query).encode()).decode()
-
-async def _cw20_balance(contract: str, addr: str) -> int:
-    url = f"{NODE_LCD}/cosmwasm/wasm/v1/contract/{contract}/smart/{_b64({'balance': {'address': addr}})}"
-    async with httpx.AsyncClient(timeout=10) as client:
-        r = await client.get(url)
-        r.raise_for_status()
-        return int(r.json()['data']['balance'])
-
-@router.get('/api/validate_balances')
-async def validate_balances(address: str):
-    required_wbtc = int(MIN_WBTC * 10 ** WBTC_DECIMALS)
-    required_usdc = int(MIN_USDC * 10 ** USDC_DECIMALS)
-
-    wbtc_balance = await _cw20_balance(WBTC_CONTRACT, address)
-    usdc_balance = await _cw20_balance(USDC_CONTRACT, address)
-
-    if wbtc_balance < required_wbtc or usdc_balance < required_usdc:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                'wbtc_balance': wbtc_balance,
-                'usdc_balance': usdc_balance,
-                'message': 'Insufficient token balances for deposit.'
-            }
-        )
-
-    return {
-        'status': 'ok',
-        'wbtc_raw': wbtc_balance,
-        'usdc_raw': usdc_balance
-    }
-
-
-# step:3 file: increase_the_user’s_deposit_in_the_wbtc_usdc_supervault_by_0.2_wbtc_and_12_000_usdc
-# backend/supervault_address.py
-import os
-from fastapi import APIRouter
-
-router = APIRouter()
-
-SUPERVAULT_CONTRACT = os.getenv(
-    'SUPERVAULT_WBTC_USDC',
-    'neutron1supervaultxxxxxxxxxxxxxxxxxxxxxxxxx'  # ← replace with the live address
-)
-
-@router.get('/api/supervault_address')
-async def supervault_address():
-    """Return the current WBTC/USDC Supervault address."""
-    return {'address': SUPERVAULT_CONTRACT}
-
-
-# step:4 file: increase_the_user’s_deposit_in_the_wbtc_usdc_supervault_by_0.2_wbtc_and_12_000_usdc
-# backend/construct_deposit_msg.py
-import os
-import json
-from decimal import Decimal
-from fastapi import APIRouter
-from pydantic import BaseModel, Field
-
-WBTC_CONTRACT = os.getenv('WBTC_CONTRACT', 'neutron1wbtcxxxxxxxxxxxxxxxxxxxxxxx')
-USDC_CONTRACT = os.getenv('USDC_CONTRACT', 'neutron1usdcxxxxxxxxxxxxxxxxxxxxxxx')
-SUPERVAULT_CONTRACT = os.getenv('SUPERVAULT_WBTC_USDC', 'neutron1supervaultxxxxxxxxxxxxxxxxxxxxxxxxx')
-
-WBTC_DECIMALS = 8
-USDC_DECIMALS = 6
-
-class DepositMsgResponse(BaseModel):
-    msg: dict = Field(..., description='JSON execute message for MsgExecuteContract')
-
-router = APIRouter()
-
-@router.get('/api/construct_deposit_msg', response_model=DepositMsgResponse)
-async def construct_deposit_msg():
-    wbtc_raw = int(Decimal('0.2') * 10 ** WBTC_DECIMALS)      # 0.2 WBTC → 20 000 000 raw
-    usdc_raw = int(Decimal('12000') * 10 ** USDC_DECIMALS)    # 12 000 USDC → 12 000 000 000 raw
-
-    msg = {
-        'deposit': {
-            'assets': [
-                {
-                    'info': {'token': {'contract_addr': WBTC_CONTRACT}},
-                    'amount': str(wbtc_raw)
-                },
-                {
-                    'info': {'token': {'contract_addr': USDC_CONTRACT}},
-                    'amount': str(usdc_raw)
-                }
-            ]
-        }
-    }
-
-    return {'msg': msg}
-
-
-# step:5 file: increase_the_user’s_deposit_in_the_wbtc_usdc_supervault_by_0.2_wbtc_and_12_000_usdc
-# backend/sign_and_broadcast.py
-import os
-import json
-from fastapi import APIRouter, HTTPException
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.wallet import PrivateKey
-from cosmpy.aerial.tx import Transaction
-from cosmpy.aerial.contract import MsgExecuteContract
-
-WBTC_CONTRACT = os.getenv('WBTC_CONTRACT', 'neutron1wbtcxxxxxxxxxxxxxxxxxxxxxxx')
-USDC_CONTRACT = os.getenv('USDC_CONTRACT', 'neutron1usdcxxxxxxxxxxxxxxxxxxxxxxx')
-SUPERVAULT_CONTRACT = os.getenv('SUPERVAULT_WBTC_USDC', 'neutron1supervaultxxxxxxxxxxxxxxxxxxxxxxxxx')
-
-CHAIN_ID = os.getenv('NEUTRON_CHAIN_ID', 'neutron-1')
-RPC_ENDPOINT = os.getenv('NEUTRON_RPC', 'https://rpc.cosmos.directory/neutron')
-MNEMONIC = os.getenv('FUNDER_MNEMONIC')  # Never commit real mnemonics to Git!
-
-router = APIRouter()
-
-def _build_deposit_msg(sender: str) -> MsgExecuteContract:
-    """Create a MsgExecuteContract for the deposit."""
-    deposit_msg = {
-        'deposit': {
-            'assets': [
-                {
-                    'info': {'token': {'contract_addr': WBTC_CONTRACT}},
-                    'amount': str(int(0.2 * 10 ** 8))
-                },
-                {
-                    'info': {'token': {'contract_addr': USDC_CONTRACT}},
-                    'amount': str(int(12000 * 10 ** 6))
-                }
-            ]
-        }
-    }
-    return MsgExecuteContract(
-        sender=sender,
-        contract=SUPERVAULT_CONTRACT,
-        msg=json.dumps(deposit_msg).encode(),
-        funds=[]
-    )
-
-@router.post('/api/sign_and_broadcast')
-async def sign_and_broadcast_tx():
-    """
-    WARNING: Exposes a signing flow on the backend. Use only for server-controlled
-    treasury accounts – never end-user keys.
-    """
-    if not MNEMONIC:
-        raise HTTPException(status_code=500, detail='FUNDER_MNEMONIC env var not set.')
-
-    # 1. Instantiate the private key
-    key = PrivateKey.from_mnemonic(MNEMONIC)
-    sender_addr = str(key.to_address())
-
-    # 2. Build the transaction
-    network = NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT)
-    ledger = LedgerClient(network)
-    account = ledger.query_account(sender_addr)
-
-    tx = (
-        Transaction()
-        .with_chain_id(CHAIN_ID)
-        .with_account_num(account.account_number)
-        .with_sequence(account.sequence)
-        .with_gas(400_000)
-        .with_fee_limit('60000untrn')
-    )
-    tx.add_message(_build_deposit_msg(sender_addr))
-
-    # 3. Sign and broadcast
-    tx_signed = tx.sign(key)
-    tx_hash = ledger.broadcast_tx(tx_signed)
-
-    return {'tx_hash': tx_hash.hex()}
-
-
-# step:4 file: redeem_lp_shares_from_the_maxbtc_ebtc_supervault
-import json
-from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgExecuteContract
-
-
-def construct_wasm_execute_msg(sender: str, contract_address: str, shares_to_redeem: int) -> MsgExecuteContract:
-    """Build a MsgExecuteContract for a Supervault `withdraw` call.
-
-    Args:
-        sender (str): The bech32 address initiating the transaction.
-        contract_address (str): The Supervault contract address.
-        shares_to_redeem (int): LP shares to redeem.
-
-    Returns:
-        MsgExecuteContract: Ready-to-sign protobuf message.
-    """
-    withdraw_msg = {"withdraw": {"amount": str(shares_to_redeem)}}
-
-    msg = MsgExecuteContract(
-        sender=sender,
-        contract=contract_address,
-        msg=json.dumps(withdraw_msg).encode('utf-8'),
-        funds=[]  # No native coins sent along with the execute call
-    )
-    return msg
-
-
-# step:5 file: redeem_lp_shares_from_the_maxbtc_ebtc_supervault
-import os
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.tx import Transaction
-from cosmpy.aerial.wallet import MnemonicWallet
-
-# IMPORTANT: never hard-code sensitive keys. Use environment variables or a secure vault.
-MNEMONIC_ENV = "USER_MNEMONIC"  # The environment variable expected to store the user mnemonic.
-
-NETWORK = NetworkConfig(
-    chain_id="neutron-1",
-    url="https://rpc.kralum.neutron-1.neutron.org",  # Replace with a trusted RPC endpoint
-    fee_denom="untrn",
-    fee_minimum_gas_price=0.025,
-)
-
-def sign_and_broadcast_tx(execute_msg):
-    """Signs and broadcasts the given execute message.
-
-    Args:
-        execute_msg (MsgExecuteContract): Message produced by `construct_wasm_execute_msg`.
-
-    Returns:
-        dict: `{ "tx_hash": "..." }` when successful.
-    """
-    mnemonic = os.getenv(MNEMONIC_ENV)
-    if not mnemonic:
-        raise EnvironmentError(f"Mnemonic not provided in env var {MNEMONIC_ENV}.")
-
-    wallet = MnemonicWallet(mnemonic)
-    client = LedgerClient(NETWORK)
-
-    tx = Transaction()
-    tx.add_message(execute_msg)
-    tx.with_sender(wallet.address())
-
-    # Estimate gas & fees, sign, then broadcast
-    tx = tx.autofill(client)
-    tx = tx.sign(wallet)
-
-    response = client.broadcast_block(tx)
-    if response.is_ok():
-        return {"tx_hash": response.tx_hash}
-    else:
-        raise Exception(f"Broadcast failed: {response.raw_log}")
-
-
-# step:4 file: bridge_1_wbtc_from_ethereum_to_neutron
-'''monitor_eth_tx.py'''
-import os, time
-from typing import Dict
-from web3 import Web3, exceptions
-
-RPC_URL = os.getenv('ETH_RPC_URL')
-if not RPC_URL:
-    raise EnvironmentError('ETH_RPC_URL is not set in environment variables.')
-
-web3 = Web3(Web3.HTTPProvider(RPC_URL))
-
-def wait_for_confirmations(tx_hash: str, confirmations: int = 12, poll: int = 15) -> Dict:
-    """Blocks until `confirmations` are reached for `tx_hash`."""
-    try:
-        receipt = None
-        while receipt is None:
-            try:
-                receipt = web3.eth.get_transaction_receipt(tx_hash)
-            except exceptions.TransactionNotFound:
-                time.sleep(poll)
-        tx_block = receipt.blockNumber
-        while (web3.eth.block_number - tx_block) < confirmations:
-            time.sleep(poll)
-        return {"status": "confirmed", "txHash": tx_hash, "confirmations": confirmations}
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
-
-
-# step:5 file: bridge_1_wbtc_from_ethereum_to_neutron
-'''listen_bridge_relay.py'''
-import requests, time
-from typing import Dict
-
-LCD = 'https://lcd-kralum.neutron-1.neutron.org'  # Public LCD; replace if self-hosting
-
-def wait_for_ibc_transfer(neutron_addr: str, source_tx: str, poll: int = 15, timeout: int = 1800) -> Dict:
-    """Polls Neutron txs until an IBC transfer that correlates to `source_tx` is observed."""
-    end_time = time.time() + timeout
-    page_key = None
-    while time.time() < end_time:
-        url = f"{LCD}/cosmos/tx/v1beta1/txs?events=transfer.recipient='" + neutron_addr + "'" + (f"&pagination.key={page_key}" if page_key else '')
-        resp = requests.get(url, timeout=10)
-        if resp.status_code == 200:
-            data = resp.json()
-            for tx in data.get('txs', []):
-                # Very naive correlation: search for the Ethereum tx-hash in memo / events
-                if source_tx.lower()[2:12] in str(tx):  # quick substring match
-                    return {"status": "ibc_received", "neutron_txhash": tx['txhash']}
-            page_key = data.get('pagination', {}).get('next_key')
-        time.sleep(poll)
-    return {"status": "timeout", "message": "No IBC packet seen in allotted time."}
-
-
-# step:6 file: bridge_1_wbtc_from_ethereum_to_neutron
-'''query_neutron_bank_balance.py'''
-import requests
-from typing import Dict
-
-LCD = 'https://lcd-kralum.neutron-1.neutron.org'
-
-def query_wbtc_balance(neutron_addr: str, ibc_denom: str) -> Dict:
-    url = f"{LCD}/cosmos/bank/v1beta1/balances/{neutron_addr}"
-    resp = requests.get(url, timeout=10)
-    if resp.status_code != 200:
-        return {"status": "error", "error": resp.text}
-    balances = resp.json().get('balances', [])
-    for coin in balances:
-        if coin.get('denom') == ibc_denom:
-            amount = int(coin.get('amount', '0'))
-            return {"status": "ok", "amount_sats": amount}
-    return {"status": "ok", "amount_sats": 0}
-
-
-# step:2 file: provide_paired_liquidity_of_1_wbtc_and_60,000_usdc_to_the_wbtc_usdc_supervault
-from fastapi import FastAPI, HTTPException
-import httpx
-
-app = FastAPI()
-
-# --- Constants -------------------------------------------------------------
-REST_ENDPOINT = "https://rest.neutron.org"  # Replace with a trusted REST endpoint
-WBTC_DENOM   = "ibc/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  # ← real IBC denom for WBTC
-USDC_DENOM   = "uusdc"  # ← real denom for native USDC on Neutron
-
-# --- Helpers ---------------------------------------------------------------
-async def _fetch_balance(address: str, denom: str) -> int:
-    """Query /cosmos/bank/v1beta1/balances/{address}/{denom}"""
-    url = f"{REST_ENDPOINT}/cosmos/bank/v1beta1/balances/{address}/{denom}"
-    async with httpx.AsyncClient(timeout=10) as client:
-        resp = await client.get(url)
-    if resp.status_code != 200:
-        raise HTTPException(status_code=resp.status_code, detail="Bank API error")
-    amount = int(resp.json().get("balance", {}).get("amount", 0))
-    return amount
-
-# --- Route -----------------------------------------------------------------
-@app.get("/api/check-balance")
-async def check_token_balance(address: str, wbtc_needed: int = 1, usdc_needed: int = 60000):
-    """Verify that the provided address owns ≥ required WBTC & USDC."""
-    wbtc_balance = await _fetch_balance(address, WBTC_DENOM)
-    usdc_balance = await _fetch_balance(address, USDC_DENOM)
-
-    sufficient = (wbtc_balance >= wbtc_needed) and (usdc_balance >= usdc_needed)
-
-    return {
-        "address": address,
-        "wbtc_balance": wbtc_balance,
-        "usdc_balance": usdc_balance,
-        "sufficient": sufficient
-    }
-
-
-# step:3 file: provide_paired_liquidity_of_1_wbtc_and_60,000_usdc_to_the_wbtc_usdc_supervault
-import os
-from fastapi import FastAPI
-
-app = FastAPI()
-
-SUPER_VAULT_CONTRACT_ADDRESS = os.getenv("SUPER_VAULT_CONTRACT_ADDRESS", "neutron1vaultxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-WBTC_DENOM = os.getenv("WBTC_DENOM", "ibc/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-USDC_DENOM = os.getenv("USDC_DENOM", "uusdc")
-
-@app.get("/api/supervault-details")
-async def query_supervault_details():
-    return {
-        "contract_address": SUPER_VAULT_CONTRACT_ADDRESS,
-        "tokens": [
-            {"denom": WBTC_DENOM, "symbol": "WBTC"},
-            {"denom": USDC_DENOM, "symbol": "USDC"}
-        ]
-    }
-
-
-# step:4 file: provide_paired_liquidity_of_1_wbtc_and_60,000_usdc_to_the_wbtc_usdc_supervault
-import os, base64
-from fastapi import FastAPI, HTTPException, Body
-from pydantic import BaseModel
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.tx import Transaction
-
-app = FastAPI()
-
-# -------- Configuration ----------------------------------------------------
-RPC_ENDPOINT = os.getenv("NEUTRON_RPC", "https://rpc.neutron.org")
-CHAIN_ID     = os.getenv("NEUTRON_CHAIN_ID", "neutron-1")
-network_cfg  = NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT)
-ledger       = LedgerClient(network_cfg)
-SUPER_VAULT_CONTRACT = os.getenv("SUPER_VAULT_CONTRACT_ADDRESS", "neutron1vaultxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-WBTC_DENOM = os.getenv("WBTC_DENOM", "ibc/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-USDC_DENOM = os.getenv("USDC_DENOM", "uusdc")
-
-# -------- Request model ----------------------------------------------------
-class ConstructTxRequest(BaseModel):
-    address: str           # Liquidity provider address (sender)
-    wbtc_amount: int       # 1 WBTC  (use the correct micro-denom units)
-    usdc_amount: int       # 60 000 USDC in micro-denom units
-
-# -------- Route ------------------------------------------------------------
-@app.post("/api/construct-deposit-tx")
-async def construct_supervault_deposit_tx(req: ConstructTxRequest = Body(...)):
-    # 1. Compose execute message expected by Supervault contract
-    exec_msg = {
-        "deposit": {
-            "assets": [
-                {
-                    "info": {"native_token": {"denom": WBTC_DENOM}},
-                    "amount": str(req.wbtc_amount)
-                },
-                {
-                    "info": {"native_token": {"denom": USDC_DENOM}},
-                    "amount": str(req.usdc_amount)
-                }
-            ]
-        }
-    }
-
-    # 2. Create Tx object
-    tx = Transaction()
-    tx.add_message(
-        ledger.execute_contract(
-            sender=req.address,
-            contract_address=SUPER_VAULT_CONTRACT,
-            msg=exec_msg,
-            funds=[]  # Contract pulls tokens from user’s balance; no explicit Coin[] required
-        )
-    )
-
-    # 3. Gas estimate (rough – add a safety buffer client-side if needed)
-    gas_estimate = ledger.estimate_gas(tx)
-    tx.set_gas(gas_estimate)
-
-    # 4. Return unsigned tx bytes for the next step
-    unsigned_bytes = tx.serialize()
-    return {
-        "tx_base64": base64.b64encode(unsigned_bytes).decode(),
-        "gas_estimate": gas_estimate
-    }
-
-
-# step:5 file: provide_paired_liquidity_of_1_wbtc_and_60,000_usdc_to_the_wbtc_usdc_supervault
-import os, base64
-from fastapi import FastAPI, HTTPException, Body
-from pydantic import BaseModel
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.wallet import LocalWallet
-from cosmpy.aerial.tx import Transaction
-
-app = FastAPI()
-
-# --- Ledger ----------------------------------------------------------------
-RPC_ENDPOINT = os.getenv("NEUTRON_RPC", "https://rpc.neutron.org")
-CHAIN_ID     = os.getenv("NEUTRON_CHAIN_ID", "neutron-1")
-ledger       = LedgerClient(NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT))
-
-# --- Security warning ------------------------------------------------------
-# Keeping private keys on a server is NOT recommended for production.
-# Instead, sign on the client or use an HSM/KMS solution.
-MNEMONIC = os.getenv("LP_MNEMONIC")
-if MNEMONIC is None:
-    raise RuntimeError("LP_MNEMONIC environment variable must be set for backend signing demo.")
-
-wallet = LocalWallet.from_mnemonic(MNEMONIC)
-
-# --- Request model ---------------------------------------------------------
-class SignBroadcastRequest(BaseModel):
-    tx_base64: str
-
-# --- Route -----------------------------------------------------------------
-@app.post("/api/sign-and-broadcast")
-async def sign_and_broadcast_tx(req: SignBroadcastRequest = Body(...)):
-    try:
-        # 1. Deserialize unsigned transaction
-        unsigned_bytes = base64.b64decode(req.tx_base64)
-        tx = Transaction.deserialize(unsigned_bytes)
-
-        # 2. Sign with backend wallet
-        tx.sign(wallet)
-
-        # 3. Broadcast (waitUntil="sync")
-        result = ledger.broadcast_block(tx)
-
-        if result.is_tx_error():
-            raise HTTPException(status_code=400, detail=f"Tx failed: {result.raw_log}")
-
-        return {"txhash": result.tx_hash}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:4 file: opt_in_to_partner_airdrops_for_my_vault_deposits
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.wallet import LocalWallet
-from cosmpy.aerial.tx import Transaction
-import os
-
-app = FastAPI()
-
-# --- Chain / network configuration ---
-NETWORK = NetworkConfig(
-    chain_id="neutron-1",
-    url="https://rpc-kralum.neutron-1.neutron.org:443",  # Public RPC endpoint
-    fee_minimum_gas_price=0.03,
-    fee_denomination="untrn",
-)
-
-# --- Pydantic request model ---
-class ExecuteRequest(BaseModel):
-    mnemonic: str                # ⚠️  For demo only; never store on server in prod
-    contract_address: str        # Vault contract address
-    partner_id: str = "all"      # Field for the execute msg
-    gas_limit: int = 200_000     # Optional user-tuneable gas limit
-    fee_denom: str = "untrn"     # Fee denom, default untrn
-
-@app.post("/api/execute/opt_in_airdrops")
-async def execute_opt_in_airdrops(req: ExecuteRequest):
-    """Signs and broadcasts `{ opt_in_airdrops: { partner_id } }`"""
-    try:
-        # Create a wallet from the provided mnemonic
-        wallet = LocalWallet.from_mnemonic(req.mnemonic)
-        sender_addr = wallet.address()
-
-        # Create the execute message
-        wasm_msg = {
-            "opt_in_airdrops": {
-                "partner_id": req.partner_id
-            }
-        }
-
-        # Build transaction
-        tx = Transaction()
-        tx.add_execute_contract(
-            sender_addr,
-            req.contract_address,
-            wasm_msg,
-            gas_limit=req.gas_limit,
-        )
-        tx.with_chain_id(NETWORK.chain_id)
-        tx.with_fee(req.fee_denom)
-
-        # Sign
-        signed_tx = tx.sign(wallet)
-
-        # Broadcast
-        client = LedgerClient(NETWORK)
-        resp = client.broadcast_tx(signed_tx)
-
-        if resp.is_error():
-            raise HTTPException(status_code=400, detail=f"Broadcast failed: {resp.raw_log}")
-
-        return {"txhash": resp.tx_hash}
-
-    except Exception as e:
-        # Surface any unexpected error
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:2 file: check_my_health_factor_on_amber_finance
-from fastapi import FastAPI, HTTPException
-import os, json, base64, httpx
-
-app = FastAPI()
-
-# Environment variables keep secrets & tunables out of source-code.
-NEUTRON_LCD = os.getenv('NEUTRON_LCD', 'https://rest-kralum.neutron.org')
-AMBER_CONTRACT_ADDR = os.getenv('AMBER_CONTRACT_ADDR', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-
-async def _query_wasm_smart(contract_addr: str, query_msg: dict):
-    """Low-level helper that hits the LCD `/smart/` endpoint."""
-    msg_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
-    url = f"{NEUTRON_LCD}/cosmwasm/wasm/v1/contract/{contract_addr}/smart/{msg_b64}"
-    async with httpx.AsyncClient(timeout=10) as client:
-        r = await client.get(url)
-        if r.status_code != 200:
-            raise HTTPException(status_code=r.status_code, detail=r.text)
-        # LCD wraps contract results inside a `data` or `result` field depending on version.
-        data = r.json()
-        return data.get('data') or data.get('result') or data
-
-@app.get('/api/amber_positions')
-async def amber_positions(address: str):
-    """Public route => `/api/amber_positions?address=<bech32>`"""
-    try:
-        query_msg = {"positions_by_owner": {"owner": address}}
-        positions = await _query_wasm_smart(AMBER_CONTRACT_ADDR, query_msg)
-        return positions  # Forward raw contract JSON back to the caller.
-    except HTTPException:
-        raise  # Re-throw FastAPI HTTP errors untouched.
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Amber query failed: {exc}")
-
-
-# step:6 file: lock_2000_ntrn_for_3_months_to_obtain_a_1.2×_btc_summer_boost
-###############################################################################
-# backend/lock_tokens.py                                                       #
-###############################################################################
-
-import os
-import json
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.tx import Transaction
-from cosmpy.aerial.wallet import LocalWallet
-from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgExecuteContract
-
-app = FastAPI(title="NTRN Lock API")
-
-# --- Models ------------------------------------------------------------------
-class Fund(BaseModel):
-    denom: str
-    amount: str
-
-class LockRequest(BaseModel):
-    contract_address: str = Field(..., description="Lock contract address")
-    sender: str = Field(..., description="User address that appears as Msg sender")
-    msg: dict = Field(..., description="ExecuteMsg JSON body")
-    funds: list[Fund]
-
-# --- Chain Config ------------------------------------------------------------
-NETWORK = NetworkConfig(
-    chain_id="neutron-1",
-    url="https://rpc-kralum.neutron.org",  # Public RPC; replace if necessary
-    fee_denomination="untrn",
-    gas_price=0.025,            # 0.025untrn is a safe over-estimate
-    staking_denomination="untrn",
-)
-
-# Wallet that will sign the transaction (use with caution!)
-MNEMONIC = os.getenv("NTRN_WALLET_MNEMONIC")
-if MNEMONIC is None:
-    raise RuntimeError("NTRN_WALLET_MNEMONIC env-var is not set")
-
-WALLET = LocalWallet.from_mnemonic(MNEMONIC)
-
-# --- Endpoint ----------------------------------------------------------------
-@app.post("/api/lock_tokens")
-async def lock_tokens(req: LockRequest):
-    try:
-        # Defensive checks ----------------------------------------------------
-        if WALLET.address() != req.sender:
-            raise HTTPException(
-                status_code=400,
-                detail="Backend wallet address does not match provided sender."
-            )
-
-        # Build MsgExecuteContract -------------------------------------------
-        wasm_msg_bytes = json.dumps(req.msg).encode()
-        execute_msg = MsgExecuteContract(
-            sender=req.sender,
-            contract=req.contract_address,
-            msg=wasm_msg_bytes,
-            funds=[
-                {
-                    "denom": f.denom,
-                    "amount": f.amount,
-                }
-                for f in req.funds
-            ],
-        )
-
-        # Create & sign TX ----------------------------------------------------
-        tx = Transaction()
-        tx.add_message(execute_msg)
-        tx.with_sequence(LedgerClient(NETWORK).get_sequence(req.sender))
-        tx.with_chain_id(NETWORK.chain_id)
-        tx.with_gas(250_000)  # empirical gas; adjust if necessary
-        tx.with_memo("Lock 2K NTRN for 90d")
-
-        # Sign using backend wallet
-        tx_signed = tx.sign(WALLET)
-
-        # Broadcast -----------------------------------------------------------
-        client = LedgerClient(NETWORK)
-        tx_response = client.broadcast_tx(tx_signed)
-
-        return {
-            "tx_hash": tx_response.tx_hash.hex(),
-            "height": tx_response.height,
-            "raw_log": tx_response.raw_log,
-        }
-
-    except HTTPException:
-        raise  # re-throw fastapi exceptions unchanged
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:2 file: close_my_leveraged_loop_position_on_amber
-# File: backend/routes/amber.py
-import os
-import json
-from fastapi import APIRouter, HTTPException
-from cosmpy.aio.client import LedgerClient
-
-router = APIRouter()
-
-RPC_ENDPOINT = os.getenv("RPC_ENDPOINT", "https://rpc-palvus.neutron-1.neutron.org")
-AMBER_CONTRACT = os.getenv("AMBER_CONTRACT", "neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-
-@router.get("/api/amber/position_status/{address}")
-async def query_position_status(address: str):
-    """Returns the address’ Amber position (if any)."""
-    try:
-        async with LedgerClient(RPC_ENDPOINT) as client:
-            query_msg = {"position_status": {"address": address}}
-            # Amber is a CosmWasm contract; `wasm_query` expects bytes
-            result = await client.wasm_query(
-                AMBER_CONTRACT,
-                json.dumps(query_msg).encode()
-            )
-            return result
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Position query failed: {exc}")
-
-
-# step:3 file: close_my_leveraged_loop_position_on_amber
-# File: backend/routes/amber.py (continued)
-import base64
-from typing import Optional
-from pydantic import BaseModel
-from cosmpy.aio.tx import Transaction
-from cosmpy.aio.msg import MsgExecuteContract
-
-class ClosePosRequest(BaseModel):
-    address: str
-    position_id: int
-    chain_id: str = "neutron-1"
-    gas_limit: Optional[int] = 200000
-    fee_amount: Optional[str] = "200000"  # in micro-denom (untrn)
-    fee_denom: Optional[str] = "untrn"
-
-@router.post("/api/amber/close_position_sign_doc")
-async def close_position_sign_doc(req: ClosePosRequest):
-    """Returns `sign_doc`, `body_bytes`, and `auth_info_bytes` (all base-64) for Keplr’s signDirect."""
-    try:
-        async with LedgerClient(RPC_ENDPOINT) as client:
-            # Look-up account info (account number & sequence)
-            acct = await client.query_auth_account(req.address)
-            acct = acct["base_account"] if "base_account" in acct else acct
-            account_number = int(acct["account_number"])
-            sequence       = int(acct["sequence"])
-
-            # Build the execute message
-            close_msg = {"close_position": {"id": req.position_id}}
-            exec_msg  = MsgExecuteContract(
-                sender   = req.address,
-                contract = AMBER_CONTRACT,
-                msg      = close_msg,
-                funds    = []
-            )
-
-            # Prepare the Tx
-            tx = Transaction()
-            tx.add_message(exec_msg)
-            tx.with_gas(req.gas_limit)
-            tx.with_fee(req.fee_amount, req.fee_denom)
-            tx.with_chain_id(req.chain_id)
-            tx.with_memo("close Amber position")
-
-            sign_doc = tx.get_sign_doc(account_number, sequence)
-
-            return {
-                "sign_doc":        base64.b64encode(sign_doc.SerializeToString()).decode(),
-                "body_bytes":      base64.b64encode(tx.body.SerializeToString()).decode(),
-                "auth_info_bytes": base64.b64encode(tx.auth_info.SerializeToString()).decode()
-            }
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to build sign-doc: {exc}")
-
-
-# step:5 file: close_my_leveraged_loop_position_on_amber
-# File: backend/routes/amber.py (continued)
-@router.get("/api/amber/position_status_confirm/{address}")
-async def confirm_position_closed(address: str):
-    """Returns `{closed: true}` once the address has no outstanding debt."""
-    try:
-        data = await query_position_status(address)
-        debt = data.get("position", {}).get("debt", 0)
-        return {"closed": int(debt) == 0, "raw": data}
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Confirmation failed: {exc}")
-
-
-# step:2 file: retrieve_projected_ntrn_rewards_based_on_current_point_total
-from fastapi import FastAPI, HTTPException
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-
-app = FastAPI()
-
-# Network configuration (replace the RPC URL with your preferred endpoint)
-NETWORK = NetworkConfig(
-    chain_id='neutron-1',
-    url='https://rpc-kralum.neutron.org:443',
-    fee_minimum_gas_price=0,
-    fee_denomination='untrn',
-    staking_denomination='untrn',
-)
-
-# Deployed Points contract address
-CONTRACT_ADDRESS = 'neutron1yu55umrtnna36vyjvhexp6q2ktljunukzxp9vptsfnylequg7gvqrcqf42'
-
-def _get_client():
-    """Instantiate a LedgerClient for each request."""
-    return LedgerClient(NETWORK)
-
-@app.get('/api/points')
-async def get_user_points(address: str):
-    """Return the caller's current point total from the Points contract."""
-    try:
-        client = _get_client()
-        query_msg = {'points': {'address': address}}
-        response = client.query_contract_smart(CONTRACT_ADDRESS, query_msg)
-        # Expected shape: {'points': '12345'}
-        points = int(response.get('points', 0))
-        return {'address': address, 'points': points}
-    except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
-
-
-# step:3 file: retrieve_projected_ntrn_rewards_based_on_current_point_total
-# This snippet lives in the same FastAPI app defined in Step 2.
-from fastapi import HTTPException
-
-# Campaign parameters (micro-denominated values)
-REWARD_PARAMS = {
-    'ntrn_total_allocation': 100_000_000_000,  # 100,000 NTRN (in untrn)
-    'phase_length_seconds': 60 * 60 * 24 * 14,  # 14 days
-    'per_point_rate': 1_000_000  # 1 NTRN (1e6 untrn) per point
-}
-
-@app.get('/api/reward_params')
-async def get_reward_params():
-    """Return constants used for reward calculations."""
-    try:
-        return REWARD_PARAMS
-    except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
-
-
-# step:4 file: retrieve_projected_ntrn_rewards_based_on_current_point_total
-# Endpoint added to the same FastAPI application
-from fastapi import HTTPException
-
-@app.get('/api/projection')
-async def projected_rewards(address: str):
-    """Compute and return projected NTRN rewards for the supplied address."""
-    try:
-        # 1. Query the user’s point total (reuse logic from Step 2)
-        client = _get_client()
-        query_msg = {'points': {'address': address}}
-        points_response = client.query_contract_smart(CONTRACT_ADDRESS, query_msg)
-        points = int(points_response.get('points', 0))
-
-        # 2. Fetch campaign parameters (from Step 3 constant)
-        per_point_rate = REWARD_PARAMS['per_point_rate']  # micro-NTRN per point
-
-        # 3. Apply multipliers (if any). For now, multiplier = 1.
-        multiplier = 1
-        projected_untrn = points * per_point_rate * multiplier
-        projected_ntrn = projected_untrn / 1_000_000  # convert micro-denom → denom
-
-        return {
-            'address': address,
-            'points': points,
-            'projected_reward_untrn': projected_untrn,
-            'projected_reward_ntrn': projected_ntrn,
-            'assumptions': {
-                **REWARD_PARAMS,
-                'multiplier': multiplier
-            }
-        }
-    except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
-
-
-# step:2 file: swap_1_ebtc_for_unibtc_on_neutron_dex
-import os
-import requests
-
-REST_ENDPOINT = os.getenv('NEUTRON_REST', 'https://rest.neutron.org')
-
-
-def validate_token_balance(address: str, min_offer: int = 1_000_000, min_fee: int = 50_000) -> dict:
-    """Verify that `address` owns
-    · `min_offer` micro-eBTC (1 eBTC = 1_000_000 micro-eBTC)
-    · `min_fee`  micro-NTRN for network fees.
-    Returns `{valid: True}` on success or `{valid: False, error: '...'}` otherwise.
-    """
-    offer_denom = 'eBTC'
-    fee_denom = 'untrn'
-    try:
-        url = f"{REST_ENDPOINT}/cosmos/bank/v1beta1/balances/{address}"
-        resp = requests.get(url, timeout=10)
-        resp.raise_for_status()
-        balances = resp.json().get('balances', [])
-
-        def amount_of(denom: str) -> int:
-            for coin in balances:
-                if coin.get('denom') == denom:
-                    return int(coin.get('amount', '0'))
-            return 0
-
-        if amount_of(offer_denom) < min_offer:
-            raise ValueError('Insufficient eBTC balance.')
-        if amount_of(fee_denom) < min_fee:
-            raise ValueError('Insufficient untrn balance for fees.')
-
-        return {"valid": True}
-    except Exception as err:
-        return {"valid": False, "error": str(err)}
-
-
-# step:3 file: swap_1_ebtc_for_unibtc_on_neutron_dex
-import os
-import json
-import base64
-import requests
-
-REST_ENDPOINT = os.getenv('NEUTRON_REST', 'https://rest.neutron.org')
-PAIR_CONTRACT = os.getenv('PAIR_CONTRACT', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')  # <-- replace with real pair address
-
-
-def query_dex_pool(offer_denom: str = 'eBTC', ask_denom: str = 'uniBTC') -> dict:
-    """Returns raw pool data for the requested trading pair."""
-    query_msg = {
-        "pool": {
-            "pair": {
-                "asset_infos": [
-                    {"native_token": {"denom": offer_denom}},
-                    {"native_token": {"denom": ask_denom}}
-                ]
-            }
-        }
-    }
-
-    try:
-        b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
-        url = f"{REST_ENDPOINT}/cosmwasm/wasm/v1/contract/{PAIR_CONTRACT}/smart/{b64}"
-        resp = requests.get(url, timeout=10)
-        resp.raise_for_status()
-        return resp.json()  # contains liquidity, price, etc.
-    except Exception as err:
-        return {"error": str(err)}
-
-
-# step:5 file: swap_1_ebtc_for_unibtc_on_neutron_dex
-import os
-import json
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.wallet import LocalWallet
-from cosmpy.aerial.tx import Transaction
-
-RPC_ENDPOINT = os.getenv('NEUTRON_RPC', 'https://rpc.neutron.org')
-CHAIN_ID = os.getenv('CHAIN_ID', 'neutron-1')
-FEE_DENOM = 'untrn'
-
-
-def sign_and_broadcast_tx(execute_msg: dict, gas: int = 350_000) -> dict:
-    """Takes the `execute_msg` produced in Step 4, signs it, broadcasts it, and returns the tx hash."""
-
-    # 1. Load the server wallet
-    mnemonic = os.getenv('MNEMONIC')
-    if not mnemonic:
-        raise EnvironmentError('MNEMONIC environment variable is missing.')
-    wallet = LocalWallet(mnemonic)
-
-    # 2. Create a network client
-    cfg = NetworkConfig(
-        chain_id=CHAIN_ID,
-        url=RPC_ENDPOINT,
-        fee_denomination=FEE_DENOM,
-        gas_prices=0.025,
-        gas_multiplier=1.2,
-    )
-    client = LedgerClient(cfg)
-
-    # 3. Build the transaction
-    tx = (
-        Transaction()
-        .with_messages(execute_msg)
-        .with_sequence(client.get_sequence(wallet.address()))
-        .with_account_num(client.get_number(wallet.address()))
-        .with_chain_id(cfg.chain_id)
-        .with_gas(gas)
-        .with_fee(gas_price=cfg.gas_prices, denom=FEE_DENOM)
-    )
-
-    # 4. Sign and broadcast
-    signed_tx = wallet.sign_transaction(tx)
-    tx_bytes = signed_tx.serialize()
-    result = client.broadcast_tx(tx_bytes)
-
-    # 5. Return tx hash and raw log for convenience
-    return {
-        'tx_hash': result.tx_hash if hasattr(result, 'tx_hash') else result,
-        'raw_log': getattr(result, 'raw_log', '')
-    }
-
-
-# step:5 file: set_my_boost_target_to_my_ethereum_address
-import os
-from typing import List
-
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, validator
-
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.tx import Transaction
-from cosmpy.aerial.wallet import LocalWallet
-from cosmpy.aerial.contract import MsgExecuteContract
-from cosmpy.crypto.address import Address
-
-router = APIRouter()
-
-RPC = os.getenv('NEUTRON_LCD_URL', 'https://rest-kralum.neutron.org')
-CHAIN_ID = os.getenv('NEUTRON_CHAIN_ID', 'neutron-1')
-GAS_PRICE = float(os.getenv('GAS_PRICE', '0.025'))  # in untrn
-
-
-class MsgValue(BaseModel):
-    sender: str
-    contract: str
-    msg: List[int]  # UTF-8 bytes array sent by the frontend
-    funds: List[str] = []
-
-
-class ExecutePayload(BaseModel):
-    typeUrl: str
-    value: MsgValue
-
-    @validator('typeUrl')
-    def ensure_msg_execute(cls, v):
-        if v != '/cosmwasm.wasm.v1.MsgExecuteContract':
-            raise ValueError('Only MsgExecuteContract is supported by this endpoint.')
-        return v
-
-
-@router.post('/api/set_target')
-async def set_target(payload: ExecutePayload):
-    """Signs and broadcasts a MsgExecuteContract built on the frontend"""
-    try:
-        # Prepare LCD/RPC client
-        config = NetworkConfig(
-            chain_id=CHAIN_ID,
-            url=RPC,
-            fee_minimum_gas_price=GAS_PRICE,
-            fee_denom='untrn',
-        )
-        client = LedgerClient(config)
-
-        # Load server wallet
-        mnemonic = os.getenv('DEPLOYER_MNEMONIC')
-        if not mnemonic:
-            raise HTTPException(500, 'DEPLOYER_MNEMONIC environment variable not set.')
-        wallet = LocalWallet.from_mnemonic(mnemonic)
-
-        # Re-create the message
-        msg_execute = MsgExecuteContract(
-            sender=Address(payload.value.sender),
-            contract=Address(payload.value.contract),
-            msg=bytes(payload.value.msg),
-            funds=[],
-        )
-
-        # Build and sign the tx
-        tx = (
-            Transaction()
-            .with_messages(msg_execute)
-            .with_chain_id(CHAIN_ID)
-            .with_sender(wallet)
-            .with_fee(gas_limit=200_000, fee_amount=5000, fee_denom='untrn')
-            .with_memo('Update boost target')
-        )
-        signed_tx = tx.sign(wallet)
-
-        # Broadcast
-        tx_response = client.broadcast_tx(signed_tx)
-        if tx_response.is_err():
-            raise HTTPException(500, f'Broadcast failed: {tx_response.tx_response.raw_log}')
-
-        return {'tx_hash': tx_response.tx_hash}
-
-    except HTTPException:
-        raise
-    except Exception as exc:
-        raise HTTPException(500, str(exc))
-
-
-# step:2 file: show_my_total_bitcoin_summer_points_earned_in_the_current_phase
-from fastapi import FastAPI, HTTPException
-import requests, base64, json, os
-
-app = FastAPI()
-
-# Replace these with actual values or set them as environment variables
-LCD_ENDPOINT      = os.getenv('LCD_ENDPOINT', 'https://rest-kralum.neutron-1.neutron.org')
-CAMPAIGN_CONTRACT = os.getenv('CAMPAIGN_CONTRACT', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-
-def wasm_query(contract_address: str, query_msg: dict):
-    """Utility function that performs a CosmWasm smart-query via the public LCD."""
-    try:
-        msg_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
-        url     = f"{LCD_ENDPOINT}/cosmwasm/wasm/v1/contract/{contract_address}/smart/{msg_b64}"
-        resp    = requests.get(url, timeout=10)
-        resp.raise_for_status()
-        return resp.json().get('data', {})
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Smart-query failed: {e}')
-
-@app.get('/api/active_phase')
-def fetch_current_campaign_phase():
-    """Returns the ID of the currently active campaign phase."""
-    query_msg = {"get_current_phase": {}}
-    data      = wasm_query(CAMPAIGN_CONTRACT, query_msg)
-    if 'phase_id' not in data:
-        raise HTTPException(status_code=500, detail="Invalid contract response: 'phase_id' missing")
-    return {"phase_id": data['phase_id']}
-
-
-# step:3 file: show_my_total_bitcoin_summer_points_earned_in_the_current_phase
-from fastapi import FastAPI, HTTPException, Query
-import requests, base64, json, os
-
-app = FastAPI()
-
-LCD_ENDPOINT   = os.getenv('LCD_ENDPOINT',  'https://rest-kralum.neutron-1.neutron.org')
-POINTS_CONTRACT = os.getenv('POINTS_CONTRACT', 'neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy')
-
-def wasm_query(contract_address: str, query_msg: dict):
-    try:
-        msg_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
-        url     = f"{LCD_ENDPOINT}/cosmwasm/wasm/v1/contract/{contract_address}/smart/{msg_b64}"
-        resp    = requests.get(url, timeout=10)
-        resp.raise_for_status()
-        return resp.json().get('data', {})
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Smart-query failed: {e}')
-
-@app.get('/api/points')
-def query_phase_points(address: str = Query(...), phase_id: int = Query(...)):
-    """Return the user’s points for a given phase by querying the Points contract."""
-    query_msg = {
-        "get_phase_points": {
-            "address": address,
-            "phase_id": phase_id
-        }
-    }
-    data = wasm_query(POINTS_CONTRACT, query_msg)
-    if 'points' not in data:
-        raise HTTPException(status_code=500, detail="Invalid contract response: 'points' missing")
-    return {
-        "address": address,
-        "phase_id": phase_id,
-        "points": data['points']
-    }
-
-
-# step:1 file: list_current_amber_lending_markets_and_apys
-from fastapi import FastAPI, HTTPException
-import os
-
-app = FastAPI()
-
-# Environment-specific mapping of Amber controller/lens contract addresses
-AMBER_CONTROLLER_ADDRESSES = {
-    "mainnet": os.getenv("AMBER_CONTROLLER_MAINNET", "neutron1controllerplaceholderxxxxxxxxxxxx"),
-    "testnet": os.getenv("AMBER_CONTROLLER_TESTNET", "pion1controllerplaceholderxxxxxxxxxxxx")
-}
-
-@app.get("/api/amber/controller-address")
-async def get_controller_address(env: str = "mainnet"):
-    """Return the controller/lens contract address used to query market data."""
-    address = AMBER_CONTROLLER_ADDRESSES.get(env)
-    if not address:
-        raise HTTPException(status_code=400, detail="Unsupported environment")
-    return {"env": env, "controller_address": address}
-
-
-# step:2 file: list_current_amber_lending_markets_and_apys
-import base64, json, os
-import httpx
-from fastapi import HTTPException
-
-LCD_ENDPOINT = os.getenv("NEUTRON_LCD_ENDPOINT", "https://rest-kralum.neutron-1.neutron.org")
-
-async def _query_smart(contract_address: str, query_msg: dict):
-    """Helper to perform a CosmWasm smart-query using the LCD REST interface."""
-    encoded_msg = base64.b64encode(json.dumps(query_msg).encode()).decode()
-    url = f"{LCD_ENDPOINT}/cosmwasm/wasm/v1/contract/{contract_address}/smart/{encoded_msg}"
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(url, timeout=10)
-        try:
-            resp.raise_for_status()
-        except httpx.HTTPStatusError as exc:
-            raise HTTPException(status_code=exc.response.status_code, detail=str(exc))
-        return resp.json().get("data") or resp.json()
-
-@app.get("/api/amber/markets")
-async def get_markets(env: str = "mainnet"):
-    from amber_api import AMBER_CONTROLLER_ADDRESSES  # reuse mapping from step 1
-    controller = AMBER_CONTROLLER_ADDRESSES.get(env)
-    if not controller:
-        raise HTTPException(status_code=400, detail="Unsupported environment")
-    markets = await _query_smart(controller, {"markets": {}})
-    return markets
-
-
-# step:3 file: list_current_amber_lending_markets_and_apys
-from fastapi import HTTPException
-
-@app.get("/api/amber/market-state")
-async def get_market_state(market_id: str, env: str = "mainnet"):
-    from amber_api import AMBER_CONTROLLER_ADDRESSES
-    controller = AMBER_CONTROLLER_ADDRESSES.get(env)
-    if not controller:
-        raise HTTPException(status_code=400, detail="Unsupported environment")
-    state = await _query_smart(controller, {"market_state": {"market_id": market_id}})
-    return state
-
-
-# step:2 file: mint_a_boost-receipt_nft_by_staking_250_ntrn_for_12_months
-from fastapi import FastAPI, HTTPException
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-
-app = FastAPI(title='Neutron BFF')
-
-NETWORK = NetworkConfig(
-    chain_id='neutron-1',
-    url='https://rpc-kralum.neutron.org',
-    fee_denom='untrn',
-    gas_price=0.01,
-    prefix='neutron',
-)
-
-client = LedgerClient(NETWORK)
-
-@app.get('/balance/{address}')
-async def query_balance(address: str, denom: str = 'untrn'):
-    # Returns the balance for a given Neutron address in micro-denom units (untrn)
-    try:
-        balance = client.query_bank_balance(address, denom=denom)
-        return {
-            'address': address,
-            'denom': denom,
-            'amount': int(balance),
-        }
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-# step:3 file: mint_a_boost-receipt_nft_by_staking_250_ntrn_for_12_months
-from cosmpy.aerial.tx import Transaction
-from cosmpy.aerial.contract import MsgExecuteContract
-
-def build_stake_and_mint_tx(sender_address: str, contract_address: str, amount: int = 250000000, denom: str = 'untrn', duration: str = '12_months'):
-    # Build the JSON message expected by the Boost contract
-    execute_msg = {
-        'stake_and_mint_nft': {
-            'amount': f'{amount}{denom}',
-            'duration': duration,
-        }
-    }
-
-    # Funds that accompany the execute call
-    funds = [{ 'denom': denom, 'amount': str(amount) }]
-
-    # Construct the MsgExecuteContract protobuf wrapper
-    msg = MsgExecuteContract(
-        sender=sender_address,
-        contract=contract_address,
-        msg=execute_msg,
-        funds=funds,
-    )
-
-    # Wrap inside a Transaction for later signing
-    tx = Transaction()
-    tx.add_message(msg)
-    tx.with_sender(sender_address)
-    return tx
-
-
-# step:4 file: mint_a_boost-receipt_nft_by_staking_250_ntrn_for_12_months
-import os
-from cosmpy.aerial.wallet import PrivateKey
-from cosmpy.aerial.client import LedgerClient
-
-
-def sign_and_broadcast(tx, client: LedgerClient):
-    # Sign the provided Transaction using the mnemonic in the MNEMONIC env variable and broadcast it.
-    mnemonic = os.getenv('MNEMONIC')
-    if not mnemonic:
-        raise ValueError('MNEMONIC environment variable is not set.')
-
-    pk = PrivateKey.from_mnemonic(mnemonic)
-    signed_tx = tx.sign(pk)
-    resp = client.broadcast_transaction(signed_tx)
-
-    if resp.is_successful():
-        return { 'tx_hash': resp.tx_hash }
-    else:
-        raise RuntimeError(f'Broadcast failed with code {resp.code}: {resp.raw_log}')
-
-
-# step:5 file: mint_a_boost-receipt_nft_by_staking_250_ntrn_for_12_months
-import time
-from cosmpy.aerial.client import LedgerClient
-
-
-def wait_for_tx_commit(tx_hash: str, client: LedgerClient, timeout: int = 120, poll: float = 2.0):
-    # Poll the chain for the transaction result
-    deadline = time.time() + timeout
-    while time.time() < deadline:
-        tx_info = client.query_tx(tx_hash)
-        if tx_info is not None:
-            return {
-                'status': 'confirmed',
-                'height': tx_info.height,
-                'raw_log': tx_info.raw_log,
-            }
-        time.sleep(poll)
-    raise TimeoutError('Timed out waiting for transaction commitment.')
-
-
-# step:6 file: mint_a_boost-receipt_nft_by_staking_250_ntrn_for_12_months
-from cosmpy.aerial.client import LedgerClient
-
-
-def query_nft_tokens(client: LedgerClient, contract_address: str, owner_address: str):
-    query = { 'tokens': { 'owner': owner_address } }
-    try:
-        result = client.query_contract_smart(contract_address, query)
-        # The exact shape depends on the contract; assume `{ tokens: [id1,id2,...] }` is returned
-        return result.get('tokens', [])
-    except Exception as e:
-        raise RuntimeError(f'Contract query failed: {e}')
-
-
-# step:2 file: initiate_standard_vesting_for_any_unclaimed_ntrn_rewards
-import os
-import json
-import base64
-import httpx
-from fastapi import APIRouter, HTTPException
-
-router = APIRouter()
-
-NEUTRON_LCD = os.getenv("NEUTRON_LCD", "https://lcd-kralum.neutron.org")
-VESTING_CONTRACT = "neutron1dz57hjkdytdshl2uyde0nqvkwdww0ckx7qfe05raz4df6m3khfyqfnj0nr"
-
-@router.get("/claimable/{address}")
-async def query_vesting_contract(address: str):
-    """Return the claimable rewards for a given address."""
-    try:
-        query_msg = {"claimable_rewards": {"address": address}}
-        query_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
-        url = f"{NEUTRON_LCD}/cosmwasm/wasm/v1/contract/{VESTING_CONTRACT}/smart/{query_b64}"
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(url)
-            resp.raise_for_status()
-        data = resp.json()
-        # Expected format: {"data": {"amount": "123456"}}
-        amount = int(data.get("data", {}).get("amount", 0))
-        return {"claimable": amount}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:3 file: initiate_standard_vesting_for_any_unclaimed_ntrn_rewards
-from fastapi import HTTPException
-
-async def validate_claimable_amount(amount: int):
-    """Raise an HTTP 400 if amount == 0."""
-    if int(amount) == 0:
-        raise HTTPException(status_code=400, detail="No claimable rewards for this address.")
-    return {"ok": True}
-
-
-# step:4 file: initiate_standard_vesting_for_any_unclaimed_ntrn_rewards
-def construct_execute_msg():
-    """Return the execute message required to start vesting."""
-    execute_msg = {"start_standard_vesting": {}}
-    return execute_msg
-
-
-# step:5 file: initiate_standard_vesting_for_any_unclaimed_ntrn_rewards
-import os
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.tx import MsgExecuteContract
-from cosmpy.aerial.wallet import PrivateKey
-from fastapi import HTTPException
-
-NETWORK = NetworkConfig(
-    chain_id="neutron-1",
-    url=os.getenv("NEUTRON_RPC", "https://rpc-kralum.neutron.org"),
-    fee_minimum_gas_price=0.025,
-    fee_denom="untrn",
-)
-
-async def sign_and_broadcast_tx(sender_addr: str, execute_msg: dict):
-    """Sign the MsgExecuteContract and broadcast it to the Neutron network."""
-    mnemonic = os.getenv("MNEMONIC")
-    if not mnemonic:
-        raise HTTPException(status_code=500, detail="Backend signing key is not configured.")
-
-    try:
-        # Create wallet & client
-        pk = PrivateKey.from_mnemonic(mnemonic)
-        if sender_addr != pk.address():
-            raise HTTPException(status_code=400, detail="Configured key does not match sender address.")
-
-        client = LedgerClient(NETWORK, wallet=pk)
-
-        # Build the execute msg
-        msg = MsgExecuteContract(
-            sender=sender_addr,
-            contract_address=VESTING_CONTRACT,
-            msg=execute_msg,
-        )
-
-        # Estimate gas & broadcast
-        tx = client.tx.build_and_sign_tx(msgs=[msg])
-        tx_response = client.tx.broadcast_tx(tx)
-
-        if tx_response.is_err():
-            raise HTTPException(status_code=500, detail=f"Broadcast failed: {tx_response.raw_log}")
-
-        return {"tx_hash": tx_response.tx_hash}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:6 file: initiate_standard_vesting_for_any_unclaimed_ntrn_rewards
-import base64
-import json
-import httpx
-from fastapi import HTTPException
-
-async def query_vesting_schedule(address: str):
-    """Return the latest vesting schedule for the provided address."""
-    query = {"vesting_schedule": {"address": address}}
-    query_b64 = base64.b64encode(json.dumps(query).encode()).decode()
-    url = f"{NEUTRON_LCD}/cosmwasm/wasm/v1/contract/{VESTING_CONTRACT}/smart/{query_b64}"
-
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(url)
-            resp.raise_for_status()
-        return resp.json().get("data", {})
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:4 file: enable_usdc_gas_payments_for_my_next_transaction
-### backend/tx_service.py
-"""FastAPI micro-service that constructs & signs a MsgSend with `uusdc` fees."""
-
-import os
-from typing import Optional
-
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-
-from cosmpy.aio.client import LedgerClient
-from cosmpy.crypto.keypairs import PrivateKey
-from cosmpy.aio.tx import Transaction
-from cosmpy.protos.cosmos.bank.v1beta1 import tx_pb2 as bank_tx
-
-RPC_ENDPOINT = os.getenv("NEUTRON_RPC", "https://rpc.neutron.org:443")
-CHAIN_ID = os.getenv("NEUTRON_CHAIN_ID", "neutron-1")
-
-app = FastAPI(title="Neutron Tx Service")
-
-class ConstructTxRequest(BaseModel):
-    sender_privkey_hex: str      # hex-encoded secp256k1 private key
-    recipient: str              # Bech32 address
-    amount: int                 # in micro-denom (e.g., 1_000_000 = 1 UNTRN)
-    amount_denom: str = "untrn"  # asset you are sending
-    fee_amount: int             # must be >= Step-2 minGasPrice * gasLimit
-    fee_denom: str = "uusdc"
-    gas_limit: int = 200000
-
-class ConstructTxResponse(BaseModel):
-    signed_tx_hex: str
-
-@app.post("/tx/construct-sign", response_model=ConstructTxResponse)
-async def construct_and_sign(req: ConstructTxRequest):
-    try:
-        # Restore private key & derive sender address
-        pk = PrivateKey(bytes.fromhex(req.sender_privkey_hex))
-        sender_addr = pk.public_key().address()
-
-        client = LedgerClient(RPC_ENDPOINT)
-        onchain_account = await client.query_account(sender_addr)
-
-        # ----- Build bank MsgSend -----
-        send_msg = bank_tx.MsgSend(
-            from_address=sender_addr,
-            to_address=req.recipient,
-            amount=[{"denom": req.amount_denom, "amount": str(req.amount)}],
-        )
-
-        # ----- Create Tx wrapper -----
-        tx = Transaction()
-        tx.add_message(send_msg)
-        tx.with_sequence(onchain_account.sequence)
-        tx.with_account_num(onchain_account.account_number)
-        tx.with_chain_id(CHAIN_ID)
-        tx.with_gas(req.gas_limit)
-        tx.with_fee(req.fee_amount, req.fee_denom)
-
-        signed_tx = tx.get_tx_data(pk)
-        return {"signed_tx_hex": signed_tx.hex()}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:5 file: enable_usdc_gas_payments_for_my_next_transaction
-### backend/tx_service.py (continued)
-from cosmpy.aio.client import TxCommitError
-
-class BroadcastRequest(BaseModel):
-    signed_tx_hex: str
-
-class BroadcastResponse(BaseModel):
-    tx_hash: str
-    height: Optional[int] = None
-
-@app.post("/tx/broadcast", response_model=BroadcastResponse)
-async def broadcast_signed_tx(req: BroadcastRequest):
-    try:
-        client = LedgerClient(RPC_ENDPOINT)
-        tx_bytes = bytes.fromhex(req.signed_tx_hex)
-        res = await client.broadcast_tx_sync(tx_bytes)
-
-        if res.code != 0:
-            raise TxCommitError(f"Tx failed: code={res.code} log={res.raw_log}")
-
-        return {"tx_hash": res.txhash, "height": res.height}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:4 file: instantly_claim_50%_of_my_ntrn_staking_rewards
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import List
-import os, base64
-
-from cosmpy.aerial.client import LedgerClient
-from cosmpy.aerial.tx import Transaction, MsgWithdrawDelegatorReward
-
-app = FastAPI()
-
-# ---------------------------
-# Pydantic request / response
-# ---------------------------
-class ValidatorPortion(BaseModel):
-    validator_address: str
-    amount: str  # kept for reference; MsgWithdrawDelegatorReward ignores it
-    denom: str
-
-class BuildTxRequest(BaseModel):
-    delegator_address: str
-    rewards: List[ValidatorPortion]
-
-class SignDocResponse(BaseModel):
-    body_bytes: str
-    auth_info_bytes: str
-    account_number: int
-    chain_id: str
-
-# -------------------------------------------
-# Helper to build and serialise the Sign-Doc
-# -------------------------------------------
-@app.post('/api/build_withdraw_tx', response_model=SignDocResponse)
-async def build_withdraw_tx(req: BuildTxRequest):
-    try:
-        rpc = os.getenv('RPC_ENDPOINT', 'https://rpc-kralum.neutron-1.neutron.org')
-        client = LedgerClient(rpc)
-        account = client.query_account(req.delegator_address)
-
-        tx = Transaction()
-        # A MsgWithdrawDelegatorReward message per validator
-        for r in req.rewards:
-            tx.add_msg(
-                MsgWithdrawDelegatorReward(
-                    delegator_address=req.delegator_address,
-                    validator_address=r.validator_address,
-                )
-            )
-
-        # Basic fee / gas; adjust to your needs
-        tx.set_fee(2000, 'untrn')
-        tx.set_gas(200000 * len(req.rewards))
-
-        tx.set_account_num(account.account_number)
-        tx.set_sequence(account.sequence)
-        tx.set_chain_id(client.chain_id)
-
-        sign_doc = tx.get_sign_doc()
-
-        return SignDocResponse(
-            body_bytes=base64.b64encode(sign_doc.body_bytes).decode(),
-            auth_info_bytes=base64.b64encode(sign_doc.auth_info_bytes).decode(),
-            account_number=account.account_number,
-            chain_id=client.chain_id,
-        )
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:6 file: instantly_claim_50%_of_my_ntrn_staking_rewards
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import base64, os
-
-from cosmpy.aerial.client import LedgerClient
-from cosmpy.protos.cosmos.tx.v1beta1.tx_pb2 import TxRaw
-
-app = FastAPI()
-
-class BroadcastRequest(BaseModel):
-    body_bytes: str
-    auth_info_bytes: str
-    signature: str
-
-@app.post('/api/broadcast_tx')
-async def broadcast_tx(req: BroadcastRequest):
-    try:
-        body_bytes = base64.b64decode(req.body_bytes)
-        auth_info_bytes = base64.b64decode(req.auth_info_bytes)
-        signature_bytes = base64.b64decode(req.signature)
-
-        tx_raw = TxRaw(
-            body_bytes=body_bytes,
-            auth_info_bytes=auth_info_bytes,
-            signatures=[signature_bytes],
-        )
-
-        rpc = os.getenv('RPC_ENDPOINT', 'https://rpc-kralum.neutron-1.neutron.org')
-        client = LedgerClient(rpc)
-        tx_response = client.broadcast_tx(tx_raw.SerializeToString(), broadcast_mode='sync')
-
-        return { 'txhash': tx_response.tx_hash.hex() }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:2 file: convert_1_btc_into_solvbtc_and_bridge_it_to_neutron_for_deposit
-# backend/routes/solvbtc.py
-from fastapi import APIRouter, HTTPException
-import httpx
-import os
-
-router = APIRouter()
-SOLV_GATEWAY_URL = os.getenv('SOLV_GATEWAY_URL', 'https://api.solv.finance/solvbtc')
-
-@router.post('/api/solvbtc/deposit-address')
-async def generate_deposit_address(payload: dict):
-    """
-    Obtain a unique solvBTC deposit address bound to the user’s EVM address.
-    """
-    evm_address = payload.get('evm_address')
-    if not evm_address:
-        raise HTTPException(status_code=400, detail='`evm_address` field is required.')
-
-    async with httpx.AsyncClient() as client:
-        try:
-            resp = await client.post(f'{SOLV_GATEWAY_URL}/deposit-address', json={'evm_address': evm_address})
-            resp.raise_for_status()
-            data = resp.json()
-            return {'deposit_address': data['deposit_address']}
-        except httpx.HTTPError as exc:
-            raise HTTPException(status_code=502, detail=f'SolvBTC gateway error: {exc}')
-
-
-# step:3 file: convert_1_btc_into_solvbtc_and_bridge_it_to_neutron_for_deposit
-# backend/routes/btc_tx.py
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, validator
-from decimal import Decimal
-from bit import PrivateKey
-
-router = APIRouter()
-
-class ConstructTxPayload(BaseModel):
-    wif: str
-    destination: str
-    fee_sat_per_byte: int = 10
-
-    @validator('fee_sat_per_byte')
-    def fee_positive(cls, v):
-        if v <= 0:
-            raise ValueError('fee_sat_per_byte must be positive')
-        return v
-
-@router.post('/api/btc/construct-tx')
-def construct_and_sign_btc_tx(payload: ConstructTxPayload):
-    """
-    Build & sign a Bitcoin transaction for 1 BTC (100 000 000 sats). Returns raw hex.
-    WARNING: The WIF is sensitive; keep this endpoint protected.
-    """
-    try:
-        pk = PrivateKey(payload.wif)
-        outputs = [(payload.destination, Decimal('1'), 'btc')]  # 1 BTC exactly
-        raw_tx_hex = pk.create_transaction(outputs, fee=payload.fee_sat_per_byte)
-        return {'raw_tx_hex': raw_tx_hex}
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-
-# step:4 file: convert_1_btc_into_solvbtc_and_bridge_it_to_neutron_for_deposit
-# backend/routes/btc_broadcast.py
-from fastapi import APIRouter, HTTPException
-import httpx
-
-router = APIRouter()
-
-@router.post('/api/btc/broadcast')
-async def broadcast_btc_tx(payload: dict):
-    """Broadcast raw BTC TX and return the resulting txid."""
-    raw_tx_hex = payload.get('raw_tx_hex')
-    if not raw_tx_hex:
-        raise HTTPException(status_code=400, detail='raw_tx_hex is required.')
-
-    try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.post('https://blockstream.info/api/tx', content=raw_tx_hex)
-            resp.raise_for_status()
-            txid = resp.text.strip()
-            return {'txid': txid}
-    except httpx.HTTPError as exc:
-        raise HTTPException(status_code=502, detail=f'Broadcast error: {exc}')
-
-
-# step:5 file: convert_1_btc_into_solvbtc_and_bridge_it_to_neutron_for_deposit
-# backend/routes/btc_confirm.py
-import asyncio
-import httpx
-from fastapi import APIRouter, HTTPException
-
-router = APIRouter()
-
-@router.get('/api/btc/confirmations/{txid}')
-async def wait_for_confirmations(txid: str, required: int = 6, poll_seconds: int = 60):
-    """Wait until `required` confirmations are reached."""
-    url = f'https://blockstream.info/api/tx/{txid}'
-    async with httpx.AsyncClient() as client:
-        while True:
-            try:
-                resp = await client.get(url)
-                resp.raise_for_status()
-                data = resp.json()
-                confirmations = data.get('status', {}).get('confirmations', 0)
-                if confirmations >= required:
-                    return {'txid': txid, 'confirmations': confirmations, 'status': 'confirmed'}
-                await asyncio.sleep(poll_seconds)
-            except httpx.HTTPError as exc:
-                raise HTTPException(status_code=502, detail=f'Explorer error: {exc}')
-
-
-# step:6 file: convert_1_btc_into_solvbtc_and_bridge_it_to_neutron_for_deposit
-# backend/routes/solvbtc_mint.py
-from fastapi import APIRouter, HTTPException
-from web3 import Web3
-import json, os
-
-router = APIRouter()
-
-ETH_RPC_URL = os.getenv('ETH_RPC_URL')
-MINT_CONTRACT_ADDRESS = os.getenv('SOLV_MINT_CONTRACT_ADDRESS')
-BACKEND_PRIVATE_KEY = os.getenv('ETH_PRIVATE_KEY')
-
-# Load minimal ABI containing the `mint` function
-with open('SolvBTCMintABI.json') as f:
-    MINT_ABI = json.load(f)
-
-@router.post('/api/solvbtc/mint')
-def attest_and_mint(payload: dict):
-    btc_txid = payload.get('btc_txid')
-    btc_destination = payload.get('btc_destination')
-    evm_address = payload.get('evm_address')
-    if not all([btc_txid, btc_destination, evm_address]):
-        raise HTTPException(status_code=400, detail='btc_txid, btc_destination, and evm_address are required.')
-
-    try:
-        w3 = Web3(Web3.HTTPProvider(ETH_RPC_URL))
-        acct = w3.eth.account.from_key(BACKEND_PRIVATE_KEY)
-        contract = w3.eth.contract(address=Web3.to_checksum_address(MINT_CONTRACT_ADDRESS), abi=MINT_ABI)
-        tx = contract.functions.mint(btc_txid, btc_destination, evm_address).build_transaction({
-            'from': acct.address,
-            'nonce': w3.eth.get_transaction_count(acct.address),
-            'gas': 500000,
-            'gasPrice': w3.to_wei('30', 'gwei'),
-        })
-        signed_tx = acct.sign_transaction(tx)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
-        return {'eth_tx_hash': tx_hash.hex()}
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-
-# step:7 file: convert_1_btc_into_solvbtc_and_bridge_it_to_neutron_for_deposit
-# backend/routes/bridge.py
-from fastapi import APIRouter, HTTPException
-import httpx
-
-router = APIRouter()
-AXELAR_GATEWAY_URL = 'https://axelar-api.ping.pub'  # Example public REST endpoint
-
-@router.post('/api/bridge/solvbtc')
-async def bridge_to_neutron(payload: dict):
-    evm_tx_hash = payload.get('eth_tx_hash')
-    neutron_address = payload.get('neutron_address')
-    amount_wei = payload.get('amount_wei', '1000000000000000000')  # 1 solvBTC (18 decimals)
-    if not all([evm_tx_hash, neutron_address]):
-        raise HTTPException(status_code=400, detail='eth_tx_hash and neutron_address are required.')
-
-    request_body = {
-        'source_chain': 'Ethereum',
-        'destination_chain': 'Neutron',
-        'asset': 'solvBTC',
-        'amount': amount_wei,
-        'destination_address': neutron_address,
-        'deposit_tx_hash': evm_tx_hash,
-    }
-
-    async with httpx.AsyncClient() as client:
-        try:
-            resp = await client.post(f'{AXELAR_GATEWAY_URL}/transfer', json=request_body)
-            resp.raise_for_status()
-            data = resp.json()
-            return {'axelar_tx_hash': data['tx_hash']}
-        except httpx.HTTPError as exc:
-            raise HTTPException(status_code=502, detail=f'Axelar error: {exc}')
-
-
-# step:8 file: convert_1_btc_into_solvbtc_and_bridge_it_to_neutron_for_deposit
-# backend/routes/neutron_balance.py
-from fastapi import APIRouter, HTTPException
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-import os
-
-router = APIRouter()
-NEUTRON_RPC = os.getenv('NEUTRON_RPC', 'https://rpc-palvus.neutron.org')
-IBC_DENOM_SOLVBTC = os.getenv('IBC_DENOM_SOLVBTC', 'ibc/xxxxxxxxxxxxxxxxxxxxxxxx')
-
-network_cfg = NetworkConfig(
-    chain_id='neutron-1',
-    url=NEUTRON_RPC,
-    fee_denomination='untrn',
-    staking_denomination='untrn',
-    fee_minimum_gas_price=0,
-)
-
-@router.get('/api/neutron/balance/{address}')
-def query_balance(address: str):
-    """Return solvBTC voucher balance on Neutron."""
-    try:
-        client = LedgerClient(network_cfg)
-        balance = client.query_bank_balance(address, denom=IBC_DENOM_SOLVBTC)
-        return {'address': address, 'solvbtc_balance': str(balance.amount)}
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-
-# step:4 file: lock_an_additional_500_ntrn_for_24_months_(boost)
-from fastapi import FastAPI, HTTPException, Body
-import os, json
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.wallet import PrivateKey
-from cosmpy.aerial.tx import Transaction
-from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgExecuteContract
-
-app = FastAPI()
-
-CHAIN_ID = 'neutron-1'
-RPC_ENDPOINT = os.getenv('NEUTRON_RPC', 'https://rpc-kralum.neutron.org:443')
-BOOST_CONTRACT_ADDRESS = os.getenv('BOOST_CONTRACT_ADDR', 'neutron1boostcontractaddress…')  # TODO: set real address
-
-
-def _build_execute_msg(sender: str, amount: str) -> MsgExecuteContract:
-    return MsgExecuteContract(
-        sender=sender,
-        contract=BOOST_CONTRACT_ADDRESS,
-        msg=json.dumps({
-            'lock': {
-                'amount': amount,
-                'duration': '24_months'
-            }
-        }).encode(),
-        funds=[{'amount': amount, 'denom': 'untrn'}]
-    )
-
-
-@app.post('/api/boost/lock')
-async def sign_and_broadcast(payload: dict = Body(...)):
-    """Signs & broadcasts the Boost lock transaction and returns `tx_hash`."""
-    sender = payload.get('sender')
-    amount = payload.get('amount', '500000000')
-
-    if not sender:
-        raise HTTPException(status_code=400, detail='sender field is required')
-
-    mnemonic = os.getenv('NEUTRON_MNEMONIC')
-    if not mnemonic:
-        raise HTTPException(status_code=500, detail='Server wallet not configured')
-
-    key = PrivateKey.from_mnemonic(mnemonic)
-    if key.address() != sender:
-        raise HTTPException(status_code=400, detail='Sender must match backend wallet address.')
-
-    client = LedgerClient(NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT))
-
-    # Compose transaction
-    tx = Transaction()
-    tx.add_message(_build_execute_msg(sender, amount))
-    tx.with_gas(300000)  # gas limit estimate – adjust as needed
-    tx.with_chain_id(CHAIN_ID)
-
-    try:
-        signed_tx = tx.build_and_sign(key)
-        tx_response = client.send_tx_block_mode(signed_tx)
-        return {'tx_hash': tx_response.tx_hash}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:5 file: lock_an_additional_500_ntrn_for_24_months_(boost)
-from fastapi import FastAPI, HTTPException
-from cosmpy.aerial.client import LedgerClient
-
-app = FastAPI()
-
-@app.get('/api/tx_status/{tx_hash}')
-async def tx_status(tx_hash: str):
-    client = LedgerClient(NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT))
-    try:
-        tx_response = client.query_tx(tx_hash)
-        if not tx_response:
-            return { 'status': 'PENDING' }
-        return { 'status': 'COMMITTED', 'height': tx_response.height }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:3 file: lend_2_unibtc_on_amber_finance
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import base64, json
-
-app = FastAPI()
-
-class ApproveBody(BaseModel):
-    sender: str            # User address
-    cw20_contract: str     # uniBTC CW20 contract address
-    spender: str           # Amber Finance lending contract address
-    amount: int            # Amount in micro-units (e.g. 2_000_000 for 6-decimals)
-
-@app.post('/api/amber/approve/construct')
-async def construct_cw20_approve(body: ApproveBody):
-    '''Return a sign-ready MsgExecuteContract JSON payload for CW20 approve.'''
-    try:
-        # 1. Build the CW20 approve execute message
-        approve_msg = {
-            'approve': {
-                'spender': body.spender,
-                'amount': str(body.amount)
-            }
-        }
-
-        # 2. Encode the JSON message as base64 per CosmWasm requirements
-        encoded_msg = base64.b64encode(json.dumps(approve_msg).encode()).decode()
-
-        # 3. Wrap into a proto-compatible dict (cosmpy / cosmjs can turn this into a real proto).
-        cw20_execute_msg = {
-            'type_url': '/cosmwasm.wasm.v1.MsgExecuteContract',
-            'value': {
-                'sender': body.sender,
-                'contract': body.cw20_contract,
-                'msg': encoded_msg,
-                'funds': []
-            }
-        }
-
-        return { 'msg': cw20_execute_msg }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:4 file: lend_2_unibtc_on_amber_finance
-from fastapi import HTTPException
-from pydantic import BaseModel
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.wallet import PrivateKey
-from cosmpy.aerial.tx import Transaction
-
-# Network configuration (adjust RPC endpoint if necessary)
-NETWORK = NetworkConfig(
-    chain_id='neutron-1',
-    url='https://rpc-kralum.neutron.org',
-    fee_minimum_gas_price='0.025untrn'
-)
-
-class BroadcastBody(BaseModel):
-    mnemonic: str          # Supplied securely by the frontend (never log!)
-    msg: dict              # MsgExecuteContract produced in Step 3
-
-@app.post('/api/amber/approve/broadcast')
-async def broadcast_approve(body: BroadcastBody):
-    try:
-        wallet = PrivateKey.from_mnemonic(body.mnemonic)
-        sender = wallet.public_key.address()
-
-        tx = Transaction()
-        tx.add_message(body.msg)            # Convert dict→proto inside cosmpy in real code
-
-        client = LedgerClient(NETWORK)
-        tx.with_sequence(client.get_sequence(sender))
-        tx.with_account_number(client.get_number(sender))
-        tx.with_chain_id(NETWORK.chain_id)
-        tx.sign(wallet)
-
-        result = client.broadcast_tx(tx)
-        return result                      # JSON tx response
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:5 file: lend_2_unibtc_on_amber_finance
-from fastapi import HTTPException
-from pydantic import BaseModel
-from base64 import b64encode
-import json
-
-class LendBody(BaseModel):
-    sender: str
-    cw20_contract: str   # uniBTC contract address
-    amber_pool: str      # Amber Finance pool contract address
-    amount: int          # micro-unit amount (2 BTC = 2_000_000 if 6 decimals)
-
-@app.post('/api/amber/lend/construct')
-async def construct_lend(body: LendBody):
-    try:
-        # Optional inner payload for the lending pool (often empty)
-        inner_msg = {}
-
-        wrapped_send = {
-            'send': {
-                'contract': body.amber_pool,
-                'amount': str(body.amount),
-                'msg': b64encode(json.dumps(inner_msg).encode()).decode()
-            }
-        }
-
-        encoded = b64encode(json.dumps(wrapped_send).encode()).decode()
-        exec_msg = {
-            'type_url': '/cosmwasm.wasm.v1.MsgExecuteContract',
-            'value': {
-                'sender': body.sender,
-                'contract': body.cw20_contract,
-                'msg': encoded,
-                'funds': []
-            }
-        }
-
-        return { 'msg': exec_msg }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:2 file: cancel_(unlock)_the_user’s_ntrn_stake_lock_once_the_vesting_period_has_ended
-# api/lock_status.py
-import os
-import base64
-import json
-from typing import Dict
-from fastapi import APIRouter, HTTPException
-import httpx
-
-router = APIRouter()
-
-LCD_ENDPOINT = os.getenv("LCD_ENDPOINT", "https://rest-kralum.neutron-1.neutron.org")
-LOCK_CONTRACT_ADDR = os.getenv("LOCK_CONTRACT_ADDR", "neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-
-@router.get("/lock_status")
-async def lock_status(address: str, lock_id: int) -> Dict:
-    """Return the lock information for <address, lock_id>. Raises 400 if lock not found."""
-    try:
-        # Build CosmWasm smart-query
-        query_msg = {
-            "lock": {
-                "address": address,
-                "lock_id": lock_id
-            }
-        }
-        query_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
-        url = f"{LCD_ENDPOINT}/wasm/v1/contract/{LOCK_CONTRACT_ADDR}/smart/{query_b64}"
-
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(url)
-        if resp.status_code != 200:
-            raise HTTPException(status_code=resp.status_code, detail=resp.text)
-
-        data = resp.json()
-        # Adjust the JSON path depending on contract schema
-        lock_info = data.get("data") or data  # fallback
-
-        if not lock_info:
-            raise HTTPException(status_code=404, detail="Lock not found")
-
-        if not lock_info.get("unlockable", False):
-            return {"eligible": False, "reason": "Lock period not finished"}
-
-        return {
-            "eligible": True,
-            "lock_info": lock_info
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:5 file: open_a_5×_leveraged_loop_position_with_1_maxbtc_on_amber
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.wallet import Wallet
-from cosmpy.aerial.tx import Transaction, SigningCfg
-
-AMBER_CONTRACT = 'neutron1ambercontractaddressxxxxxxxxxxxx'
-RPC_ENDPOINT = 'https://rpc-neutron.keplr.app'
-CHAIN_ID = 'neutron-1'
-
-app = FastAPI()
-
-class OpenPositionRequest(BaseModel):
-    mnemonic: str                       # !! Only for demo purposes !!
-    open_position_msg: dict             # MsgExecuteContract generated in Step 4
-    gas_limit: int = 250000             # conservative default
-    gas_price: float = 0.025            # NTRN per gas unit
-
-@app.post('/api/open_position')
-async def open_position(req: OpenPositionRequest):
-    try:
-        # 1. Build client & wallet
-        net_cfg = NetworkConfig(
-            chain_id=CHAIN_ID,
-            url=RPC_ENDPOINT,
-            fee_minimum_gas_price=req.gas_price,
-            fee_denomination='untrn'
-        )
-        client = LedgerClient(net_cfg)
-        wallet = Wallet(req.mnemonic)
-
-        # 2. Craft the transaction
-        tx = (
-            Transaction()
-            .with_messages(req.open_position_msg)
-            .with_sequence(client.query_account_sequence(wallet.address()))
-            .with_account_num(client.query_account_number(wallet.address()))
-            .with_gas(req.gas_limit)
-            .with_chain_id(net_cfg.chain_id)
-        )
-
-        # 3. Sign & broadcast
-        signed_tx = wallet.sign(tx)
-        tx_response = client.broadcast_tx_block(signed_tx)
-
-        if tx_response.is_error:
-            raise HTTPException(400, f'Broadcast failed: {tx_response.log}')
-        return {"tx_hash": tx_response.tx_hash, "height": tx_response.height}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:3 file: deposit_3_ebtc_into_the_maxbtc_ebtc_supervault
-### supervault_bff.py
-"""Minimal FastAPI BFF that exposes vault metadata.
-Run:  uvicorn supervault_bff:app --reload
-"""
-from fastapi import FastAPI, HTTPException
-
-app = FastAPI(title="Supervault BFF")
-
-# Static reference table — keep this up-to-date from docs/btc-summer/technical/reference
-SUPERVAULTS = {
-    "ebtc": {
-        "contract": "neutron1s8k6gcrnsfrs9rj3j8757w4e0ttmzsdmjvwfwxruhu2t8xjgwxaqegzjgt",
-        "single_sided": True
-    },
-    # Add other assets here …
-}
-
-@app.get("/api/supervault/{asset}")
-async def get_vault(asset: str):
-    asset = asset.lower()
-    if asset not in SUPERVAULTS:
-        raise HTTPException(status_code=404, detail="Unsupported asset")
-    return SUPERVAULTS[asset]
-
-
-# step:4 file: deposit_3_ebtc_into_the_maxbtc_ebtc_supervault
-### tx_builder.py
-"""Utility that constructs a deposit tx for eBTC Supervault using cosmpy.
-The mnemonic / private key should be provided via environment variable to keep secrets off the frontend.
-"""
-import os, base64, json
-from datetime import timedelta
-from cosmpy.crypto.keypairs import PrivateKey
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.tx import Transaction
-from cosmpy.aerial.wallet import LocalWallet
-
-# Neutron main-net RPC + chain-id
-NETWORK = NetworkConfig(
-    chain_id="neutron-1",
-    url="https://rpc-kralum.neutron-1.nomusa.xyz",
-    fee_minimum_gas_price=0.025,
-    fee_denom="untrn"
-)
-
-EBTC_DENOM = "ibc/E2A000FD3EDD91C9429B473995CE2C7C555BCC8CFC1D0A3D02F514392B7A80E8"
-
-client = LedgerClient(NETWORK)
-
-MNEMONIC = os.getenv("BFF_MNEMONIC")
-if not MNEMONIC:
-    raise RuntimeError("BFF_MNEMONIC env var not set – cannot sign tx")
-
-wallet = LocalWallet.from_mnemonic(MNEMONIC)
-
-
-def build_deposit_tx(vault_addr: str, sender_addr: str, amount_micro: int = 3_000_000):
-    """Create an unsigned Transaction object with a single CosmWasm execute msg."""
-
-    # CosmWasm messages require base64-encoded JSON inside the high-level msg
-    msg_inner = base64.b64encode(json.dumps({"deposit": {}}).encode()).decode()
-
-    exec_msg = {
-        "type": "wasm/MsgExecuteContract",
-        "value": {
-            "sender":   sender_addr,
-            "contract": vault_addr,
-            "msg":       msg_inner,
-            "funds":     [{"denom": EBTC_DENOM, "amount": str(amount_micro)}]
-        }
-    }
-
-    tx = (
-        Transaction()
-        .with_messages(exec_msg)
-        .with_sequence(client.query_sequence(sender_addr))
-        .with_account_num(client.query_account_number(sender_addr))
-        .with_chain_id(NETWORK.chain_id)
-        .with_gas(300000)  # rough estimate; adjust as needed
-        .with_fee_denom(NETWORK.fee_denom)
-        .with_fee(7500)
-        .with_memo("eBTC → Supervault deposit")
-        .with_timeout_height(client.query_height() + 50)  # ~5 min sooner than current block
-    )
-    return tx
-
-
-
-# step:5 file: deposit_3_ebtc_into_the_maxbtc_ebtc_supervault
-### broadcaster.py
-"""Sign + broadcast wrapper. Separating concerns keeps the builder reusable."""
-import json
-from cosmpy.aerial.tx import Transaction
-from cosmpy.aerial.client import NetworkConfig, LedgerClient
-from tx_builder import build_deposit_tx, wallet, client
-
-
-def sign_and_broadcast(vault_addr: str, amount_micro: int = 3_000_000):
-    tx: Transaction = build_deposit_tx(vault_addr, wallet.address(), amount_micro)
-
-    # Sign with service wallet
-    tx_signed = tx.sign(wallet)
-
-    # Broadcast and await inclusion
-    resp = client.broadcast_tx(tx_signed)
-    if resp.is_err():
-        raise RuntimeError(f"Broadcast failed: {resp.log}")
-
-    print("✅ Broadcast successful → txhash:", resp.tx_hash)
-    return {"tx_hash": resp.tx_hash}
-
-
-
-# step:2 file: provide_new_liquidity_to_the_wbtc_lbtc_supervault_with_1_wbtc_and_1_lbtc
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.contract import SmartContract
-import os
-
-app = FastAPI()
-
-LCD_URL = os.getenv('LCD_URL', 'https://rest-kralum.neutron.org')
-CHAIN_ID = os.getenv('CHAIN_ID', 'neutron-1')
-WBTC_CONTRACT = os.getenv('WBTC_CONTRACT', 'neutron1wbtcxxxxxxxxxxxxxxxxxxxxxx')
-LBTC_CONTRACT = os.getenv('LBTC_CONTRACT', 'neutron1lbtcxxxxxxxxxxxxxxxxxxxxxx')
-MICRO_FACTOR = 1_000_000  # 1 token = 1_000_000 micro-units (example)
-
-network_cfg = NetworkConfig(chain_id=CHAIN_ID, url=LCD_URL)
-client = LedgerClient(network_cfg)
-
-class BalanceStatus(BaseModel):
-    has_wbtc: bool
-    has_lbtc: bool
-
-def cw20_balance(contract: str, addr: str) -> int:
-    """Query CW20 balance via the contract's `balance` endpoint."""
-    sc = SmartContract(contract, client)
-    try:
-        resp = sc.query({"balance": {"address": addr}})
-        return int(resp.get('balance', '0'))
-    except Exception:
-        # If the query fails treat balance as zero
-        return 0
-
-@app.get('/api/validate_balances', response_model=BalanceStatus)
-async def validate_token_balances(address: str):
-    """Checks that the user holds ≥1 WBTC and ≥1 LBTC."""
-    try:
-        wbtc_bal = cw20_balance(WBTC_CONTRACT, address)
-        lbtc_bal = cw20_balance(LBTC_CONTRACT, address)
-        return BalanceStatus(
-            has_wbtc=wbtc_bal >= MICRO_FACTOR,
-            has_lbtc=lbtc_bal >= MICRO_FACTOR,
-        )
-    except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
-
-
-# step:4 file: provide_new_liquidity_to_the_wbtc_lbtc_supervault_with_1_wbtc_and_1_lbtc
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import os, base64, json
-
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from cosmpy.aerial.tx import Transaction
-
-app = FastAPI()
-
-LCD_URL = os.getenv('LCD_URL', 'https://rest-kralum.neutron.org')
-CHAIN_ID = os.getenv('CHAIN_ID', 'neutron-1')
-WBTC_CONTRACT = os.getenv('WBTC_CONTRACT', 'neutron1wbtcxxxxxxxxxxxxxxxxxxxxxx')
-LBTC_CONTRACT = os.getenv('LBTC_CONTRACT', 'neutron1lbtcxxxxxxxxxxxxxxxxxxxxxx')
-SUPERVAULT_CONTRACT = os.getenv('SUPERVAULT_CONTRACT', 'neutron1supervaultxxxxxxxxxxxxxxxxxxxxxx')
-MICRO_FACTOR = 1_000_000
-
-network_cfg = NetworkConfig(chain_id=CHAIN_ID, url=LCD_URL)
-client = LedgerClient(network_cfg)
-
-class TxBytes(BaseModel):
-    tx_bytes: str  # base64-encoded unsigned Tx body (returned to caller)
-
-@app.post('/api/construct_tx', response_model=TxBytes)
-async def construct_tx_supervault_deposit(address: str):
-    """Creates an unsigned deposit Tx and returns the raw bytes (base64)."""
-    try:
-        # Payload that the Supervault expects (often empty for simple deposits)
-        deposit_msg = {"deposit": {}}
-        deposit_payload_b64 = base64.b64encode(json.dumps(deposit_msg).encode()).decode()
-
-        def build_cw20_send(token_contract: str):
-            return {
-                "typeUrl": "/cosmwasm.wasm.v1.MsgExecuteContract",
-                "value": {
-                    "sender": address,
-                    "contract": token_contract,
-                    "msg": base64.b64encode(json.dumps({
-                        "send": {
-                            "contract": SUPERVAULT_CONTRACT,
-                            "amount": str(MICRO_FACTOR),  # 1 token
-                            "msg": deposit_payload_b64
-                        }
-                    }).encode()).decode(),
-                    "funds": []
-                }
-            }
-
-        # Compose both messages
-        msgs = [build_cw20_send(WBTC_CONTRACT), build_cw20_send(LBTC_CONTRACT)]
-
-        tx = Transaction()
-        for m in msgs:
-            tx.add_message(m["value"])
-
-        # Gas/fee estimates — tune to production needs
-        tx.set_fee(5000, "untrn")
-        tx.set_gas(400000)
-
-        unsigned_tx = tx.get_unsigned()
-        return {"tx_bytes": base64.b64encode(unsigned_tx.SerializeToString()).decode()}
-
-    except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
-
-
-# step:2 file: withdraw_10_%_of_the_user’s_shares_from_the_maxbtc_solvbtc_supervault
-from fastapi import APIRouter, HTTPException
-import os
-from cosmpy.aerial.client import LedgerClient
-from cosmpy.aerial.utils import NETWORKS
-
-router = APIRouter()
-
-SUPER_VAULT_CONTRACT = os.getenv('SUPER_VAULT_CONTRACT')  # e.g. 'neutron1abc...'
-CHAIN_ID = os.getenv('CHAIN_ID', 'neutron-1')
-
-@router.get('/supervault/share-balance')
-async def get_supervault_share_balance(address: str):
-    """Return the amount of Supervault shares owned by `address`."""
-    try:
-        if not SUPER_VAULT_CONTRACT:
-            raise ValueError('SUPER_VAULT_CONTRACT env var not set')
-
-        # Connect to public Neutron endpoints
-        client = LedgerClient(NETWORKS[CHAIN_ID])
-
-        # Contract-specific query (may differ in your implementation)
-        query_msg = {
-            'share': {
-                'owner': address,
-            }
-        }
-
-        result = client.query_contract_smart(SUPER_VAULT_CONTRACT, query_msg)
-        shares_raw = int(result.get('shares', '0'))
-        return {'shares': shares_raw}
-
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-
-# step:3 file: view_available_supervault_positions_eligible_for_bitcoin_summer
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-
-app = FastAPI()
-
-class PositionsRequest(BaseModel):
-    user_address: str
-    contract_address: str
-
-@app.post('/api/supervault/positions')
-async def supervault_positions(req: PositionsRequest):
-    """Query Supervault for user positions via WASM smart-contract call."""
-    try:
-        # Public Neutron main-net endpoints (no secrets required)
-        cfg = NetworkConfig(
-            chain_id='neutron-1',
-            lcd_url='https://rest-kralum.neutron-1.neutron.org',
-            grpc_url='grpc://grpc-kralum.neutron-1.neutron.org:443'
-        )
-
-        client = LedgerClient(cfg)
-
-        query_msg = {
-            'positions_by_user': {
-                'address': req.user_address
-            }
-        }
-
-        # Perform the query against Supervault
-        positions = client.query_contract(
-            contract_address=req.contract_address,
-            query=query_msg
-        )
-
-        return {'positions': positions}
-
-    except Exception as e:
-        # Always wrap low-level errors so the frontend gets a clean message
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:2 file: provide_liquidity_to_the_maxbtc_unibtc_supervault_using_1_maxbtc_and_1_unibtc
-from fastapi import FastAPI, HTTPException
-import os
-from cosmpy.aerial.client import LedgerClient, NetworkConfig
-from pydantic import BaseModel
-
-app = FastAPI()
-
-# ----------  Chain / network configuration  ----------
-NEUTRON_LCD = os.getenv('NEUTRON_LCD', 'https://lcd-kralum.neutron.org')
-NETWORK = NetworkConfig(
-    chain_id='neutron-1',
-    url=NEUTRON_LCD,
-    fee_minimum_gas_price=0.025,
-    fee_denomination='untrn',
-)
-client = LedgerClient(NETWORK)
-
-# ----------  CW-20 contract addresses (replace with real ones)  ----------
-CW20_MAXBTC = os.getenv('CW20_MAXBTC', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-CW20_UNIBTC = os.getenv('CW20_UNIBTC', 'neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy')
-REQUIRED_AMOUNT = 1  # whole-token requirement
-
-class BalanceResponse(BaseModel):
-    maxbtc: int
-    unibtc: int
-    eligible: bool
-
-@app.get('/api/check-balance/{address}', response_model=BalanceResponse)
-async def check_balance(address: str):
-    """Return each balance and whether both are ≥ 1."""
-    try:
-        payload = { 'balance': { 'address': address } }
-
-        maxbtc = int(client.wasm_contract_query(CW20_MAXBTC, payload)['balance'])
-        unibtc = int(client.wasm_contract_query(CW20_UNIBTC, payload)['balance'])
-        ok = maxbtc >= REQUIRED_AMOUNT and unibtc >= REQUIRED_AMOUNT
-
-        return BalanceResponse(maxbtc=maxbtc, unibtc=unibtc, eligible=ok)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Balance query failed: {e}')
-
-
-# step:3 file: provide_liquidity_to_the_maxbtc_unibtc_supervault_using_1_maxbtc_and_1_unibtc
-import os
-from fastapi import HTTPException
-
-# Add to the same FastAPI instance defined earlier
-@app.get('/api/supervault/details')
-async def get_supervault_details():
-    try:
-        details = {
-            'supervault_address': os.getenv('MAXUNI_SUPERVAULT', 'neutron1supervaultxxxxxxxxxxxxxxxxxxxx'),
-            'assets': [
-                { 'symbol': 'maxBTC', 'cw20': os.getenv('CW20_MAXBTC', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx') },
-                { 'symbol': 'uniBTC', 'cw20': os.getenv('CW20_UNIBTC', 'neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy') }
-            ]
-        }
-        return details
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:4 file: provide_liquidity_to_the_maxbtc_unibtc_supervault_using_1_maxbtc_and_1_unibtc
-from cosmpy.aerial.tx import Transaction
-from cosmpy.aerial.contract import MsgExecuteContract
-from pydantic import BaseModel
-
-class BuildDepositRequest(BaseModel):
-    sender: str  # user wallet address
-    amount_maxbtc: int = 1
-    amount_unibtc: int = 1
-
-class BuildDepositResponse(BaseModel):
-    tx_bytes: str  # hex-encoded, unsigned
-    body: dict     # human-readable body for inspection/debug
-
-@app.post('/api/supervault/build-deposit', response_model=BuildDepositResponse)
-async def build_deposit(req: BuildDepositRequest):
-    try:
-        supervault = os.getenv('MAXUNI_SUPERVAULT', 'neutron1supervaultxxxxxxxxxxxxxxxxxxxx')
-
-        # ExecuteMsg expected by the Supervault contract
-        exec_msg = {
-            'deposit': {
-                'assets': [
-                    { 'token': os.getenv('CW20_MAXBTC', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'), 'amount': str(req.amount_maxbtc) },
-                    { 'token': os.getenv('CW20_UNIBTC', 'neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy'), 'amount': str(req.amount_unibtc) }
-                ]
-            }
-        }
-
-        tx = Transaction()
-        tx.add_message(
-            MsgExecuteContract(
-                sender = req.sender,
-                contract = supervault,
-                msg = exec_msg,
-                funds = []  # CW20 -> no native funds
-            )
-        )
-        # Fee/memo left empty so they can be set at signing time
-        unsigned_bytes = tx.get_tx_bytes(sign=False)  # Do **not** sign here!
-        return BuildDepositResponse(tx_bytes=unsigned_bytes.hex(), body=tx.get_tx_json(sign=False))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Failed to build deposit tx: {e}')
-
-
-# step:5 file: provide_liquidity_to_the_maxbtc_unibtc_supervault_using_1_maxbtc_and_1_unibtc
-from cosmpy.aerial.wallet import PrivateKey
-from cosmpy.aerial.tx import Transaction
-from pydantic import BaseModel
-
-class BroadcastRequest(BaseModel):
-    tx_bytes: str  # hex-encoded unsigned tx
-
-class BroadcastResponse(BaseModel):
-    tx_hash: str
-    height: int
-
-@app.post('/api/supervault/broadcast', response_model=BroadcastResponse)
-async def broadcast(req: BroadcastRequest):
-    try:
-        # ------------  Recover server key (DO NOT USE IN PRODUCTION)  ------------
-        mnemonic = os.getenv('SERVER_MNEMONIC')
-        if not mnemonic:
-            raise ValueError('SERVER_MNEMONIC is not set in the environment.')
-        wallet = PrivateKey.from_mnemonic(mnemonic)
-
-        # ------------  Re-hydrate tx and sign  ------------
-        tx = Transaction(tx_bytes=bytes.fromhex(req.tx_bytes))
-        tx.sign(wallet)
-        signed_bytes = tx.get_tx_bytes()
-
-        # ------------  Broadcast  ------------
-        result = client.broadcast_tx_block(signed_bytes)
-        return BroadcastResponse(tx_hash=result.tx_hash, height=result.height)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Broadcast failed: {e}')# step:1 file: Set the Cron module security address to `neutron1guard...`
+# step:1 file: Set the Cron module security address to `neutron1guard...`
 import json
 
 
@@ -3074,6 +260,62 @@ def verify_signature(message: str, signature: str, expected_address: str, w3: We
         raise RuntimeError(f"verify_signature error: {e}")
 
 
+# step:1 file: query_the_all_tokens_list_from_an_nft_contract
+from typing import Dict
+import re
+import requests
+from fastapi import FastAPI, HTTPException
+
+# Regular expression for basic Bech32 address validation (prefix + 38 data chars)
+BECH32_REGEX = re.compile(r'^[a-z0-9]{3,15}1[0-9a-z]{38}$')
+
+# Public LCD endpoint for the target chain (edit to match your network)
+LCD_ENDPOINT = 'https://lcd.osmosis.zone'
+
+class ContractValidationError(Exception):
+    '''Raised when the given address fails validation checks.'''
+
+
+def _validate_contract_address(address: str, lcd_endpoint: str = LCD_ENDPOINT) -> Dict:
+    '''Return contract_info if address is a CW-721 contract, else raise ContractValidationError.'''
+
+    # 1. Syntax check (Bech32)
+    if not BECH32_REGEX.match(address):
+        raise ContractValidationError('Address is not valid Bech32 format')
+
+    # 2. Query LCD to confirm the address is a contract account
+    url = f'{lcd_endpoint}/cosmwasm/wasm/v1/contract/{address}'
+    try:
+        resp = requests.get(url, timeout=8)
+        resp.raise_for_status()
+    except requests.exceptions.RequestException as err:
+        raise ContractValidationError(f'Could not reach LCD: {err}') from err
+
+    payload = resp.json()
+    info = payload.get('contract_info')
+    if info is None:
+        raise ContractValidationError('No contract_info returned; address is not a contract')
+
+    # 3. Naïve CW-721 detection based on the label field
+    if 'cw721' not in info.get('label', '').lower():
+        raise ContractValidationError('Contract does not appear to be a CW721 instance')
+
+    return {'is_valid': True, 'address': address, 'contract_info': info}
+
+
+# ─── FastAPI wrapper so the frontend can call this as REST ───
+app = FastAPI()
+
+
+@app.get('/api/validate_contract')
+async def api_validate_contract(address: str):
+    '''HTTP GET endpoint → /api/validate_contract?address=<ADDR>'''
+    try:
+        return _validate_contract_address(address)
+    except ContractValidationError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 # step:1 file: lend_3_solvbtc_on_amber_finance
 from fastapi import FastAPI, HTTPException
 import os
@@ -3426,6 +668,57 @@ async def sign_and_broadcast_tx():
     tx_hash = ledger.broadcast_tx(tx_signed)
 
     return {'tx_hash': tx_hash.hex()}
+
+
+# step:1 file: set_the_txflags_environment_variable_with_recommended_gas_settings
+import os
+from pathlib import Path
+
+
+def set_txflags(gas_flags: str = "--gas=auto --gas-adjustment 1.3 --gas-prices 0.025uatom") -> None:
+    """Set TXFLAGS in the running process and persist it to the user's shell profile.
+
+    Args:
+        gas_flags (str): The value to assign to TXFLAGS.
+    """
+    try:
+        # 1. Set for the current Python process (effective immediately for subprocess calls)
+        os.environ["TXFLAGS"] = gas_flags
+
+        # 2. Attempt to persist in the user's shell profile so new terminals inherit the var
+        shell = os.environ.get("SHELL", "")
+        # Decide which RC file(s) to modify based on the active shell
+        candidate_files = []
+        if "zsh" in shell:
+            candidate_files = [Path.home() / ".zshrc"]
+        else:
+            candidate_files = [Path.home() / ".bashrc", Path.home() / ".bash_profile"]
+
+        export_line = f'export TXFLAGS="{gas_flags}"'
+
+        for rc_file in candidate_files:
+            try:
+                if rc_file.exists():
+                    content = rc_file.read_text()
+                    if export_line in content:
+                        # Already present, skip to the next file
+                        continue
+                # Append the export line
+                with rc_file.open("a", encoding="utf-8") as fp:
+                    fp.write(f"\n# Added by Cosmos helper\n{export_line}\n")
+            except Exception as rc_err:
+                # Log the error but continue execution
+                print(f"[WARN] Could not update {rc_file}: {rc_err}")
+
+        print("TXFLAGS environment variable set successfully.")
+    except Exception as err:
+        # Surface a clean error message for unexpected issues
+        raise RuntimeError(f"Failed to set TXFLAGS: {err}")
+
+
+if __name__ == "__main__":
+    # When executed as a script, perform the side effect immediately
+    set_txflags()
 
 
 # step:4 file: redeem_lp_shares_from_the_maxbtc_ebtc_supervault
@@ -4198,6 +1491,87 @@ def normalize_tx_results(provider: Dict[str, str], raw_results: List[Dict[str, A
                 }
             )
     return normalized
+
+
+# step:1 file: generate_a_typescript_client_for_a_contract_using_ts-codegen
+from fastapi import FastAPI, HTTPException
+import subprocess, json
+
+app = FastAPI()
+
+REQUIRED_PACKAGES = ["ts-node", "@cosmwasm/ts-codegen"]
+
+
+def _package_installed(pkg: str) -> bool:
+    """Return True if the npm package is available locally or globally."""
+    try:
+        local = subprocess.run([
+            "npm", "list", pkg, "--depth", "0", "--json"
+        ], capture_output=True, text=True, check=False)
+        local_data = json.loads(local.stdout or "{}")
+        if "dependencies" in local_data and pkg in local_data["dependencies"]:
+            return True
+        global_ = subprocess.run([
+            "npm", "list", "-g", pkg, "--depth", "0", "--json"
+        ], capture_output=True, text=True, check=False)
+        global_data = json.loads(global_.stdout or "{}")
+        return "dependencies" in global_data and pkg in global_data["dependencies"]
+    except Exception:
+        return False
+
+
+@app.post("/api/codegen/install")
+async def install_ts_codegen():
+    """Ensure cosmwasm-ts-codegen tooling is present in the project."""
+    missing = [p for p in REQUIRED_PACKAGES if not _package_installed(p)]
+    if not missing:
+        return {"status": "ok", "message": "All required packages are already installed."}
+    try:
+        subprocess.run(["npm", "install", "-D", *missing], check=True)
+        return {"status": "ok", "message": f"Installed missing packages: {', '.join(missing)}"}
+    except subprocess.CalledProcessError as err:
+        raise HTTPException(status_code=500, detail=f"npm install failed: {err}")
+
+
+# step:2 file: generate_a_typescript_client_for_a_contract_using_ts-codegen
+from fastapi import FastAPI, HTTPException
+import subprocess
+from pathlib import Path
+
+app = FastAPI()
+
+@app.post("/api/codegen/generate")
+async def run_ts_codegen(schema_dir: str = "./schema", out_dir: str = "./src/ts", client: str = "react-query"):
+    """Run ts-codegen to generate typed clients from the contract JSON schema."""
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    cmd = [
+        "npx", "ts-node", "./node_modules/@cosmwasm/ts-codegen/bin/cli.js",
+        "--schema", schema_dir,
+        "--out", out_dir,
+        "--client", client
+    ]
+    try:
+        subprocess.run(cmd, check=True)
+        return {"status": "ok", "message": "TypeScript client generated successfully."}
+    except subprocess.CalledProcessError as err:
+        raise HTTPException(status_code=500, detail=f"ts-codegen failed: {err}")
+
+
+# step:3 file: generate_a_typescript_client_for_a_contract_using_ts-codegen
+from fastapi import FastAPI, HTTPException
+import subprocess
+
+app = FastAPI()
+
+@app.post("/api/codegen/compile")
+async def compile_typescript(tsconfig_path: str = "tsconfig.json"):
+    """Run the TypeScript compiler in no-emit mode to validate typings."""
+    cmd = ["npx", "tsc", "--project", tsconfig_path, "--noEmit"]
+    try:
+        subprocess.run(cmd, check=True)
+        return {"status": "ok", "message": "TypeScript compilation succeeded."}
+    except subprocess.CalledProcessError as err:
+        raise HTTPException(status_code=500, detail=f"TypeScript compilation failed: {err}")
 
 
 # step:4 file: bridge_1_wbtc_from_ethereum_to_neutron
@@ -5271,6 +2645,115 @@ async def api_verify_pass_store():
     return {"entries": entries}
 
 
+# step:1 file: compile_a_cosmwasm_contract_for_arm64_using_the_rust-optimizer-arm64_image
+#!/usr/bin/env python3
+"""
+pull_optimizer.py
+Utility script to pull CosmWasm Rust optimizer Docker image.
+"""
+
+import subprocess
+import sys
+
+def pull_optimizer_image(image="cosmwasm/rust-optimizer-arm64:latest"):
+    """Pulls the CosmWasm Rust optimizer Docker image."""
+    print(f"Pulling Docker image: {image}")
+    try:
+        result = subprocess.run(["docker", "pull", image], check=True, capture_output=True, text=True)
+        print(result.stdout)
+        print("✅  Docker image pulled successfully.")
+        return True
+    except subprocess.CalledProcessError as e:
+        print("❌  Failed to pull docker image:", e.stderr, file=sys.stderr)
+        return False
+
+if __name__ == "__main__":
+    success = pull_optimizer_image()
+    if not success:
+        sys.exit(1)
+
+
+
+# step:2 file: compile_a_cosmwasm_contract_for_arm64_using_the_rust-optimizer-arm64_image
+#!/usr/bin/env python3
+"""
+run_optimizer.py
+Runs CosmWasm's Rust optimizer Docker container to build optimized .wasm binaries.
+"""
+
+import subprocess
+import sys
+from pathlib import Path
+
+def run_rust_optimizer(contract_path: str = "."):
+    """Runs the CosmWasm Rust optimizer docker container mounting the given contract directory."""
+    contract_path = Path(contract_path).resolve()
+
+    if not contract_path.exists():
+        raise FileNotFoundError(f"Contract path {contract_path} does not exist")
+
+    docker_cmd = ["docker", "run", "--rm", "-v", f"{contract_path}:/code:Z", "cosmwasm/rust-optimizer-arm64:latest"]
+
+    print("Running Docker command:", " ".join(docker_cmd))
+    try:
+        subprocess.run(docker_cmd, check=True)
+        artifacts_dir = contract_path / "artifacts"
+        if artifacts_dir.exists():
+            print(f"✅  Artifacts generated successfully in {artifacts_dir}")
+        else:
+            print("⚠️  Artifacts directory not found after optimizer run.")
+        return True
+    except subprocess.CalledProcessError as e:
+        print("❌  Error while running rust optimizer:", e, file=sys.stderr)
+        return False
+
+if __name__ == "__main__":
+    run_rust_optimizer(sys.argv[1] if len(sys.argv) > 1 else ".")
+
+
+
+# step:3 file: compile_a_cosmwasm_contract_for_arm64_using_the_rust-optimizer-arm64_image
+#!/usr/bin/env python3
+"""
+verify_artifacts.py
+Validates that the optimizer produced .wasm and checksum files in the artifacts directory.
+"""
+
+from pathlib import Path
+import sys
+import json
+
+def verify_artifacts(artifacts_path: str = "./artifacts"):
+    """Verifies the presence of .wasm and checksum files in `artifacts/`."""
+    apath = Path(artifacts_path).resolve()
+
+    if not apath.exists() or not apath.is_dir():
+        raise FileNotFoundError(f"Artifacts directory not found at {apath}")
+
+    wasm_files = list(apath.glob("*.wasm"))
+    checksum_files = [f for f in apath.glob("*.wasm.*")] + list(apath.glob("*.sha256")) + list(apath.glob("*.checksums"))
+
+    result = {"wasm_files": [f.name for f in wasm_files], "checksum_files": [f.name for f in checksum_files]}
+
+    if wasm_files:
+        print("✅  Found .wasm files:", ", ".join(result["wasm_files"]))
+    else:
+        print("❌  No .wasm files found.", file=sys.stderr)
+
+    if checksum_files:
+        print("✅  Found checksum files:", ", ".join(result["checksum_files"]))
+    else:
+        print("⚠️  No checksum files found.")
+
+    return result
+
+if __name__ == "__main__":
+    directory = sys.argv[1] if len(sys.argv) > 1 else "./artifacts"
+    summary = verify_artifacts(directory)
+    print(json.dumps(summary, indent=2))
+
+
+
 # step:1 file: Remove the existing schedule named protocol_update
 from cosmpy.aerial.client import LedgerClient, NetworkConfig
 from cosmpy.aerial.exceptions import CosmPyException
@@ -6144,6 +3627,116 @@ if __name__ == "__main__":
         sys.exit(1)
 
 
+# step:1 file: store_the_returned_code_id_from_a_wasm_store_transaction_into_a_shell_variable_code_id
+###############################
+# backend/store_code.py       #
+###############################
+
+import os
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+from cosmpy.crypto.keyring import PrivateKey
+from cosmpy.aerial.tx import Transaction
+from cosmos_proto.cosmwasm.wasm.v1 import tx_pb2 as wasm_tx_pb2
+
+app = FastAPI()
+
+# -------- Configuration --------
+CHAIN_ID      = os.getenv("CHAIN_ID", "juno-1")
+RPC_ENDPOINT  = os.getenv("RPC_ENDPOINT", "https://rpc.juno.strange.love:443")
+FEE_DENOM     = os.getenv("FEE_DENOM", "ujuno")
+GAS_PRICE     = float(os.getenv("GAS_PRICE", "0.025"))
+SIGNER_MNEMONIC = os.getenv("SIGNER_MNEMONIC")  # make sure to export this securely
+
+if not SIGNER_MNEMONIC:
+    raise RuntimeError("Environment variable SIGNER_MNEMONIC is required for contract upload.")
+
+net_cfg = NetworkConfig(
+    chain_id   = CHAIN_ID,
+    url        = RPC_ENDPOINT,
+    fee_denom  = FEE_DENOM,
+    gas_price  = GAS_PRICE,
+)
+
+# -------- Endpoint --------
+@app.post("/api/store_code")
+async def store_code(file: UploadFile = File(...)):
+    """Upload compiled wasm, broadcast MsgStoreCode, and return full tx result."""
+    try:
+        wasm_bytes = await file.read()
+        if not wasm_bytes:
+            raise ValueError("Uploaded file is empty or could not be read.")
+
+        # Initialise signer & client
+        pk     = PrivateKey.from_mnemonic(SIGNER_MNEMONIC)
+        client = LedgerClient(net_cfg)
+
+        # Build MsgStoreCode
+        msg = wasm_tx_pb2.MsgStoreCode(
+            sender         = str(pk.address()),
+            wasm_byte_code = wasm_bytes,
+        )
+
+        # Assemble & sign the transaction
+        tx = (
+            Transaction()
+            .with_messages(msg)
+            .with_chain_id(CHAIN_ID)
+            .with_gas(3_000_000)        # adjust if needed
+            .with_fee_amount(1_000_000) # micro-denom
+            .with_fee_denom(FEE_DENOM)
+            .with_memo("Mintlify: upload contract code")
+        )
+
+        signed_tx = tx.sign(pk)
+
+        # Broadcast & wait for inclusion (block mode)
+        tx_result = client.broadcast_block(signed_tx)
+        return tx_result  # will be consumed by Step 2
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# step:2 file: store_the_returned_code_id_from_a_wasm_store_transaction_into_a_shell_variable_code_id
+################################
+# backend/extract_code_id.py    #
+################################
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class TxPayload(BaseModel):
+    """Pydantic model matching the tx JSON from Step 1"""
+    tx_response: dict
+
+
+def _extract_code_id(tx_json: dict) -> str:
+    """Walk the tx response to locate the code_id inside the store_code event."""
+    try:
+        events = tx_json["logs"][0]["events"]
+        for evt in events:
+            if evt["type"] == "store_code":
+                for attr in evt["attributes"]:
+                    if attr["key"] in ("code_id", "codeID"):
+                        return attr["value"]
+        raise KeyError("code_id not found in logs")
+    except Exception as err:
+        raise ValueError(f"Unable to extract code_id: {err}")
+
+
+@app.post("/api/extract_code_id")
+async def extract_code_id(payload: TxPayload):
+    """HTTP endpoint: returns { "code_id": <str> }"""
+    try:
+        code_id = _extract_code_id(payload.tx_response)
+        return {"code_id": code_id}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 # step:1 file: restore_application_state_from_an_existing_local_snapshot
 import os
 
@@ -6457,6 +4050,164 @@ def reload_shell() -> None:
 
 if __name__ == "__main__":
     reload_shell()
+
+
+# step:1 file: generate_interface.rs_for_a_cosmwasm_contract_with_the_cw-orch_#[interface]_macro
+from pathlib import Path
+from typing import Union
+
+
+def locate_contract_crate(start_path: Union[str, Path] = '.') -> Path:
+    '''
+    Locate the root of a CosmWasm contract crate.
+
+    The function checks that a `Cargo.toml` file exists in the provided directory
+    and returns the absolute path to the crate root.
+
+    Args:
+        start_path: Directory where the search should begin. Defaults to the
+            current working directory.
+
+    Returns:
+        pathlib.Path pointing to the crate root.
+
+    Raises:
+        FileNotFoundError: If the `Cargo.toml` file cannot be found.
+    '''
+    crate_path = Path(start_path).expanduser().resolve()
+    cargo_file = crate_path / 'Cargo.toml'
+
+    if not cargo_file.exists():
+        raise FileNotFoundError(
+            f'Could not locate Cargo.toml at {cargo_file}. Please supply the correct contract crate path.'
+        )
+
+    return crate_path
+
+
+
+# step:2 file: generate_interface.rs_for_a_cosmwasm_contract_with_the_cw-orch_#[interface]_macro
+import toml
+from pathlib import Path
+from typing import Union
+
+
+def add_cargo_dependency(crate_path: Union[str, Path]) -> None:
+    '''
+    Add `cw-orch` to the `[dev-dependencies]` section of Cargo.toml if it is not already present.
+
+    Args:
+        crate_path: Path to the root of the contract crate.
+    '''
+    crate_path = Path(crate_path).expanduser().resolve()
+    cargo_toml = crate_path / 'Cargo.toml'
+
+    if not cargo_toml.exists():
+        raise FileNotFoundError(f'{cargo_toml} does not exist.')
+
+    cargo_data = toml.load(cargo_toml)
+    dev_deps = cargo_data.get('dev-dependencies', {})
+
+    if 'cw-orch' not in dev_deps:
+        dev_deps['cw-orch'] = {
+            'version': '^0.9',
+            'default-features': False,
+            'features': ['derive']
+        }
+        cargo_data['dev-dependencies'] = dev_deps
+        cargo_toml.write_text(toml.dumps(cargo_data))
+        print('cw-orch added to dev-dependencies.')
+    else:
+        print('cw-orch already present in dev-dependencies; skipping.')
+
+
+
+# step:3 file: generate_interface.rs_for_a_cosmwasm_contract_with_the_cw-orch_#[interface]_macro
+from pathlib import Path
+from typing import Union
+
+
+def create_interface_file(crate_path: Union[str, Path]) -> Path:
+    '''
+    Create (or truncate) the `src/interface.rs` file within the contract crate.
+
+    Args:
+        crate_path: Path to the root of the contract crate.
+
+    Returns:
+        Path to the created file.
+    '''
+    crate_path = Path(crate_path).expanduser().resolve()
+    src_dir = crate_path / 'src'
+    src_dir.mkdir(parents=True, exist_ok=True)
+    interface_path = src_dir / 'interface.rs'
+    interface_path.write_text('')
+    print(f'Created empty interface file at {interface_path}')
+    return interface_path
+
+
+
+# step:4 file: generate_interface.rs_for_a_cosmwasm_contract_with_the_cw-orch_#[interface]_macro
+from pathlib import Path
+from typing import Union
+
+INTERFACE_BOILERPLATE = '''// Auto-generated by tooling — feel free to extend.
+use cosmwasm_std::{Addr, Response, DepsMut, Env, MessageInfo};
+use cw_orch::interface;
+
+#[interface]
+pub trait CounterContract {
+    type Error = anyhow::Error;
+    type InstantiateMsg = crate::msg::InstantiateMsg;
+    type ExecuteMsg = crate::msg::ExecuteMsg;
+    type QueryMsg = crate::msg::QueryMsg;
+
+    // (Optional) declare helper wrappers, e.g.:
+    fn increment(&self) -> Result<Response, Self::Error>;
+}
+'''
+
+
+def write_interface_boilerplate(crate_path: Union[str, Path]) -> None:
+    '''
+    Populate `src/interface.rs` with the cw-orch interface boilerplate.
+    '''
+    crate_path = Path(crate_path).expanduser().resolve()
+    interface_file = crate_path / 'src' / 'interface.rs'
+
+    if not interface_file.exists():
+        raise FileNotFoundError(
+            f'interface.rs does not exist at {interface_file}. Did you run create_interface_file()?'
+        )
+
+    interface_file.write_text(INTERFACE_BOILERPLATE)
+    print(f'Wrote interface boilerplate to {interface_file}')
+
+
+
+# step:5 file: generate_interface.rs_for_a_cosmwasm_contract_with_the_cw-orch_#[interface]_macro
+import subprocess
+from pathlib import Path
+from typing import Union
+
+
+def cargo_check(crate_path: Union[str, Path]) -> None:
+    '''
+    Run `cargo check --tests` inside the provided contract crate directory.
+    '''
+    crate_path = Path(crate_path).expanduser().resolve()
+    cmd = ['cargo', 'check', '--tests']
+
+    try:
+        subprocess.run(cmd, cwd=crate_path, check=True, text=True)
+        print('cargo check --tests completed successfully.')
+    except subprocess.CalledProcessError as error:
+        if error.stdout:
+            print(error.stdout)
+        if error.stderr:
+            print(error.stderr)
+        raise
+
 
 
 # step:1 file: initialize_a_new_chain_with_chain-id_my-test-chain
@@ -7591,35 +5342,116 @@ def sign_and_broadcast_tx(rpc_endpoint: str,
         raise RuntimeError(f"Could not sign and broadcast governance proposal: {err}") from err
 
 
+# step:1 file: connect_a_signingcosmwasmclient_to_rpc_https:__rpc.juno.strange.love_and_execute_an_increment_on_the_contract
+import os
+from mnemonic import Mnemonic
+from cosmpy.aerial.wallet import LocalWallet
+
+
+def initialize_wallet() -> LocalWallet:
+    """Create (or load) a wallet for subsequent contract execution.
+
+    If `MNEMONIC` is **not** preset, a brand-new 24-word phrase is generated
+    and printed to STDOUT so the operator can back it up before any funds are
+    deposited.
+    """
+    m = Mnemonic("english")
+    mnemonic = os.getenv("MNEMONIC")
+    if mnemonic is None:
+        mnemonic = m.generate(24)
+        print("[Wallet-Init] Generated NEW mnemonic – back it up NOW:\n", mnemonic)
+
+    # Build the wallet object (derivation path m/44'/118'/0'/0/0 for Cosmos-SDK)
+    wallet = LocalWallet.from_mnemonic(mnemonic)
+    print(f"[Wallet-Init] Wallet address → {wallet.address()}")
+    return wallet
+
+
+# step:2 file: connect_a_signingcosmwasmclient_to_rpc_https:__rpc.juno.strange.love_and_execute_an_increment_on_the_contract
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+
+
+RPC_ENDPOINT = "https://rpc.juno.strange.love:443"
+
+
+def get_ledger_client() -> LedgerClient:
+    """Establish a ready-to-use RPC client for the Juno main-net."""
+    cfg = NetworkConfig(
+        chain_id="juno-1",
+        url=RPC_ENDPOINT,
+        fee_minimum_gas_price=0.025,  # ujuno
+        fee_denomination="ujuno",
+        staking_denomination="ujuno"
+    )
+    return LedgerClient(cfg)
+
+
+# step:3 file: connect_a_signingcosmwasmclient_to_rpc_https:__rpc.juno.strange.love_and_execute_an_increment_on_the_contract
+def build_increment_msg() -> dict:
+    """Return the execute payload understood by the counter contract."""
+    return {"increment": {}}
+
+
+# step:4 file: connect_a_signingcosmwasmclient_to_rpc_https:__rpc.juno.strange.love_and_execute_an_increment_on_the_contract
+from cosmpy.aerial.tx import Transaction
+from cosmpy.aerial.contract import MsgExecuteContract
+from cosmpy.aerial.exceptions import CosmpyException
+
+
+def execute_increment(
+    client: "LedgerClient",
+    wallet: "LocalWallet",
+    contract_address: str,
+    msg: dict,
+):
+    """Send the increment execute message and return the tx response."""
+    try:
+        # Build execute message
+        exec_msg = MsgExecuteContract(
+            wallet.address(),         # sender
+            contract_address,         # cw-contract address
+            msg,                      # {"increment": {}}
+            funds=[]                  # no attached funds
+        )
+
+        # Assemble transaction
+        tx = Transaction()
+        tx.add_message(exec_msg)
+        tx.with_sender(wallet)
+
+        # Broadcast (blocking for inclusion)
+        tx_response = client.broadcast_transaction(tx)
+        print(f"[Tx] Broadcasted → {tx_response.tx_hash}")
+        return tx_response
+
+    except CosmpyException as err:
+        # Surface a concise, debuggable error
+        raise RuntimeError(f"contract execution failed → {err}") from err
+
+
+# step:5 file: connect_a_signingcosmwasmclient_to_rpc_https:__rpc.juno.strange.love_and_execute_an_increment_on_the_contract
+def verify_increment_event(tx_response) -> bool:
+    """Parse ABCI logs and assert that the `increment` action was fired."""
+    try:
+        for event in tx_response.logs[0].events:
+            if event.type == "wasm":
+                for attr in event.attributes:
+                    if attr.key == "action" and attr.value == "increment":
+                        print("[Verify] Increment event detected ✅")
+                        return True
+        print("[Verify] Increment event NOT found ⚠️")
+        return False
+    except (AttributeError, IndexError):
+        # The log format was not what we expected.
+        raise ValueError("Malformed transaction logs — cannot verify execution.")
+
+
 # step:1 file: configure_log_level_to_state:info,p2p:info,consensus:info,*:error
 import os
 from pathlib import Path
 import tomllib  # Python 3.11+ for TOML parsing
 
 
-def open_config_file(daemon_name: str):
-    """Return (Path, dict) for the daemon's config file.
-
-    Args:
-        daemon_name: The binary/service name (e.g., "gaiad", "osmosisd").
-    Raises:
-        FileNotFoundError: When the config file does not exist.
-    """
-    home_dir = Path(os.environ.get("HOME", "~/")).expanduser()
-    config_path = home_dir / f".{daemon_name}" / "config" / "config.toml"
-
-    # Ensure the file exists before attempting to open it
-    if not config_path.is_file():
-        raise FileNotFoundError(f"Config file not found: {config_path}")
-
-    # Read TOML as binary (required by tomllib)
-    with config_path.open("rb") as fp:
-        config_dict = tomllib.load(fp)
-
-    return config_path, config_dict
-
-
-# step:2 file: configure_log_level_to_state:info,p2p:info,consensus:info,*:error
 def update_log_level(config_dict: dict, desired_level: str | None = None):
     """Mutates and returns the provided config dict with an updated log_level.
 
@@ -8833,6 +6665,243 @@ def parse_balances_response(response: dict):
         raise ValueError('Malformed balances response') from err
 
 
+# step:1 file: upload,_instantiate,_and_increment_a_counter_contract_using_cw-orchestrator
+from dotenv import load_dotenv
+import os
+
+# config.py
+
+def get_chain_config():
+    """Read required environment variables and return them in a dict."""
+    load_dotenv()
+    rpc_endpoint = os.getenv("RPC_ENDPOINT")
+    chain_id = os.getenv("CHAIN_ID")
+    mnemonic = os.getenv("DEPLOYER_MNEMONIC")
+    gas_prices = os.getenv("GAS_PRICES", "0.025untrn")  # sensible default
+
+    # Basic validation
+    if not rpc_endpoint or not chain_id or not mnemonic:
+        raise EnvironmentError(
+            "RPC_ENDPOINT, CHAIN_ID and DEPLOYER_MNEMONIC must be set in .env"
+        )
+
+    return {
+        "rpc_endpoint": rpc_endpoint,
+        "chain_id": chain_id,
+        "mnemonic": mnemonic,
+        "gas_prices": gas_prices,
+    }
+
+if __name__ == "__main__":
+    # Quick manual test
+    print(get_chain_config())
+
+
+# step:2 file: upload,_instantiate,_and_increment_a_counter_contract_using_cw-orchestrator
+import subprocess
+from pathlib import Path
+
+# build.py
+
+def build_and_optimize(contract_root: str = ".") -> dict:
+    """Run `cargo wasm` followed by the rust-optimizer docker image."""
+    root = Path(contract_root).resolve()
+
+    try:
+        # 1. Raw wasm build (debug, un-optimized)
+        subprocess.run(["cargo", "wasm"], check=True, cwd=root)
+
+        # 2. Run optimizer docker image – output goes to <root>/artifacts/*.wasm
+        subprocess.run(
+            [
+                "docker",
+                "run",
+                "--rm",
+                "-v",
+                f"{root}:/code",
+                "cosmtrek/wasm:optimizer",
+                ".",
+            ],
+            check=True,
+        )
+
+        # Pick the most recent optimized wasm file
+        artifacts_dir = root / "artifacts"
+        wasm_files = sorted(artifacts_dir.glob("*.wasm"), key=lambda p: p.stat().st_mtime, reverse=True)
+        if not wasm_files:
+            raise FileNotFoundError("No optimized .wasm found in artifacts/")
+
+        return {"wasm_path": str(wasm_files[0])}
+
+    except subprocess.CalledProcessError as err:
+        raise RuntimeError(f"Contract build failed: {err}")
+
+if __name__ == "__main__":
+    print(build_and_optimize())
+
+
+# step:3 file: upload,_instantiate,_and_increment_a_counter_contract_using_cw-orchestrator
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+from cosmpy.aerial.wallet import LocalWallet
+from cosmpy.aerial.tx import Transaction
+from cosmpy.crypto.address import Address
+from config import get_chain_config
+
+# store_code.py
+
+def store_code(wasm_path: str) -> dict:
+    cfg = get_chain_config()
+
+    # Prepare client & wallet
+    network_cfg = NetworkConfig(
+        chain_id=cfg["chain_id"],
+        url=cfg["rpc_endpoint"],
+        fee_minimum_gas_price=cfg["gas_prices"],
+    )
+    client = LedgerClient(network_cfg)
+    wallet = LocalWallet.create_from_mnemonic(cfg["mnemonic"])
+
+    # Build & send StoreCode tx
+    with open(wasm_path, "rb") as fp:
+        wasm_bytes = fp.read()
+
+    tx = Transaction(client=client, wallet=wallet)
+    tx.add_message(tx.MsgStoreCode(wallet.address(), wasm_bytes))
+
+    try:
+        result = tx.broadcast()
+    except Exception as e:
+        raise RuntimeError(f"Failed to store code: {e}")
+
+    # Extract code_id from tx logs
+    try:
+        code_id = int(result.logs[0].events_by_type["store_code"]["code_id"][0])
+    except (KeyError, IndexError, ValueError):
+        raise RuntimeError("Could not parse code_id from broadcast result")
+
+    return {"code_id": code_id, "tx_hash": result.tx_hash}
+
+if __name__ == "__main__":
+    print(store_code("artifacts/counter.wasm"))
+
+
+# step:4 file: upload,_instantiate,_and_increment_a_counter_contract_using_cw-orchestrator
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+from cosmpy.aerial.wallet import LocalWallet
+from cosmpy.aerial.tx import Transaction
+from config import get_chain_config
+
+# instantiate.py
+
+def instantiate_contract(code_id: int, label: str = "counter", init_msg: dict | None = None) -> dict:
+    cfg = get_chain_config()
+    init_msg = init_msg or {"start": 0}
+
+    network_cfg = NetworkConfig(
+        chain_id=cfg["chain_id"],
+        url=cfg["rpc_endpoint"],
+        fee_minimum_gas_price=cfg["gas_prices"],
+    )
+    client = LedgerClient(network_cfg)
+    wallet = LocalWallet.create_from_mnemonic(cfg["mnemonic"])
+
+    tx = Transaction(client=client, wallet=wallet)
+    tx.add_message(
+        tx.MsgInstantiateContract(
+            sender=wallet.address(),
+            admin=None,  # no admin
+            code_id=code_id,
+            msg=init_msg,
+            funds=[],
+            label=label,
+        )
+    )
+
+    try:
+        result = tx.broadcast()
+    except Exception as e:
+        raise RuntimeError(f"Instantiation failed: {e}")
+
+    try:
+        contract_addr = result.logs[0].events_by_type["instantiate"]["_contract_address"][0]
+    except (KeyError, IndexError):
+        raise RuntimeError("Contract address not found in tx logs")
+
+    return {"contract_addr": contract_addr, "tx_hash": result.tx_hash}
+
+if __name__ == "__main__":
+    print(instantiate_contract(17))
+
+
+# step:5 file: upload,_instantiate,_and_increment_a_counter_contract_using_cw-orchestrator
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+from cosmpy.aerial.wallet import LocalWallet
+from cosmpy.aerial.tx import Transaction
+from config import get_chain_config
+
+# execute.py
+
+def increment(contract_addr: str) -> dict:
+    cfg = get_chain_config()
+
+    network_cfg = NetworkConfig(
+        chain_id=cfg["chain_id"],
+        url=cfg["rpc_endpoint"],
+        fee_minimum_gas_price=cfg["gas_prices"],
+    )
+    client = LedgerClient(network_cfg)
+    wallet = LocalWallet.create_from_mnemonic(cfg["mnemonic"])
+
+    tx = Transaction(client=client, wallet=wallet)
+    tx.add_message(
+        tx.MsgExecuteContract(
+            sender=wallet.address(),
+            contract=contract_addr,
+            msg={"increment": {}},
+            funds=[],
+        )
+    )
+
+    try:
+        result = tx.broadcast()
+    except Exception as e:
+        raise RuntimeError(f"Execute failed: {e}")
+
+    return {"tx_hash": result.tx_hash}
+
+if __name__ == "__main__":
+    print(increment("neutron1..."))
+
+
+# step:6 file: upload,_instantiate,_and_increment_a_counter_contract_using_cw-orchestrator
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+from config import get_chain_config
+
+# query.py
+
+def get_count(contract_addr: str) -> dict:
+    cfg = get_chain_config()
+
+    client = LedgerClient(
+        NetworkConfig(
+            chain_id=cfg["chain_id"],
+            url=cfg["rpc_endpoint"],
+            fee_minimum_gas_price=cfg["gas_prices"],
+        )
+    )
+
+    try:
+        # CosmWasm smart query
+        response = client.wasm_query(contract_addr, {"get_count": {}})
+    except Exception as e:
+        raise RuntimeError(f"Query failed: {e}")
+
+    return {"count": response.get("count")}
+
+if __name__ == "__main__":
+    print(get_count("neutron1..."))
+
+
 # step:1 file: add_a_cosmos_evm_network_to_metamask
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
@@ -9130,6 +7199,113 @@ def json_rpc_call(method: str = "txpool_status", params: list | None = None, end
         return data.get("result")
     except (requests.RequestException, ValueError) as e:
         raise RuntimeError(f"Failed to perform JSON-RPC call: {e}")
+
+
+# step:3 file: execute_a_reset_on_the_contract_at_contract_address,_setting_count_to_0
+# backend/main.py
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import os, json
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+from cosmpy.aerial.wallet import LocalWallet
+from cosmpy.aerial.contract import MsgExecuteContract
+from cosmpy.aerial.tx import Transaction
+
+app = FastAPI()
+
+# ---------------- Chain / Wallet configuration ----------------
+CHAIN_ID = os.getenv("CHAIN_ID", "neutron-1")
+RPC_ENDPOINT = os.getenv("RPC_ENDPOINT", "https://rpc.neutron-1.neutron.org:443")
+GAS_PRICE = os.getenv("GAS_PRICE", "0.0025untrn")
+MNEMONIC = os.getenv("EXECUTOR_MNEMONIC")  # keep this secret!
+if MNEMONIC is None:
+    raise RuntimeError("EXECUTOR_MNEMONIC environment variable not set")
+
+network_cfg = NetworkConfig(
+    chain_id=CHAIN_ID,
+    url=RPC_ENDPOINT,
+    fee_minimum_gas_price=GAS_PRICE,
+    fee_denomination=GAS_PRICE.lstrip("0123456789.")  # naive extraction
+)
+client = LedgerClient(network_cfg)
+wallet = LocalWallet(MNEMONIC)
+
+# ---------------- Pydantic models ----------------
+class ExecuteResetPayload(BaseModel):
+    contract_address: str
+    msg: dict                      # e.g. {"reset": {"count": 0}}
+    gas: str | None = "auto"        # "auto" or an explicit integer string
+    fees: str | None = None         # e.g. "5000untrn"
+    memo: str | None = None
+
+# ---------------- Routes ----------------
+@app.get("/api/executor_address")
+def executor_address():
+    """Returns the address of the server-side signer used for transactions."""
+    return {"address": wallet.address()}
+
+@app.post("/api/execute_reset")
+def execute_reset(payload: ExecuteResetPayload):
+    """Signs and broadcasts a MsgExecuteContract that resets the counter."""
+    try:
+        execute_msg = MsgExecuteContract(
+            sender=wallet.address(),
+            contract=payload.contract_address,
+            msg=json.dumps(payload.msg).encode(),  # cosmpy expects bytes
+            funds=[]
+        )
+
+        tx = (Transaction()
+              .with_messages(execute_msg)
+              .with_chain_id(CHAIN_ID)
+              .with_sequence(client.get_sequence(wallet.address()))
+              .with_account_num(client.get_number(wallet.address())))
+
+        if payload.gas != "auto":
+            tx = tx.with_gas(int(payload.gas))
+        if payload.fees:
+            tx = tx.with_fee(payload.fees)
+        if payload.memo:
+            tx = tx.with_memo(payload.memo)
+
+        signed_tx = tx.sign(wallet)
+        res = client.broadcast_tx_block(signed_tx)
+
+        if res.is_successful():
+            return {
+                "tx_hash": res.tx_hash,
+                "height": res.height,
+                "raw_log": res.raw_log
+            }
+        raise HTTPException(status_code=400, detail=res.raw_log)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# step:4 file: execute_a_reset_on_the_contract_at_contract_address,_setting_count_to_0
+# backend/main.py  (continued)
+
+from cosmpy.aerial.client import NetworkError
+
+@app.get("/api/tx_status/{tx_hash}")
+def tx_status(tx_hash: str):
+    """Returns confirmation details for the supplied transaction hash."""
+    try:
+        tx_info = client.get_tx(tx_hash)
+        if tx_info is None:
+            return {"confirmed": False, "tx_hash": tx_hash}
+        return {
+            "confirmed": True,
+            "tx_hash": tx_hash,
+            "height": tx_info.height,
+            "raw_log": tx_info.raw_log
+        }
+    except NetworkError as ne:
+        raise HTTPException(status_code=503, detail=str(ne))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # step:1 file: update_the_on-chain_voting_period_in_genesis_to_600_s
@@ -9762,6 +7938,199 @@ def sign_and_broadcast_tx(msg_submit_proposal: MsgSubmitProposal, proposer_mnemo
         raise RuntimeError(f"sign_and_broadcast_tx failed: {err}")
 
 
+# step:1 file: set_a_preblocker_that_updates_consensus_parameters_every_block
+# create_preblocker_fn.py
+import os
+import sys
+import textwrap
+
+
+def create_preblocker_fn(app_dir: str) -> None:
+    """
+    Inserts a PreBlocker function in app/app.go that updates consensus params
+    at the beginning of every block.
+    """
+    app_go_path = os.path.join(app_dir, "app", "app.go")
+    if not os.path.exists(app_go_path):
+        raise FileNotFoundError(f"{app_go_path} not found")
+
+    preblocker_code = textwrap.dedent('''
+
+// -------------------------- PreBlocker ----------------------------------
+// PreBlocker updates consensus parameters before every block is processed.
+//
+// Required imports (add to the import block in app/app.go):
+//   "github.com/cosmos/cosmos-sdk/types"
+//   abci "github.com/cometbft/cometbft/abci/types"
+//   tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
+//   "time"
+func PreBlocker(ctx sdk.Context, req abci.RequestPreBlock) {
+    // Example mutation: increase MaxGas every block
+    newParams := &tmtypes.ConsensusParams{
+        Block: &tmtypes.BlockParams{
+            MaxBytes: 22020096, // 21 MB
+            MaxGas:   10000000,
+        },
+        Evidence: &tmtypes.EvidenceParams{
+            MaxAgeDuration: 48 * time.Hour,
+            MaxAgeNumBlocks: 100000,
+        },
+        Validator: &tmtypes.ValidatorParams{
+            PubKeyTypes: []string{"ed25519"},
+        },
+    }
+
+    if err := app.BaseApp.UpdateConsensusParams(ctx, newParams); err != nil {
+        ctx.Logger().Error("failed to update consensus params", "err", err)
+    }
+}
+// ------------------------------------------------------------------------
+''')
+
+    with open(app_go_path, "r+") as f:
+        content = f.read()
+        if "func PreBlocker(" in content:
+            print("PreBlocker already exists in file, skipping.")
+            return
+        f.write(preblocker_code)
+    print("✅ PreBlocker function added to app/app.go")
+
+
+if __name__ == "__main__":
+    # Usage: python create_preblocker_fn.py /absolute/path/to/your/app
+    target = sys.argv[1] if len(sys.argv) > 1 else "."
+    create_preblocker_fn(os.path.abspath(target))
+
+
+# step:2 file: set_a_preblocker_that_updates_consensus_parameters_every_block
+# register_preblocker.py
+import os
+import sys
+import re
+
+
+def register_preblocker(app_dir: str) -> None:
+    """
+    Adds app.SetPreBlocker(PreBlocker) to the NewApp constructor so the PreBlocker executes every block.
+    """
+    app_go_path = os.path.join(app_dir, "app", "app.go")
+    if not os.path.exists(app_go_path):
+        raise FileNotFoundError(f"{app_go_path} not found")
+
+    with open(app_go_path, "r+") as f:
+        content = f.read()
+        if "SetPreBlocker(PreBlocker)" in content:
+            print("PreBlocker already registered, skipping.")
+            return
+
+        # Insert right before the final return statement inside NewApp
+        pattern = r"func\s+NewApp[\s\S]+?return\s+app"
+        match = re.search(pattern, content)
+        if not match:
+            print("Could not locate NewApp function; please register manually.")
+            return
+
+        insert_idx = match.end() - len("return app")
+        insertion = "\n    // Register the PreBlocker\n    app.SetPreBlocker(PreBlocker)\n"
+        new_content = content[:insert_idx] + insertion + content[insert_idx:]
+
+        f.seek(0)
+        f.write(new_content)
+        f.truncate()
+
+    print("✅ PreBlocker registered in NewApp")
+
+
+if __name__ == "__main__":
+    target = sys.argv[1] if len(sys.argv) > 1 else "."
+    register_preblocker(os.path.abspath(target))
+
+
+# step:3 file: set_a_preblocker_that_updates_consensus_parameters_every_block
+# compile_binary.py
+import os
+import sys
+import subprocess
+
+
+def compile_binary(app_dir: str = ".") -> None:
+    """
+    Compiles the modified binary and installs it to $GOBIN.
+    """
+    print("🔨 Compiling the blockchain binary …")
+    proc = subprocess.run(["go", "install", "./..."], cwd=app_dir, capture_output=True, text=True)
+    if proc.returncode != 0:
+        print(proc.stderr)
+        raise RuntimeError("Compilation failed")
+    print("✅ Compilation successful. Binary available in your GOPATH/bin directory.")
+
+
+if __name__ == "__main__":
+    compile_binary(sys.argv[1] if len(sys.argv) > 1 else ".")
+
+
+# step:4 file: set_a_preblocker_that_updates_consensus_parameters_every_block
+# start_local_chain.py
+import subprocess
+import sys
+import os
+
+
+def start_local_chain(home: str = "./data", chain_id: str = "localnet", binary: str = "appd") -> None:
+    """
+    Starts a single-node chain using the rebuilt binary.
+    """
+    if not os.path.exists(home):
+        print("🔧 Initializing home directory")
+        subprocess.run([binary, "init", "validator", "--chain-id", chain_id, "--home", home], check=True)
+        subprocess.run([binary, "config", "chain-id", chain_id, "--home", home], check=True)
+
+    print("⛓️  Starting node … (Ctrl+C to stop)")
+    try:
+        subprocess.run([binary, "start", "--home", home], check=True)
+    except KeyboardInterrupt:
+        print("Node stopped by user")
+
+
+if __name__ == "__main__":
+    # Usage: python start_local_chain.py [home_dir] [chain_id] [binary]
+    start_local_chain(*(sys.argv[1:]))
+
+
+# step:5 file: set_a_preblocker_that_updates_consensus_parameters_every_block
+# query_consensus_params.py
+import subprocess
+import sys
+
+
+def query_consensus_params(height: int, binary: str = "appd") -> None:
+    """
+    Queries consensus parameters for a given block height.
+    """
+    cmd = [
+        binary,
+        "query",
+        "params",
+        "subspace",
+        "consensus",
+        "1",
+        "--height",
+        str(height),
+        "--output",
+        "json",
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        print(result.stderr)
+        raise RuntimeError("Query failed")
+    print(result.stdout)
+
+
+if __name__ == "__main__":
+    height = int(sys.argv[1]) if len(sys.argv) > 1 else 1
+    query_consensus_params(height)
+
+
 # step:1 file: Create a multi-message cron schedule "protocol_update" that executes three contract calls every 100 800 blocks
 # utils/governance.py
 import os
@@ -10020,6 +8389,41 @@ async def keccak_hash(req: KeccakRequest):
 
     digest = keccak_256(raw_bytes).hexdigest()
     return {"hash": "0x" + digest}
+
+
+# step:2 file: claim_junox_test_tokens_from_the_uni-6_faucet_for_a_given_address
+'''api/faucet.py'''
+from fastapi import FastAPI, HTTPException
+import httpx
+
+app = FastAPI()
+FAUCET_ENDPOINT = "https://faucet.uni.junonetwork.io/credit"
+
+@app.post("/api/faucet/credit")
+async def faucet_credit(payload: dict):
+    """POST /api/faucet/credit { "address": "juno1..." } -> faucet JSON/text"""
+    address: str | None = payload.get("address")
+
+    # Minimal server-side validation so we don’t hammer the faucet with bad requests
+    if not address or not address.startswith("juno1"):
+        raise HTTPException(status_code=400, detail="Invalid or missing Juno address.")
+
+    url = f"{FAUCET_ENDPOINT}?address={address}"
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            faucet_resp = await client.post(url)
+    except httpx.RequestError as exc:
+        raise HTTPException(status_code=502, detail=f"Faucet unreachable: {exc}") from exc
+
+    if faucet_resp.status_code != 200:
+        raise HTTPException(status_code=faucet_resp.status_code, detail=faucet_resp.text)
+
+    # Return JSON when possible, fallback to raw text (some faucets return plain text)
+    try:
+        return faucet_resp.json()
+    except ValueError:
+        return {"raw_response": faucet_resp.text}
+
 
 
 # step:1 file: query_smart-contract_event_logs_on_a_cosmos_evm_chain_with_foundry’s_cast_logs
@@ -10772,6 +9176,77 @@ def validate_configuration(key: str = 'rpc_endpoint', expected_value: str | None
     return True
 
 
+# step:2 file: configure_junod_cli_with_a_specific_rpc_node_and_chain-id_(uni-6)
+from fastapi import FastAPI, HTTPException
+import subprocess
+
+app = FastAPI()
+
+@app.post('/api/junod/config/node')
+async def config_node(payload: dict):
+    """Sets the default RPC endpoint for the local `junod` CLI."""
+    node_url = payload.get('node_url')
+    if not node_url:
+        raise HTTPException(status_code=400, detail='`node_url` field is required.')
+
+    try:
+        completed = subprocess.run(
+            ['junod', 'config', 'node', node_url],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return {'stdout': completed.stdout.strip()}
+    except subprocess.CalledProcessError as exc:
+        raise HTTPException(status_code=500, detail=exc.stderr.strip())
+
+
+# step:3 file: configure_junod_cli_with_a_specific_rpc_node_and_chain-id_(uni-6)
+from fastapi import FastAPI, HTTPException
+import subprocess
+
+app = FastAPI()
+
+@app.post('/api/junod/config/chain-id')
+async def config_chain_id(payload: dict):
+    """Sets the chain-id in the local `junod` CLI configuration."""
+    chain_id = payload.get('chain_id')
+    if not chain_id:
+        raise HTTPException(status_code=400, detail='`chain_id` field is required.')
+
+    try:
+        completed = subprocess.run(
+            ['junod', 'config', 'chain-id', chain_id],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return {'stdout': completed.stdout.strip()}
+    except subprocess.CalledProcessError as exc:
+        raise HTTPException(status_code=500, detail=exc.stderr.strip())
+
+
+# step:4 file: configure_junod_cli_with_a_specific_rpc_node_and_chain-id_(uni-6)
+from fastapi import FastAPI, HTTPException
+import subprocess
+
+app = FastAPI()
+
+@app.get('/api/junod/config/view')
+async def view_config():
+    """Returns the current junod CLI configuration."""
+    try:
+        completed = subprocess.run(
+            ['junod', 'config'],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return {'config': completed.stdout.strip()}
+    except subprocess.CalledProcessError as exc:
+        raise HTTPException(status_code=500, detail=exc.stderr.strip())
+
+
 # step:2 file: show_my_total_bitcoin_summer_points_earned_in_the_current_phase
 from fastapi import FastAPI, HTTPException
 import requests, base64, json, os
@@ -10812,171 +9287,6 @@ app = FastAPI()
 LCD_ENDPOINT   = os.getenv('LCD_ENDPOINT',  'https://rest-kralum.neutron-1.neutron.org')
 POINTS_CONTRACT = os.getenv('POINTS_CONTRACT', 'neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy')
 
-def wasm_query(contract_address: str, query_msg: dict):
-    try:
-        msg_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
-        url     = f"{LCD_ENDPOINT}/cosmwasm/wasm/v1/contract/{contract_address}/smart/{msg_b64}"
-        resp    = requests.get(url, timeout=10)
-        resp.raise_for_status()
-        return resp.json().get('data', {})
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Smart-query failed: {e}')
-
-@app.get('/api/points')
-def query_phase_points(address: str = Query(...), phase_id: int = Query(...)):
-    """Return the user’s points for a given phase by querying the Points contract."""
-    query_msg = {
-        "get_phase_points": {
-            "address": address,
-            "phase_id": phase_id
-        }
-    }
-    data = wasm_query(POINTS_CONTRACT, query_msg)
-    if 'points' not in data:
-        raise HTTPException(status_code=500, detail="Invalid contract response: 'points' missing")
-    return {
-        "address": address,
-        "phase_id": phase_id,
-        "points": data['points']
-    }
-
-
-# step:1 file: configure_the_json-rpc_gas_cap_to_20,000,000_gas
-import subprocess, shutil
-
-
-def stop_node(service_name: str = "evmd") -> None:
-    """Gracefully stop a running evmd node.
-    1. Try the `evmd stop` CLI.
-    2. Fallback to `systemctl stop evmd` if the CLI is unavailable or fails.
-    Raises an exception if both methods fail.
-    """
-    try:
-        # First attempt: `evmd stop`
-        result = subprocess.run(["evmd", "stop"], capture_output=True, text=True)
-        if result.returncode == 0:
-            print("Node stopped with `evmd stop`.")
-            return
-        else:
-            print("`evmd stop` returned non-zero exit code – trying systemd fallback…\n", result.stderr)
-    except FileNotFoundError:
-        # evmd binary not found – will try systemd next
-        pass
-
-    # Second attempt: systemd service
-    if shutil.which("systemctl") is None:
-        raise RuntimeError("Neither `evmd stop` nor systemctl is available to stop the node.")
-
-    systemd = subprocess.run(["systemctl", "stop", service_name], capture_output=True, text=True)
-    if systemd.returncode != 0:
-        raise RuntimeError(systemd.stderr.strip())
-
-    print("Node successfully stopped via systemd.")
-
-
-# step:2 file: configure_the_json-rpc_gas_cap_to_20,000,000_gas
-import toml
-from pathlib import Path
-
-# Default configuration path
-CONFIG_PATH = Path.home() / ".evmd" / "config" / "app.toml"
-
-# Global in-memory cache so later steps can reuse the parsed file
-config_cache: dict = {}
-
-
-def open_app_toml(path: Path = CONFIG_PATH) -> dict:
-    """Open and parse the TOML file, caching it globally."""
-    global config_cache
-    if not path.exists():
-        raise FileNotFoundError(f"app.toml not found at: {path}")
-
-    with path.open("r", encoding="utf-8") as fp:
-        config_cache = toml.load(fp)
-
-    print("Configuration loaded into memory.")
-    return config_cache
-
-
-# step:3 file: configure_the_json-rpc_gas_cap_to_20,000,000_gas
-def modify_json_rpc_field(gas_cap: int = 20_000_000) -> dict:
-    """Update (or create) the `gas-cap` inside the `[json-rpc]` section."""
-    global config_cache
-    if not config_cache:
-        raise RuntimeError("Configuration not loaded. Run open_app_toml() first.")
-
-    json_rpc_cfg = config_cache.setdefault("json-rpc", {})
-    json_rpc_cfg["gas-cap"] = gas_cap
-
-    print(f"Set [json-rpc].gas-cap = {gas_cap}")
-    return config_cache
-
-
-# step:4 file: configure_the_json-rpc_gas_cap_to_20,000,000_gas
-import shutil
-
-
-def save_and_close_file(path: Path = CONFIG_PATH) -> None:
-    """Write the in-memory `config_cache` back to `app.toml` and clear the cache.
-
-    A *.bak file will be created beside the original for easy rollback.
-    """
-    global config_cache
-    if not config_cache:
-        raise RuntimeError("Nothing to save – configuration cache is empty.")
-
-    # Create a timestamped backup copy of the existing file
-    backup_path = path.with_suffix(path.suffix + ".bak")
-    shutil.copy2(path, backup_path)
-
-    # Write the new configuration
-    with path.open("w", encoding="utf-8") as fp:
-        toml.dump(config_cache, fp)
-
-    print(f"Configuration saved. Backup stored at {backup_path}")
-    config_cache = {}  # clear cache
-
-
-# step:5 file: configure_the_json-rpc_gas_cap_to_20,000,000_gas
-import subprocess, shutil
-
-
-def restart_node(service_name: str = "evmd") -> None:
-    """Start the evmd node again.
-
-    1. Prefer systemd (`systemctl start evmd`) if available.
-    2. Fallback to the CLI (`evmd start`) otherwise.
-    """
-    # First attempt: systemd
-    if shutil.which("systemctl"):
-        result = subprocess.run(["systemctl", "start", service_name], capture_output=True, text=True)
-        if result.returncode == 0:
-            print("Node started via systemd.")
-            return
-        else:
-            print("systemctl start failed – falling back to CLI…\n", result.stderr)
-
-    # Second attempt: CLI fallback
-    result = subprocess.run(["evmd", "start"], capture_output=True, text=True)
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr.strip())
-
-    print("Node restarted with `evmd start`.")
-
-
-# step:1 file: list_current_amber_lending_markets_and_apys
-from fastapi import FastAPI, HTTPException
-import os
-
-app = FastAPI()
-
-# Environment-specific mapping of Amber controller/lens contract addresses
-AMBER_CONTROLLER_ADDRESSES = {
-    "mainnet": os.getenv("AMBER_CONTROLLER_MAINNET", "neutron1controllerplaceholderxxxxxxxxxxxx"),
-    "testnet": os.getenv("AMBER_CONTROLLER_TESTNET", "pion1controllerplaceholderxxxxxxxxxxxx")
-}
-
-@app.get("/api/amber/controller-address")
 async def get_controller_address(env: str = "mainnet"):
     """Return the controller/lens contract address used to query market data."""
     address = AMBER_CONTROLLER_ADDRESSES.get(env)
@@ -11025,6 +9335,93 @@ async def get_market_state(market_id: str, env: str = "mainnet"):
         raise HTTPException(status_code=400, detail="Unsupported environment")
     state = await _query_smart(controller, {"market_state": {"market_id": market_id}})
     return state
+
+
+# step:4 file: send_1,000,000_ujuno_to_a_cosmwasm_contract_via_an_execute_endpoint
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import Dict, Any
+import json, base64
+
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+from cosmpy.aerial.tx import Transaction
+from cosmpy.aerial.wasm import MsgExecuteContract
+from cosmpy.protos.cosmos.base.v1beta1.coin_pb2 import Coin
+
+app = FastAPI()
+
+JUNO_MAINNET = NetworkConfig(
+    chain_id="juno-1",
+    url="https://rpc-juno.itastakers.com:443",
+    fee_minimum_gas_price=0.025,
+    fee_denomination="ujuno",
+)
+
+class ExecutePayload(BaseModel):
+    sender_address: str
+    contract_address: str
+    execute_msg: Dict[str, Any]
+    funds: int  # ujuno
+
+@app.post("/api/tx/execute/construct")
+async def construct_execute_tx(p: ExecutePayload):
+    try:
+        client = LedgerClient(JUNO_MAINNET)
+
+        coin = Coin(amount=str(p.funds), denom="ujuno")
+        msg = MsgExecuteContract(
+            sender=p.sender_address,
+            contract=p.contract_address,
+            msg=json.dumps(p.execute_msg).encode(),
+            funds=[coin],
+        )
+
+        tx = Transaction()
+        tx.add_message(msg)
+        gas = client.estimate_gas(tx)
+
+        return {
+            "unsigned_tx": base64.b64encode(tx.serialize()).decode(),
+            "gas_estimate": gas,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# step:5 file: send_1,000,000_ujuno_to_a_cosmwasm_contract_via_an_execute_endpoint
+from fastapi import Depends
+from cosmpy.aerial.wallet import LocalWallet
+
+class SignBroadcastPayload(ExecutePayload):
+    mnemonic: str  # securely store / transmit in real apps!
+
+@app.post("/api/tx/execute/sign_and_broadcast")
+async def sign_and_broadcast(p: SignBroadcastPayload):
+    try:
+        wallet = LocalWallet.from_mnemonic(p.mnemonic)
+        if wallet.address() != p.sender_address:
+            raise HTTPException(status_code=400, detail="Mnemonic does not match sender")
+
+        client = LedgerClient(JUNO_MAINNET)
+
+        coin = Coin(amount=str(p.funds), denom="ujuno")
+        msg = MsgExecuteContract(
+            sender=p.sender_address,
+            contract=p.contract_address,
+            msg=json.dumps(p.execute_msg).encode(),
+            funds=[coin],
+        )
+
+        tx = Transaction()
+        tx.add_message(msg)
+        tx.with_chain_id(JUNO_MAINNET.chain_id)
+        tx.with_gas_limit(300_000)
+        tx_signed = tx.sign(wallet)
+
+        tx_hash = client.broadcast_tx(tx_signed)
+        return {"tx_hash": tx_hash}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 # step:2 file: lock_a_specific_account_so_it_can_no_longer_send_transactions
@@ -11147,6 +9544,60 @@ async def run_tests():
         raise HTTPException(status_code=408, detail="Test execution timed out.")
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
+
+
+# step:2 file: check_the_balance_of_a_wallet_address_on_the_juno_network
+'''backend_balances.py ------------------------------------------------------
+FastAPI microservice that proxies a balance query to a public Juno LCD API.
+This keeps CORS & key-management concerns off the frontend.
+'''
+
+import re
+from typing import Any, Dict
+
+import httpx
+from fastapi import FastAPI, HTTPException
+
+app = FastAPI()
+
+JUNO_LCD_DEFAULT = "https://api.juno.kingnodes.com"  # Public LCD; replace if needed
+ADDR_REGEX = re.compile(r"^juno1[0-9a-z]{38}$")
+
+@app.get("/api/raw_balances", response_model=Dict[str, Any])
+async def query_raw_balances(address: str, node_url: str = JUNO_LCD_DEFAULT):
+    """Fetches *unmodified* balance JSON from the LCD for the provided address."""
+    if not ADDR_REGEX.match(address):
+        raise HTTPException(status_code=400, detail="Invalid Juno address format.")
+
+    endpoint = f"{node_url}/cosmos/bank/v1beta1/balances/{address}"
+
+    async with httpx.AsyncClient(timeout=10) as client:
+        try:
+            response = await client.get(endpoint)
+            response.raise_for_status()
+        except httpx.HTTPError as exc:
+            # Surface LCD or network failures clearly to consumers
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    return response.json()
+
+
+# step:3 file: check_the_balance_of_a_wallet_address_on_the_juno_network
+from typing import List, Dict, Any
+
+@app.post("/api/parse_balances", response_model=List[Dict[str, str]])
+async def parse_balances(raw_json: Dict[str, Any]):
+    """Extracts `[{'denom': <denom>, 'amount': <amount>}, …]` from the raw LCD payload."""
+    try:
+        raw_balances = raw_json.get("balances", [])
+        simplified = [
+            {"denom": entry.get("denom", ""), "amount": entry.get("amount", "0")}  
+            for entry in raw_balances
+        ]
+    except (AttributeError, TypeError):
+        raise HTTPException(status_code=400, detail="Malformed JSON supplied. Expecting LCD bank/balances response body.")
+
+    return simplified
 
 
 # step:1 file: back_up_priv_val_state.json_to_prevent_double_signing
@@ -11393,6 +9844,158 @@ def wait_for_swagger(url: str = 'http://localhost:1317/swagger', timeout: int = 
             pass  # keep trying until timeout
         time.sleep(1)
     raise TimeoutError(f'Swagger endpoint did not become available within {timeout} seconds')
+
+
+
+# step:1 file: compile_the_clock_example.wasm_contract_and_upload_it_to_the_juno_testnet
+import os
+import subprocess
+from pathlib import Path
+
+
+def compile_contract(source_dir: str, output_dir: str | None = None) -> str:
+    '''
+    Compile a CosmWasm contract using the rust-optimizer Docker image.
+
+    Args:
+        source_dir: root folder of the contract (where Cargo.toml lives).
+        output_dir: folder that will contain the optimized .wasm. Defaults to <source_dir>/artifacts.
+
+    Returns:
+        Absolute path to the optimized .wasm file.
+    '''
+    source_path = Path(source_dir).resolve()
+    if not source_path.exists():
+        raise FileNotFoundError(f'Contract directory {source_path} does not exist')
+
+    out_path = Path(output_dir) if output_dir else source_path / 'artifacts'
+    out_path = out_path.resolve()
+    out_path.mkdir(parents=True, exist_ok=True)
+
+    crate_name = source_path.name.replace('-', '_')
+    artifact_file = out_path / f'{crate_name}.wasm'
+
+    cmd = [
+        'docker', 'run', '--rm',
+        '-v', f'{source_path}:/code',
+        '-v', f'{out_path}:/code/artifacts',
+        '-w', '/code',
+        'cosmwasm/workspace-optimizer:0.14.0'
+    ]
+
+    try:
+        subprocess.run(cmd, check=True, capture_output=True)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(
+            f'rust-optimizer failed (exit {e.returncode}):\nSTDOUT:\n{e.stdout.decode()}\nSTDERR:\n{e.stderr.decode()}'
+        )
+
+    if not artifact_file.exists():
+        raise RuntimeError(f'Compilation finished but {artifact_file} was not produced.')
+
+    return str(artifact_file)
+
+
+
+# step:2 file: compile_the_clock_example.wasm_contract_and_upload_it_to_the_juno_testnet
+import os
+from pathlib import Path
+
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+from cosmpy.aerial.tx import Transaction
+from cosmpy.aerial.wallet import LocalWallet
+from cosmpy.protos.cosmwasm.wasm.v1 import tx_pb2 as wasm_tx_pb
+
+JUNO_RPC = os.getenv('JUNO_RPC', 'https://rpc.uni.juno.deuslabs.fi:443')
+CHAIN_ID = os.getenv('CHAIN_ID', 'uni-6')
+FEE_DENOM = 'ujunox'
+GAS_PRICE = float(os.getenv('GAS_PRICE', '0.025'))  # ujunox per gas unit
+
+
+def store_wasm(wasm_path: str, mnemonic: str) -> str:
+    '''
+    Upload a compiled CosmWasm contract to the chain and return the tx hash.
+    '''
+    path = Path(wasm_path).expanduser().resolve()
+    if not path.exists():
+        raise FileNotFoundError(f'Wasm file {path} does not exist')
+
+    wallet = LocalWallet.from_mnemonic(mnemonic)
+
+    cfg = NetworkConfig(
+        chain_id=CHAIN_ID,
+        url=JUNO_RPC,
+        fee_minimum_gas_price=GAS_PRICE,
+        fee_denomination=FEE_DENOM,
+        staking_denomination=FEE_DENOM,
+    )
+    client = LedgerClient(cfg)
+
+    msg = wasm_tx_pb.MsgStoreCode(
+        sender=wallet.address(),
+        wasm_byte_code=path.read_bytes(),
+    )
+
+    tx = (
+        Transaction()
+        .with_messages(msg)
+        .with_chain_id(CHAIN_ID)
+        .with_fee_denomination(FEE_DENOM)
+        .with_gas_auto_estimate(client, wallet.address())
+    )
+
+    signed = wallet.sign(tx)
+    resp = client.broadcast_tx_async(signed)
+    if resp.is_ok():
+        return resp.txhash
+    raise RuntimeError(f'Broadcast failed: {resp.raw_log}')
+
+
+
+# step:3 file: compile_the_clock_example.wasm_contract_and_upload_it_to_the_juno_testnet
+import json
+import os
+import time
+from typing import Optional
+
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+
+JUNO_RPC = os.getenv('JUNO_RPC', 'https://rpc.uni.juno.deuslabs.fi:443')
+CHAIN_ID = os.getenv('CHAIN_ID', 'uni-6')
+POLL_INTERVAL = int(os.getenv('POLL_INTERVAL', '5'))  # seconds
+MAX_POLLS = int(os.getenv('MAX_POLLS', '60'))
+
+
+def _extract_code_id(raw_log: str) -> Optional[str]:
+    try:
+        logs = json.loads(raw_log or '[]')
+    except Exception:
+        return None
+    for entry in logs:
+        for event in entry.get('events', []):
+            if event.get('type') == 'store_code':
+                for attr in event.get('attributes', []):
+                    if attr.get('key') == 'code_id':
+                        return attr.get('value')
+    return None
+
+
+def poll_tx_for_code_id(tx_hash: str) -> str:
+    '''Polls for tx inclusion and returns the emitted code_id.'''    
+    cfg = NetworkConfig(url=JUNO_RPC, chain_id=CHAIN_ID)
+    client = LedgerClient(cfg)
+
+    for _ in range(MAX_POLLS):
+        tx = client.query_tx(tx_hash)
+        if tx:
+            if tx.get('code', 0) != 0:
+                raise RuntimeError(f'Tx failed with code {tx["code"]}: {tx.get("raw_log")}')
+            code_id = _extract_code_id(tx.get('raw_log', ''))
+            if code_id:
+                return code_id
+            raise RuntimeError('Tx succeeded but code_id not found in logs.')
+        time.sleep(POLL_INTERVAL)
+    raise TimeoutError('Timed out waiting for transaction to be included.')
 
 
 
@@ -11960,6 +10563,102 @@ if (require.main === module) {
 module.exports = propagateConfig;
 
 
+# step:2 file: execute_increment_on_contract_address_contract_address_with_10ujuno
+### api/execute_increment.py
+import os
+import json
+import logging
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+from cosmpy.aerial.wallet import PrivateKey
+from cosmpy.aerial.tx import Transaction
+from cosmpy.aerial.gas import GasPrice, calculate_fee
+from cosmpy.common.types import Coins
+from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgExecuteContract
+
+router = APIRouter()
+
+# --------- configuration (override with env vars in production) ---------
+RPC_ENDPOINT = os.getenv("RPC_ENDPOINT", "https://rpc.juno.deuslabs.fi")
+CHAIN_ID     = os.getenv("CHAIN_ID", "juno-1")
+GAS_PRICE    = GasPrice(0.025, "ujuno")  # 0.025 ujuno / gas is typical for Juno
+
+NETWORK = NetworkConfig(
+    chain_id=CHAIN_ID,
+    url=RPC_ENDPOINT,
+    fee_minimum_gas_price=GAS_PRICE.amount,
+    fee_denomination=GAS_PRICE.denom,
+)
+
+# ------------------------ request schema -------------------------------
+class ExecuteRequest(BaseModel):
+    contractAddress: str
+    executeMsg: dict
+
+# ---------------------------- endpoint ---------------------------------
+@router.post("/api/execute_increment")
+async def execute_increment(req: ExecuteRequest):
+    """Broadcast a MsgExecuteContract that sends `{increment:{}}` and 10 ujuno funds."""
+    mnemonic = os.getenv("WALLET_MNEMONIC")
+    if not mnemonic:
+        raise HTTPException(status_code=500, detail="Missing WALLET_MNEMONIC environment variable")
+
+    try:
+        # 1.  Initialise wallet & client
+        key     = PrivateKey.from_mnemonic(mnemonic)
+        address = key.address()
+        client  = LedgerClient(NETWORK)
+
+        # 2.  Build the protobuf MsgExecuteContract
+        msg = MsgExecuteContract(
+            sender   = address,
+            contract = req.contractAddress,
+            msg      = json.dumps(req.executeMsg).encode(),
+            funds    = Coins.from_coins("10ujuno")  # attach 10 ujuno as payment
+        )
+
+        # 3.  Craft & sign the transaction (automatic fee & gas-adjustment)
+        tx = Transaction()
+        tx.add_message(msg)
+        tx.with_sender(address)
+        tx.with_gas(calculate_fee(tx, gas_price=GAS_PRICE, gas_adjustment=1.3))
+        signed_tx = tx.sign(key)
+
+        # 4.  Broadcast and wait for finalization ("block" mode)
+        result = client.broadcast_tx_block(signed_tx)
+        if result.is_err():
+            #  Broadcast succeeded but blockchain returned error code
+            logging.error("execute_increment error: %s", result)
+            raise HTTPException(status_code=400, detail=str(result))
+
+        return {"txHash": result.tx_hash, "height": result.height}
+
+    except Exception as e:
+        logging.exception("execute_increment failed")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# step:3 file: execute_increment_on_contract_address_contract_address_with_10ujuno
+### utils/tx_waiter.py
+import time
+from typing import Optional
+from cosmpy.aerial.client import LedgerClient
+from .execute_increment import NETWORK  # reuse the same network config
+
+client = LedgerClient(NETWORK)
+
+async def wait_for_tx_commit(tx_hash: str, timeout: int = 60) -> Optional[dict]:
+    """Poll the node every 2 s until the tx is indexed or the timeout elapses."""
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        tx_info = client.query_tx(tx_hash)
+        if tx_info:
+            return tx_info
+        time.sleep(2)
+    raise TimeoutError(f"Transaction {tx_hash} not found within {timeout}s")
+
+
 # step:1 file: send_a_signed_transaction_with_cast
 from fastapi import FastAPI, HTTPException
 import subprocess
@@ -12073,6 +10772,48 @@ async def wait_for_confirmation(params: WaitParams):
         elapsed += params.poll_interval
 
     raise HTTPException(status_code=504, detail='Timed out waiting for transaction confirmation.')
+
+
+# step:3 file: get_the_current_count_value_from_the_contract_at_contract_address
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
+import aiohttp
+import base64
+import json
+
+app = FastAPI()
+
+@app.get('/api/query_count')
+async def query_count(contract_address: str, rpc_endpoint: str = 'https://rpc.cosmos.directory/juno'):
+    """
+    Perform a CosmWasm smart-query (`get_count`) against the specified contract.
+
+    Args:
+        contract_address: The bech32 address of the contract.
+        rpc_endpoint:   Base URL of a publicly accessible gRPC-gateway or LCD endpoint.
+    """
+    try:
+        # 1. Build and encode the query
+        query_dict = {"get_count": {}}
+        encoded_query = base64.b64encode(json.dumps(query_dict).encode()).decode()
+
+        # 2. Compose the REST path defined by Cosmos SDK <v0.46+>/CosmWasm
+        #    Format: /cosmwasm/wasm/v1/contract/{address}/smart/{b64_encoded_query}
+        url = f"{rpc_endpoint}/cosmwasm/wasm/v1/contract/{contract_address}/smart/{encoded_query}"
+
+        # 3. Execute HTTP GET
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, timeout=10) as resp:
+                if resp.status != 200:
+                    error_text = await resp.text()
+                    raise HTTPException(status_code=resp.status,
+                                        detail=f'Upstream error: {error_text}')
+                data = await resp.json()
+                return JSONResponse(content=data)
+
+    except Exception as e:
+        # Surface any unexpected errors
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # step:2 file: mint_a_boost-receipt_nft_by_staking_250_ntrn_for_12_months
@@ -13136,6 +11877,132 @@ def query_cron_schedule(grpc_endpoint: str, name: str = "token_unlock", expected
         raise RuntimeError(f"Failed to query schedule: {e}")
 
 
+# step:1 file: compile_the_current_cosmwasm_smart_contract_using_rust-optimizer
+################  backend/compile_contract.py  ################
+"""Compile a CosmWasm contract from a FastAPI endpoint."""
+from pathlib import Path
+import subprocess
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+
+DOCKER_IMAGE = "cosmwasm/rust-optimizer:0.12.11"
+
+app = FastAPI()
+
+class CompileRequest(BaseModel):
+    project_root: str  # Absolute or relative path to the contract root
+
+
+def _run_optimizer(project_root: Path) -> str:
+    """Internal helper that executes the Docker optimizer and returns stdout."""
+    cmd = [
+        "docker", "run", "--rm",
+        "-v", f"{project_root}:/code",
+        "--mount", "type=volume,source=registry_cache,target=/usr/local/cargo/registry",
+        DOCKER_IMAGE,
+    ]
+
+    try:
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    except FileNotFoundError:
+        raise RuntimeError("Docker is not installed or not found in PATH.")
+    except subprocess.CalledProcessError as err:
+        raise RuntimeError(f"Rust optimizer failed: {err.stderr}\n{err.stdout}") from err
+
+    return result.stdout
+
+
+@app.post("/api/compile-contract")
+async def compile_contract(req: CompileRequest):
+    """POST /api/compile-contract with `{ "project_root": "/abs/path" }` to build the contract."""
+    project_root = Path(req.project_root).expanduser().resolve()
+
+    if not project_root.is_dir():
+        raise HTTPException(status_code=400, detail=f"Directory not found: {project_root}")
+
+    try:
+        stdout = _run_optimizer(project_root)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    return {
+        "message": "Compilation successful. Artifacts are in ./artifacts/.",
+        "stdout": stdout,
+        "artifacts_dir": str(project_root / "artifacts")
+    }
+
+# Optional: enable CLI usage for local development
+if __name__ == "__main__":
+    import argparse, json, sys
+
+    parser = argparse.ArgumentParser(description="Compile CosmWasm contract via docker rust-optimizer.")
+    parser.add_argument("project_root", help="Path to contract root")
+    args = parser.parse_args()
+
+    try:
+        output = _run_optimizer(Path(args.project_root))
+        print(json.dumps({"stdout": output}, indent=2))
+    except Exception as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+# step:2 file: compile_the_current_cosmwasm_smart_contract_using_rust-optimizer
+################  backend/verify_artifacts.py  ################
+"""Verify cosmwasm build artifacts exist."""
+from pathlib import Path
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+
+router = APIRouter()
+
+class VerifyRequest(BaseModel):
+    project_root: str
+
+
+def _verify_artifacts(project_root: Path) -> dict:
+    artifacts_dir = project_root / "artifacts"
+
+    if not artifacts_dir.is_dir():
+        raise FileNotFoundError("artifacts directory not found — did the build run?")
+
+    wasm_files = [f.name for f in artifacts_dir.glob("*.wasm")]
+    if not wasm_files:
+        raise FileNotFoundError("No .wasm files found in artifacts directory.")
+
+    contracts_txt = artifacts_dir / "contracts.txt"
+    if not contracts_txt.exists():
+        raise FileNotFoundError("contracts.txt not found in artifacts directory.")
+
+    return {
+        "wasm_files": wasm_files,
+        "contracts_txt": contracts_txt.name,
+        "status": "verified"
+    }
+
+
+@router.post("/api/verify-artifacts")
+async def verify_artifacts(req: VerifyRequest):
+    project_root = Path(req.project_root).expanduser().resolve()
+
+    if not project_root.is_dir():
+        raise HTTPException(status_code=400, detail=f"Directory not found: {project_root}")
+
+    try:
+        payload = _verify_artifacts(project_root)
+    except FileNotFoundError as nf:
+        raise HTTPException(status_code=404, detail=str(nf))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    return payload
+
+# Mount router into the FastAPI instance declared in compile_contract.py
+# Example (add this to main entrypoint):
+#   from backend.verify_artifacts import router as verify_router
+#   app.include_router(verify_router)
+
+
 # step:1 file: simulate_the_signed_transaction_to_estimate_gas
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -13931,30 +12798,6 @@ class BroadcastRequest(BaseModel):
     signature: str
 
 @app.post('/api/broadcast_tx')
-async def broadcast_tx(req: BroadcastRequest):
-    try:
-        body_bytes = base64.b64decode(req.body_bytes)
-        auth_info_bytes = base64.b64decode(req.auth_info_bytes)
-        signature_bytes = base64.b64decode(req.signature)
-
-        tx_raw = TxRaw(
-            body_bytes=body_bytes,
-            auth_info_bytes=auth_info_bytes,
-            signatures=[signature_bytes],
-        )
-
-        rpc = os.getenv('RPC_ENDPOINT', 'https://rpc-kralum.neutron-1.neutron.org')
-        client = LedgerClient(rpc)
-        tx_response = client.broadcast_tx(tx_raw.SerializeToString(), broadcast_mode='sync')
-
-        return { 'txhash': tx_response.tx_hash.hex() }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# step:1 file: update_foundry_to_the_latest_nightly_build
-import subprocess
-
 def check_foundryup_installation():
     """Verify that `foundryup` is on the PATH and return its version."""
     try:
@@ -15098,6 +13941,93 @@ def query_cron_show_schedule(name: str, grpc_endpoint: str = "https://rest.ntrn.
 
 
 
+# step:1 file: automatically_extract_the_contract_address_from_an_instantiate_txhash
+# backend/main.py
+from fastapi import FastAPI, HTTPException
+import httpx
+
+app = FastAPI(title="Juno Tx Service")
+
+LCD_BASE = "https://lcd-juno.itastakers.com"  # Public Juno LCD endpoint
+
+@app.get("/api/tx/{tx_hash}")
+async def get_tx_json(tx_hash: str):
+    """Return full transaction JSON for a given hash."""
+    url = f"{LCD_BASE}/cosmos/tx/v1beta1/txs/{tx_hash}"
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+            return resp.json()
+    except httpx.HTTPStatusError as e:
+        # LCD returned a non-200 response
+        raise HTTPException(status_code=e.response.status_code,
+                            detail=f"LCD error: {e.response.text}") from e
+    except httpx.RequestError as e:
+        # Networking problem
+        raise HTTPException(status_code=500,
+                            detail=f"Network error: {str(e)}") from e
+
+
+# step:2 file: automatically_extract_the_contract_address_from_an_instantiate_txhash
+# backend/main.py  (add below the previous code)
+from fastapi import HTTPException
+
+@app.get("/api/contract_address/{tx_hash}")
+async def get_contract_address(tx_hash: str):
+    """Return the contract address created by an instantiate tx."""
+    tx_json = await get_tx_json(tx_hash)  # Re-use logic from Step 1
+
+    logs = tx_json.get("tx_response", {}).get("logs", [])
+    if not logs or not isinstance(logs, list):
+        raise HTTPException(status_code=400, detail="Logs not found in transaction.")
+
+    # According to CosmWasm events, the instantiate event is in the first log index
+    for event in logs[0].get("events", []):
+        if event.get("type") == "instantiate":
+            for attr in event.get("attributes", []):
+                if attr.get("key") in ("_contract_address", "contract_address"):
+                    return {"contract_address": attr.get("value")}
+
+    raise HTTPException(status_code=404,
+                        detail="Unable to locate _contract_address in instantiate event.")
+
+
+# step:3 file: query_a_cosmwasm_contract’s_smart_state_with_custom_payload_{_abcde_:{}}_to_explore_confirm_schema
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import httpx, json, base64, os
+
+app = FastAPI()
+
+class ContractQueryRequest(BaseModel):
+    contract_address: str
+    query_payload: str  # '{"abcde":{}}'
+    rpc_endpoint: str | None = os.getenv('COSMOS_RPC', 'https://rpc.cosmos.directory/cosmoshub/rpc')
+
+@app.post('/api/query_contract')
+async def query_contract(req: ContractQueryRequest):
+    """Queries a CosmWasm smart contract and returns the decoded JSON response."""
+    # Validate JSON payload
+    try:
+        query_dict = json.loads(req.query_payload)
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=400, detail=f'Invalid JSON payload: {e}')
+
+    # Encode query to base64 as required for REST endpoint /smart/{data}
+    query_b64 = base64.b64encode(json.dumps(query_dict).encode()).decode()
+
+    url = f"{req.rpc_endpoint}/cosmwasm/wasm/v1/contract/{req.contract_address}/smart/{query_b64}"
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+            return {"data": resp.json()}
+    except httpx.HTTPError as err:
+        raise HTTPException(status_code=502, detail=f'Upstream RPC error: {err}')
+
+
 # step:1 file: export_app_state_and_validators
 from fastapi import FastAPI, HTTPException, Query
 import requests
@@ -15200,6 +14130,123 @@ async def validate_state(file_path: str = "state.json"):
         return {"valid": len(missing) == 0, "missing": missing}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Validation failed: {e}")
+
+
+# step:2 file: execute_a_contract_and_attach_tokens_with_the_--amount_flag
+import os
+import json
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+from cosmpy.aerial.contract import MsgExecuteContract
+from cosmpy.aerial.tx import Transaction
+from cosmpy.aerial.wallet import PrivateKey
+from cosmpy.protos.cosmos.base.v1beta1.coin_pb2 import Coin
+
+app = FastAPI()
+
+class ExecuteContractRequest(BaseModel):
+    contract_address: str
+    msg: dict  # already parsed JSON from the frontend
+    amount: str = "0"
+    denom: str = "ujuno"
+
+@app.post("/api/execute_contract")
+async def execute_contract(req: ExecuteContractRequest):
+    """
+    Signs and broadcasts a CosmWasm execute transaction using cosmpy.
+    A hex-encoded private key must be supplied in the JUNO_PRIVKEY_HEX environment variable.
+    """
+    priv_key_hex = os.getenv("JUNO_PRIVKEY_HEX")
+    if not priv_key_hex:
+        raise HTTPException(status_code=500, detail="Missing JUNO_PRIVKEY_HEX environment variable.")
+
+    chain_id = os.getenv("CHAIN_ID", "juno-1")
+    node_url = os.getenv("NODE_URL", "https://rpc-juno.itastakers.com:443")
+    gas_price = float(os.getenv("GAS_PRICE", "0.025"))
+
+    try:
+        pk = PrivateKey(bytes.fromhex(priv_key_hex))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Invalid private key: {e}")
+
+    cfg = NetworkConfig(
+        chain_id=chain_id,
+        url=node_url,
+        fee_minimum_gas_price=gas_price,
+        fee_denom=req.denom,
+    )
+    client = LedgerClient(cfg)
+    sender = pk.address()
+
+    funds = []
+    if int(req.amount) > 0:
+        funds.append(Coin(amount=req.amount, denom=req.denom))
+
+    tx = (
+        Transaction()
+        .with_messages(
+            MsgExecuteContract(
+                sender=sender,
+                contract=req.contract_address,
+                msg=json.dumps(req.msg).encode(),
+                funds=funds,
+            )
+        )
+        .with_gas(300000)
+        .with_chain_id(chain_id)
+        .with_sender(sender)
+    )
+
+    signed_tx = tx.build_and_sign(pk)
+
+    try:
+        res = client.broadcast_tx(signed_tx)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Broadcast error: {e}")
+
+    if res.tx_response.code != 0:
+        raise HTTPException(status_code=400, detail=f"Execute failed: {res.tx_response.raw_log}")
+
+    return {"tx_hash": res.tx_response.txhash, "height": res.tx_response.height}
+
+
+# step:3 file: execute_a_contract_and_attach_tokens_with_the_--amount_flag
+import os
+import asyncio
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+
+async def poll_tx_hash(tx_hash: str, timeout: int = 60, interval: int = 3):
+    """
+    Repeatedly queries the RPC endpoint for the provided tx_hash until it is included
+    in a block or the timeout (in seconds) is exceeded.
+    Returns a dict containing the tx result.
+    """
+    chain_id = os.getenv("CHAIN_ID", "juno-1")
+    node_url = os.getenv("NODE_URL", "https://rpc-juno.itastakers.com:443")
+    denom = os.getenv("TX_DENOM", "ujuno")
+
+    client = LedgerClient(NetworkConfig(chain_id=chain_id, url=node_url, fee_denom=denom))
+
+    elapsed = 0
+    while elapsed < timeout:
+        try:
+            res = client.query_tx(tx_hash)
+            if res and res.tx_response and res.tx_response.height > 0:
+                return {
+                    "status": "confirmed" if res.tx_response.code == 0 else "failed",
+                    "height": res.tx_response.height,
+                    "gas_used": res.tx_response.gas_used,
+                    "raw_log": res.tx_response.raw_log,
+                }
+        except Exception:
+            # Transaction not yet indexed
+            pass
+
+        await asyncio.sleep(interval)
+        elapsed += interval
+
+    raise TimeoutError(f"Timed out after {timeout}s waiting for tx {tx_hash}.")
 
 
 # step:1 file: export_the_current_application_state_to_a_new_snapshot_file
@@ -16687,6 +15734,35 @@ async def verify_halt_height(log_path: str, halt_height: int = 1000):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# step:3 file: query_a_cosmwasm_smart_contract_through_a_rest_endpoint_using_a_base64-encoded_query
+from fastapi import FastAPI, HTTPException
+import httpx
+import os
+
+app = FastAPI()
+
+# Change or override via environment variable for different chains/networks
+LCD_ENDPOINT = os.getenv('LCD_ENDPOINT', 'https://rest.cosmos.directory/juno')
+
+@app.get('/api/contract/query')
+async def contract_query(contract_addr: str, base64_query: str):
+    """
+    Forward a base64-encoded smart-contract query to the chain's LCD REST endpoint
+    and return the JSON response back to the caller.
+    """
+    lcd_url = f"{LCD_ENDPOINT}/cosmwasm/wasm/v1/contract/{contract_addr}/smart/{base64_query}"
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            response = await client.get(lcd_url)
+    except httpx.RequestError as e:
+        raise HTTPException(status_code=500, detail=f'Network error: {str(e)}')
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail=response.text)
+
+    return response.json()
+
+
 # step:1 file: enable_the_rest_api_server_via_app.toml
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
@@ -18025,6 +17101,102 @@ def verify_contract(network: str, address: str, constructor_args: List[str] | No
         return {'status': 'error', 'message': e.stderr}
 
 
+# step:1 file: upload_the_compiled_wasm_file_artifacts_contract_name.wasm_to_the_juno_chain
+import os
+import hashlib
+
+
+def verify_wasm_artifact(contract_name: str, artifacts_dir: str = 'artifacts', expected_sha256: str | None = None) -> dict:
+    """Verify local CosmWasm binary integrity.
+
+    Parameters
+    ----------
+    contract_name : str
+        Name of the contract (without `.wasm`).
+    artifacts_dir : str, optional
+        Relative path where build artifacts reside.
+    expected_sha256 : str | None, optional
+        If provided, the function will compare the on-disk hash to this value.
+
+    Returns
+    -------
+    dict
+        { 'file_path': str, 'sha256': str }
+    """
+    file_path = os.path.join(artifacts_dir, f'{contract_name}.wasm')
+
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(f'WASM artifact not found at {file_path}')
+
+    sha256 = hashlib.sha256()
+    with open(file_path, 'rb') as f:
+        for chunk in iter(lambda: f.read(8192), b''):
+            sha256.update(chunk)
+    file_hash = sha256.hexdigest()
+
+    if expected_sha256 and file_hash.lower() != expected_sha256.lower():
+        raise ValueError('SHA-256 hash mismatch: artifact may not be trusted.')
+
+    return {"file_path": file_path, "sha256": file_hash}
+
+
+# step:2 file: upload_the_compiled_wasm_file_artifacts_contract_name.wasm_to_the_juno_chain
+import json
+import subprocess
+import shlex
+
+
+def store_wasm(contract_name: str, key_name: str, chain_id: str, gas_adjustment: float = 1.3) -> dict:
+    """Call `junod tx wasm store` and return the tx hash."""
+    wasm_path = f'artifacts/{contract_name}.wasm'
+    cmd = (
+        f'junod tx wasm store {wasm_path} '
+        f'--from {key_name} --chain-id {chain_id} '
+        f'--gas auto --gas-adjustment {gas_adjustment} -y -o json'
+    )
+
+    try:
+        output = subprocess.check_output(shlex.split(cmd), stderr=subprocess.STDOUT)
+        cli_response = json.loads(output.decode())
+        tx_hash = cli_response.get('txhash') or cli_response.get('tx_response', {}).get('txhash')
+        if not tx_hash:
+            raise RuntimeError('Could not parse tx hash from CLI output.')
+        return {"tx_hash": tx_hash}
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f'junod CLI error: {e.output.decode()}') from e
+
+
+# step:3 file: upload_the_compiled_wasm_file_artifacts_contract_name.wasm_to_the_juno_chain
+import time
+import requests
+
+
+def wait_for_tx_commit(tx_hash: str, rest_endpoint: str, timeout: int = 180, poll_interval: int = 6) -> dict:
+    """Block until the transaction lands or raise TimeoutError."""
+    url = f"{rest_endpoint}/cosmos/tx/v1beta1/txs/{tx_hash}"
+    start = time.time()
+    while time.time() - start < timeout:
+        resp = requests.get(url)
+        if resp.status_code == 200:
+            data = resp.json()
+            if data.get('tx_response', {}).get('height', '0') != '0':
+                return data
+        time.sleep(poll_interval)
+    raise TimeoutError(f'Transaction {tx_hash} not found within {timeout} seconds')
+
+
+# step:4 file: upload_the_compiled_wasm_file_artifacts_contract_name.wasm_to_the_juno_chain
+import requests
+
+
+def fetch_code_list(rest_endpoint: str) -> dict:
+    """Return array of all CosmWasm code infos from the chain."""
+    url = f"{rest_endpoint}/cosmwasm/wasm/v1/code"
+    resp = requests.get(url)
+    resp.raise_for_status()
+    return resp.json()
+
+
 # step:4 file: lock_an_additional_500_ntrn_for_24_months_(boost)
 from fastapi import FastAPI, HTTPException, Body
 import os, json
@@ -18698,6 +17870,108 @@ async def get_latest_block():
         raise HTTPException(status_code=502, detail=f"Failed to fetch latest block: {err}")
 
 
+# step:1 file: compile_all_workspace_contracts_with_workspace-optimizer
+import subprocess
+import os
+import sys
+
+
+def run_workspace_optimizer(repo_root: str = ".") -> None:
+    """
+    Run the CosmWasm workspace-optimizer Docker image to compile optimized
+    Wasm binaries for every smart contract found in the Cargo workspace.
+
+    Args:
+        repo_root: Path to the repository root (defaults to current dir).
+    Raises:
+        FileNotFoundError: If Docker is not installed.
+        subprocess.CalledProcessError: If the Docker command exits non-zero.
+    """
+    cmd = [
+        "docker",
+        "run",
+        "--rm",
+        "-it",
+        "-v",
+        f"{os.path.abspath(repo_root)}:/code",
+        "--mount",
+        "type=volume,source=registry_cache,target=/usr/local/cargo/registry",
+        "cosmwasm/workspace-optimizer:0.12.11",
+    ]
+
+    try:
+        subprocess.run(cmd, check=True)
+        print("✅  Workspace optimizer completed successfully.")
+    except FileNotFoundError:
+        print("🛑  Docker is not installed or could not be found in $PATH.", file=sys.stderr)
+        raise
+    except subprocess.CalledProcessError as e:
+        print(f"🛑  Workspace optimizer failed with exit code {e.returncode}.", file=sys.stderr)
+        raise
+
+
+if __name__ == "__main__":
+    # Allow CLI execution: `python run_workspace_optimizer.py` from repo root
+    run_workspace_optimizer()
+
+
+
+# step:2 file: compile_all_workspace_contracts_with_workspace-optimizer
+import os
+import sys
+import glob
+from typing import List
+
+try:
+    import toml  # Light-weight parser for Cargo.toml
+except ImportError:
+    print("The 'toml' package is required. Install it with `pip install toml`.", file=sys.stderr)
+    raise
+
+
+def _get_workspace_members(repo_root: str = ".") -> List[str]:
+    """Return the list of workspace member directories from Cargo.toml."""
+    cargo_path = os.path.join(repo_root, "Cargo.toml")
+    if not os.path.exists(cargo_path):
+        raise FileNotFoundError("Cargo.toml not found at repository root.")
+    data = toml.load(cargo_path)
+    return data.get("workspace", {}).get("members", [])
+
+
+def verify_workspace_artifacts(repo_root: str = ".") -> None:
+    """
+    Ensure that `artifacts/` contains one optimized `.wasm` file for every
+    contract in the workspace.
+    """
+    members = _get_workspace_members(repo_root)
+    artifact_dir = os.path.join(repo_root, "artifacts")
+
+    if not os.path.isdir(artifact_dir):
+        raise FileNotFoundError("artifacts/ directory not found. Did you run the optimizer?")
+
+    wasm_files = glob.glob(os.path.join(artifact_dir, "*.wasm"))
+    wasm_basenames = {os.path.splitext(os.path.basename(p))[0] for p in wasm_files}
+
+    missing_contracts = []
+    for member in members:
+        contract_name = os.path.basename(member)
+        if contract_name not in wasm_basenames:
+            missing_contracts.append(contract_name)
+
+    if missing_contracts:
+        raise RuntimeError(
+            "Missing optimized contracts: " + ", ".join(missing_contracts)
+        )
+
+    print("✅  All workspace contracts have corresponding optimized Wasm artifacts.")
+
+
+if __name__ == "__main__":
+    # Allow CLI execution: `python verify_workspace_artifacts.py`
+    verify_workspace_artifacts()
+
+
+
 # step:5 file: open_a_5×_leveraged_loop_position_with_1_maxbtc_on_amber
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -18750,6 +18024,118 @@ async def open_position(req: OpenPositionRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# step:1 file: add_transaction_sign-mode_textual_support
+#!/usr/bin/env bash
+# scripts/update_sdk.sh
+# ---------------------------------------------
+# Updates Cosmos-SDK to v0.47.x and runs `go mod tidy`.
+# Exits on any failure and prints a helpful message.
+# ---------------------------------------------
+set -euo pipefail
+
+SDK_VERSION="v0.47.5"   # <- Pin the exact version you wish to use
+
+printf "\n🚀  Updating Cosmos-SDK to %s …\n" "$SDK_VERSION"
+
+go get github.com/cosmos/cosmos-sdk@${SDK_VERSION}
+
+echo "🔄  Tidying go.mod / go.sum …"
+go mod tidy
+
+echo "✅  go.mod successfully updated to Cosmos-SDK ${SDK_VERSION}"
+
+
+# step:2 file: add_transaction_sign-mode_textual_support
+// app/encoding.go
+package app
+
+import (
+    "github.com/cosmos/cosmos-sdk/client"
+    "github.com/cosmos/cosmos-sdk/codec"
+    "github.com/cosmos/cosmos-sdk/codec/types"
+    "github.com/cosmos/cosmos-sdk/simapp"
+    sdk "github.com/cosmos/cosmos-sdk/types"
+    tx "github.com/cosmos/cosmos-sdk/types/tx"
+    "github.com/cosmos/cosmos-sdk/types/tx/signing"
+)
+
+// MakeEncodingConfig returns an EncodingConfig with TEXTUAL sign-mode enabled.
+func MakeEncodingConfig() simapp.EncodingConfig {
+    cfg := simapp.MakeTestEncodingConfig()
+
+    // ---------------------------------------------------
+    // Enable SIGN_MODE_TEXTUAL so wallets / CLI can use it
+    // ---------------------------------------------------
+    signing.RegisterSignModeHandler(
+        signing.SignMode_SIGN_MODE_TEXTUAL,
+        func() client.TxConfig { return cfg.TxConfig }, // provide underlying TxConfig
+        nil, // no custom options needed for defaults
+    )
+
+    // (Optional) You can also restrict available sign-modes explicitly:
+    // cfg.TxConfig = tx.NewTxConfig(cfg.Codec, tx.ConfigOptions{
+    //     EnabledSignModes: []signing.SignMode{
+    //         signing.SignMode_SIGN_MODE_TEXTUAL,
+    //         signing.SignMode_SIGN_MODE_DIRECT,
+    //     },
+    // })
+
+    return cfg
+}
+
+
+# step:3 file: add_transaction_sign-mode_textual_support
+// cmd/root.go
+package cmd
+
+import (
+    "github.com/spf13/cobra"
+    "github.com/cosmos/cosmos-sdk/client/flags"
+)
+
+// NewRootCmd constructs the root command for your daemon.
+func NewRootCmd() *cobra.Command {
+    rootCmd := &cobra.Command{
+        Use:   "appd",
+        Short: "My Cosmos SDK Application",
+    }
+
+    // OPTIONAL: If you build custom tx sub-commands, be sure to add tx flags.
+    rootCmd.PersistentFlags().String(flags.FlagSignMode, "", "Choose sign mode (e.g. 'textual', 'direct')")
+
+    // If you import the default tx commands from the SDK they already carry this flag;
+    // the above keeps it when you wrap or replace them.
+    return rootCmd
+}
+
+
+# step:4 file: add_transaction_sign-mode_textual_support
+#!/usr/bin/env bash
+# scripts/build.sh
+set -euo pipefail
+
+BINARY_NAME="appd"
+
+printf "\n🔧  Building %s …\n" "$BINARY_NAME"
+
+go build -o "./build/${BINARY_NAME}" ./cmd/appd
+
+echo "✅  Binary built at ./build/${BINARY_NAME}"
+
+
+# step:5 file: add_transaction_sign-mode_textual_support
+# Example shell command — replace values as needed
+appd tx sign unsigned_tx.json \
+    --from alice \
+    --chain-id mychain-1 \
+    --sign-mode textual \
+    --output-document signed_tx.json
+
+# The CLI will display a textual, human-readable representation automatically.
+# You can also inspect the signed file:
+cat signed_tx.json | jq '.'
 
 
 # step:2 file: convert_an_ether_value_to_wei_(cast_to-wei)
@@ -19556,98 +18942,6 @@ def run_foundryup_install():
 # step:5 file: install_the_foundry_toolchain_using_foundryup
 import subprocess
 
-def verify_foundry_installation():
-    '''Verify that \"forge\" and \"cast\" are installed and return their version strings.'''
-    tools = ['forge', 'cast']
-    versions = {}
-    for tool in tools:
-        try:
-            result = subprocess.run([tool, '--version'], capture_output=True, text=True, check=True)
-            versions[tool] = result.stdout.strip()
-        except FileNotFoundError:
-            versions[tool] = 'not found'
-        except subprocess.CalledProcessError:
-            versions[tool] = 'error'
-    return versions
-
-
-
-# step:1 file: Show the current block height of the Neutron chain
-import requests
-from typing import Optional
-
-def connect_rpc_endpoint(rpc_endpoint: str = 'https://rpc-kralum.neutron.org') -> str:
-    """
-    Attempts to connect to the given Neutron RPC endpoint by querying the `/status`
-    route. Returns the endpoint string if successful; raises an exception otherwise.
-    """
-    try:
-        # Hit `/status` to confirm the node is alive
-        url = rpc_endpoint.rstrip('/') + '/status'
-        response = requests.get(url, timeout=5)
-        response.raise_for_status()
-
-        # Basic sanity check on the payload
-        if 'result' not in response.json():
-            raise ValueError('Unexpected response payload from RPC endpoint.')
-
-        return rpc_endpoint
-    except requests.RequestException as err:
-        raise ConnectionError(
-            f'Unable to reach Neutron RPC endpoint at {rpc_endpoint}: {err}'
-        ) from err
-
-
-# step:2 file: Show the current block height of the Neutron chain
-import json
-import subprocess
-from typing import Dict
-
-def neutrond_status(rpc_endpoint: str) -> Dict:
-    """
-    Executes `neutrond status --node <rpc_endpoint>` via subprocess and returns
-    the parsed JSON dictionary containing the node's sync information.
-    """
-    try:
-        cmd = [
-            'neutrond',
-            'status',
-            '--node',
-            rpc_endpoint,
-        ]
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        return json.loads(result.stdout)
-    except subprocess.CalledProcessError as err:
-        raise RuntimeError(f'`neutrond status` failed: {err.stderr}') from err
-    except json.JSONDecodeError as err:
-        raise ValueError('Failed to parse JSON from neutrond output.') from err
-
-
-# step:3 file: Show the current block height of the Neutron chain
-from typing import Dict
-
-def extract_block_height(status_json: Dict) -> int:
-    """
-    Extracts the latest block height from the status JSON returned by `neutrond status`.
-    """
-    try:
-        height_str = status_json['result']['sync_info']['latest_block_height']
-        return int(height_str)
-    except (KeyError, TypeError, ValueError) as err:
-        raise ValueError(
-            'Invalid status JSON format: unable to locate `latest_block_height`.'
-        ) from err
-
-
-# step:1 file: allow_prometheus_port_26660_through_ufw
-import subprocess
-
-
 def allow_cosmos_prometheus_port():
     """Allow TCP traffic on port 26660 with a descriptive comment."""
     cmd = [
@@ -19771,6 +19065,65 @@ async def compile_contracts(project_path: str = "."):
         return {"status": "success", "message": "Hardhat compilation completed."}
     except subprocess.CalledProcessError as err:
         raise HTTPException(status_code=500, detail=f"Hardhat compile failed: {err}")
+
+
+# step:1 file: add_cw-orch_as_an_optional_dependency_in_cargo.toml
+from pathlib import Path
+import toml
+
+# Absolute path to Cargo.toml (assumed to be in project root)
+CARGO_TOML_PATH = Path(__file__).resolve().parent / 'Cargo.toml'
+
+def open_cargo_toml():
+    """Load Cargo.toml and return a Python dict representation."""
+    if not CARGO_TOML_PATH.exists():
+        raise FileNotFoundError(f'Cargo.toml not found at: {CARGO_TOML_PATH}')
+    try:
+        content = CARGO_TOML_PATH.read_text()
+        return toml.loads(content)
+    except toml.TomlDecodeError as err:
+        raise ValueError(f'Invalid TOML format: {err}')
+
+
+# step:2 file: add_cw-orch_as_an_optional_dependency_in_cargo.toml
+def insert_optional_dependency(
+    manifest: dict,
+    dep_name: str = 'cw-orch',
+    version: str = '*',
+    section: str = "target.'cfg(not(target_arch = \"wasm32\"))'.dependencies"
+) -> dict:
+    """Insert/Update an optional dependency inside the specified Cargo.toml section."""
+    # Walk (or create) the nested section path
+    levels = [lvl.strip("'") for lvl in section.split('.')]
+    cursor = manifest
+    for lvl in levels:
+        cursor = cursor.setdefault(lvl, {})
+    # Finally, insert the dependency specification
+    cursor[dep_name] = {"version": version, "optional": True}
+    return manifest
+
+
+# step:3 file: add_cw-orch_as_an_optional_dependency_in_cargo.toml
+from pathlib import Path
+import toml
+
+CARGO_TOML_PATH = Path(__file__).resolve().parent / 'Cargo.toml'
+
+def save_manifest(manifest: dict):
+    """Serialize the in-memory manifest back to Cargo.toml on disk."""
+    CARGO_TOML_PATH.write_text(toml.dumps(manifest))
+
+
+# step:4 file: add_cw-orch_as_an_optional_dependency_in_cargo.toml
+import subprocess
+
+def cargo_check() -> str:
+    """Run `cargo check` and return its standard output. Raises if the command fails."""
+    proc = subprocess.run(['cargo', 'check'], capture_output=True, text=True)
+    if proc.returncode != 0:
+        # Forward stderr so callers can see why the graph failed to resolve
+        raise RuntimeError(proc.stderr)
+    return proc.stdout
 
 
 # step:1 file: set_minimum_gas_prices_to_0.01token_in_app.toml
@@ -19897,6 +19250,78 @@ def verify_config_value(binary: str, expected_value: str = '0.01token', retries:
 
     raise RuntimeError('Unable to confirm minimum-gas-prices change after multiple attempts')
 
+
+
+# step:1 file: add_an_“interface”_feature_flag_in_cargo.toml_to_enable_cw-orch_for_a_cosmwasm_contract
+import os
+import toml
+
+
+def load_cargo_toml(path: str = "Cargo.toml") -> dict:
+    """Read Cargo.toml from disk and return its contents as a Python dict."""
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"{path} does not exist. Make sure you are in the project root.")
+
+    with open(path, "r", encoding="utf-8") as fp:
+        cargo_data = toml.load(fp)
+
+    return cargo_data
+
+
+# step:2 file: add_an_“interface”_feature_flag_in_cargo.toml_to_enable_cw-orch_for_a_cosmwasm_contract
+def add_cw_orch_dependency(cargo_data: dict, version: str = "*", optional: bool = True) -> dict:
+    """Insert or update the cw-orch dependency in the [dependencies] table."""
+    deps = cargo_data.setdefault("dependencies", {})
+
+    existing = deps.get("cw-orch")
+    if existing is None:
+        # Dependency is missing; create it.
+        deps["cw-orch"] = {"version": version, "optional": optional}
+    elif isinstance(existing, str):
+        # Dependency is a simple version string; replace with full table.
+        deps["cw-orch"] = {"version": version, "optional": optional}
+    else:
+        # Dependency exists as a table; update fields without clobbering others.
+        existing["version"] = version
+        existing["optional"] = optional
+
+    return cargo_data
+
+
+# step:3 file: add_an_“interface”_feature_flag_in_cargo.toml_to_enable_cw-orch_for_a_cosmwasm_contract
+def append_interface_feature(cargo_data: dict) -> dict:
+    """Guarantee that the [features] table contains interface = [\"dep:cw-orch\"]."""
+    features = cargo_data.setdefault("features", {})
+    interface = features.setdefault("interface", [])
+
+    if "dep:cw-orch" not in interface:
+        interface.append("dep:cw-orch")
+
+    return cargo_data
+
+
+# step:4 file: add_an_“interface”_feature_flag_in_cargo.toml_to_enable_cw-orch_for_a_cosmwasm_contract
+def save_cargo_toml(cargo_data: dict, path: str = "Cargo.toml") -> None:
+    """Persist the modified Cargo.toml dictionary to disk."""
+    import toml
+
+    with open(path, "w", encoding="utf-8") as fp:
+        toml.dump(cargo_data, fp)
+
+    print("Cargo.toml saved ✅")
+
+
+# step:5 file: add_an_“interface”_feature_flag_in_cargo.toml_to_enable_cw-orch_for_a_cosmwasm_contract
+def cargo_build_with_interface() -> None:
+    """Execute `cargo build --features interface` and surface any compilation errors."""
+    import subprocess
+
+    cmd = ["cargo", "build", "--features", "interface"]
+    try:
+        subprocess.run(cmd, check=True)
+        print("Cargo build succeeded ✅")
+    except subprocess.CalledProcessError as err:
+        raise RuntimeError(f"Cargo build failed with exit code {err.returncode}")
 
 
 # step:1 file: verify_the_installed_versions_of_foundry_components_(forge,_cast,_anvil)
@@ -20430,6 +19855,101 @@ async def sign_and_broadcast_tx(req: BroadcastReq):
         raise HTTPException(status_code=500, detail=str(err))
 
 
+# step:1 file: enable_grpc_and_swagger_endpoints_in_app.toml
+import os
+import toml
+
+def load_app_config(chain_id: str):
+    """Load ~/.<chain-id>/config/app.toml and return a (config_dict, file_path) tuple."""
+    config_path = os.path.expanduser(f"~/.{chain_id}/config/app.toml")
+
+    if not os.path.isfile(config_path):
+        raise FileNotFoundError(f"app.toml not found at {config_path}")
+
+    try:
+        with open(config_path, "r", encoding="utf-8") as fp:
+            config = toml.load(fp)
+    except Exception as err:
+        raise RuntimeError(f"Failed to parse {config_path}: {err}")
+
+    return config, config_path
+
+
+# step:2 file: enable_grpc_and_swagger_endpoints_in_app.toml
+def enable_grpc(chain_id: str, address: str = ":9090"):
+    """Enable gRPC and set its listen address (default :9090)."""
+    config, path = load_app_config(chain_id)
+
+    grpc_cfg = config.get("grpc", {})
+    grpc_cfg["enable"] = True
+    if address:
+        grpc_cfg["address"] = address
+    config["grpc"] = grpc_cfg
+
+    # Persist changes back to disk
+    with open(path, "w", encoding="utf-8") as fp:
+        toml.dump(config, fp)
+
+    return {"status": "success", "path": path, "grpc": grpc_cfg}
+
+
+# step:3 file: enable_grpc_and_swagger_endpoints_in_app.toml
+def enable_swagger(chain_id: str, address: str = "tcp://0.0.0.0:1317"):
+    """Enable Swagger UI and REST API address."""
+    config, path = load_app_config(chain_id)
+
+    api_cfg = config.get("api", {})
+    api_cfg["swagger"] = True
+    api_cfg["address"] = address
+    config["api"] = api_cfg
+
+    with open(path, "w", encoding="utf-8") as fp:
+        toml.dump(config, fp)
+
+    return {"status": "success", "path": path, "api": api_cfg}
+
+
+# step:4 file: enable_grpc_and_swagger_endpoints_in_app.toml
+import subprocess
+
+def restart_node(service_name: str):
+    """Restart the node via systemctl (e.g. service_name='neutrond')."""
+    try:
+        subprocess.run(["systemctl", "restart", service_name], check=True)
+    except subprocess.CalledProcessError as err:
+        raise RuntimeError(f"Failed to restart {service_name}: {err}")
+    return {"status": "restarted", "service": service_name}
+
+
+# step:5 file: enable_grpc_and_swagger_endpoints_in_app.toml
+import subprocess
+import requests
+
+
+def check_endpoints(grpc_addr: str = "localhost:9090", swagger_url: str = "http://localhost:1317/swagger/"):
+    """Return a list of gRPC services and whether the Swagger UI is reachable."""
+    # Check gRPC services
+    try:
+        result = subprocess.run([
+            "grpcurl", "-plaintext", grpc_addr, "list"
+        ], capture_output=True, text=True, check=True)
+        grpc_services = result.stdout.strip().splitlines()
+    except subprocess.CalledProcessError as err:
+        raise RuntimeError(f"grpcurl failed: {err.stderr}")
+
+    # Check Swagger UI
+    try:
+        resp = requests.get(swagger_url, timeout=5)
+        swagger_ok = resp.status_code == 200
+    except requests.RequestException:
+        swagger_ok = False
+
+    return {
+        "grpc_services": grpc_services,
+        "swagger_reachable": swagger_ok
+    }
+
+
 # step:3 file: create_an_ibc_transfer_on_an_unordered_channel_with_a_unique_timeout_timestamp
 # backend/ibc_transfer.py
 '''
@@ -20960,6 +20480,90 @@ async def supervault_positions(req: PositionsRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# step:1 file: generate_and_wire_up_a_default_simulation_manager
+// tools/sim.go
+//go:build tools
+// +build tools
+
+// This file guarantees simulation packages are kept in the module graph even
+// though they are not referenced in production code.
+package tools
+
+import (
+    _ "github.com/cosmos/cosmos-sdk/x/auth/simulation"
+    _ "github.com/cosmos/cosmos-sdk/x/bank/simulation"
+    // _ "github.com/cosmos/cosmos-sdk/x/staking/simulation" // add more as needed
+)
+
+
+
+# step:2 file: generate_and_wire_up_a_default_simulation_manager
+// app/simulation.go
+package app
+
+import (
+    "github.com/cosmos/cosmos-sdk/types/module"
+    authmodule "github.com/cosmos/cosmos-sdk/x/auth"
+    bankmodule "github.com/cosmos/cosmos-sdk/x/bank"
+    // import additional modules here
+)
+
+// newSimulationManager assembles the SimulationManager once and caches it.
+func (app *App) newSimulationManager() *module.SimulationManager {
+    if app.sm != nil {
+        return app.sm
+    }
+
+    simManager := module.NewSimulationManager(
+        authmodule.NewAppModule(app.AppCodec(), app.AccountKeeper, nil),
+        bankmodule.NewAppModule(app.AppCodec(), app.BankKeeper, app.AccountKeeper),
+        // add further AppModule instances here
+    )
+
+    app.sm = simManager
+    return simManager
+}
+
+
+
+# step:3 file: generate_and_wire_up_a_default_simulation_manager
+// app/simulation.go (continued)
+
+func (app *App) registerStoreDecoders() {
+    if app.sm == nil {
+        panic("simulation manager has not been initialised")
+    }
+
+    // This enables pretty-printing of store keys during simulation runs.
+    app.sm.RegisterStoreDecoders()
+}
+
+
+
+# step:4 file: generate_and_wire_up_a_default_simulation_manager
+// app/app.go (excerpt)
+
+func NewApp(/* existing params */) *App {
+    // ... keeper and module wiring ...
+
+    // Build & attach the simulation manager.
+    simMgr := app.newSimulationManager()
+    app.registerStoreDecoders()
+    app.SetSimulationManager(simMgr)
+
+    return app
+}
+
+
+
+# step:5 file: generate_and_wire_up_a_default_simulation_manager
+#!/usr/bin/env bash
+# Run application simulations with verbose output
+
+go test ./... -run TestFullAppSimulation -v
+
+
+
 # step:1 file: launch_a_simd_node_with_an_unlimited_mempool_(max-txs_=_-1)
 # backend/operations/simd_checks.py
 
@@ -21119,20 +20723,169 @@ async def simd_status(rpc: str = 'http://localhost:26657'):
         raise HTTPException(status_code=500, detail=str(exc))
 
 
-# step:2 file: find_the_block_number_closest_to_a_given_timestamp_(cast_find-block)
+# step:2 file: instantiate_the_contract_with_code_id_13_and_init_message_{_count_:0}
+########################  instantiate.py  ########################
+"""Backend-for-Frontend (BFF) service that instantiates a CosmWasm contract.
+
+Exposes POST /instantiate which expects:
+  {
+    "code_id": 13,
+    "init_msg": "{\"count\":0}",
+    "label": "counter-v1",
+    "admin": "juno1..."        // optional, may be null/empty
+  }
+Returns JSON { "tx_hash": "..." }
+"""
+import os
+import json
+from typing import Optional
+
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
-from subprocess import run, CalledProcessError
-import shutil
-import re
+from pydantic import BaseModel, Field, validator
+
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+from cosmpy.aerial.wallet import LocalWallet
+from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgInstantiateContract
+from cosmpy.aerial.tx import Transaction
+
+###########################################################################
+# Network / key setup ——— use ENV so secrets never reach the frontend      #
+###########################################################################
+
+RPC_ENDPOINT = os.getenv("JUNO_RPC", "https://rpc.juno.omniflix.co:443")
+CHAIN_ID = os.getenv("JUNO_CHAIN", "juno-1")
+FEE_DENOM = os.getenv("FEE_DENOM", "ujuno")
+GAS_PRICE = float(os.getenv("GAS_PRICE", "0.075"))  # ujuno per gas unit
+
+# Load the mnemonic from an environment variable (⚠️ NEVER check secrets in)
+MNEMONIC = os.getenv("BACKEND_MNEMONIC")
+if MNEMONIC is None:
+    raise RuntimeError("Missing BACKEND_MNEMONIC environment variable")
+
+wallet = LocalWallet.create_from_mnemonic(MNEMONIC)
+
+cfg = NetworkConfig(
+    chain_id=CHAIN_ID,
+    url=RPC_ENDPOINT,
+    fee_minimum_gas_price=f"{GAS_PRICE}{FEE_DENOM}",
+    fee_denomination=FEE_DENOM,
+)
+client = LedgerClient(cfg)
+
+###########################################################################
+# FastAPI Schemas                                                          #
+###########################################################################
+
+class InstantiatePayload(BaseModel):
+    code_id: int = Field(..., example=13)
+    init_msg: str = Field(..., description="JSON string of the instantiate message")
+    label: str = Field(..., example="counter-v1")
+    admin: Optional[str] = Field(None, description="(optional) admin address")
+
+    @validator("init_msg")
+    def init_msg_must_be_valid_json(cls, v):
+        try:
+            json.loads(v)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"init_msg is not valid JSON: {e}") from e
+        return v
 
 app = FastAPI()
 
-# Utility: verify that the cast binary exists on the host
-if shutil.which('cast') is None:
-    raise RuntimeError("'cast' CLI not found on host. Please install Foundry");
+###########################################################################
+# Helper: Build & broadcast instantiate tx                                 #
+###########################################################################
 
-@app.get('/api/find-block')
+def _broadcast_instantiate(payload: InstantiatePayload) -> str:
+    """Builds, signs, and broadcasts a MsgInstantiateContract. Returns TX hash."""
+
+    # Convert JSON string → bytes for protobuf msg field
+    init_bytes = json.dumps(json.loads(payload.init_msg)).encode()
+
+    # Build proto message --------------------------------------------------
+    msg = MsgInstantiateContract(
+        sender=wallet.address(),
+        admin=payload.admin or "",
+        code_id=payload.code_id,
+        label=payload.label,
+        msg=init_bytes,
+        funds=[],  # no native tokens sent along
+    )
+
+    # Create TX wrapper ----------------------------------------------------
+    tx = Transaction()
+    tx.add_message(msg)
+    tx.seal(wallet)  # add signer info & account sequence
+
+    # Estimate gas automatically (client-side simulation)
+    gas_estimate = client.estimate_gas(tx)
+    tx.set_gas(gas_estimate * 130 // 100)  # 30% safety margin
+
+    # Set fee based on gas x gas_price
+    fee_amount = int(tx.gas_limit * GAS_PRICE)
+    tx.set_fee([(fee_amount, FEE_DENOM)])
+
+    # Sign & broadcast -----------------------------------------------------
+    tx.sign(wallet)
+    resp = client.broadcast(tx)
+
+    if resp.tx_response.code != 0:
+        raise RuntimeError(f"Tx failed: {resp.tx_response.raw_log}")
+
+    return resp.tx_response.txhash
+
+###########################################################################
+# Route                                                                    #
+###########################################################################
+
+@app.post("/instantiate")
+async def instantiate_contract(payload: InstantiatePayload):
+    try:
+        tx_hash = _broadcast_instantiate(payload)
+        return {"tx_hash": tx_hash}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# step:3 file: instantiate_the_contract_with_code_id_13_and_init_message_{_count_:0}
+########################  tx_status.py  ########################
+"""Wait for a TX to commit and return the contract address (if any)."""
+import asyncio
+import json
+from typing import Optional
+
+from fastapi import APIRouter, HTTPException
+
+router = APIRouter()
+
+# Re-use `client` from instantiate.py via import (singleton pattern)
+from instantiate import client  # noqa: E402
+
+# Constants --------------------------------------------------------------
+POLL_INTERVAL = 2.0   # seconds
+MAX_BLOCKS = 15       # safety limit (~1 min on Juno)
+
+async def _extract_contract_address(tx_hash: str) -> Optional[str]:
+    """Poll the node until TX found in a block, then parse logs for _contract_address."""
+    for _ in range(MAX_BLOCKS):
+        tx = client.tx(tx_hash)
+        if tx is not None and tx.tx_response and tx.tx_response.height > 0:
+            # TX was found — parse logs
+            try:
+                logs = json.loads(tx.tx_response.raw_log)
+            except json.JSONDecodeError:
+                raise RuntimeError("Cannot decode tx logs")
+
+            for event in logs[0].get("events", []):
+                if event.get("type") in ("instantiate", "instantiate_contract", "wasm"):  # chain-specific variants
+                    for attr in event.get("attributes", []):
+                        if attr.get("key") in ("_contract_address", "contract_address"):
+                            return attr.get("value")
+            return None  # tx succeeded but no address (unexpected)
+        await asyncio.sleep(POLL_INTERVAL)
+    raise RuntimeError("Timed out waiting for transaction to be included in a block")
+
+@router.get("/tx_status/{tx_hash}")
 async def find_block(timestamp: int, rpc_url: str):
     """Return the block number closest to a given Unix timestamp."""
 
@@ -21757,41 +21510,6 @@ from fastapi import HTTPException
 import time
 
 @app.get('/api/tx_receipt/{tx_hash}')
-async def tx_receipt(tx_hash: str):
-    """Return the transaction receipt (or null if not yet mined)."""
-    if not tx_hash or not tx_hash.startswith('0x'):
-        raise HTTPException(status_code=400, detail='Invalid transaction hash.')
-
-    payload = {
-        'jsonrpc': '2.0',
-        'method': 'eth_getTransactionReceipt',
-        'params': [tx_hash],
-        'id': 1
-    }
-
-    try:
-        rpc_resp = requests.post(RPC_URL, json=payload, timeout=30)
-        rpc_resp.raise_for_status()
-        data = rpc_resp.json()
-
-        if 'error' in data:
-            raise HTTPException(status_code=500, detail=data['error']['message'])
-
-        # data['result'] is either the receipt object or null if the tx is pending.
-        return {'receipt': data['result']}
-    except requests.RequestException as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-
-# step:1 file: start_indefinite_cpu_profiling_to_cpu.prof
-import subprocess
-import shutil
-from pathlib import Path
-
-SERVICE_NAME = "cosmosd.service"  # change as needed
-CPU_PROFILE_FLAG = "--cpu-profile cpu.prof"
-
-
 def update_node_start_flags(service_name: str = SERVICE_NAME, flag: str = CPU_PROFILE_FLAG):
     """Append a CPU-profiling flag to the ExecStart line of a systemd service.
 
@@ -23714,15 +23432,21 @@ import subprocess
 
 SERVICE_NAME = "evmd"
 
-def restart_node(service_name: str = SERVICE_NAME):
-    """Start (or restart) the evmd systemd service to apply the new configuration."""
+async def create_wallet():
+    """Create a new key-pair and return { mnemonic, address }."""
     try:
-        subprocess.run(["systemctl", "start", service_name], check=True, capture_output=True)
-        print(f"{service_name} started successfully.")
-    except subprocess.CalledProcessError as err:
-        raise RuntimeError(f"Failed to start {service_name}: {err.stderr.decode()}")
+        # 1. Generate random private key (secure entropy)
+        priv_key = PrivateKey()
 
-if __name__ == "__main__":
-    restart_node()
+        # 2. Obtain the 24-word BIP-39 mnemonic from the key
+        mnemonic = priv_key.to_mnemonic()
+
+        # 3. Derive the bech32 address (default prefix: 'cosmos')
+        address = priv_key.public_key.address()
+
+        # SECURITY: do *not* store mnemonic or private key
+        return {"mnemonic": mnemonic, "address": address}
+    except Exception as err:
+        raise HTTPException(status_code=500, detail=str(err))
 
 

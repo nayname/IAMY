@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 provides a Python helper that reads and parses the project\u2019s Cargo.toml manifest into a Python dictionary, which subsequent steps can mutate.",
+            "code": "from pathlib import Path\nimport toml\n\n# Absolute path to Cargo.toml (assumed to be in project root)\nCARGO_TOML_PATH = Path(__file__).resolve().parent / 'Cargo.toml'\n\ndef open_cargo_toml():\n    \"\"\"Load Cargo.toml and return a Python dict representation.\"\"\"\n    if not CARGO_TOML_PATH.exists():\n        raise FileNotFoundError(f'Cargo.toml not found at: {CARGO_TOML_PATH}')\n    try:\n        content = CARGO_TOML_PATH.read_text()\n        return toml.loads(content)\n    except toml.TomlDecodeError as err:\n        raise ValueError(f'Invalid TOML format: {err}')",
+            "usage": "manifest = open_cargo_toml()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 mutates the in-memory manifest by inserting `cw-orch` as an optional dependency under the `target.'cfg(not(target_arch = \"wasm32\"))'.dependencies` table.",
+            "code": "def insert_optional_dependency(\n    manifest: dict,\n    dep_name: str = 'cw-orch',\n    version: str = '*',\n    section: str = \"target.'cfg(not(target_arch = \\\"wasm32\\\"))'.dependencies\"\n) -> dict:\n    \"\"\"Insert/Update an optional dependency inside the specified Cargo.toml section.\"\"\"\n    # Walk (or create) the nested section path\n    levels = [lvl.strip(\"'\") for lvl in section.split('.')]\n    cursor = manifest\n    for lvl in levels:\n        cursor = cursor.setdefault(lvl, {})\n    # Finally, insert the dependency specification\n    cursor[dep_name] = {\"version\": version, \"optional\": True}\n    return manifest",
+            "usage": "manifest = insert_optional_dependency(manifest)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 writes the modified manifest back to disk, persisting the changes made in Step 2.",
+            "code": "from pathlib import Path\nimport toml\n\nCARGO_TOML_PATH = Path(__file__).resolve().parent / 'Cargo.toml'\n\ndef save_manifest(manifest: dict):\n    \"\"\"Serialize the in-memory manifest back to Cargo.toml on disk.\"\"\"\n    CARGO_TOML_PATH.write_text(toml.dumps(manifest))",
+            "usage": "save_manifest(manifest)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 invokes `cargo check` in a subprocess to verify that the dependency graph now resolves successfully.",
+            "code": "import subprocess\n\ndef cargo_check() -> str:\n    \"\"\"Run `cargo check` and return its standard output. Raises if the command fails.\"\"\"\n    proc = subprocess.run(['cargo', 'check'], capture_output=True, text=True)\n    if proc.returncode != 0:\n        # Forward stderr so callers can see why the graph failed to resolve\n        raise RuntimeError(proc.stderr)\n    return proc.stdout",
+            "usage": "output = cargo_check()\nprint(output)"
+        }
+    ]
+}

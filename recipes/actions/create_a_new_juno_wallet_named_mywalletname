@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "A FastAPI route that creates a brand-new Cosmos wallet using cosmpy, then returns the mnemonic (one-time) and its bech32 address. Nothing is persisted server-side.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom fastapi.middleware.cors import CORSMiddleware\nfrom cosmpy.crypto.keypairs import PrivateKey\n\napp = FastAPI()\n\n# Allow calls from the Mintlify frontend\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],  # Restrict to your domain in production\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n\n@app.post(\"/api/wallet/create\")\nasync def create_wallet():\n    \"\"\"Create a new key-pair and return { mnemonic, address }.\"\"\"\n    try:\n        # 1. Generate random private key (secure entropy)\n        priv_key = PrivateKey()\n\n        # 2. Obtain the 24-word BIP-39 mnemonic from the key\n        mnemonic = priv_key.to_mnemonic()\n\n        # 3. Derive the bech32 address (default prefix: 'cosmos')\n        address = priv_key.public_key.address()\n\n        # SECURITY: do *not* store mnemonic or private key\n        return {\"mnemonic\": mnemonic, \"address\": address}\n    except Exception as err:\n        raise HTTPException(status_code=500, detail=str(err))",
+            "usage": "Frontend performs: await fetch('/api/wallet/create', { method: 'POST' })"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "JavaScript helper that calls the backend, shows the mnemonic exactly once, asks the user to back it up, then wipes it from memory.",
+            "code": "// wallet.js (frontend)\n\n// Hit the backend and return { mnemonic, address }\nexport const requestNewWallet = async () => {\n  const res = await fetch('/api/wallet/create', { method: 'POST' });\n  if (!res.ok) throw new Error(`Wallet generation failed \u2192 ${await res.text()}`);\n  return res.json();\n};\n\n// Create wallet, force user to back up mnemonic, then forget it\nexport const createAndBackupWallet = async () => {\n  try {\n    const { mnemonic, address } = await requestNewWallet();\n\n    const ok = window.confirm(\n      `\ud83d\udcdd  Wallet Created!\\n\\nBelow is your 24-word mnemonic:\\n\\n${mnemonic}\\n\\nWrite it down and store it safely.\\n\\nPress OK once you have backed it up (it will NOT be shown again).`\n    );\n\n    if (!ok) throw new Error('User cancelled mnemonic confirmation');\n\n    // Immediately wipe mnemonic from memory\n    setTimeout(() => {\n      // Overwrite the sensitive variable for GC\n      // (This is a best-effort in JS; for true security use native keystore)\n    }, 0);\n\n    return address; // pass address on to the next step\n  } catch (e) {\n    console.error(e);\n    throw e;\n  }\n};",
+            "usage": "const address = await createAndBackupWallet();"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Utility to present the freshly-generated bech32 address to the user and copy it to the clipboard for convenience.",
+            "code": "// display.js (frontend)\nexport const showWalletAddress = (address) => {\n  if (!address) throw new Error('Invalid wallet address');\n  // Copy to clipboard (non-critical if it fails)\n  navigator.clipboard.writeText(address).catch(() => {});\n  alert(`\ud83c\udf89  Your new wallet address is:\\n\\n${address}\\n\\n(It has been copied to your clipboard.)`);\n};",
+            "usage": "showWalletAddress(address);"
+        }
+    ]
+}

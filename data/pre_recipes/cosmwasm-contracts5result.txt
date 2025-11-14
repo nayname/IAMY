@@ -1,0 +1,60 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"cosmwasm-contracts\", \"query\": \"Query contract smart state with payload {'abcde':{}} to discover schema\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Execute reset on contract CONTRACT_ADDRESS setting count to 0\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Get current count from contract CONTRACT_ADDRESS\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Store the returned code id in shell variable CODE_ID\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Connect SigningCosmWasmClient to RPC https://rpc.juno.strange.love and execute increment\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "963a81b0-7653-4049-a709-98f0fe0c3082"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Query a CosmWasm contract\u2019s smart state with custom payload {\\\"abcde\\\":{}} to explore/confirm schema\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"request_contract_address\",\n        \"description\": \"Prompt the user for (or look up) the target contract\u2019s address.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"construct_custom_query_payload\",\n        \"description\": \"Create the JSON payload {\\\"abcde\\\":{}} exactly as a single-line string.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"cli_wasm_query_smart\",\n        \"description\": \"Run: wasmd query wasm contract-state smart <CONTRACT_ADDRESS> '{\\\"abcde\\\":{}}' --node <RPC> --output json\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"pretty_print_response\",\n        \"description\": \"Format the returned JSON so the user can inspect any keys (schema discovery).\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Command exits with code 0 (no CLI error).\",\n      \"Returned JSON is valid and not empty (schema or error message present).\"\n    ]\n  },\n  {\n    \"intent\": \"Execute a reset on the contract at CONTRACT_ADDRESS, setting count to 0\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"get_signer_address\",\n        \"description\": \"Identify the wallet that has permission to execute the contract.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"construct_execute_msg_reset\",\n        \"description\": \"Create message JSON: '{\\\"reset\\\":{\\\"count\\\":0}}'.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"sign_broadcast_wasm_execute_tx\",\n        \"description\": \"CLI: wasmd tx wasm execute <CONTRACT_ADDRESS> '{\\\"reset\\\":{\\\"count\\\":0}}' --from <SIGNER> --gas auto --fees <AMOUNT><DENOM> --node <RPC> --broadcast-mode block\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"await_tx_confirmation\",\n        \"description\": \"Wait until the transaction is included in a block and capture the tx hash.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Transaction height and hash are returned without error.\",\n      \"Subsequent query of the count returns 0.\"\n    ]\n  },\n  {\n    \"intent\": \"Get the current count value from the contract at CONTRACT_ADDRESS\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"request_contract_address\",\n        \"description\": \"Obtain the contract address to be queried.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"construct_get_count_query\",\n        \"description\": \"Prepare JSON payload '{\\\"get_count\\\":{}}'.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"cli_wasm_query_smart\",\n        \"description\": \"Execute: wasmd query wasm contract-state smart <CONTRACT_ADDRESS> '{\\\"get_count\\\":{}}' --node <RPC> --output json\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Returned JSON includes a numeric \\\"count\\\" field.\",\n      \"No error strings like \\\"unknown variant\\\" appear.\"\n    ]\n  },\n  {\n    \"intent\": \"Store the returned code ID from a wasm store transaction into a shell variable CODE_ID\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"upload_contract_code\",\n        \"description\": \"Run: wasmd tx wasm store <PATH_TO_WASM> --from <SIGNER> --gas auto --fees <AMOUNT><DENOM> --node <RPC> --broadcast-mode block --output json > tx.json\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"extract_code_id_from_tx_response\",\n        \"description\": \"Parse tx.json with: CODE_ID=$(jq -r '.logs[0].events[] | select(.type==\\\"store_code\\\") | .attributes[-1].value' tx.json)\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"export_shell_variable_CODE_ID\",\n        \"description\": \"Export the variable so subsequent shell commands can reference it: export CODE_ID\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"echo $CODE_ID prints a non-empty numeric value.\",\n      \"CODE_ID matches the code_id reported by wasmd query wasm list-code --node <RPC>.\"\n    ]\n  },\n  {\n    \"intent\": \"Connect a SigningCosmWasmClient to RPC https://rpc.juno.strange.love and execute an increment on the contract\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"initialize_signing_wallet\",\n        \"description\": \"Create or load a wallet (e.g., from mnemonic) using @cosmjs/proto-signing's DirectSecp256k1HdWallet.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"connect_signing_cosmwasm_client\",\n        \"description\": \"Use SigningCosmWasmClient.connectWithSigner('https://rpc.juno.strange.love', signer) to get a client instance.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"construct_increment_execute_msg\",\n        \"description\": \"Prepare JavaScript object: { increment: {} }.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"execute_contract_via_client\",\n        \"description\": \"client.execute(senderAddress, contractAddress, { increment: {} }, 'auto', '') and await the result.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"verify_execution_events\",\n        \"description\": \"Check the returned logs for an event with type \\\"wasm\\\" and attribute action=\\\"increment\\\".\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Execution result has height and transactionHash defined.\",\n      \"Subsequent get_count query shows the count increased by 1.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2922,
+                    "prompt_tokens": 779,
+                    "total_tokens": 3701,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1600,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6lqVq55VGUl8pXBy0zRUqbVE3lR",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--1fdaf671-5994-4320-82bd-ec7488827684-0",
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 779,
+                "output_tokens": 2922,
+                "total_tokens": 3701,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1600
+                }
+            }
+        }
+    ]
+}

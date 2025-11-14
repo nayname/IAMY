@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates a brand-new key in the local keyring and returns its details (including the one-time mnemonic).",
+            "function": "generate_key(key_name, keyring_backend='test')",
+            "usage": "await generate_key('MyWalletName')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No implemented function is available that safely stores or displays the mnemonic exactly as described.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Fetches the bech32 address for an existing key so it can be shared for funding.",
+            "function": "verify_key(key_name, keyring_backend='test')",
+            "usage": "await verify_key('MyWalletName')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "await generate_key('MyWalletName')#step: 1 Tool: create_wallet Desciption: Generate a new key in the local keyring with the name MyWalletName (e.g., via `junod keys add MyWalletName`).",
+        "undef#step: 2 Tool: store_mnemonic_securely Desciption: Display the mnemonic once, prompt the user to back it up, and never store it in plaintext after confirmation.",
+        "await verify_key('MyWalletName')#step: 3 Tool: show_wallet_address Desciption: Return the bech32 address associated with MyWalletName so it can receive funds."
+    ],
+    "intent": "Create a new Juno wallet named MyWalletName",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "create_wallet",
+            "description": "Generate a new key in the local keyring with the name MyWalletName (e.g., via `junod keys add MyWalletName`)."
+        },
+        {
+            "step": 2,
+            "tool": "store_mnemonic_securely",
+            "description": "Display the mnemonic once, prompt the user to back it up, and never store it in plaintext after confirmation."
+        },
+        {
+            "step": 3,
+            "tool": "show_wallet_address",
+            "description": "Return the bech32 address associated with MyWalletName so it can receive funds."
+        }
+    ],
+    "outcome_checks": [
+        "Ensure the key list now contains an entry named MyWalletName.",
+        "Validate that the generated address starts with the correct Juno prefix (\"juno1\")."
+    ]
+}

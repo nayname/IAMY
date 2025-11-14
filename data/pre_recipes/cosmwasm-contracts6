@@ -1,0 +1,137 @@
+[
+    {
+        "intent": "Add an \u201cinterface\u201d feature flag in Cargo.toml to enable cw-orch for a CosmWasm contract",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_file",
+                "description": "Open the project\u2019s Cargo.toml in edit mode."
+            },
+            {
+                "step": 2,
+                "tool": "add_dependency",
+                "description": "Under the [dependencies] section, add cw-orch as an optional dependency, e.g.  cw-orch = { version = \"*\", optional = true }."
+            },
+            {
+                "step": 3,
+                "tool": "append_feature_flag",
+                "description": "Locate or create the [features] table and insert  interface = [\"dep:cw-orch\"]  to activate cw-orch when the feature is requested."
+            },
+            {
+                "step": 4,
+                "tool": "save_file",
+                "description": "Save Cargo.toml with the new dependency and feature flag."
+            },
+            {
+                "step": 5,
+                "tool": "cargo_build",
+                "description": "Run  cargo build --features interface  to be sure the build succeeds with the new flag."
+            }
+        ],
+        "outcome_checks": [
+            "Cargo.toml now contains cw-orch as an optional dependency and an interface feature pointing at it.",
+            "A build with cargo build --features interface completes without errors."
+        ]
+    },
+    {
+        "intent": "Query a CosmWasm smart contract through a REST endpoint using a base64-encoded query",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prepare_query_payload",
+                "description": "Create the JSON query object, e.g. {\"get_config\":{}} with no extra whitespace."
+            },
+            {
+                "step": 2,
+                "tool": "encode_to_base64",
+                "description": "Base64-encode the JSON query string."
+            },
+            {
+                "step": 3,
+                "tool": "http_get",
+                "description": "Send a GET request to /cosmwasm/wasm/v1/contract/{contract_addr}/smart/{base64_query} (or the chain-specific REST path)."
+            },
+            {
+                "step": 4,
+                "tool": "parse_response",
+                "description": "Decode and display the JSON result returned by the endpoint."
+            }
+        ],
+        "outcome_checks": [
+            "HTTP status 200 is returned.",
+            "The response body contains the expected JSON fields from the contract\u2019s query."
+        ]
+    },
+    {
+        "intent": "Compile the clock_example.wasm contract and upload it to the Juno testnet",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "rust_optimizer_build",
+                "description": "Run the CosmWasm rust-optimizer (e.g. docker run \u2026) to compile clock_example and create artifacts/clock_example.wasm."
+            },
+            {
+                "step": 2,
+                "tool": "junod_tx_wasm_store",
+                "description": "Broadcast junod tx wasm store artifacts/clock_example.wasm --chain-id=uni-6 --from <KEY> --gas=auto --gas-prices=0.025ujunox -y."
+            },
+            {
+                "step": 3,
+                "tool": "poll_tx_hash",
+                "description": "Wait for the transaction to be included in a block and capture the resulting code_id."
+            }
+        ],
+        "outcome_checks": [
+            "The build produces artifacts/clock_example.wasm below 2 MiB.",
+            "The store transaction is confirmed and a numeric code_id is returned on Juno testnet (uni-6)."
+        ]
+    },
+    {
+        "intent": "Execute a contract and attach tokens with the --amount flag",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "construct_execute_msg",
+                "description": "Prepare the JSON execute message for the desired contract endpoint."
+            },
+            {
+                "step": 2,
+                "tool": "junod_tx_wasm_execute",
+                "description": "Run  junod tx wasm execute <CONTRACT_ADDR> '<MSG_JSON>' --amount <NUMBER><DENOM> --from <KEY> --gas=auto -y."
+            },
+            {
+                "step": 3,
+                "tool": "poll_tx_hash",
+                "description": "Wait until the execute transaction is finalized in a block."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction success flag true in the Tx response.",
+            "The contract balance increases by the specified amount and/or the contract logic emits the expected event."
+        ]
+    },
+    {
+        "intent": "Generate a TypeScript client for a contract using ts-codegen",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "install_ts_codegen",
+                "description": "Ensure ts-node and cosmwasm-ts-codegen are installed globally or in the project (e.g. npm i -D @cosmwasm/ts-codegen ts-node)."
+            },
+            {
+                "step": 2,
+                "tool": "run_ts_codegen",
+                "description": "Execute  ts-node ./node_modules/@cosmwasm/ts-codegen/bin/cli.js --schema ./schema --out ./src/ts --client react-query  (adjust paths as needed)."
+            },
+            {
+                "step": 3,
+                "tool": "compile_typescript",
+                "description": "Run  tsc  or build the project to confirm the generated client compiles."
+            }
+        ],
+        "outcome_checks": [
+            "src/ts (or chosen output dir) now contains generated .ts files (contracts, messages, react-query hooks, etc.).",
+            "TypeScript compilation succeeds without type errors."
+        ]
+    }
+]

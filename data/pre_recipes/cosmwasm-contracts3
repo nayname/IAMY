@@ -1,0 +1,137 @@
+[
+    {
+        "intent": "Check the balance of a wallet address on the Juno network",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_address_format",
+                "description": "Ensure the supplied ADDRESS is a valid Bech32 Juno address (prefix `juno1`)."
+            },
+            {
+                "step": 2,
+                "tool": "junod_query_bank_balances",
+                "description": "Run `junod query bank balances ADDRESS --node <RPC_NODE>` to retrieve all balances for the account."
+            },
+            {
+                "step": 3,
+                "tool": "parse_cli_output",
+                "description": "Parse the JSON output returned by `junod` to list each denomination and its corresponding amount."
+            }
+        ],
+        "outcome_checks": [
+            "CLI returns HTTP exit code 0 and valid JSON.",
+            "The JSON contains a non-empty `balances` array (or explicitly shows zero balances)."
+        ]
+    },
+    {
+        "intent": "Configure junod CLI with a specific RPC node and chain-id (uni-6)",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "check_rpc_reachability",
+                "description": "Ping `NODE_URL` (e.g., `curl NODE_URL/status`) to verify the endpoint is online."
+            },
+            {
+                "step": 2,
+                "tool": "junod_config_node",
+                "description": "Execute `junod config node NODE_URL` to set the default RPC endpoint."
+            },
+            {
+                "step": 3,
+                "tool": "junod_config_chain_id",
+                "description": "Execute `junod config chain-id uni-6` to target the Juno testnet."
+            },
+            {
+                "step": 4,
+                "tool": "junod_config_view",
+                "description": "Run `junod config` (or `junod config get node` / `get chain-id`) to confirm the new values."
+            }
+        ],
+        "outcome_checks": [
+            "`junod config` shows `node = NODE_URL` and `chain-id = \"uni-6\"`.",
+            "`junod status --node NODE_URL` returns sync info without error."
+        ]
+    },
+    {
+        "intent": "Compile a CosmWasm contract for ARM64 using the rust-optimizer-arm64 image",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "docker_pull_image",
+                "description": "Pull the optimizer: `docker pull cosmwasm/rust-optimizer-arm64:latest`."
+            },
+            {
+                "step": 2,
+                "tool": "docker_run_rust_optimizer",
+                "description": "From the contract root, run `docker run --rm -v $(pwd):/code:Z cosmwasm/rust-optimizer-arm64:latest` to build optimized `.wasm` files into `artifacts/`."
+            },
+            {
+                "step": 3,
+                "tool": "verify_artifacts",
+                "description": "Check `artifacts/` for the produced `.wasm` and corresponding checksum files."
+            }
+        ],
+        "outcome_checks": [
+            "At least one `.wasm` file exists in `artifacts/` with non-zero size.",
+            "`file artifacts/*.wasm` identifies the binary as `WebAssembly (wasm) binary module version 0x1`."
+        ]
+    },
+    {
+        "intent": "Claim JUNOX test tokens from the uni-6 faucet for a given address",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_address_format",
+                "description": "Confirm ADDRESS is a valid Bech32 Juno address."
+            },
+            {
+                "step": 2,
+                "tool": "http_post_faucet_request",
+                "description": "Request tokens: `curl -X POST \"https://faucet.uni.junonetwork.io/credit?address=ADDRESS\"`."
+            },
+            {
+                "step": 3,
+                "tool": "parse_faucet_response",
+                "description": "Capture the faucet response and extract any `txHash` or success indicator."
+            },
+            {
+                "step": 4,
+                "tool": "junod_query_bank_balances",
+                "description": "After a short delay, verify funds with `junod query bank balances ADDRESS --node NODE_URL`."
+            }
+        ],
+        "outcome_checks": [
+            "Faucet returns HTTP 200 and a transaction hash or success flag.",
+            "Balance query shows a positive JUNOX (e.g., `ujunox`) amount credited to the address."
+        ]
+    },
+    {
+        "intent": "Add cw-orch as an optional dependency in Cargo.toml",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_file",
+                "description": "Open the project\u2019s `Cargo.toml` manifest for editing."
+            },
+            {
+                "step": 2,
+                "tool": "insert_optional_dependency",
+                "description": "Under `[target.'cfg(not(target_arch = \"wasm32\"))'.dependencies]` (or `[dev-dependencies]`), add `cw-orch = { version = \"*\", optional = true }`."
+            },
+            {
+                "step": 3,
+                "tool": "save_file",
+                "description": "Save changes to `Cargo.toml`."
+            },
+            {
+                "step": 4,
+                "tool": "cargo_check",
+                "description": "Run `cargo check` to ensure the dependency graph resolves successfully."
+            }
+        ],
+        "outcome_checks": [
+            "`cargo check` completes with exit code 0.",
+            "`Cargo.toml` now contains the `cw-orch` entry with `optional = true`."
+        ]
+    }
+]

@@ -327,7 +327,16 @@ async def handle_generate(request_data: GenerateRequest):
 async def handle_chat(request_data: Request):
     return await response(request_data, quadrant_client, embedding_model)
 
-
+@app.post("/mock_execute")
+async def handle_mock(request_data: Request):
+    # return await response(request_data, quadrant_client, embedding_model)
+    return JSONResponse(content={
+  "step_results": [
+    { "tool": "collect_target_address", "output": "mock address 123..." },
+    { "tool": "rest_get_request", "output": "{ balances: [...] }" },
+    { "tool": "parse_json_response", "output": "{ amount: 12.3 }" }
+  ]
+})
 
 @app.post("/generate_")
 async def handle_generate(request_data: GenerateRequest):

@@ -1,0 +1,40 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Loads the project\u2019s Cargo.toml file into a Python dictionary for in-memory editing.",
+            "code": "import os\nimport toml\n\n\ndef load_cargo_toml(path: str = \"Cargo.toml\") -> dict:\n    \"\"\"Read Cargo.toml from disk and return its contents as a Python dict.\"\"\"\n    if not os.path.exists(path):\n        raise FileNotFoundError(f\"{path} does not exist. Make sure you are in the project root.\")\n\n    with open(path, \"r\", encoding=\"utf-8\") as fp:\n        cargo_data = toml.load(fp)\n\n    return cargo_data",
+            "usage": "cargo_data = load_cargo_toml()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Adds cw-orch as an optional dependency under the [dependencies] section.",
+            "code": "def add_cw_orch_dependency(cargo_data: dict, version: str = \"*\", optional: bool = True) -> dict:\n    \"\"\"Insert or update the cw-orch dependency in the [dependencies] table.\"\"\"\n    deps = cargo_data.setdefault(\"dependencies\", {})\n\n    existing = deps.get(\"cw-orch\")\n    if existing is None:\n        # Dependency is missing; create it.\n        deps[\"cw-orch\"] = {\"version\": version, \"optional\": optional}\n    elif isinstance(existing, str):\n        # Dependency is a simple version string; replace with full table.\n        deps[\"cw-orch\"] = {\"version\": version, \"optional\": optional}\n    else:\n        # Dependency exists as a table; update fields without clobbering others.\n        existing[\"version\"] = version\n        existing[\"optional\"] = optional\n\n    return cargo_data",
+            "usage": "cargo_data = add_cw_orch_dependency(cargo_data)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Ensures an `interface` feature exists and includes `dep:cw-orch`, activating cw-orch when the feature is requested.",
+            "code": "def append_interface_feature(cargo_data: dict) -> dict:\n    \"\"\"Guarantee that the [features] table contains interface = [\\\"dep:cw-orch\\\"].\"\"\"\n    features = cargo_data.setdefault(\"features\", {})\n    interface = features.setdefault(\"interface\", [])\n\n    if \"dep:cw-orch\" not in interface:\n        interface.append(\"dep:cw-orch\")\n\n    return cargo_data",
+            "usage": "cargo_data = append_interface_feature(cargo_data)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Writes the updated Cargo.toml back to disk, persisting the new dependency and feature flag.",
+            "code": "def save_cargo_toml(cargo_data: dict, path: str = \"Cargo.toml\") -> None:\n    \"\"\"Persist the modified Cargo.toml dictionary to disk.\"\"\"\n    import toml\n\n    with open(path, \"w\", encoding=\"utf-8\") as fp:\n        toml.dump(cargo_data, fp)\n\n    print(\"Cargo.toml saved \u2705\")",
+            "usage": "save_cargo_toml(cargo_data)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Runs `cargo build --features interface` to verify that the project compiles successfully with the new feature flag.",
+            "code": "def cargo_build_with_interface() -> None:\n    \"\"\"Execute `cargo build --features interface` and surface any compilation errors.\"\"\"\n    import subprocess\n\n    cmd = [\"cargo\", \"build\", \"--features\", \"interface\"]\n    try:\n        subprocess.run(cmd, check=True)\n        print(\"Cargo build succeeded \u2705\")\n    except subprocess.CalledProcessError as err:\n        raise RuntimeError(f\"Cargo build failed with exit code {err.returncode}\")",
+            "usage": "cargo_build_with_interface()"
+        }
+    ]
+}

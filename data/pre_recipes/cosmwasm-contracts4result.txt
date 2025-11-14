@@ -1,0 +1,199 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"cosmwasm-contracts\", \"query\": \"Generate interface.rs for the contract with cw-orch interface macro\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Upload, instantiate and increment the counter using cw-orchestrator\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Base64 encode the JSON payload {'all_tokens':{}}\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Set TXFLAGS environment variable with gas settings\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Automatically extract the contract address from instantiate txhash\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "c7226a03-192a-4086-b70c-23fd83453639"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 353,
+                    "prompt_tokens": 766,
+                    "total_tokens": 1119,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 320,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6w6blKdNYEWiAWbEWPzhiwRwAva",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--bc4e0212-b5d7-4e77-83e7-2c567aeccbd5-0",
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "cw-orch interface macro",
+                        "max_results": 10
+                    },
+                    "id": "call_xpfQDmTabFCjwROl4hmO8efw",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 766,
+                "output_tokens": 353,
+                "total_tokens": 1119,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 320
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"cw-orch interface macro\":\n\n## 1. Speed up your development with cw-orchestrator <!-- omit in toc -->\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/cw-orchestrator.md\n**Section:** developer-guides\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: description: Integrate you smart-contract with cw-orch and facilitate testing/development and maintenance of your project.\n- Line 5: # Speed up your development with cw-orchestrator <!-- omit in toc -->\n- Line 9: cw-orchestrator is the most advanced scripting, testing, and deployment framework for CosmWasm smart-contracts. It makes it easy to write cross-environment compatible code for [cw-multi-test](https://github.com/CosmWasm/cw-multi-test), [Test Tube](https://github.com/osmosis-labs/test-tube), [Starship](https://github.com/cosmology-tech/starship) (alpha), and live networks, significantly reducing code duplication and test-writing time.\n- Line 11: Get ready to change the way you interact with contracts and simplify you smart-contracts journey. The following steps will allow you to integrate `cw-orch` and write clean code such as:\n- Line 22: In this quick-start guide, we will review the necessary steps in order to integrate [`cw-orch`](https://github.com/AbstractSDK/cw-orchestrator) into a simple contract crate. [We review integration of rust-workspaces (multiple contracts) at the end of this page](#integration-in-a-workspace).\n\n**Content Preview:**\n```\n---\ndescription: Integrate you smart-contract with cw-orch and facilitate testing/development and maintenance of your project.\n---\n\n---\n\n\n# Speed up your development with cw-orchestrator <!-- omit in toc -->\n\n\n---\n\n\ncw-orchestrator is the most advanced scripting, testing, and deployment framework for CosmWasm smart-contracts. It makes it easy to write cross-environment compatible code for [cw-multi-test](https://github.com/CosmWasm/cw-multi-test), [Test Tube](https://github.com/osmosis-labs/test-tube), [Starship](https://github.com/cosmology-tech/starship) (alpha), and live networks, significantly reducing code duplication and test-writing time.\n\n```\n\n---\n\n## 2. Speed up your development with cw-orchestrator <!-- omit in toc -->\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/cw-orchestrator.md\n**Section:** developer-guides\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: description: Integrate you smart-contract with cw-orch and facilitate testing/development and maintenance of your project.\n- Line 5: # Speed up your development with cw-orchestrator <!-- omit in toc -->\n- Line 9: cw-orchestrator is the most advanced scripting, testing, and deployment framework for CosmWasm smart-contracts. It makes it easy to write cross-environment compatible code for [cw-multi-test](https://github.com/CosmWasm/cw-multi-test), [Test Tube](https://github.com/osmosis-labs/test-tube), [Starship](https://github.com/cosmology-tech/starship) (alpha), and live networks, significantly reducing code duplication and test-writing time.\n- Line 11: Get ready to change the way you interact with contracts and simplify you smart-contracts journey. The following steps will allow you to integrate `cw-orch` and write clean code such as:\n- Line 22: In this quick-start guide, we will review the necessary steps in order to integrate [`cw-orch`](https://github.com/AbstractSDK/cw-orchestrator) into a simple contract crate. [We review integration of rust-workspaces (multiple contracts) at the end of this page](#integration-in-a-workspace).\n\n**Content Preview:**\n```\n---\ndescription: Integrate you smart-contract with cw-orch and facilitate testing/development and maintenance of your project.\n---\n\n---\n\n\n# Speed up your development with cw-orchestrator <!-- omit in toc -->\n\n\n---\n\n\ncw-orchestrator is the most advanced scripting, testing, and deployment framework for CosmWasm smart-contracts. It makes it easy to write cross-environment compatible code for [cw-multi-test](https://github.com/CosmWasm/cw-multi-test), [Test Tube](https://github.com/osmosis-labs/test-tube), [Starship](https://github.com/cosmology-tech/starship) (alpha), and live networks, significantly reducing code duplication and test-writing time.\n\n```\n\n---\n\n## 3. Get Token Prices\n**File:** /root/neutron/juno/developer-guides/miscellaneous/get-token-prices.md\n**Section:** developer-guides\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 80: export interface Data {\n- Line 84: export interface Provider {\n\n**Content Preview:**\n```\n\nexport interface Data {\n    id: string;\n\n---\n\n}\nexport interface Provider {\n    name: string;\n```\n\n---\n\n## 4. Get Token Prices\n**File:** /root/neutron/juno/developer-guides/miscellaneous/get-token-prices.md\n**Section:** developer-guides\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 80: export interface Data {\n- Line 84: export interface Provider {\n\n**Content Preview:**\n```\n\nexport interface Data {\n    id: string;\n\n---\n\n}\nexport interface Provider {\n    name: string;\n```\n\n---\n\n## 5. Introduction\n**File:** /root/neutron/juno/cli/cli-introduction.md\n**Section:** cli\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 59: | --node            | string | tcp://localhost:26657 | \\<host>:\\<port> to tendermint rpc interface for this chain                                                     |\n\n**Content Preview:**\n```\n| --memo            | string |                       | Memo to send along with transaction                                                                            |\n| --node            | string | tcp://localhost:26657 | \\<host>:\\<port> to tendermint rpc interface for this chain                                                     |\n| --offline         | string |                       | Offline mode (does not allow any online functionality)                                                         |\n```\n\n---\n\n## 6. status\n**File:** /root/neutron/juno/cli/modules/status.md\n**Section:** cli\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 13: | --node, -n | tcp://localhost:26657 | &lt;host&gt;:&lt;port&gt; to tendermint rpc interface for this chain | optional |\n\n**Content Preview:**\n```\n| :--- | :--- | :--- | :--- |\n| --node, -n | tcp://localhost:26657 | &lt;host&gt;:&lt;port&gt; to tendermint rpc interface for this chain | optional |\n\n```\n\n---\n\n## 7. Deploy a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/deploy-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 11: This guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n\n**Content Preview:**\n```\n\nThis guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n\n```\n\n---\n\n## 8. Query A Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/query-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 7: ## Command Line Interface\n\n**Content Preview:**\n```\n\n## Command Line Interface\n\n```\n\n---\n\n## 9. Send Tokens to a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/send-tokens-to-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 3: ## Command Line Interface\n\n**Content Preview:**\n```\n\n## Command Line Interface\n\n```\n\n---\n\n## 10. Deploy a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/deploy-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 11: This guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n\n**Content Preview:**\n```\n\nThis guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "04b33bf9-0648-4c7d-b5f7-0bd71360140f",
+            "tool_call_id": "call_xpfQDmTabFCjwROl4hmO8efw",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 492,
+                    "prompt_tokens": 3280,
+                    "total_tokens": 3772,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 448,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6wBtxSnlv28F3HWp4eePLvJjeJl",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--0123fa12-4cf6-48d3-b449-7065e6845f0a-0",
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "interface macro cw-orch interface.rs",
+                        "max_results": 20,
+                        "section": "developer-guides"
+                    },
+                    "id": "call_YtKJ32t7QXgkz2MrfppDGJyF",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 3280,
+                "output_tokens": 492,
+                "total_tokens": 3772,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 448
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"interface macro cw-orch interface.rs\":\n\n## 1. Speed up your development with cw-orchestrator <!-- omit in toc -->\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/cw-orchestrator.md\n**Section:** developer-guides\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: description: Integrate you smart-contract with cw-orch and facilitate testing/development and maintenance of your project.\n- Line 5: # Speed up your development with cw-orchestrator <!-- omit in toc -->\n- Line 9: cw-orchestrator is the most advanced scripting, testing, and deployment framework for CosmWasm smart-contracts. It makes it easy to write cross-environment compatible code for [cw-multi-test](https://github.com/CosmWasm/cw-multi-test), [Test Tube](https://github.com/osmosis-labs/test-tube), [Starship](https://github.com/cosmology-tech/starship) (alpha), and live networks, significantly reducing code duplication and test-writing time.\n- Line 11: Get ready to change the way you interact with contracts and simplify you smart-contracts journey. The following steps will allow you to integrate `cw-orch` and write clean code such as:\n- Line 22: In this quick-start guide, we will review the necessary steps in order to integrate [`cw-orch`](https://github.com/AbstractSDK/cw-orchestrator) into a simple contract crate. [We review integration of rust-workspaces (multiple contracts) at the end of this page](#integration-in-a-workspace).\n\n**Content Preview:**\n```\n---\ndescription: Integrate you smart-contract with cw-orch and facilitate testing/development and maintenance of your project.\n---\n\n---\n\n\n# Speed up your development with cw-orchestrator <!-- omit in toc -->\n\n\n---\n\n\ncw-orchestrator is the most advanced scripting, testing, and deployment framework for CosmWasm smart-contracts. It makes it easy to write cross-environment compatible code for [cw-multi-test](https://github.com/CosmWasm/cw-multi-test), [Test Tube](https://github.com/osmosis-labs/test-tube), [Starship](https://github.com/cosmology-tech/starship) (alpha), and live networks, significantly reducing code duplication and test-writing time.\n\n```\n\n---\n\n## 2. Speed up your development with cw-orchestrator <!-- omit in toc -->\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/cw-orchestrator.md\n**Section:** developer-guides\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: description: Integrate you smart-contract with cw-orch and facilitate testing/development and maintenance of your project.\n- Line 5: # Speed up your development with cw-orchestrator <!-- omit in toc -->\n- Line 9: cw-orchestrator is the most advanced scripting, testing, and deployment framework for CosmWasm smart-contracts. It makes it easy to write cross-environment compatible code for [cw-multi-test](https://github.com/CosmWasm/cw-multi-test), [Test Tube](https://github.com/osmosis-labs/test-tube), [Starship](https://github.com/cosmology-tech/starship) (alpha), and live networks, significantly reducing code duplication and test-writing time.\n- Line 11: Get ready to change the way you interact with contracts and simplify you smart-contracts journey. The following steps will allow you to integrate `cw-orch` and write clean code such as:\n- Line 22: In this quick-start guide, we will review the necessary steps in order to integrate [`cw-orch`](https://github.com/AbstractSDK/cw-orchestrator) into a simple contract crate. [We review integration of rust-workspaces (multiple contracts) at the end of this page](#integration-in-a-workspace).\n\n**Content Preview:**\n```\n---\ndescription: Integrate you smart-contract with cw-orch and facilitate testing/development and maintenance of your project.\n---\n\n---\n\n\n# Speed up your development with cw-orchestrator <!-- omit in toc -->\n\n\n---\n\n\ncw-orchestrator is the most advanced scripting, testing, and deployment framework for CosmWasm smart-contracts. It makes it easy to write cross-environment compatible code for [cw-multi-test](https://github.com/CosmWasm/cw-multi-test), [Test Tube](https://github.com/osmosis-labs/test-tube), [Starship](https://github.com/cosmology-tech/starship) (alpha), and live networks, significantly reducing code duplication and test-writing time.\n\n```\n\n---\n\n## 3. Get Token Prices\n**File:** /root/neutron/juno/developer-guides/miscellaneous/get-token-prices.md\n**Section:** developer-guides\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 80: export interface Data {\n- Line 84: export interface Provider {\n\n**Content Preview:**\n```\n\nexport interface Data {\n    id: string;\n\n---\n\n}\nexport interface Provider {\n    name: string;\n```\n\n---\n\n## 4. Get Token Prices\n**File:** /root/neutron/juno/developer-guides/miscellaneous/get-token-prices.md\n**Section:** developer-guides\n**Relevance Score:** 4\n\n**Matching lines:**\n- Line 80: export interface Data {\n- Line 84: export interface Provider {\n\n**Content Preview:**\n```\n\nexport interface Data {\n    id: string;\n\n---\n\n}\nexport interface Provider {\n    name: string;\n```\n\n---\n\n## 5. Deploy a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/deploy-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 11: This guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n\n**Content Preview:**\n```\n\nThis guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n\n```\n\n---\n\n## 6. Query A Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/query-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 7: ## Command Line Interface\n\n**Content Preview:**\n```\n\n## Command Line Interface\n\n```\n\n---\n\n## 7. Send Tokens to a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/send-tokens-to-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 3: ## Command Line Interface\n\n**Content Preview:**\n```\n\n## Command Line Interface\n\n```\n\n---\n\n## 8. Deploy a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/deploy-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 11: This guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n\n**Content Preview:**\n```\n\nThis guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n\n```\n\n---\n\n## 9. Query A Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/query-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 7: ## Command Line Interface\n\n**Content Preview:**\n```\n\n## Command Line Interface\n\n```\n\n---\n\n## 10. Send Tokens to a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/send-tokens-to-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 3: ## Command Line Interface\n\n**Content Preview:**\n```\n\n## Command Line Interface\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "859c3f77-d352-49e9-8889-5b3f2a908294",
+            "tool_call_id": "call_YtKJ32t7QXgkz2MrfppDGJyF",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Generate interface.rs for a CosmWasm contract with the cw-orch #[interface] macro\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"locate_contract_crate\",\n        \"description\": \"Confirm (or ask for) the path of the CosmWasm contract crate that already defines InstantiateMsg, ExecuteMsg and QueryMsg.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"add_cargo_dependency\",\n        \"description\": \"Add `cw-orch = { version = \\\"^0.9\\\", default-features = false, features = [\\\"derive\\\"] }` under [dev-dependencies] in Cargo.toml so the interface macro is only pulled in for testing & scripting.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"create_file\",\n        \"description\": \"Generate a new file `src/interface.rs` (or overwrite it if it exists).\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"write_rust_code\",\n        \"description\": \"Insert the following boilerplate into interface.rs:\\n\\n```rust\\nuse cosmwasm_std::{Addr, Response, DepsMut, Env, MessageInfo};\\nuse cw_orch::interface;\\n\\n#[interface]\\npub trait CounterContract {\\n    type Error = anyhow::Error;\\n    type InstantiateMsg = crate::msg::InstantiateMsg;\\n    type ExecuteMsg = crate::msg::ExecuteMsg;\\n    type QueryMsg = crate::msg::QueryMsg;\\n\\n    // (Optional) declare helper wrappers, e.g.:\\n    fn increment(&self) -> Result<Response, Self::Error>;\\n}\\n```\\n\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"cargo_check\",\n        \"description\": \"Run `cargo check --tests` in the contract crate to ensure the interface compiles and the macro expansion succeeds.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"cargo check finishes with 0 errors.\",\n      \"`src/interface.rs` exists and the generated trait matches the contract messages.\"\n    ]\n  },\n  {\n    \"intent\": \"Upload, instantiate, and increment a counter contract using cw-orchestrator\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"load_env\",\n        \"description\": \"Read `.env` for `RPC_ENDPOINT`, `CHAIN_ID`, `DEPLOYER_MNEMONIC` and `GAS_PRICES` so cw-orch can sign and send transactions.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"optimize_wasm\",\n        \"description\": \"Run `cargo wasm && docker run --rm -v $(pwd):/code cosmtrek/wasm:optimizer .` to produce an optimized `.wasm` binary in `artifacts/`.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"cw_orch_store_code\",\n        \"description\": \"Inside a Rust script or test, call `deployer.upload_file(\\\"artifacts/counter.wasm\\\")?` to broadcast the `StoreCode` tx and retrieve the resulting `code_id`.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"cw_orch_instantiate\",\n        \"description\": \"Use `CounterContract::instantiate(code_id, \\\"counter\\\", &InstantiateMsg { start: 0 }, None, &[])?` to create the contract; capture the returned `contract_addr`.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"cw_orch_execute\",\n        \"description\": \"Execute `CounterContract::increment()` against `contract_addr` and await the tx result.\"\n      },\n      {\n        \"step\": 6,\n        \"tool\": \"cw_orch_query\",\n        \"description\": \"Query the contract with `CounterContract::get_count()` (or equivalent) to verify the new counter value.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"StoreCode tx included in a block and a non-zero code_id returned.\",\n      \"Instantiate tx returns a contract address in `events[\\\"instantiate\\\"][\\\"_contract_address\\\"]`.\",\n      \"Query after increment returns `count == 1`.\"\n    ]\n  },\n  {\n    \"intent\": \"Base64-encode the JSON payload {'all_tokens':{}}\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"serialize_json\",\n        \"description\": \"Normalize the payload with no extra whitespace: `{\\\"all_tokens\\\":{}}`.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"encode_base64\",\n        \"description\": \"Run `echo -n '{\\\"all_tokens\\\":{}}' | base64` (or use a language helper) to produce the base64 string.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The output equals `eyJhbGxfdG9rZW5zIjp7fX0=` (case-sensitive, no newline).\"\n    ]\n  },\n  {\n    \"intent\": \"Set the TXFLAGS environment variable with recommended gas settings\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"set_environment_variable\",\n        \"description\": \"Execute `export TXFLAGS=\\\"--gas=auto --gas-adjustment 1.3 --gas-prices 0.025uatom\\\"` in the current shell session (or add it to the user profile).\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"`echo $TXFLAGS` prints `--gas=auto --gas-adjustment 1.3 --gas-prices 0.025uatom`.\",\n      \"Subsequent `junod tx` commands inherit the flags when `$TXFLAGS` is expanded (e.g., `junod tx bank send $TXFLAGS ...`).\"\n    ]\n  },\n  {\n    \"intent\": \"Automatically extract the contract address from an instantiate txhash\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"query_tx_json\",\n        \"description\": \"Run `junod query tx <TX_HASH> --output json` to fetch the full transaction result.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"parse_event_attribute\",\n        \"description\": \"From the JSON result, locate `logs[0].events` array; find the event with `type == \\\"instantiate\\\"`; extract the attribute where `key == \\\"_contract_address\\\"`.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"export_to_env\",\n        \"description\": \"Optionally set `export CONTRACT_ADDR=<extracted_address>` for downstream commands.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"A valid bech32 address starting with the chain\u2019s prefix is returned.\",\n      \"The address matches the one that appears when querying the contract\u2019s code info (`junod query wasm contract-info <address>`).\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2403,
+                    "prompt_tokens": 5667,
+                    "total_tokens": 8070,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 896,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 3200
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6wMx76T9CJrfGcIMGb12k18qN2H",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--5ac49b0e-71a4-4fa7-9fb6-7b6e44421d07-0",
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 5667,
+                "output_tokens": 2403,
+                "total_tokens": 8070,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 3200
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 896
+                }
+            }
+        }
+    ]
+}

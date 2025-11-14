@@ -1,0 +1,40 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 defines a lightweight JavaScript helper that validates a Bech32-formatted Cosmos address (commonly used for CW721 contracts).",
+            "code": "export const validateContractAddress = (contractAddress, bech32Prefix = 'juno') => {\n  try {\n    // Very lightweight Bech32 check: <prefix>1<38-char payload>\n    const pattern = new RegExp(`^${bech32Prefix}1[0-9a-z]{38}$`);\n    if (!pattern.test(contractAddress)) {\n      throw new Error(`Invalid contract address for prefix ${bech32Prefix}`);\n    }\n    return true;\n  } catch (err) {\n    console.error(err.message);\n    return false;\n  }\n};",
+            "usage": "const isValid = validateContractAddress(CONTRACT_ADDRESS, 'juno');\nif (!isValid) throw new Error('Provided CONTRACT_ADDRESS is invalid');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "Step 2 checks that the provided token ID is a non-negative integer or a non-empty string and returns its string representation.",
+            "code": "export const validateTokenId = (tokenId) => {\n  if (typeof tokenId === 'number') {\n    if (!Number.isInteger(tokenId) || tokenId < 0) {\n      throw new Error('Token ID must be a non-negative integer.');\n    }\n    return tokenId.toString();\n  }\n  if (typeof tokenId === 'string') {\n    if (tokenId.trim() === '') {\n      throw new Error('Token ID string cannot be empty.');\n    }\n    return tokenId.trim();\n  }\n  throw new Error('Token ID must be either a string or a number.');\n};",
+            "usage": "const safeTokenId = validateTokenId(8);"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 builds the JSON object for the CW721 `nft_info` smart-query using the verified token ID from Step 2.",
+            "code": "export const buildQueryJson = (tokenId) => {\n  return {\n    nft_info: {\n      token_id: tokenId\n    }\n  };\n};",
+            "usage": "const queryObj = buildQueryJson(safeTokenId);"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Step 4 sends the constructed smart-query JSON to the chain\u2019s REST endpoint and returns the raw response.",
+            "code": "export const wasmSmartQuery = async (\n  contractAddress,\n  queryObj,\n  restEndpoint = 'https://lcd.juno.omniflix.co'\n) => {\n  try {\n    // Convert query object to Base64 as required by /smart/ endpoints\n    const queryStr = JSON.stringify(queryObj);\n    const queryB64 = btoa(unescape(encodeURIComponent(queryStr)));\n\n    const url = `${restEndpoint}/cosmwasm/wasm/v1/contract/${contractAddress}/smart/${queryB64}`;\n    const response = await fetch(url);\n\n    if (!response.ok) {\n      const errText = await response.text();\n      throw new Error(`Smart query failed (${response.status}): ${errText}`);\n    }\n\n    const json = await response.json();\n    // According to Cosmos REST spec, the smart response is stored under \"data\",\n    // but different deployments may nest it differently, so we fall back to the root.\n    return json.data ?? json.result ?? json;\n  } catch (err) {\n    console.error(err);\n    throw err;\n  }\n};",
+            "usage": "const rawNftInfo = await wasmSmartQuery(CONTRACT_ADDRESS, queryObj);"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "Step 5 extracts commonly-used NFT fields (owner, name, token_uri) from the raw smart-query response.",
+            "code": "export const parseNftInfo = (smartResponse) => {\n  if (!smartResponse) {\n    throw new Error('Empty smart response');\n  }\n\n  /*\n    The shape of the response can vary depending on the CW721 implementation:\n    1. nft_info query: { token_uri: '...', extension: { name: '...', ... } }\n    2. all_nft_info query: { access: { owner: '...' }, info: { token_uri: '...', extension: { name: '...' } } }\n  */\n\n  const owner = smartResponse.owner ||\n                (smartResponse.access && smartResponse.access.owner) ||\n                (smartResponse.access && smartResponse.access.address) ||\n                null;\n\n  const tokenUri = smartResponse.token_uri ||\n                   (smartResponse.info && smartResponse.info.token_uri) ||\n                   null;\n\n  const name = (smartResponse.extension && smartResponse.extension.name) ||\n               (smartResponse.info && smartResponse.info.extension && smartResponse.info.extension.name) ||\n               null;\n\n  return {\n    owner,\n    name,\n    token_uri: tokenUri,\n    raw: smartResponse\n  };\n};",
+            "usage": "const nftInfo = parseNftInfo(rawNftInfo);\nconsole.log(nftInfo);"
+        }
+    ]
+}

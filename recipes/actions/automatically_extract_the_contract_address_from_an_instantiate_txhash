@@ -1,0 +1,26 @@
+{
+    "label": "instantiate",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 exposes a FastAPI endpoint that retrieves the raw JSON for a Juno transaction, reproducing the CLI command `junod query tx <TX_HASH> --output json`.",
+            "code": "# backend/main.py\nfrom fastapi import FastAPI, HTTPException\nimport httpx\n\napp = FastAPI(title=\"Juno Tx Service\")\n\nLCD_BASE = \"https://lcd-juno.itastakers.com\"  # Public Juno LCD endpoint\n\n@app.get(\"/api/tx/{tx_hash}\")\nasync def get_tx_json(tx_hash: str):\n    \"\"\"Return full transaction JSON for a given hash.\"\"\"\n    url = f\"{LCD_BASE}/cosmos/tx/v1beta1/txs/{tx_hash}\"\n    try:\n        async with httpx.AsyncClient(timeout=10) as client:\n            resp = await client.get(url)\n            resp.raise_for_status()\n            return resp.json()\n    except httpx.HTTPStatusError as e:\n        # LCD returned a non-200 response\n        raise HTTPException(status_code=e.response.status_code,\n                            detail=f\"LCD error: {e.response.text}\") from e\n    except httpx.RequestError as e:\n        # Networking problem\n        raise HTTPException(status_code=500,\n                            detail=f\"Network error: {str(e)}\") from e",
+            "usage": "GET /api/tx/<TX_HASH>  \u279c  returns the full transaction JSON"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 adds another FastAPI route that parses the JSON from Step 1 and extracts the `_contract_address` emitted by the `instantiate` event.",
+            "code": "# backend/main.py  (add below the previous code)\nfrom fastapi import HTTPException\n\n@app.get(\"/api/contract_address/{tx_hash}\")\nasync def get_contract_address(tx_hash: str):\n    \"\"\"Return the contract address created by an instantiate tx.\"\"\"\n    tx_json = await get_tx_json(tx_hash)  # Re-use logic from Step 1\n\n    logs = tx_json.get(\"tx_response\", {}).get(\"logs\", [])\n    if not logs or not isinstance(logs, list):\n        raise HTTPException(status_code=400, detail=\"Logs not found in transaction.\")\n\n    # According to CosmWasm events, the instantiate event is in the first log index\n    for event in logs[0].get(\"events\", []):\n        if event.get(\"type\") == \"instantiate\":\n            for attr in event.get(\"attributes\", []):\n                if attr.get(\"key\") in (\"_contract_address\", \"contract_address\"):\n                    return {\"contract_address\": attr.get(\"value\")}\n\n    raise HTTPException(status_code=404,\n                        detail=\"Unable to locate _contract_address in instantiate event.\")",
+            "usage": "GET /api/contract_address/<TX_HASH>  \u279c  { \"contract_address\": \"juno1...\" }"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Step 3 offers a lightweight browser helper that calls the backend route from Step 2, then copies a ready-to-paste `export CONTRACT_ADDR=...` command to the clipboard for downstream shell usage.",
+            "code": "// frontend/utils/contractAddress.js\nexport const fetchContractAddress = async (txHash) => {\n  if (!txHash) throw new Error('txHash is required');\n\n  const res = await fetch(`/api/contract_address/${txHash}`);\n  if (!res.ok) {\n    const err = await res.json();\n    throw new Error(err.detail || 'Failed to fetch contract address');\n  }\n\n  const { contract_address } = await res.json();\n  const exportCmd = `export CONTRACT_ADDR=${contract_address}`;\n\n  // Try to copy to clipboard (best effort)\n  try {\n    await navigator.clipboard.writeText(exportCmd);\n    // eslint-disable-next-line no-console\n    console.log('Copied to clipboard \u2192', exportCmd);\n  } catch (e) {\n    // eslint-disable-next-line no-console\n    console.warn('Clipboard unavailable:', e);\n  }\n\n  return contract_address;\n};",
+            "usage": "const addr = await fetchContractAddress('A5E0C4...');\n// Terminal \u2192 paste the copied command or manually run:\n// export CONTRACT_ADDR=<addr>"
+        }
+    ]
+}

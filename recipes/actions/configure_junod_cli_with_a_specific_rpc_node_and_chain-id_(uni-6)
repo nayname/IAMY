@@ -1,0 +1,33 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "Step 1 provides a small helper that pings the Tendermint `/status` endpoint to verify that the RPC node is online.",
+            "code": "export const checkRpcReachability = async (nodeUrl) => {\n  // Ensure the URL ends with `/status`\n  if (!nodeUrl.endsWith('/status')) {\n    nodeUrl = nodeUrl.replace(/\\/$/, '') + '/status';\n  }\n\n  try {\n    const response = await fetch(nodeUrl, { method: 'GET' });\n    if (!response.ok) {\n      throw new Error(`RPC endpoint responded with HTTP ${response.status}`);\n    }\n\n    const data = await response.json();\n    return data; // Contains node info and latest block height\n  } catch (error) {\n    console.error('Error while reaching the RPC endpoint:', error);\n    throw error;\n  }\n};",
+            "usage": "const statusInfo = await checkRpcReachability('https://rpc.uni.juno.deuslabs.fi');"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 exposes a FastAPI route that executes `junod config node <NODE_URL>` to set the default RPC endpoint on the host running the backend.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport subprocess\n\napp = FastAPI()\n\n@app.post('/api/junod/config/node')\nasync def config_node(payload: dict):\n    \"\"\"Sets the default RPC endpoint for the local `junod` CLI.\"\"\"\n    node_url = payload.get('node_url')\n    if not node_url:\n        raise HTTPException(status_code=400, detail='`node_url` field is required.')\n\n    try:\n        completed = subprocess.run(\n            ['junod', 'config', 'node', node_url],\n            capture_output=True,\n            text=True,\n            check=True,\n        )\n        return {'stdout': completed.stdout.strip()}\n    except subprocess.CalledProcessError as exc:\n        raise HTTPException(status_code=500, detail=exc.stderr.strip())",
+            "usage": "await fetch('/api/junod/config/node', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ node_url: 'https://rpc.uni.juno.deuslabs.fi' })\n});"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 adds another FastAPI route that runs `junod config chain-id uni-6` so the CLI targets the Juno testnet.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport subprocess\n\napp = FastAPI()\n\n@app.post('/api/junod/config/chain-id')\nasync def config_chain_id(payload: dict):\n    \"\"\"Sets the chain-id in the local `junod` CLI configuration.\"\"\"\n    chain_id = payload.get('chain_id')\n    if not chain_id:\n        raise HTTPException(status_code=400, detail='`chain_id` field is required.')\n\n    try:\n        completed = subprocess.run(\n            ['junod', 'config', 'chain-id', chain_id],\n            capture_output=True,\n            text=True,\n            check=True,\n        )\n        return {'stdout': completed.stdout.strip()}\n    except subprocess.CalledProcessError as exc:\n        raise HTTPException(status_code=500, detail=exc.stderr.strip())",
+            "usage": "await fetch('/api/junod/config/chain-id', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ chain_id: 'uni-6' })\n});"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 provides a read-only endpoint that returns the current `junod` configuration so you can confirm the values were set correctly.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport subprocess\n\napp = FastAPI()\n\n@app.get('/api/junod/config/view')\nasync def view_config():\n    \"\"\"Returns the current junod CLI configuration.\"\"\"\n    try:\n        completed = subprocess.run(\n            ['junod', 'config'],\n            capture_output=True,\n            text=True,\n            check=True,\n        )\n        return {'config': completed.stdout.strip()}\n    except subprocess.CalledProcessError as exc:\n        raise HTTPException(status_code=500, detail=exc.stderr.strip())",
+            "usage": "const config = await fetch('/api/junod/config/view').then(r => r.json());"
+        }
+    ]
+}

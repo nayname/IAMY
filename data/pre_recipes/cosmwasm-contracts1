@@ -1,0 +1,123 @@
+[
+    {
+        "intent": "Upload the compiled wasm file artifacts/CONTRACT_NAME.wasm to the Juno chain",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "verify_local_wasm_artifact",
+                "description": "Confirm that artifacts/CONTRACT_NAME.wasm exists and was produced by a trusted optimizer build."
+            },
+            {
+                "step": 2,
+                "tool": "junod_tx_wasm_store",
+                "description": "Run `junod tx wasm store artifacts/CONTRACT_NAME.wasm --from <key> --chain-id <chain-id> --gas auto --gas-adjustment 1.3 -y` to submit the code to chain."
+            },
+            {
+                "step": 3,
+                "tool": "wait_for_tx_commit",
+                "description": "Poll the Tx hash until it is included in a block."
+            },
+            {
+                "step": 4,
+                "tool": "junod_query_wasm_list_code",
+                "description": "Fetch the on-chain code list to retrieve and display the new code ID."
+            }
+        ],
+        "outcome_checks": [
+            "Transaction returns code 0 (success).",
+            "New code ID appears in `junod query wasm list-code` with the correct checksum."
+        ]
+    },
+    {
+        "intent": "Compile the current CosmWasm smart contract using rust-optimizer",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "docker_run_rust_optimizer",
+                "description": "Execute `docker run --rm -v $(pwd):/code --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/rust-optimizer:0.12.11` from the project root."
+            },
+            {
+                "step": 2,
+                "tool": "verify_artifacts_directory",
+                "description": "Confirm the ./artifacts directory now holds <crate_name>.wasm and contracts.txt."
+            }
+        ],
+        "outcome_checks": [
+            "artifacts/<crate_name>.wasm exists and is non-zero in size.",
+            "contracts.txt lists the correct SHA256 checksum for the new wasm."
+        ]
+    },
+    {
+        "intent": "Instantiate the contract with code id 13 and init message {\"count\":0}",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "prepare_instantiate_msg",
+                "description": "Create/validate the JSON init message: `{\"count\":0}`."
+            },
+            {
+                "step": 2,
+                "tool": "junod_tx_wasm_instantiate",
+                "description": "Run `junod tx wasm instantiate 13 '{\"count\":0}' --label \"counter-v1\" --from <key> --chain-id <chain-id> --gas auto --gas-adjustment 1.3 --admin <admin_addr> -y`."
+            },
+            {
+                "step": 3,
+                "tool": "wait_for_tx_commit",
+                "description": "Await block inclusion and extract the new contract address from logs."
+            }
+        ],
+        "outcome_checks": [
+            "Tx succeeds with code 0.",
+            "`junod query wasm contract-state smart <contract_addr> '{\"get_count\":{}}'` returns `{ \"count\": 0 }`."
+        ]
+    },
+    {
+        "intent": "Execute increment on contract address CONTRACT_ADDRESS with 10ujuno",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "construct_execute_msg",
+                "description": "Prepare the execute JSON: `{\"increment\":{}}`."
+            },
+            {
+                "step": 2,
+                "tool": "junod_tx_wasm_execute",
+                "description": "Run `junod tx wasm execute CONTRACT_ADDRESS '{\"increment\":{}}' --amount 10ujuno --from <key> --chain-id <chain-id> --gas auto --gas-adjustment 1.3 -y`."
+            },
+            {
+                "step": 3,
+                "tool": "wait_for_tx_commit",
+                "description": "Monitor the transaction until it is finalized."
+            },
+            {
+                "step": 4,
+                "tool": "junod_query_wasm_contract_state",
+                "description": "Query the contract: `junod query wasm contract-state smart CONTRACT_ADDRESS '{\"get_count\":{}}'` to verify the new count."
+            }
+        ],
+        "outcome_checks": [
+            "Tx success code 0 and 10ujuno shown in the transaction logs as transferred.",
+            "Returned count value is original +1.",
+            "Contract\u2019s on-chain balance increased by 10ujuno."
+        ]
+    },
+    {
+        "intent": "Compile all workspace contracts with workspace-optimizer",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "docker_run_workspace_optimizer",
+                "description": "Execute `docker run --rm -it -v $(pwd):/code --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/workspace-optimizer:0.12.11` at the repository root."
+            },
+            {
+                "step": 2,
+                "tool": "verify_workspace_artifacts",
+                "description": "Check that ./artifacts now contains a .wasm file for each contract in the Cargo workspace."
+            }
+        ],
+        "outcome_checks": [
+            "No build errors reported by workspace-optimizer.",
+            "A .wasm artifact is produced for every Cargo.toml member and each file size is > 0 bytes."
+        ]
+    }
+]

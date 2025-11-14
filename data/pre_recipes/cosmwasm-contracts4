@@ -1,0 +1,132 @@
+[
+    {
+        "intent": "Generate interface.rs for a CosmWasm contract with the cw-orch #[interface] macro",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "locate_contract_crate",
+                "description": "Confirm (or ask for) the path of the CosmWasm contract crate that already defines InstantiateMsg, ExecuteMsg and QueryMsg."
+            },
+            {
+                "step": 2,
+                "tool": "add_cargo_dependency",
+                "description": "Add `cw-orch = { version = \"^0.9\", default-features = false, features = [\"derive\"] }` under [dev-dependencies] in Cargo.toml so the interface macro is only pulled in for testing & scripting."
+            },
+            {
+                "step": 3,
+                "tool": "create_file",
+                "description": "Generate a new file `src/interface.rs` (or overwrite it if it exists)."
+            },
+            {
+                "step": 4,
+                "tool": "write_rust_code",
+                "description": "Insert the following boilerplate into interface.rs:\n\n```rust\nuse cosmwasm_std::{Addr, Response, DepsMut, Env, MessageInfo};\nuse cw_orch::interface;\n\n#[interface]\npub trait CounterContract {\n    type Error = anyhow::Error;\n    type InstantiateMsg = crate::msg::InstantiateMsg;\n    type ExecuteMsg = crate::msg::ExecuteMsg;\n    type QueryMsg = crate::msg::QueryMsg;\n\n    // (Optional) declare helper wrappers, e.g.:\n    fn increment(&self) -> Result<Response, Self::Error>;\n}\n```\n"
+            },
+            {
+                "step": 5,
+                "tool": "cargo_check",
+                "description": "Run `cargo check --tests` in the contract crate to ensure the interface compiles and the macro expansion succeeds."
+            }
+        ],
+        "outcome_checks": [
+            "cargo check finishes with 0 errors.",
+            "`src/interface.rs` exists and the generated trait matches the contract messages."
+        ]
+    },
+    {
+        "intent": "Upload, instantiate, and increment a counter contract using cw-orchestrator",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "load_env",
+                "description": "Read `.env` for `RPC_ENDPOINT`, `CHAIN_ID`, `DEPLOYER_MNEMONIC` and `GAS_PRICES` so cw-orch can sign and send transactions."
+            },
+            {
+                "step": 2,
+                "tool": "optimize_wasm",
+                "description": "Run `cargo wasm && docker run --rm -v $(pwd):/code cosmtrek/wasm:optimizer .` to produce an optimized `.wasm` binary in `artifacts/`."
+            },
+            {
+                "step": 3,
+                "tool": "cw_orch_store_code",
+                "description": "Inside a Rust script or test, call `deployer.upload_file(\"artifacts/counter.wasm\")?` to broadcast the `StoreCode` tx and retrieve the resulting `code_id`."
+            },
+            {
+                "step": 4,
+                "tool": "cw_orch_instantiate",
+                "description": "Use `CounterContract::instantiate(code_id, \"counter\", &InstantiateMsg { start: 0 }, None, &[])?` to create the contract; capture the returned `contract_addr`."
+            },
+            {
+                "step": 5,
+                "tool": "cw_orch_execute",
+                "description": "Execute `CounterContract::increment()` against `contract_addr` and await the tx result."
+            },
+            {
+                "step": 6,
+                "tool": "cw_orch_query",
+                "description": "Query the contract with `CounterContract::get_count()` (or equivalent) to verify the new counter value."
+            }
+        ],
+        "outcome_checks": [
+            "StoreCode tx included in a block and a non-zero code_id returned.",
+            "Instantiate tx returns a contract address in `events[\"instantiate\"][\"_contract_address\"]`.",
+            "Query after increment returns `count == 1`."
+        ]
+    },
+    {
+        "intent": "Base64-encode the JSON payload {'all_tokens':{}}",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "serialize_json",
+                "description": "Normalize the payload with no extra whitespace: `{\"all_tokens\":{}}`."
+            },
+            {
+                "step": 2,
+                "tool": "encode_base64",
+                "description": "Run `echo -n '{\"all_tokens\":{}}' | base64` (or use a language helper) to produce the base64 string."
+            }
+        ],
+        "outcome_checks": [
+            "The output equals `eyJhbGxfdG9rZW5zIjp7fX0=` (case-sensitive, no newline)."
+        ]
+    },
+    {
+        "intent": "Set the TXFLAGS environment variable with recommended gas settings",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "set_environment_variable",
+                "description": "Execute `export TXFLAGS=\"--gas=auto --gas-adjustment 1.3 --gas-prices 0.025uatom\"` in the current shell session (or add it to the user profile)."
+            }
+        ],
+        "outcome_checks": [
+            "`echo $TXFLAGS` prints `--gas=auto --gas-adjustment 1.3 --gas-prices 0.025uatom`.",
+            "Subsequent `junod tx` commands inherit the flags when `$TXFLAGS` is expanded (e.g., `junod tx bank send $TXFLAGS ...`)."
+        ]
+    },
+    {
+        "intent": "Automatically extract the contract address from an instantiate txhash",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "query_tx_json",
+                "description": "Run `junod query tx <TX_HASH> --output json` to fetch the full transaction result."
+            },
+            {
+                "step": 2,
+                "tool": "parse_event_attribute",
+                "description": "From the JSON result, locate `logs[0].events` array; find the event with `type == \"instantiate\"`; extract the attribute where `key == \"_contract_address\"`."
+            },
+            {
+                "step": 3,
+                "tool": "export_to_env",
+                "description": "Optionally set `export CONTRACT_ADDR=<extracted_address>` for downstream commands."
+            }
+        ],
+        "outcome_checks": [
+            "A valid bech32 address starting with the chain\u2019s prefix is returned.",
+            "The address matches the one that appears when querying the contract\u2019s code info (`junod query wasm contract-info <address>`)."
+        ]
+    }
+]

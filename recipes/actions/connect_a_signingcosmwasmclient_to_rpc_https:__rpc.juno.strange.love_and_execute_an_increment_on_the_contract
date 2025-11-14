@@ -1,0 +1,40 @@
+{
+    "label": "execute",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 securely initializes (or loads) a wallet from a BIP-39 mnemonic using cosmpy\u2019s LocalWallet helper.  The mnemonic is expected in the `MNEMONIC` environment variable so that no secrets ever reach the browser.",
+            "code": "import os\nfrom mnemonic import Mnemonic\nfrom cosmpy.aerial.wallet import LocalWallet\n\n\ndef initialize_wallet() -> LocalWallet:\n    \"\"\"Create (or load) a wallet for subsequent contract execution.\n\n    If `MNEMONIC` is **not** preset, a brand-new 24-word phrase is generated\n    and printed to STDOUT so the operator can back it up before any funds are\n    deposited.\n    \"\"\"\n    m = Mnemonic(\"english\")\n    mnemonic = os.getenv(\"MNEMONIC\")\n    if mnemonic is None:\n        mnemonic = m.generate(24)\n        print(\"[Wallet-Init] Generated NEW mnemonic \u2013 back it up NOW:\\n\", mnemonic)\n\n    # Build the wallet object (derivation path m/44'/118'/0'/0/0 for Cosmos-SDK)\n    wallet = LocalWallet.from_mnemonic(mnemonic)\n    print(f\"[Wallet-Init] Wallet address \u2192 {wallet.address()}\")\n    return wallet",
+            "usage": "wallet = initialize_wallet()  # returns a LocalWallet instance"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 connects to the Juno RPC endpoint and returns a LedgerClient that can sign & broadcast CosmWasm transactions.",
+            "code": "from cosmpy.aerial.client import LedgerClient, NetworkConfig\n\n\nRPC_ENDPOINT = \"https://rpc.juno.strange.love:443\"\n\n\ndef get_ledger_client() -> LedgerClient:\n    \"\"\"Establish a ready-to-use RPC client for the Juno main-net.\"\"\"\n    cfg = NetworkConfig(\n        chain_id=\"juno-1\",\n        url=RPC_ENDPOINT,\n        fee_minimum_gas_price=0.025,  # ujuno\n        fee_denomination=\"ujuno\",\n        staking_denomination=\"ujuno\"\n    )\n    return LedgerClient(cfg)",
+            "usage": "client = get_ledger_client()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 constructs the plain JSON execute message `{ \"increment\": {} }` required by the counter-type smart-contract.",
+            "code": "def build_increment_msg() -> dict:\n    \"\"\"Return the execute payload understood by the counter contract.\"\"\"\n    return {\"increment\": {}}",
+            "usage": "execute_msg = build_increment_msg()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 signs and broadcasts the `MsgExecuteContract`, waiting for on-chain confirmation.",
+            "code": "from cosmpy.aerial.tx import Transaction\nfrom cosmpy.aerial.contract import MsgExecuteContract\nfrom cosmpy.aerial.exceptions import CosmpyException\n\n\ndef execute_increment(\n    client: \"LedgerClient\",\n    wallet: \"LocalWallet\",\n    contract_address: str,\n    msg: dict,\n):\n    \"\"\"Send the increment execute message and return the tx response.\"\"\"\n    try:\n        # Build execute message\n        exec_msg = MsgExecuteContract(\n            wallet.address(),         # sender\n            contract_address,         # cw-contract address\n            msg,                      # {\"increment\": {}}\n            funds=[]                  # no attached funds\n        )\n\n        # Assemble transaction\n        tx = Transaction()\n        tx.add_message(exec_msg)\n        tx.with_sender(wallet)\n\n        # Broadcast (blocking for inclusion)\n        tx_response = client.broadcast_transaction(tx)\n        print(f\"[Tx] Broadcasted \u2192 {tx_response.tx_hash}\")\n        return tx_response\n\n    except CosmpyException as err:\n        # Surface a concise, debuggable error\n        raise RuntimeError(f\"contract execution failed \u2192 {err}\") from err",
+            "usage": "response = execute_increment(client, wallet, \"juno1\u2026contract\", execute_msg)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 walks through the returned logs to confirm the contract emitted the expected `{ action = 'increment' }` wasm event.",
+            "code": "def verify_increment_event(tx_response) -> bool:\n    \"\"\"Parse ABCI logs and assert that the `increment` action was fired.\"\"\"\n    try:\n        for event in tx_response.logs[0].events:\n            if event.type == \"wasm\":\n                for attr in event.attributes:\n                    if attr.key == \"action\" and attr.value == \"increment\":\n                        print(\"[Verify] Increment event detected \u2705\")\n                        return True\n        print(\"[Verify] Increment event NOT found \u26a0\ufe0f\")\n        return False\n    except (AttributeError, IndexError):\n        # The log format was not what we expected.\n        raise ValueError(\"Malformed transaction logs \u2014 cannot verify execution.\")",
+            "usage": "success = verify_increment_event(response)"
+        }
+    ]
+}

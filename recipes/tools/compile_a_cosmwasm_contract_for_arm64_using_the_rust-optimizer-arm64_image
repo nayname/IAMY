@@ -1,0 +1,53 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Ensures Docker is available and pulls the required build-related images before any compilation begins.",
+            "function": "ensure_cosmopark_installed()",
+            "usage": "ensure_cosmopark_installed()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Compiles the CosmWasm contract using the optimizer toolchain and writes the optimized .wasm file into the artifacts folder.",
+            "function": "compile_wasm_contract(contract_dir)",
+            "usage": "wasm_path = compile_wasm_contract(\"./my_contract\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Validates the produced .wasm artifact by computing and returning its SHA-256 checksum.",
+            "function": "validate_wasm_checksum(wasm_path)",
+            "usage": "checksum = validate_wasm_checksum(Path(\"artifacts/contract.wasm\"))"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "ensure_cosmopark_installed()#step: 1 Tool: docker_pull_image Desciption: Pull the optimizer: `docker pull cosmwasm/rust-optimizer-arm64:latest`.",
+        "wasm_path = compile_wasm_contract(\"./my_contract\")#step: 2 Tool: docker_run_rust_optimizer Desciption: From the contract root, run `docker run --rm -v $(pwd):/code:Z cosmwasm/rust-optimizer-arm64:latest` to build optimized `.wasm` files into `artifacts/`.",
+        "checksum = validate_wasm_checksum(Path(\"artifacts/contract.wasm\"))#step: 3 Tool: verify_artifacts Desciption: Check `artifacts/` for the produced `.wasm` and corresponding checksum files."
+    ],
+    "intent": "Compile a CosmWasm contract for ARM64 using the rust-optimizer-arm64 image",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "docker_pull_image",
+            "description": "Pull the optimizer: `docker pull cosmwasm/rust-optimizer-arm64:latest`."
+        },
+        {
+            "step": 2,
+            "tool": "docker_run_rust_optimizer",
+            "description": "From the contract root, run `docker run --rm -v $(pwd):/code:Z cosmwasm/rust-optimizer-arm64:latest` to build optimized `.wasm` files into `artifacts/`."
+        },
+        {
+            "step": 3,
+            "tool": "verify_artifacts",
+            "description": "Check `artifacts/` for the produced `.wasm` and corresponding checksum files."
+        }
+    ],
+    "outcome_checks": [
+        "At least one `.wasm` file exists in `artifacts/` with non-zero size.",
+        "`file artifacts/*.wasm` identifies the binary as `WebAssembly (wasm) binary module version 0x1`."
+    ]
+}

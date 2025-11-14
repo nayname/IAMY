@@ -1,0 +1,200 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"cosmwasm-contracts\", \"query\": \"Check the balance of wallet ADDRESS on Juno\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Configure junod with node NODE_URL and chain-id uni-6\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Compile the contract for ARM64 using rust-optimizer-arm64\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Claim JUNOX test tokens from the faucet for ADDRESS\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Add cw-orch as an optional dependency in Cargo.toml\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "c7c0c3af-8803-45b2-8baa-0119a42c924c"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 229,
+                    "prompt_tokens": 772,
+                    "total_tokens": 1001,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 192,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6agdwJti3VqfHBs7fuVBisvcsoJ",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--aa5af070-70a5-4a53-9931-69ad42240ee8-0",
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "junod query bank balances",
+                        "section": "cli",
+                        "max_results": 10
+                    },
+                    "id": "call_4iJGztLR05CGKlX3pPJSP2So",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 772,
+                "output_tokens": 229,
+                "total_tokens": 1001,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 192
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"junod query bank balances\":\n\n## 1. bank\n**File:** /root/neutron/juno/cli/modules/bank.md\n**Section:** cli\n**Relevance Score:** 23\n\n**Matching lines:**\n- Line 3: bank module allows you to manage assets for accounts loaded into the local\n- Line 7: # bank\n- Line 13: | [balances](bank.md#iris-query-bank-balances) | Query for account balances by address                  |\n- Line 14: | [total](bank.md#junod-query-bank-total)      | Query the total supply of coins of the chain           |\n- Line 15: | [send](bank.md#junod-tx-bank-send)           | Create and/or sign and broadcast a MsgSend transaction |\n\n**Content Preview:**\n```\ndescription: >-\n  bank module allows you to manage assets for accounts loaded into the local\n  keys module\n\n---\n\n\n# bank\n\n\n---\n\n| -------------------------------------------- | ------------------------------------------------------ |\n| [balances](bank.md#iris-query-bank-balances) | Query for account balances by address                  |\n| [total](bank.md#junod-query-bank-total)      | Query the total supply of coins of the chain           |\n```\n\n---\n\n## 2. Introduction\n**File:** /root/neutron/juno/cli/cli-introduction.md\n**Section:** cli\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 13: `junod` is a command line client for the Juno network. Juno users can use `junod` to send transactions to the Juno network and query the blockchain data.\n- Line 19: The default working directory for the `junod` is `$HOME/.juno`, which is mainly used to store configuration files and blockchain data. The Juno `key` data is saved in the working directory of `junod`. You can also specify the `junod` working directory by using the `--home` flag when executing `junod`.\n- Line 23: By default, `junod` uses `tcp://localhost:26657` as the RPC address to connect to the Juno network. This default configuration assumes that the machine executing `junod` is running as a full-node.\n- Line 25: The RPC address can be specified to connect to any full-node with an exposed RPC port by adding the `--node` flag when executing `junod`\n- Line 73: | [bank](modules/bank.md)                 | Bank subcommands for querying accounts and sending coins etc. |\n\n**Content Preview:**\n```\n\n`junod` is a command line client for the Juno network. Juno users can use `junod` to send transactions to the Juno network and query the blockchain data.\n\n\n---\n\n\nThe default working directory for the `junod` is `$HOME/.juno`, which is mainly used to store configuration files and blockchain data. The Juno `key` data is saved in the working directory of `junod`. You can also specify the `junod` working directory by using the `--home` flag when executing `junod`.\n\n\n---\n\n\nBy default, `junod` uses `tcp://localhost:26657` as the RPC address to connect to the Juno network. This default configuration assumes that the machine executing `junod` is running as a full-node.\n\n```\n\n---\n\n## 3. params\n**File:** /root/neutron/juno/cli/modules/params.md\n**Section:** cli\n**Relevance Score:** 10\n\n**Matching lines:**\n- Line 3: Params module allows you to query the system parameters which can be governed (except the gov params) by the [gov module](gov.md).\n- Line 6: junod query params subspace [subspace] [key] [flags]\n- Line 9: Among them, the parameters available for query for each subspace are as follows:\n- Line 21: ### bank <a href=\"#bank\" id=\"bank\"></a>\n\n**Content Preview:**\n```\n\nParams module allows you to query the system parameters which can be governed (except the gov params) by the [gov module](gov.md).\n\n\n---\n\n```\njunod query params subspace [subspace] [key] [flags]\n```\n\n---\n\n\nAmong them, the parameters available for query for each subspace are as follows:\n\n```\n\n---\n\n## 4. distribution\n**File:** /root/neutron/juno/cli/modules/distribution.md\n**Section:** cli\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 11: | [commission](distribution.md#junod-query-distribution-commission) | Query distribution validator commission |\n- Line 12: | [community-pool](distribution.md#iris-query-distribution-community-pool) | Query the amount of coins in the community pool |\n- Line 13: | [params](distribution.md#iris-query-distribution-rewards) | Query distribution params |\n- Line 14: | [rewards](distribution.md#iris-query-distribution-rewards) | Query all distribution delegator rewards or rewards from a particular validator |\n- Line 15: | [slashes](distribution.md#iris-query-distribution-slashes) | Query distribution validator slashes. |\n\n**Content Preview:**\n```\n| :--- | :--- |\n| [commission](distribution.md#junod-query-distribution-commission) | Query distribution validator commission |\n| [community-pool](distribution.md#iris-query-distribution-community-pool) | Query the amount of coins in the community pool |\n\n---\n\n| [commission](distribution.md#junod-query-distribution-commission) | Query distribution validator commission |\n| [community-pool](distribution.md#iris-query-distribution-community-pool) | Query the amount of coins in the community pool |\n| [params](distribution.md#iris-query-distribution-rewards) | Query distribution params |\n\n---\n\n| [community-pool](distribution.md#iris-query-distribution-community-pool) | Query the amount of coins in the community pool |\n| [params](distribution.md#iris-query-distribution-rewards) | Query distribution params |\n| [rewards](distribution.md#iris-query-distribution-rewards) | Query all distribution delegator rewards or rewards from a particular validator |\n```\n\n---\n\n## 5. tendermint\n**File:** /root/neutron/juno/cli/modules/tendermint.md\n**Section:** cli\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 2: description: The tendermint module allows for querying of validator and node addresses.\n- Line 11: | [show-address](tendermint.md#junod-tendermint-show-address) | Shows this node's tendermint validator consensus address |\n- Line 16: ### junod tendermint show-address\n- Line 21: junod tendermint show-address\n- Line 30: ### junod tendermint show-node-id <a id=\"iris-tendermint-show-node-id\"></a>\n\n**Content Preview:**\n```\n---\ndescription: The tendermint module allows for querying of validator and node addresses.\n---\n\n---\n\n| :--- | :--- |\n| [show-address](tendermint.md#junod-tendermint-show-address) | Shows this node's tendermint validator consensus address |\n| [show-node-id](tendermint.md#iris-tendermint-show-node-id) | Show this node's ID |\n\n---\n\n\n### junod tendermint show-address\n\n```\n\n---\n\n## 6. Useful CLI Commands\n**File:** /root/neutron/juno/cli/useful-cli-commands.md\n**Section:** cli\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 11: junod status\n- Line 17: # Query via the RPC (default port: 26657)\n- Line 24: junod tendermint show-node-id\n- Line 32: junod query slashing signing-info $(junod tendermint show-validator)\n- Line 38: junod config chain-id juno-1\n\n**Content Preview:**\n```\n```bash\njunod status\n```\n\n---\n\n```bash\n# Query via the RPC (default port: 26657)\ncurl http://localhost:26657/status | jq .result.sync_info.catching_up\n\n---\n\n```bash\njunod tendermint show-node-id\n```\n```\n\n---\n\n## 7. gov\n**File:** /root/neutron/juno/cli/modules/gov.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 3: The governance module provides tools for querying, submitting, and voting on\n- Line 13: | [proposal](gov.md#juno-query-gov-proposal) | Query details of a single proposal |\n- Line 14: | [proposals](gov.md#juno-query-gov-proposals) | Query proposals with optional filter |\n- Line 15: | [vote](gov.md#juno-query-gov-vote) | Query details of a single vote |\n- Line 16: | [votes](gov.md#juno-query-gov-votes) | Query votes on a proposal |\n\n**Content Preview:**\n```\ndescription: >-\n  The governance module provides tools for querying, submitting, and voting on\n  proposals\n\n---\n\n| :--- | :--- |\n| [proposal](gov.md#juno-query-gov-proposal) | Query details of a single proposal |\n| [proposals](gov.md#juno-query-gov-proposals) | Query proposals with optional filter |\n\n---\n\n| [proposal](gov.md#juno-query-gov-proposal) | Query details of a single proposal |\n| [proposals](gov.md#juno-query-gov-proposals) | Query proposals with optional filter |\n| [vote](gov.md#juno-query-gov-vote) | Query details of a single vote |\n```\n\n---\n\n## 8. keys\n**File:** /root/neutron/juno/cli/modules/keys.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 13: | [add](keys.md#junod-keys-add) | Add an encrypted private key \\(either newly generated or recovered\\), encrypt it, and save to disk |\n- Line 22: ### junod keys add\n- Line 27: junod keys add <key-name> [flags]\n- Line 54: junod keys add MyKey\n- Line 68: junod keys add MyKey --recover\n\n**Content Preview:**\n```\n| :--- | :--- |\n| [add](keys.md#junod-keys-add) | Add an encrypted private key \\(either newly generated or recovered\\), encrypt it, and save to disk |\n| [delete](keys.md#iris-keys-delete) | Delete the given key |\n\n---\n\n\n### junod keys add\n\n\n---\n\n```text\njunod keys add <key-name> [flags]\n```\n```\n\n---\n\n## 9. staking\n**File:** /root/neutron/juno/cli/modules/staking.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 3: The staking module provides a set of subcommands to query the staking state\n- Line 13: | [validator](staking.md#iris-query-staking-validator) | Query a validator |\n- Line 14: | [validators](staking.md#iris-query-staking-validators) | Query for all validators |\n- Line 15: | [delegation](staking.md#iris-query-staking-delegation) | Query a delegation based on address and validator address |\n- Line 16: | [delegations](staking.md#iris-query-staking-delegations) | Query all delegations made from one delegator |\n\n**Content Preview:**\n```\ndescription: >-\n  The staking module provides a set of subcommands to query the staking state\n  and send staking transactions.\n\n---\n\n| :--- | :--- |\n| [validator](staking.md#iris-query-staking-validator) | Query a validator |\n| [validators](staking.md#iris-query-staking-validators) | Query for all validators |\n\n---\n\n| [validator](staking.md#iris-query-staking-validator) | Query a validator |\n| [validators](staking.md#iris-query-staking-validators) | Query for all validators |\n| [delegation](staking.md#iris-query-staking-delegation) | Query a delegation based on address and validator address |\n```\n\n---\n\n## 10. status\n**File:** /root/neutron/juno/cli/modules/status.md\n**Section:** cli\n**Relevance Score:** 6\n\n**Matching lines:**\n- Line 15: ### Query node status <a id=\"query-node-status\"></a>\n- Line 18: junod status\n\n**Content Preview:**\n```\n\n### Query node status <a id=\"query-node-status\"></a>\n\n\n---\n\n```text\njunod status\n```\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "e933cef2-5326-44e1-a021-4a36c5646f44",
+            "tool_call_id": "call_4iJGztLR05CGKlX3pPJSP2So",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 935,
+                    "prompt_tokens": 4195,
+                    "total_tokens": 5130,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 896,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6alom55WJFEWdP5yDjh6NMPKeXX",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--5b43ab64-e573-4d3c-8879-9be47583878b-0",
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "junod config node",
+                        "section": "cli",
+                        "max_results": 10
+                    },
+                    "id": "call_ulOVJqDD2AGehWaowvm8waU7",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 4195,
+                "output_tokens": 935,
+                "total_tokens": 5130,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 896
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"junod config node\":\n\n## 1. Introduction\n**File:** /root/neutron/juno/cli/cli-introduction.md\n**Section:** cli\n**Relevance Score:** 11\n\n**Matching lines:**\n- Line 13: `junod` is a command line client for the Juno network. Juno users can use `junod` to send transactions to the Juno network and query the blockchain data.\n- Line 19: The default working directory for the `junod` is `$HOME/.juno`, which is mainly used to store configuration files and blockchain data. The Juno `key` data is saved in the working directory of `junod`. You can also specify the `junod` working directory by using the `--home` flag when executing `junod`.\n- Line 21: ### Connecting to a Full-Node\n- Line 23: By default, `junod` uses `tcp://localhost:26657` as the RPC address to connect to the Juno network. This default configuration assumes that the machine executing `junod` is running as a full-node.\n- Line 25: The RPC address can be specified to connect to any full-node with an exposed RPC port by adding the `--node` flag when executing `junod`\n\n**Content Preview:**\n```\n\n`junod` is a command line client for the Juno network. Juno users can use `junod` to send transactions to the Juno network and query the blockchain data.\n\n\n---\n\n\nThe default working directory for the `junod` is `$HOME/.juno`, which is mainly used to store configuration files and blockchain data. The Juno `key` data is saved in the working directory of `junod`. You can also specify the `junod` working directory by using the `--home` flag when executing `junod`.\n\n\n---\n\n\n### Connecting to a Full-Node\n\n```\n\n---\n\n## 2. keys\n**File:** /root/neutron/juno/cli/modules/keys.md\n**Section:** cli\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 13: | [add](keys.md#junod-keys-add) | Add an encrypted private key \\(either newly generated or recovered\\), encrypt it, and save to disk |\n- Line 22: ### junod keys add\n- Line 27: junod keys add <key-name> [flags]\n- Line 43: | --hd-path |  | Manual HD Path derivation \\(overrides BIP44 config\\) |  |\n- Line 54: junod keys add MyKey\n\n**Content Preview:**\n```\n| :--- | :--- |\n| [add](keys.md#junod-keys-add) | Add an encrypted private key \\(either newly generated or recovered\\), encrypt it, and save to disk |\n| [delete](keys.md#iris-keys-delete) | Delete the given key |\n\n---\n\n\n### junod keys add\n\n\n---\n\n```text\njunod keys add <key-name> [flags]\n```\n```\n\n---\n\n## 3. status\n**File:** /root/neutron/juno/cli/modules/status.md\n**Section:** cli\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 3: A node can be queried for up to date information such as node info, sync info\n- Line 4: and validator info, specific to that node.\n- Line 13: | --node, -n | tcp://localhost:26657 | &lt;host&gt;:&lt;port&gt; to tendermint rpc interface for this chain | optional |\n- Line 15: ### Query node status <a id=\"query-node-status\"></a>\n- Line 18: junod status\n\n**Content Preview:**\n```\ndescription: >-\n  A node can be queried for up to date information such as node info, sync info\n  and validator info, specific to that node.\n\n---\n\n  A node can be queried for up to date information such as node info, sync info\n  and validator info, specific to that node.\n---\n\n---\n\n| :--- | :--- | :--- | :--- |\n| --node, -n | tcp://localhost:26657 | &lt;host&gt;:&lt;port&gt; to tendermint rpc interface for this chain | optional |\n\n```\n\n---\n\n## 4. tendermint\n**File:** /root/neutron/juno/cli/modules/tendermint.md\n**Section:** cli\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 2: description: The tendermint module allows for querying of validator and node addresses.\n- Line 11: | [show-address](tendermint.md#junod-tendermint-show-address) | Shows this node's tendermint validator consensus address |\n- Line 12: | [show-node-id](tendermint.md#iris-tendermint-show-node-id) | Show this node's ID |\n- Line 13: | [show-validator](tendermint.md#iris-tendermint-show-validator) | Show this node's tendermint validator info |\n- Line 16: ### junod tendermint show-address\n\n**Content Preview:**\n```\n---\ndescription: The tendermint module allows for querying of validator and node addresses.\n---\n\n---\n\n| :--- | :--- |\n| [show-address](tendermint.md#junod-tendermint-show-address) | Shows this node's tendermint validator consensus address |\n| [show-node-id](tendermint.md#iris-tendermint-show-node-id) | Show this node's ID |\n\n---\n\n| [show-address](tendermint.md#junod-tendermint-show-address) | Shows this node's tendermint validator consensus address |\n| [show-node-id](tendermint.md#iris-tendermint-show-node-id) | Show this node's ID |\n| [show-validator](tendermint.md#iris-tendermint-show-validator) | Show this node's tendermint validator info |\n```\n\n---\n\n## 5. Useful CLI Commands\n**File:** /root/neutron/juno/cli/useful-cli-commands.md\n**Section:** cli\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 11: junod status\n- Line 14: Check if your node is catching up:\n- Line 21: Get your node ID:\n- Line 24: junod tendermint show-node-id\n- Line 32: junod query slashing signing-info $(junod tendermint show-validator)\n\n**Content Preview:**\n```\n```bash\njunod status\n```\n\n---\n\n\nCheck if your node is catching up:\n\n\n---\n\n\nGet your node ID:\n\n```\n\n---\n\n## 6. bank\n**File:** /root/neutron/juno/cli/modules/bank.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 14: | [total](bank.md#junod-query-bank-total)      | Query the total supply of coins of the chain           |\n- Line 15: | [send](bank.md#junod-tx-bank-send)           | Create and/or sign and broadcast a MsgSend transaction |\n- Line 17: ### junod query bank balances <a href=\"#iris-query-bank-balances\" id=\"iris-query-bank-balances\"></a>\n- Line 22: junod query bank balances [address] [flags]\n- Line 33: ### junod query bank total\n\n**Content Preview:**\n```\n| [balances](bank.md#iris-query-bank-balances) | Query for account balances by address                  |\n| [total](bank.md#junod-query-bank-total)      | Query the total supply of coins of the chain           |\n| [send](bank.md#junod-tx-bank-send)           | Create and/or sign and broadcast a MsgSend transaction |\n\n---\n\n| [total](bank.md#junod-query-bank-total)      | Query the total supply of coins of the chain           |\n| [send](bank.md#junod-tx-bank-send)           | Create and/or sign and broadcast a MsgSend transaction |\n\n\n---\n\n\n### junod query bank balances <a href=\"#iris-query-bank-balances\" id=\"iris-query-bank-balances\"></a>\n\n```\n\n---\n\n## 7. distribution\n**File:** /root/neutron/juno/cli/modules/distribution.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 11: | [commission](distribution.md#junod-query-distribution-commission) | Query distribution validator commission |\n- Line 22: ### junod query distribution commission\n- Line 27: junod query distribution commission [validator] [flags]\n- Line 30: ### junod query distribution community-pool <a id=\"iris-query-distribution-community-pool\"></a>\n- Line 35: junod query distribution community-pool [flags]\n\n**Content Preview:**\n```\n| :--- | :--- |\n| [commission](distribution.md#junod-query-distribution-commission) | Query distribution validator commission |\n| [community-pool](distribution.md#iris-query-distribution-community-pool) | Query the amount of coins in the community pool |\n\n---\n\n\n### junod query distribution commission\n\n\n---\n\n```text\njunod query distribution commission [validator] [flags]\n```\n```\n\n---\n\n## 8. gov\n**File:** /root/neutron/juno/cli/modules/gov.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 27: ### junod query gov proposal <a id=\"juno-query-gov-proposal\"></a>\n- Line 32: junod query gov proposal [proposal-id] [flags]\n- Line 44: ### junod query gov proposals <a id=\"juno-query-gov-proposals\"></a>\n- Line 49: junod query gov proposals\n- Line 55: junod query gov proposals --limit=3 --status=Passed --depositor=<juno...>\n\n**Content Preview:**\n```\n\n### junod query gov proposal <a id=\"juno-query-gov-proposal\"></a>\n\n\n---\n\n```text\njunod query gov proposal [proposal-id] [flags]\n```\n\n---\n\n\n### junod query gov proposals <a id=\"juno-query-gov-proposals\"></a>\n\n```\n\n---\n\n## 9. staking\n**File:** /root/neutron/juno/cli/modules/staking.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 33: ### junod query staking validator <a id=\"iris-query-staking-validator\"></a>\n- Line 40: junod query staking validator <junovaloper...>\n- Line 71: ### junod query staking validators <a id=\"iris-query-staking-validators\"></a>\n- Line 78: junod query staking validators\n- Line 81: The returned values will be similar to those from [`junod query staking validator`](staking.md#iris-query-staking-validator)\\`\\`\n\n**Content Preview:**\n```\n\n### junod query staking validator <a id=\"iris-query-staking-validator\"></a>\n\n\n---\n\n```text\njunod query staking validator <junovaloper...>\n```\n\n---\n\n\n### junod query staking validators <a id=\"iris-query-staking-validators\"></a>\n\n```\n\n---\n\n## 10. slashing\n**File:** /root/neutron/juno/cli/modules/slashing.md\n**Section:** cli\n**Relevance Score:** 5\n\n**Matching lines:**\n- Line 11: | [unjail](slashing.md#junod-tx-slashing-unjail) | Unjail validator previously jailed for downtime or double-sign. |\n- Line 13: ### junod tx slashing unjail\n- Line 26: junod tx slashing unjail --from juno1ludczrvlw36fkur9vy49lx4vjqhppn30h42ufg --chain-id juno\n\n**Content Preview:**\n```\n| :--- | :--- |\n| [unjail](slashing.md#junod-tx-slashing-unjail) | Unjail validator previously jailed for downtime or double-sign. |\n\n\n---\n\n\n### junod tx slashing unjail\n\n\n---\n\n```text\njunod tx slashing unjail --from juno1ludczrvlw36fkur9vy49lx4vjqhppn30h42ufg --chain-id juno\n```\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "b7e6326a-3964-4f35-aa45-03b51b87bfc5",
+            "tool_call_id": "call_ulOVJqDD2AGehWaowvm8waU7",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Check the balance of a wallet address on the Juno network\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"validate_address_format\",\n        \"description\": \"Ensure the supplied ADDRESS is a valid Bech32 Juno address (prefix `juno1`).\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"junod_query_bank_balances\",\n        \"description\": \"Run `junod query bank balances ADDRESS --node <RPC_NODE>` to retrieve all balances for the account.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"parse_cli_output\",\n        \"description\": \"Parse the JSON output returned by `junod` to list each denomination and its corresponding amount.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"CLI returns HTTP exit code 0 and valid JSON.\",\n      \"The JSON contains a non-empty `balances` array (or explicitly shows zero balances).\"\n    ]\n  },\n  {\n    \"intent\": \"Configure junod CLI with a specific RPC node and chain-id (uni-6)\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"check_rpc_reachability\",\n        \"description\": \"Ping `NODE_URL` (e.g., `curl NODE_URL/status`) to verify the endpoint is online.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"junod_config_node\",\n        \"description\": \"Execute `junod config node NODE_URL` to set the default RPC endpoint.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"junod_config_chain_id\",\n        \"description\": \"Execute `junod config chain-id uni-6` to target the Juno testnet.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"junod_config_view\",\n        \"description\": \"Run `junod config` (or `junod config get node` / `get chain-id`) to confirm the new values.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"`junod config` shows `node = NODE_URL` and `chain-id = \\\"uni-6\\\"`.\",\n      \"`junod status --node NODE_URL` returns sync info without error.\"\n    ]\n  },\n  {\n    \"intent\": \"Compile a CosmWasm contract for ARM64 using the rust-optimizer-arm64 image\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"docker_pull_image\",\n        \"description\": \"Pull the optimizer: `docker pull cosmwasm/rust-optimizer-arm64:latest`.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"docker_run_rust_optimizer\",\n        \"description\": \"From the contract root, run `docker run --rm -v $(pwd):/code:Z cosmwasm/rust-optimizer-arm64:latest` to build optimized `.wasm` files into `artifacts/`.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"verify_artifacts\",\n        \"description\": \"Check `artifacts/` for the produced `.wasm` and corresponding checksum files.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"At least one `.wasm` file exists in `artifacts/` with non-zero size.\",\n      \"`file artifacts/*.wasm` identifies the binary as `WebAssembly (wasm) binary module version 0x1`.\"\n    ]\n  },\n  {\n    \"intent\": \"Claim JUNOX test tokens from the uni-6 faucet for a given address\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"validate_address_format\",\n        \"description\": \"Confirm ADDRESS is a valid Bech32 Juno address.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"http_post_faucet_request\",\n        \"description\": \"Request tokens: `curl -X POST \\\"https://faucet.uni.junonetwork.io/credit?address=ADDRESS\\\"`.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"parse_faucet_response\",\n        \"description\": \"Capture the faucet response and extract any `txHash` or success indicator.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"junod_query_bank_balances\",\n        \"description\": \"After a short delay, verify funds with `junod query bank balances ADDRESS --node NODE_URL`.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Faucet returns HTTP 200 and a transaction hash or success flag.\",\n      \"Balance query shows a positive JUNOX (e.g., `ujunox`) amount credited to the address.\"\n    ]\n  },\n  {\n    \"intent\": \"Add cw-orch as an optional dependency in Cargo.toml\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"open_file\",\n        \"description\": \"Open the project\u2019s `Cargo.toml` manifest for editing.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"insert_optional_dependency\",\n        \"description\": \"Under `[target.'cfg(not(target_arch = \\\"wasm32\\\"))'.dependencies]` (or `[dev-dependencies]`), add `cw-orch = { version = \\\"*\\\", optional = true }`.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"save_file\",\n        \"description\": \"Save changes to `Cargo.toml`.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"cargo_check\",\n        \"description\": \"Run `cargo check` to ensure the dependency graph resolves successfully.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"`cargo check` completes with exit code 0.\",\n      \"`Cargo.toml` now contains the `cw-orch` entry with `optional = true`.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 4165,
+                    "prompt_tokens": 7560,
+                    "total_tokens": 11725,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 2880,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 4096
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6bBQ7BdFWWUipKytduiQgrR5PFi",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--0fe4c1d8-ba34-4610-b24e-7def75853e7e-0",
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 7560,
+                "output_tokens": 4165,
+                "total_tokens": 11725,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 4096
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 2880
+                }
+            }
+        }
+    ]
+}

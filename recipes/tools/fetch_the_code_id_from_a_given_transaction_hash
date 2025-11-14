@@ -1,0 +1,40 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Fetches the complete raw JSON of a transaction from the chain\u2019s LCD endpoint using its hash.",
+            "function": "_fetch_raw_tx(tx_hash)",
+            "usage": "raw_tx = await _fetch_raw_tx(\"38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Parses the transaction logs to pull out the numeric \u201ccode_id\u201d value, if present.",
+            "function": "extract_code_id_from_tx(response)",
+            "usage": "code_id = extract_code_id_from_tx(raw_tx)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "raw_tx = await _fetch_raw_tx(\"38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085\")#step: 1 Tool: query_tx_by_hash Desciption: Retrieve the full JSON details of transaction 38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085 from the Juno RPC or LCD endpoint.",
+        "code_id = extract_code_id_from_tx(raw_tx)#step: 2 Tool: parse_code_id_from_tx Desciption: Scan the returned transaction logs/events for an attribute named \"code_id\" and capture its numeric value."
+    ],
+    "intent": "Fetch the code ID from a given transaction hash",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "query_tx_by_hash",
+            "description": "Retrieve the full JSON details of transaction 38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085 from the Juno RPC or LCD endpoint."
+        },
+        {
+            "step": 2,
+            "tool": "parse_code_id_from_tx",
+            "description": "Scan the returned transaction logs/events for an attribute named \"code_id\" and capture its numeric value."
+        }
+    ],
+    "outcome_checks": [
+        "Ensure a positive integer code_id was extracted.",
+        "Confirm the transaction contains a MsgStoreCode or MsgInstantiateContract message (where code_id is expected)."
+    ]
+}

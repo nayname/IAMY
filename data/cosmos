@@ -1,0 +1,144 @@
+https://evm.cosmos.network/docs/sdk/v0.53/user
+https://evm.cosmos.network/docs/evm/v0.4.x/documentation/getting-started/tooling-and-resources/overview
+https://evm.cosmos.network/docs/evm/v0.4.x/api-reference/ethereum-json-rpc
+https://evm.cosmos.network/docs/sdk/v0.53/learn
+
+
+
+SDK tryout using AI
+
+
+Iterate privately with Marius — polish code, UX, determinism guarantees, and Cosmos SDK alignment.
+
+Document jointly — co-write a short “Cosmos Integration Plan” showing how it extends beyond Neutron.
+
+Gather metrics / mini-demos — show reliability, guardrails, and NL-to-execution precision.
+
+Prepare a timing window — when market stabilizes or Cosmos opens new grants (Atom Accelerator etc.), you’ll have a validated, ready-to-present package.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------------------------------------
+
+* **Ethereum JSON-RPC (guide)** — enable/verify server, read `app.toml` flags, and run sample calls (`eth_blockNumber`, `eth_getLogs`, etc.). Your panel can hit the node and show live results. ([evm.cosmos.network][1])
+* **JSON-RPC Methods / Explorer** — per-method runners (curl or POST body preset) to execute against a selected endpoint. ([evm.cosmos.network][2])
+* **Local Network Setup** — start a local chain; expose buttons to spin up the node (or show the exact commands), then sanity-check via `eth_chainId`/`net_version`. ([evm.cosmos.network][3])
+* **User Guides → Setting up keys / Running a node** — generate keys, start/monitor node, health checks. Your panel can script the commands and verify via RPC. ([evm.cosmos.network][4])
+
+
+
+Here are the **highest-leverage pages on evm.cosmos.network** to tuck a right-sidebar executions module into (focused on backend actions like JSON-RPC calls, node ops, migrations, and CLI-style flows). Each item includes what the widget should “do”.
+
+## API / Node ops
+
+* **Ethereum JSON-RPC (guide)** — enable/verify server, read `app.toml` flags, and run sample calls (`eth_blockNumber`, `eth_getLogs`, etc.). Your panel can hit the node and show live results. ([evm.cosmos.network][1])
+* **JSON-RPC Methods / Explorer** — per-method runners (curl or POST body preset) to execute against a selected endpoint. ([evm.cosmos.network][2])
+* **Local Network Setup** — start a local chain; expose buttons to spin up the node (or show the exact commands), then sanity-check via `eth_chainId`/`net_version`. ([evm.cosmos.network][3])
+* **User Guides → Setting up keys / Running a node** — generate keys, start/monitor node, health checks. Your panel can script the commands and verify via RPC. ([evm.cosmos.network][4])
+
+## Smart contracts & precompiles
+
+* **Precompiled Contracts (overview)** — “Try it” calls with `eth_call` against precompile addresses to demo bank/IBC helpers. ([evm.cosmos.network][5])
+* **WERC20 precompile** — quick actions: balances, approvals, transfers for Cosmos-native tokens via the ERC-20 interface. ([evm.cosmos.network][6])
+* **Remix IDE (tooling)** — prefill network params, provide a “Ping RPC” button and a “Verify deployment” check after Remix deploys. ([evm.cosmos.network][7])
+
+## Integration & migrations
+
+* **ERC-20 Precompiles Migration** — run readiness checks (e.g., scan for IBC/token-factory representations) and generate step-by-step commands. ([evm.cosmos.network][8])
+* **Migration v0.3 → v0.4** — surface a checklist with automated probes and config diffs. ([evm.cosmos.network][9])
+
+## Concepts (good for read-only/probe actions)
+
+* **Transactions** — live examples of sending raw tx / estimating gas; show tx receipt fetch. ([evm.cosmos.network][10])
+* **Accounts** — derive/verify addresses; query nonce/balance. ([evm.cosmos.network][11])
+* **Single Token Representation v2** — read balances/allowances via WERC20 to demonstrate STR semantics. ([evm.cosmos.network][12])
+
+## API Reference (versioned)
+
+* **Ethereum JSON-RPC (v0.4.x)** — same as above, but link the presets to versioned method sets. ([evm.cosmos.network][13])
+
+If you tell me which endpoints you want to hit first (public RPC vs. local), I’ll output ready-to-paste `<Panel>` + `/snippets/ExecPanel.tsx` blocks tailored to **each page** above.
+
+[1]: https://evm.cosmos.network/docs/evm/next/api-reference/ethereum-json-rpc?utm_source=chatgpt.com "Ethereum JSON-RPC - Cosmos Documentation"
+[2]: https://evm.cosmos.network/v0.4.x/api-reference/ethereum-json-rpc/rpc-explorer?utm_source=chatgpt.com "Ethereum JSON-RPC Explorer"
+[3]: https://evm.cosmos.network/docs/documentation/getting-started/local-network-setup?utm_source=chatgpt.com "Local Network Setup - Cosmos Documentation"
+[4]: https://evm.cosmos.network/docs/sdk/v0.53/user?utm_source=chatgpt.com "User Guides - Cosmos Documentation"
+[5]: https://evm.cosmos.network/docs/documentation/smart-contracts/precompiles?utm_source=chatgpt.com "Precompiled Contracts - Cosmos Documentation"
+[6]: https://evm.cosmos.network/docs/evm/next/documentation/smart-contracts/precompiles/werc20?utm_source=chatgpt.com "WERC20 - Cosmos Documentation"
+[7]: https://evm.cosmos.network/docs/evm/v0.4.x/documentation/getting-started/tooling-and-resources/remix?utm_source=chatgpt.com "Remix IDE - Cosmos Documentation"
+[8]: https://evm.cosmos.network/docs/documentation/integration/erc20-precompiles-migration?utm_source=chatgpt.com "ERC20 Precompiles Migration - Cosmos Documentation"
+[9]: https://evm.cosmos.network/docs/documentation/integration/migration-v0.3-to-v0.4?utm_source=chatgpt.com "Migration: v0.3.0 to v0.4.0 - Cosmos Documentation"
+[10]: https://evm.cosmos.network/v0.4.x/documentation/concepts/transactions?utm_source=chatgpt.com "Transactions - Cosmos Documentation"
+[11]: https://evm.cosmos.network/v0.4.x/documentation/concepts/accounts?utm_source=chatgpt.com "Accounts - Cosmos Documentation"
+[12]: https://evm.cosmos.network/v0.4.x/documentation/concepts/single-token-representation?utm_source=chatgpt.com "Single Token Representation v2 - Cosmos Documentation"
+[13]: https://evm.cosmos.network/docs/evm/v0.4.x/api-reference/ethereum-json-rpc?utm_source=chatgpt.com "Ethereum JSON-RPC - Cosmos Documentation"
+
+
+------------------------------------
+
+
+### **1. The Quick Start Page**
+
+This is your single highest-impact target. Developers on this page are highly motivated and are trying to get their first "win" with the platform. Making this page interactive would be a game-changer for their onboarding experience.
+
+  * **Page:** [**Quick Start**](https://www.google.com/search?q=https://evm.cosmos.network/developers/quick-start)
+  * **Why it makes sense:** This page is a step-by-step guide that is full of `curl` commands for interacting with the JSON-RPC and `ethermintd` CLI commands. Each one is a perfect candidate for an executable recipe.
+  * **Example Recipes to Add:**
+      * "Get the latest block number"
+      * "Check the balance of my account"
+      * "Send a test transaction from my account to another address"
+
+### **2. The JSON-RPC API Reference**
+
+This section is a dictionary of commands. By making it interactive, you turn a dry reference document into a powerful testing and debugging tool, similar to Postman.
+
+  * **Page:** [**JSON-RPC Methods**](https://www.google.com/search?q=https://evm.cosmos.network/api/json-rpc)
+  * **Why it makes sense:** Every single method listed (like `eth_sendTransaction`, `eth_getBalance`, `eth_call`) is a backend action. Your module would allow developers to test these API calls directly from the documentation without needing to set up a separate environment.
+  * **Example Recipes to Add:**
+      * "Execute an `eth_call` to read the `totalSupply` of an ERC20 contract"
+      * "Get the chain ID using `eth_chainId`"
+      * "Find the current gas price"
+
+### **3. The CLI Reference Pages**
+
+Similar to the API reference, these pages are action-oriented and filled with commands that are perfect for your module.
+
+  * **Page:** [**CLI Commands**](https://www.google.com/search?q=https://evm.cosmos.network/api/cli) and its sub-pages (e.g., `tx bank send`).
+  * **Why it makes sense:** These pages show the raw CLI commands for sending transactions, staking, and interacting with modules. Your plugin would provide a no-code alternative, allowing users to execute these powerful commands without ever opening a terminal. This is a massive win for accessibility.
+  * **Example Recipes to Add:**
+      * "Send 5 PHOTON from my key to another address"
+      * "Query the transaction details for a specific hash"
+      * "Create a new local key named 'test-wallet'"
+
+### **4. Ethereum Tooling Tutorials (Hardhat & Foundry)**
+
+These pages are for developers coming from the Ethereum world. Making their experience smoother is a key strategic goal for attracting talent to the Cosmos ecosystem.
+
+  * **Pages:** [**Hardhat Guide**](https://www.google.com/search?q=https://evm.cosmos.network/developers/tools/hardhat) and [**Foundry Guide**](https://www.google.com/search?q=https://evm.cosmos.network/developers/tools/foundry)
+  * **Why it makes sense:** These tutorials involve a sequence of steps: compiling, deploying, and interacting with a smart contract. You can create recipes that correspond to each major step in the tutorial. This would allow a developer to follow along and execute the key actions without needing to copy-paste multiple commands.
+  * **Example Recipes to Add:**
+      * "Deploy the 'MyToken' smart contract"
+      * "Call the 'balanceOf' function on the deployed contract"
+      * "Transfer 100 'MyToken' from my account to another"
+
+By targeting these specific, action-oriented pages, you can demonstrate the maximum value of your execution module and create a powerful case study for its effectiveness.

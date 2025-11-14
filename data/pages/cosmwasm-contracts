@@ -1,0 +1,723 @@
+ Compile a Contract
+How to Compile CosmWasm Smart Contracts
+
+This guide is from the official CosmWasm/rust-optimizer repository. This method of compiling the contract will optimize the final build so that it reduces gas consumption.
+
+Example contracts for this can be found at https://github.com/CosmWasm/cw-examples. This repository requires this section to compile since multiple contracts are involved in a single repository.
+
+If you have ZERO experience with smart contracts, you need to check out book.cosmwasm.com for setting up your environment, testnet, and the basics of CosmWasm.
+
+For all great CosmWasm tools, https://github.com/CosmWasm/awesome-cosmwasm
+
+Single Contract Repository
+The easiest way is to simply use the published docker image. You must run this in the root of the smart contract repository you wish to compile. It will produce an artifacts directory with <crate_name>.wasm and contracts.txt containing the hashes. This is just one file.
+
+
+Copy
+docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/rust-optimizer:0.12.11
+
+# If you you use an ARM machine (Ex: Mac M1), you need to use the following
+# This is experimental and should not be used for production use
+
+docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/rust-optimizer-arm64:0.12.11
+By running this in the root of your project, it will compile your contract into an artifacts/ folder. From here you can upload it to chain, collect the store code, and interact with it as you design
+
+Multiple Contract Repository (Mono Repo)
+Sometime you want many contracts to be related and import common functionality. This is exactly the case of cosmwasm-plus. In such a case, we can often not just compile from root, as the compile order is not deterministic and there are feature flags shared among the repos. This has lead to issues in the past.
+
+For this use-case there is second docker image, which will compile all the contracts/* folders inside the workspace and do so one-by-one in alphabetical order. It will then add all the generated wasm files to an artifacts directory with a checksum, just like the basic docker image (same output format).
+
+To compile all contracts in the workspace deterministically, you can run:
+
+
+Copy
+docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/workspace-optimizer:0.12.11
+
+# If you you use an ARM machine (Ex: Mac M1), you need to use the following
+# This is experimental and should not be used for production use
+
+docker run --rm -v "$(pwd)":/code \
+  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
+  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+  cosmwasm/workspace-optimizer-arm64:0.12.11
+NOTE: See the difference with workspace-optimizer vs rust-optimizer in the previous single contract example.\
+
+
+Deploy a Contract
+Submit the code of a smart contract to chain and get its code id
+
+PreRequisite
+Make sure you follow the compile a contract guide first for your project. Once you have a contract compiled in the artifacts/*.wasm directory, you are ready for this guide.
+
+This guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use cw-orchestrator.
+
+Upload
+You need to upload the contract via the CLI to chain. To do this, perform the following
+
+
+Copy
+TXFLAGS="--chain-id=uni-6 --gas-prices=0.025ujunox --gas=auto --gas-adjustment 1.3"
+
+junod tx wasm store artifacts/CONRTACT_NAME.wasm \
+    --from <KEY> $TXFLAGS -y --broadcast-mode=block
+This will then return a transaction hash. With this data, you need to query it to get the code id of the contract on chain
+
+
+Copy
+junod q tx 38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085 --output=json
+This will return the data about the transaction, and give us the code id of our contract
+
+
+Copy
+{
+  "height": "294601",
+  "txhash": "38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085",
+  "codespace": "",
+  "code": 0,
+  "data": "0A460A1E2F636F736D7761736D2E7761736D2E76312E4D736753746F7265436F64651224080D12203318E74E8C68DBCC6E0317C42B8DB0AB642B61AEFAD487DEDB6ECB54FFED4D72",
+  "raw_log": "[{\"events\":[{\"type\":\"message\",\"attributes\":[{\"key\":\"action\",\"value\":\"/cosmwasm.wasm.v1.MsgStoreCode\"},{\"key\":\"module\",\"value\":\"wasm\"},{\"key\":\"sender\",\"value\":\"juno1hj5fveer5cjtn4wd6wstzugjfdxzl0xps73ftl\"}]},{\"type\":\"store_code\",\"attributes\":[{\"key\":\"code_checksum\",\"value\":\"3318e74e8c68dbcc6e0317c42b8db0ab642b61aefad487dedb6ecb54ffed4d72\"},{\"key\":\"code_id\",\"value\":\"13\"}]}]}]",
+  "logs": [
+    {
+      "msg_index": 0,
+      "log": "",
+      "events": [
+        {
+          "type": "message",
+          "attributes": [
+            {
+              "key": "action",
+              "value": "/cosmwasm.wasm.v1.MsgStoreCode"
+            },
+            {
+              "key": "module",
+              "value": "wasm"
+            },
+            {
+              "key": "sender",
+              "value": "juno1hj5fveer5cjtn4wd6wstzugjfdxzl0xps73ftl"
+            }
+          ]
+        },
+        {
+          "type": "store_code",
+          "attributes": [
+            {
+              "key": "code_checksum",
+              "value": "3318e74e8c68dbcc6e0317c42b8db0ab642b61aefad487dedb6ecb54ffed4d72"
+            },
+            {
+              "key": "code_id",
+              "value": "13"
+            }
+          ]
+        }
+      ]
+    }
+  }]
+}
+We can see both raw_log and also logs[0].events[1].store_code shows the code_id being 13. If you wish the automate this return code in bash to a variable, you can
+
+
+Copy
+# ensure jq is installed
+UPLOAD_TX_HASH=38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085
+CODE_ID=$(junod q tx $UPLOAD_TX_HASH --output json | jq -r '.logs[0].events[] | select(.type == "store_code").attributes[] | select(.key == "code_id").value') && echo "Code Id: $CODE_ID"
+Instantiate
+With the code now being up on chain, we can now run logic to setup our own copy of the contract which we control. This will then give us a unique contract address for others to interact with in accordance with the contract logic. This example is from the cosmwasm/cw-template.
+
+Ensure you change CODE_ID to match your code id from the store code
+
+
+Copy
+# Manual
+CODE_ID=1
+junod tx wasm instantiate "$CODE_ID" '{"count":0}' --label "some-contract" $FLAGS -y --admin <your-address-here>
+# then query the tranasaction hash as we do above.
+
+# Automated return of the contract address
+CODE_ID=1
+TX_INIT=$(junod tx wasm instantiate "$CODE_ID" '{"count":0}' --label "contract" $FLAGS -y --admin <your-address-here> | jq -r '.txhash') && echo $TX_INIT
+CONTRACT_ADDR=$($BINARY query tx $TX_INIT --output json | jq -r '.logs[0].events[0].attributes[0
+
+
+Guide: How to Upload a Smart Contract on the Juno Chain
+Welcome to this tutorial on deploying a smart contract to the Juno testnet. This guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orc
+
+
+Preparation:
+Required Materials: A computer with an internet connection, familiarity with GitHub, and basic knowledge of smart contracts.
+
+Steps:
+Find an Example Smart Contract:
+
+(Note: The steps here mainly involve browsing, no specific bash commands.)
+
+In this tutorial we will be using https://github.com/Reecepbcups/cw-clock-exampl
+
+Connect to the Juno Testnet:
+
+Check out our new video that shows you how to deploy a local env
+
+https://github.com/Reecepbcups/cw-clock-example
+
+Create a Juno Wallet:
+
+
+Copy
+bash junod keys add MyWalletName
+5. Claim junox Test Tokens:
+
+Head to Juno Discord https://discord.com/invite/caEBtA4QDb and find FAUCET section. In there you can get some using the API provided and inputting the wallet address you created in the previous step. https://faucet.reece.sh/uni-6/JUNO_ADDRESS_HERE
+
+6. Verify Token Receipt:
+
+
+Copy
+junod query bank balances [YOUR_WALLET_ADDRESS]
+7. Configure the Juno Command Line:
+
+
+Copy
+bash junod config node [NODE_URL]
+junod config chain-id [CHAIN_ID]
+junod config gas auto
+junod config gas-prices 0.025ujuno
+8. Deploy the Smart Contract:
+
+Assuming you've downloaded clock_example.wasm to your current directory
+
+
+Copy
+junod tx wasm store clock_example.wasm --from MyWalletName --gas 1500000 --chain-id [CHAIN_ID]
+9. Instantiate the Smart Contract:
+
+Replace [CODE_ID] with the code ID obtained from the previous step e.g 3785
+
+
+Copy
+ junod tx wasm instantiate [CODE_ID] '{"count": 0}' --label "my-clock-instance" --from MyWalletName --amount 100ujuno
+10. Interact with the Smart Contract:
+
+Query the smart contract (replace [CONTRACT_ADDRESS] with the address from instantiation) junod query wasm contract [CONTRACT_ADDRESS]
+
+
+Copy
+
+junod tx wasm execute [CONTRACT_ADDRESS] '{"increment": {}}' --from MyWalletName --amount 10ujuno
+Conclusion:
+You've now successfully uploaded, instantiated, and interacted with a smart contract on the Juno testnet.
+
+If you have further questions or ideas, join the Juno community on Discord, particularly the "developer lounge".
+
+Note: Adjust the bash commands to fit your specific situation, and always double-check them, especially when working with real tokens or live environments.\
+
+
+Use Cw-orchestrator to speed-up your development
+Integrate you smart-contract with cw-orch and facilitate testing/development and maintenance of your project.
+
+Introduction
+cw-orchestrator is the most advanced scripting, testing, and deployment framework for CosmWasm smart-contracts. It makes it easy to write cross-environment compatible code for cw-multi-test, Test Tube, Starship (alpha), and live networks, significantly reducing code duplication and test-writing time.
+
+Get ready to change the way you interact with contracts and simplify you smart-contracts journey. The following steps will allow you to integrate cw-orch and write clean code such as:
+
+
+Copy
+counter.upload()?;
+counter.instantiate(&InstantiateMsg { count: 0 }, None, None)?;
+counter.increment()?;
+
+let count = counter.get_count()?;
+assert_eq!(count.count, 1);
+In this quick-start guide, we will review the necessary steps in order to integrate cw-orch into a simple contract crate. We review integration of rust-workspaces (multiple contracts) at the end of this page.
+
+NOTE: Quicker than the quick start
+
+If you're moving quicker than everybody else, we suggest looking at a before-after review of this example integration. This will help you catch the additions you need to make to your contract to be able to interact with it using cw-orchestrator.
+
+NOTE: If you want to go more in depth, browse the full cw-orch documentation.
+
+Summary
+Introduction
+
+Summary
+
+Single Contract Integration
+
+Adding cw-orch to your Cargo.toml file
+
+Creating an Interface
+
+Interaction helpers
+
+Using the integration
+
+Integration in a workspace
+
+Handling dependencies and features
+
+Creating an interface crate
+
+Integrating single contracts
+
+More examples and scripts
+
+Single Contract Integration
+Throughout this example, we will be using cw-orch to interact with a simple counter contract. All the steps below apply to any smart contract, no matter the complexity.
+
+Adding cw-orch to your Cargo.toml file
+To use cw-orchestrator, you need to add cw-orch to your contract's TOML file. Run the command below in your contract's directory:
+
+
+Copy
+cargo add --optional cw-orch
+Alternatively, you can add it manually in your Cargo.toml file as shown below:
+
+
+Copy
+[dependencies]
+cw-orch = {version = "0.19.1", optional = true } # Latest version at time of writing
+Now that we have added cw-orch as an optional dependency we will want to enable it through a feature-flag. This ensures that the code added by cw-orch is not included in the wasm artifact of the contract.
+
+To do this add an interface feature to the Cargo.toml and enable cw-orch when it is enabled like so:
+
+
+Copy
+[features]
+interface = ["dep:cw-orch"] # Enables cw-orch when the feature is enabled
+NOTE: If you are using rust-analyzer, you can add the following two lines in your settings.json to make sure the features get taken into account when checking the project:
+
+
+Copy
+ "rust-analyzer.cargo.features": "all",
+ "rust-analyzer.check.features": "all",
+Creating an Interface
+When using a single contract, we advise creating an interface.rs file inside your contract's directory. You then need to add this module to your lib.rs file. Don't forget to feature-flag the module in order to be able to use cw-orch inside it.
+
+
+Copy
+#[cfg(feature = "interface")]
+mod interface;
+Then, inside that interface.rs file, you can define the interface for your contract:
+
+
+Copy
+use cw_orch::{interface, prelude::*};
+
+use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+
+pub const CONTRACT_ID: &str = "counter_contract";
+
+#[interface(InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, id = CONTRACT_ID)]
+pub struct CounterContract;
+
+impl<Chain: CwEnv> Uploadable for CounterContract<Chain> {
+    /// Return the path to the wasm file corresponding to the contract
+    fn wasm(&self) -> WasmPath {
+        artifacts_dir_from_workspace!()
+            .find_wasm_path("counter_contract")
+            .unwrap()
+    }
+    /// Returns a CosmWasm contract wrapper
+    fn wrapper(&self) -> Box<dyn MockContract<Empty>> {
+        Box::new(
+            ContractWrapper::new_with_empty(
+                crate::contract::execute,
+                crate::contract::instantiate,
+                crate::contract::query,
+            )
+            .with_migrate(crate::contract::migrate),
+        )
+    }
+}
+Learn more about the content of the interface creation specifics in the cw-orch documentation
+
+NOTE: It can be useful to re-export this struct to simplify usage (in lib.rs):
+
+
+Copy
+#[cfg(feature = "interface")]
+pub use crate::interface::CounterContract;
+Interaction helpers
+cw-orchestrator provides a additional macros that simplify contract calls and queries. The macro implements functions on the interface for each variant of the contract's ExecuteMsg and QueryMsg.
+
+Enabling this functionality is very straightforward. Find your ExecuteMsg and QueryMsg definitions (in msg.rs in our example) and add the ExecuteFns and QueryFns derive macros to them like below:
+
+
+Copy
+#[cw_serde]
+#[cfg_attr(feature = "interface", derive(cw_orch::ExecuteFns))] // Function generation
+/// Execute methods for counter
+pub enum ExecuteMsg {
+    /// Increment count by one
+    Increment {},
+    /// Reset count
+    Reset {
+        /// Count value after reset
+        count: i32,
+    },
+}
+
+#[cw_serde]
+#[cfg_attr(feature = "interface", derive(cw_orch::QueryFns))] // Function generation
+#[derive(QueryResponses)]
+/// Query methods for counter
+pub enum QueryMsg {
+    /// GetCount returns the current count as a json-encoded number
+    #[returns(GetCountResponse)]
+    GetCount {},
+}
+
+// Custom response for the query
+#[cw_serde]
+/// Response from get_count query
+pub struct GetCountResponse {
+    /// Current count in the state
+    pub count: i32,
+}
+Find out more about the interaction helpers in the cw-orch documentation
+
+NOTE: Again, it can be useful to re-export these generated traits to simplify usage (in lib.rs):
+
+
+Copy
+#[cfg(feature = "interface")]
+pub use crate::msg::{ExecuteMsgFns as CounterExecuteMsgFns, QueryMsgFns as CounterQueryMsgFns};
+Using the integration
+Now that all the setup is done, you can use your contract in tests, integration-tests or scripts.
+
+Start by importing your crate, with the interface feature enabled. Depending on your use-case this will be in [dependencies] or [dev-dependencies]:
+
+
+Copy
+counter-contract = { path = "../counter-contract", features = ["interface"] }
+You can now use:
+
+
+Copy
+use counter_contract::{
+    msg::InstantiateMsg, CounterContract, CounterExecuteMsgFns, CounterQueryMsgFns,
+};
+use cw_orch::{anyhow, prelude::*, tokio};
+use tokio::runtime::Runtime;
+
+const LOCAL_MNEMONIC: &str = "clip hire initial neck maid actor venue client foam budget lock catalog sweet steak waste crater broccoli pipe steak sister coyote moment obvious choose";
+pub fn main() -> anyhow::Result<()> {
+    std::env::set_var("LOCAL_MNEMONIC", LOCAL_MNEMONIC);
+    dotenv::dotenv().ok(); // Used to load the `.env` file if any
+    pretty_env_logger::init(); // Used to log contract and chain interactions
+
+    let rt = Runtime::new()?;
+    let network = networks::LOCAL_JUNO;
+    let chain = DaemonBuilder::default()
+        .handle(rt.handle())
+        .chain(network)
+        .build()?;
+
+
+    let counter = CounterContract::new(chain);
+
+    counter.upload()?;
+    counter.instantiate(&InstantiateMsg { count: 0 }, None, None)?;
+
+    counter.increment()?;
+
+    let count = counter.get_count()?;
+    assert_eq!(count.count, 1);
+
+    Ok(())
+}
+Integration in a workspace
+In this paragraph, we will use the cw-plus repository as an example. You can review:
+
+The full integration code with cw-orch added
+
+The complete diff that shows you all integration spots (if you want to go fast)
+
+Handling dependencies and features
+When using workspaces, you need to do the 2 following actions on all crates that include ExecuteMsg and QueryMsg used in your contracts:
+
+Add cw-orch as an optional dependency
+
+Add an interface feature (ensures cw-orch is not compiled into your wasm contract)
+
+Refer above to Adding cw-orch to your Cargo.toml file for more details on how to do that.
+
+For instance, for the cw20_base contract, you need to execute those 2 steps on the cw20-base contract (where the QueryMsg are defined) as well as on the cw20 package (where the ExecuteMsg are defined).
+
+Creating an interface crate
+When using a workspace, we advise you to create a new crate inside your workspace for defining your contract's interfaces. In order to do that, use:
+
+
+Copy
+cargo new interface --lib
+cargo add cw-orch --package interface
+Add the interface package to your workspace Cargo.toml file
+
+
+Copy
+[workspace]
+members = ["packages/*", "contracts/*", "interface"]
+Inside this interface crate, we advise to integrate all your contracts 1 by 1 in separate files. Here is the structure of the cw-plus integration for reference:
+
+
+Copy
+interface (interface collection)
+├── Cargo.toml
+└── src
+    ├── cw1_subkeys.rs
+    ├── cw1_whitelist.rs
+    ├── cw20_base.rs
+    ├── cw20_ics20.rs
+    └── ..
+When importing your crates to get the messages types, you can use the following command in the interface folder. Don't forget to activate the interface feature to be able to use the cw_orch functionalities.
+
+
+Copy
+cargo add cw20-base --path ../contracts/cw20-base/ --features=interface
+cargo add cw20 --path ../packages/cw20 --features=interface
+Integrating single contracts
+Now that you workspace is setup, you can integrate with single contracts using the above section
+
+More examples and scripts
+You can find more example interactions on the counter-contract example directly in the cw-orchestrator repo:
+
+Some examples showcase interacting with live chains.
+
+Some other examples show how to use the library for testing your contracts.
+
+FINAL ADVICE: Learn more and explorer our full cw-orch documentation !
+
+
+Query A Contract
+Describes how to query a cosmwasm smart contract with the CLI & REST API.
+
+Command Line Interface
+The most common way to query a cosmwasm smart contract is within the junod wasm smart query command. This follows the following format where query is a JSON string with no spaces. By default, the least amount of data this can be is an empty JSON payload '{}'.
+
+
+Copy
+junod query wasm contract-state smart [contract_bech32] [query] [flags]
+For this example, we are going to use a random NFT contract on the juno chain. This will show you how to brute force query a contract if you have no idea what the query schema of the contract is. At this time, there is no way to query the format of a contract's requests, but this is something many are actively working on.
+
+Now we attempt to query this contract address and extract some data from it and get which queries are allowed. As you can see, we pass through a random payload for abcde so that the contract will return actual valid query requests
+
+NOTE: A Query can never be empty such as '{}' given you need to specify the path of data you want to reach.
+
+
+Copy
+CONTRACT=juno1anh4pf98fe8uh64uuhaasqdmg89qe6kk5xsklxuvtjmu6rhpg53sj9uejj
+junod q wasm contract-state smart $CONTRACT '{"abcde":{}}'
+
+# Error parsing into type
+#    cw721_base::msg::QueryMsg<cosmwasm_std::results::empty::Empty>
+#    unknown variant `abcde`,
+#    expected one of `owner_of`, `approval`, `approvals`, `all_operators`,
+#    `num_tokens`, `contract_info`, `nft_info`, `all_nft_info`, `tokens`,
+#    `all_tokens`, `minter`, `extension`
+The query shows CW721 Base is this contracts name. As this is a standard contract, all messages can be found in the CosmWasm/cw-nfts repository on github
+
+https://github.com/CosmWasm/cw-nfts/blob/main/contracts/cw721-base/src/msg.rs
+
+From this, we now know all of the query endpoints and can requests something more specific from the contract for our usage. Let's get
+
+
+Copy
+CONTRACT=juno1anh4pf98fe8uh64uuhaasqdmg89qe6kk5xsklxuvtjmu6rhpg53sj9uejj
+junod q wasm contract-state smart $CONTRACT '{"all_tokens":{}}'
+
+data:
+  tokens:
+  - "0"
+  - "1"
+  - "2"
+  - "3"
+  - "4"
+  - "5"
+  - "6"
+  - "7"
+  - "8"
+
+# You can use --output=json to read it via JSON form
+# junod q wasm contract-state smart $CONTRACT '{"all_tokens":{}}' --output=json | jq .data
+Here we can see there are 8 tokens in this set. Lets query one of the NFTs information
+
+
+Copy
+CONTRACT=juno1anh4pf98fe8uh64uuhaasqdmg89qe6kk5xsklxuvtjmu6rhpg53sj9uejj
+junod q wasm contract-state smart $CONTRACT '{"nft_info":{}}'
+
+# missing field `token_id`: query wasm contract failed
+Just like the first query, we can see that the payload needs more information. It returned an error that we need to specify the token_id we want the nft_info for. Note, Uint128 sized numbers are read as a string
+
+
+Copy
+CONTRACT=juno1anh4pf98fe8uh64uuhaasqdmg89qe6kk5xsklxuvtjmu6rhpg53sj9uejj
+junod q wasm contract-state smart $CONTRACT '{"nft_info":{"token_id":"8"}}'
+
+# data:
+#   extension: null
+#   token_uri: ipfs://bafyreib42csdu7426ki7mxk6firvbz4uk3fo4dxpjy2kkskzdhtgj3rriq/metadata.json
+Rest API Query
+If you wish to query the data more programmatically with an application such as Python, you may be better suited to use the rest API. You can find these endpoints on https://cosmos.directory/juno/nodes in the REST section.
+
+This query endpoint can be found via Juno's SwaggerUI. However, some modules you will not be able to easily find the endpoint. To do this, you will need to search through the proto files. Here we know we want to query the cosmwasm module, which is called wasmd on chain. This repo is found at https://github.com/cosmwasm/wasmd.
+
+In this module, you can see the proto folder in the root of the repo. This will house the endpoints the module exposes so we can find the above path which. This is a query so we find the query proto file
+https://github.com/CosmWasm/wasmd/blob/main/proto/cosmwasm/wasm/v1/query.proto\
+
+
+Copy
+option go_package = "github.com/CosmWasm/wasmd/x/wasm/types";
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.equal_all) = false;
+
+// Query provides defines the gRPC querier service
+service Query {
+   ...
+  // SmartContractState get smart query result from the contract
+  rpc SmartContractState(QuerySmartContractStateRequest)
+      returns (QuerySmartContractStateResponse) {
+    option (google.api.http).get =
+        "/cosmwasm/wasm/v1/contract/{address}/smart/{query_data}";
+  }
+  ...
+You must base64 encode the JSON payload for REST API Request. Just take your JSON payload and
+
+- put it into https://www.base64encode.org/
+- or use Mac / Linux built in command
+
+echo '{"all_tokens":{}}' | base64
+# eyJhbGxfdG9rZW5zIjp7fX0K
+
+With this, we can now query the contract and gather the data. You can use your web browser, or a library like httpx / requests in Python for automated bots. Be aware that many API providers will late limit the number of requests you can make.
+
+https://api.juno.strange.love/cosmwasm/wasm/v1/contract/juno1anh4pf98fe8uh64uuhaasqdmg89qe6kk5xsklxuvtjmu6rhpg53sj9uejj/smart/eyJhbGxfdG9rZW5zIjp7fX0K
+
+
+Copy
+{
+    "data": {
+        "tokens": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8"
+        ]
+    }
+}
+Cosmology Smart Contract Query
+Using CosmWasm/ts-codegen, you can create an NPM module to make interactions and queries into dev-friendly Typescript classes to allow you to focus on shipping code.
+
+Here are a few tutorials from cosmology:
+
+ts-codegen overview for CosmWasm
+
+CosmWasm Contract to Typescript npm module
+
+Configure CosmWasm ts-codegen in your Contracts repo
+
+Query a CosmWasm smart contract from ts-codegen
+
+Enable React Query
+
+Enable Recoil
+
+Integrate Telescope with ts-codegen
+
+CosmJS Query
+TODO: Add how to query a smart contract data with Typescript + Example through the RPC endpoint (proto encoded) & httpbatch tendermint client
+
+Internal
+TODO: internal rust impl of how to WasmQuery a contract and get some data back.
+
+
+Send Tokens to a Contract
+Command Line Interface
+When you execute a message, a user can also pass through a flag which sends funds from their account to the contract to do logic. You can check if a user sends any funds in your contract's execute endpoint with the info.funds array of Coins sent by the user. These funds then get added to the contracts balance just like any other account. So it is up to you as the developer to ensure to save how many funds each user has sent via a BTreeMap or other object storage in state (if they can redeem funds back at a later time).
+
+To send funds to a contract with some arbitrary endpoint, you use the --amount flag.
+
+
+Copy
+junod tx wasm execute CONTRACT '{"some_endpoint":{}}' --amount 1000000ujuno
+If the "some_endpoint" execute errors on the contract, the funds will remain in the users account.
+
+Typescript
+
+Copy
+import type {Coin} from "@cosmjs/stargate"
+import { SigningStargateClient, StargateClient, type StdFee } from '@cosmjs/stargate';
+
+import type { OfflineAminoSigner } from '@cosmjs/amino';
+import type { OfflineDirectSigner } from '@cosmjs/proto-signing';
+
+import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
+
+let RPC = "https://rpc.juno.strange.love"
+
+const get_wallet_for_chain = async (
+    chain_id: string
+): Promise<OfflineAminoSigner | OfflineDirectSigner> => {
+	// open keplr
+	const keplr = window as KeplrWindow;
+	if (keplr === undefined) {
+		throw new Error('Keplr not found');
+	}
+	let signer = keplr.getOfflineSignerAuto;
+	if (signer === undefined) {
+		throw new Error('Keplr not found');
+	}
+	return signer(chain_id);
+};
+
+let wallet = await get_wallet_for_chain("juno-1");
+let address = (await wallet.getAccounts())[0].address;
+
+let from_client = await SigningCosmWasmClient.connectWithSigner(RPC, wallet, {
+	prefix: "juno"
+});
+
+const msg = {"some_endpoint": {}}
+
+let fee: StdFee = {
+    amount: [{amount: "5000",denom: "ujuno"}],
+    gas: "500000"
+}
+
+let send_amount: Coin = {
+    amount: "100000",
+    denom: "ujuno"
+}
+
+await from_client.execute(
+	address,
+	REVIEWS_CONTRACT_ADDRESS,
+	msg,
+	fee,
+	"memo",
+	send_amount,
+).then((res) => {
+    console.log(`Success @ height ${res.height}\n\nTxHash: ${res.transactionHash}`)
+});
+ts-codegen
+The cosmology toolkit has some useful typescript tools for interacting with your smart contracts. The repo can be found at https://github.com/CosmWasm/ts-codegen, with setup and query tutorials in Query A Contract section of this documentation.
+
+Here are some video tutorials:
+
+How to Execute a cosmwasm smart contract
+
+Advanced execution with a cosmwasm message composer

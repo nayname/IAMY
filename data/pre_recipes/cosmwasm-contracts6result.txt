@@ -1,0 +1,269 @@
+{
+    "messages": [
+        {
+            "content": "[{\"label\": \"cosmwasm-contracts\", \"query\": \"Add 'interface' feature flag to enable cw-orch in Cargo.toml\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Query the smart contract via REST endpoint with base64 encoded query\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Compile and upload clock_example.wasm to the Juno testnet\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Use --amount flag to attach tokens when executing a contract\"}, {\"label\": \"cosmwasm-contracts\", \"query\": \"Generate a TypeScript client with ts-codegen for the contract\"}]",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "human",
+            "name": null,
+            "id": "9d038137-568f-4266-9240-d75c1bd900aa"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 867,
+                    "prompt_tokens": 774,
+                    "total_tokens": 1641,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 832,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6msTPahuB81fTyjDzeuXshcGljt",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--95c14f0c-2375-4de3-96d5-dd57cc0b4216-0",
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "cw-orch interface feature flag Cargo.toml",
+                        "max_results": 5
+                    },
+                    "id": "call_XTyPWpHStVjhvpsDckuAiTCp",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 774,
+                "output_tokens": 867,
+                "total_tokens": 1641,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 832
+                }
+            }
+        },
+        {
+            "content": "Found 5 result(s) for \"cw-orch interface feature flag Cargo.toml\":\n\n## 1. Speed up your development with cw-orchestrator <!-- omit in toc -->\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/cw-orchestrator.md\n**Section:** developer-guides\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: description: Integrate you smart-contract with cw-orch and facilitate testing/development and maintenance of your project.\n- Line 5: # Speed up your development with cw-orchestrator <!-- omit in toc -->\n- Line 9: cw-orchestrator is the most advanced scripting, testing, and deployment framework for CosmWasm smart-contracts. It makes it easy to write cross-environment compatible code for [cw-multi-test](https://github.com/CosmWasm/cw-multi-test), [Test Tube](https://github.com/osmosis-labs/test-tube), [Starship](https://github.com/cosmology-tech/starship) (alpha), and live networks, significantly reducing code duplication and test-writing time.\n- Line 11: Get ready to change the way you interact with contracts and simplify you smart-contracts journey. The following steps will allow you to integrate `cw-orch` and write clean code such as:\n- Line 22: In this quick-start guide, we will review the necessary steps in order to integrate [`cw-orch`](https://github.com/AbstractSDK/cw-orchestrator) into a simple contract crate. [We review integration of rust-workspaces (multiple contracts) at the end of this page](#integration-in-a-workspace).\n\n**Content Preview:**\n```\n---\ndescription: Integrate you smart-contract with cw-orch and facilitate testing/development and maintenance of your project.\n---\n\n---\n\n\n# Speed up your development with cw-orchestrator <!-- omit in toc -->\n\n\n---\n\n\ncw-orchestrator is the most advanced scripting, testing, and deployment framework for CosmWasm smart-contracts. It makes it easy to write cross-environment compatible code for [cw-multi-test](https://github.com/CosmWasm/cw-multi-test), [Test Tube](https://github.com/osmosis-labs/test-tube), [Starship](https://github.com/cosmology-tech/starship) (alpha), and live networks, significantly reducing code duplication and test-writing time.\n\n```\n\n---\n\n## 2. Speed up your development with cw-orchestrator <!-- omit in toc -->\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/cw-orchestrator.md\n**Section:** developer-guides\n**Relevance Score:** 17\n\n**Matching lines:**\n- Line 2: description: Integrate you smart-contract with cw-orch and facilitate testing/development and maintenance of your project.\n- Line 5: # Speed up your development with cw-orchestrator <!-- omit in toc -->\n- Line 9: cw-orchestrator is the most advanced scripting, testing, and deployment framework for CosmWasm smart-contracts. It makes it easy to write cross-environment compatible code for [cw-multi-test](https://github.com/CosmWasm/cw-multi-test), [Test Tube](https://github.com/osmosis-labs/test-tube), [Starship](https://github.com/cosmology-tech/starship) (alpha), and live networks, significantly reducing code duplication and test-writing time.\n- Line 11: Get ready to change the way you interact with contracts and simplify you smart-contracts journey. The following steps will allow you to integrate `cw-orch` and write clean code such as:\n- Line 22: In this quick-start guide, we will review the necessary steps in order to integrate [`cw-orch`](https://github.com/AbstractSDK/cw-orchestrator) into a simple contract crate. [We review integration of rust-workspaces (multiple contracts) at the end of this page](#integration-in-a-workspace).\n\n**Content Preview:**\n```\n---\ndescription: Integrate you smart-contract with cw-orch and facilitate testing/development and maintenance of your project.\n---\n\n---\n\n\n# Speed up your development with cw-orchestrator <!-- omit in toc -->\n\n\n---\n\n\ncw-orchestrator is the most advanced scripting, testing, and deployment framework for CosmWasm smart-contracts. It makes it easy to write cross-environment compatible code for [cw-multi-test](https://github.com/CosmWasm/cw-multi-test), [Test Tube](https://github.com/osmosis-labs/test-tube), [Starship](https://github.com/cosmology-tech/starship) (alpha), and live networks, significantly reducing code duplication and test-writing time.\n\n```\n\n---\n\n## 3. Deploy a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/deploy-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 11: This guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n- Line 19: TXFLAGS=\"--chain-id=uni-6 --gas-prices=0.025ujunox --gas=auto --gas-adjustment 1.3\"\n- Line 22: --from <KEY> $TXFLAGS -y --broadcast-mode=block\n- Line 98: junod tx wasm instantiate \"$CODE_ID\" '{\"count\":0}' --label \"some-contract\" $FLAGS -y --admin &#x3C;your-address-here>\n- Line 103: TX_INIT=$(junod tx wasm instantiate \"$CODE_ID\" '{\"count\":0}' --label \"contract\" $FLAGS -y --admin &#x3C;your-address-here> | jq -r '.txhash') &#x26;&#x26; echo $TX_INIT\n\n**Content Preview:**\n```\n\nThis guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n\n\n---\n\n```bash\nTXFLAGS=\"--chain-id=uni-6 --gas-prices=0.025ujunox --gas=auto --gas-adjustment 1.3\"\n\n\n---\n\njunod tx wasm store artifacts/CONRTACT_NAME.wasm \\\n    --from <KEY> $TXFLAGS -y --broadcast-mode=block\n```\n```\n\n---\n\n## 4. Deploy a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/deploy-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 11: This guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n- Line 19: TXFLAGS=\"--chain-id=uni-6 --gas-prices=0.025ujunox --gas=auto --gas-adjustment 1.3\"\n- Line 22: --from <KEY> $TXFLAGS -y --broadcast-mode=block\n- Line 98: junod tx wasm instantiate \"$CODE_ID\" '{\"count\":0}' --label \"some-contract\" $FLAGS -y --admin &#x3C;your-address-here>\n- Line 103: TX_INIT=$(junod tx wasm instantiate \"$CODE_ID\" '{\"count\":0}' --label \"contract\" $FLAGS -y --admin &#x3C;your-address-here> | jq -r '.txhash') &#x26;&#x26; echo $TX_INIT\n\n**Content Preview:**\n```\n\nThis guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n\n\n---\n\n```bash\nTXFLAGS=\"--chain-id=uni-6 --gas-prices=0.025ujunox --gas=auto --gas-adjustment 1.3\"\n\n\n---\n\njunod tx wasm store artifacts/CONRTACT_NAME.wasm \\\n    --from <KEY> $TXFLAGS -y --broadcast-mode=block\n```\n```\n\n---\n\n## 5. Introduction\n**File:** /root/neutron/juno/cli/cli-introduction.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 4: flags\n- Line 19: The default working directory for the `junod` is `$HOME/.juno`, which is mainly used to store configuration files and blockchain data. The Juno `key` data is saved in the working directory of `junod`. You can also specify the `junod` working directory by using the `--home` flag when executing `junod`.\n- Line 25: The RPC address can be specified to connect to any full-node with an exposed RPC port by adding the `--node` flag when executing `junod`\n- Line 27: ### Global Flags <a href=\"#global-flags\" id=\"global-flags\"></a>\n- Line 31: All GET commands have the following global flags:\n\n**Content Preview:**\n```\n  A general introduction Juno cli along with a brief description of commands and\n  flags\ncover: ../.gitbook/assets/Discord Invite (29).png\n\n---\n\n\nThe default working directory for the `junod` is `$HOME/.juno`, which is mainly used to store configuration files and blockchain data. The Juno `key` data is saved in the working directory of `junod`. You can also specify the `junod` working directory by using the `--home` flag when executing `junod`.\n\n\n---\n\n\nThe RPC address can be specified to connect to any full-node with an exposed RPC port by adding the `--node` flag when executing `junod`\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "b7e20799-b806-418e-9c57-7f7779f5b2e9",
+            "tool_call_id": "call_XTyPWpHStVjhvpsDckuAiTCp",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 233,
+                    "prompt_tokens": 3436,
+                    "total_tokens": 3669,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 192,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 0
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6n40ViTak2TQ2iUlC0C2vNTu22B",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--c545379b-1f96-4173-abc2-77b511e9e4cf-0",
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "feature = \"interface\"",
+                        "section": "developer-guides",
+                        "max_results": 10
+                    },
+                    "id": "call_G74fXd3tHiuzW9JSoIA6VD5D",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 3436,
+                "output_tokens": 233,
+                "total_tokens": 3669,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 0
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 192
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"feature = \"interface\"\":\n\n## 1. Speed up your development with cw-orchestrator <!-- omit in toc -->\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/cw-orchestrator.md\n**Section:** developer-guides\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 41: - [Handling dependencies and features](#handling-dependencies-and-features)\n- Line 65: Now that we have added `cw-orch` as an optional dependency we will want to enable it through a feature-flag. This ensures that the code added by `cw-orch` is **not** included in the wasm artifact of the contract.\n- Line 67: To do this add an `interface` feature to the `Cargo.toml` and enable `cw-orch` when it is enabled like so:\n- Line 70: [features]\n- Line 71: interface = [\"dep:cw-orch\"] # Enables cw-orch when the feature is enabled\n\n**Content Preview:**\n```\n- [Integration in a workspace](#integration-in-a-workspace)\n  - [Handling dependencies and features](#handling-dependencies-and-features)\n  - [Creating an interface crate](#creating-an-interface-crate)\n\n---\n\n\nNow that we have added `cw-orch` as an optional dependency we will want to enable it through a feature-flag. This ensures that the code added by `cw-orch` is **not** included in the wasm artifact of the contract.\n\n\n---\n\n\nTo do this add an `interface` feature to the `Cargo.toml` and enable `cw-orch` when it is enabled like so:\n\n```\n\n---\n\n## 2. Speed up your development with cw-orchestrator <!-- omit in toc -->\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/cw-orchestrator.md\n**Section:** developer-guides\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 41: - [Handling dependencies and features](#handling-dependencies-and-features)\n- Line 65: Now that we have added `cw-orch` as an optional dependency we will want to enable it through a feature-flag. This ensures that the code added by `cw-orch` is **not** included in the wasm artifact of the contract.\n- Line 67: To do this add an `interface` feature to the `Cargo.toml` and enable `cw-orch` when it is enabled like so:\n- Line 70: [features]\n- Line 71: interface = [\"dep:cw-orch\"] # Enables cw-orch when the feature is enabled\n\n**Content Preview:**\n```\n- [Integration in a workspace](#integration-in-a-workspace)\n  - [Handling dependencies and features](#handling-dependencies-and-features)\n  - [Creating an interface crate](#creating-an-interface-crate)\n\n---\n\n\nNow that we have added `cw-orch` as an optional dependency we will want to enable it through a feature-flag. This ensures that the code added by `cw-orch` is **not** included in the wasm artifact of the contract.\n\n\n---\n\n\nTo do this add an `interface` feature to the `Cargo.toml` and enable `cw-orch` when it is enabled like so:\n\n```\n\n---\n\n## 3. Compile a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/compile-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 36: Sometime you want many contracts to be related and import common functionality. This is exactly the case of [`cosmwasm-plus`](https://github.com/CosmWasm/cosmwasm-plus). In such a case, we can often not just compile from root, as the compile order is not deterministic and there are feature flags shared among the repos. This has lead to [issues in the past](https://github.com/CosmWasm/rust-optimizer/issues/21).\n\n**Content Preview:**\n```\n\nSometime you want many contracts to be related and import common functionality. This is exactly the case of [`cosmwasm-plus`](https://github.com/CosmWasm/cosmwasm-plus). In such a case, we can often not just compile from root, as the compile order is not deterministic and there are feature flags shared among the repos. This has lead to [issues in the past](https://github.com/CosmWasm/rust-optimizer/issues/21).\n\n```\n\n---\n\n## 4. Local Interchain\n**File:** /root/neutron/juno/developer-guides/local-interchain/README.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 45: ### **Step 5: Explore Local Interchain Features**\n\n**Content Preview:**\n```\n\n### **Step 5: Explore Local Interchain Features**\n\n```\n\n---\n\n## 5. IBC Transfer\n**File:** /root/neutron/juno/developer-guides/miscellaneous/ibc-transfer.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 7: One of the highlighted features of CosmosSDK chains is the ability to transfer tokens permissionless to other chains in the network. This is also possible with Juno to and from other chains.\\\n\n**Content Preview:**\n```\n\nOne of the highlighted features of CosmosSDK chains is the ability to transfer tokens permissionless to other chains in the network. This is also possible with Juno to and from other chains.\\\n\\\n```\n\n---\n\n## 6. SubQuery Indexer\n**File:** /root/neutron/juno/developer-guides/subquery.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 7: Another one of SubQuery's competitive advantages is the ability to aggregate data not only within a chain but across multiple blockchains all within a single project. This allows the creation of feature-rich dashboard analytics, multi-chain block scanners, or projects that index IBC transactions across zones.\n\n**Content Preview:**\n```\n\nAnother one of SubQuery's competitive advantages is the ability to aggregate data not only within a chain but across multiple blockchains all within a single project. This allows the creation of feature-rich dashboard analytics, multi-chain block scanners, or projects that index IBC transactions across zones.\n\n```\n\n---\n\n## 7. Compile a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/compile-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 36: Sometime you want many contracts to be related and import common functionality. This is exactly the case of [`cosmwasm-plus`](https://github.com/CosmWasm/cosmwasm-plus). In such a case, we can often not just compile from root, as the compile order is not deterministic and there are feature flags shared among the repos. This has lead to [issues in the past](https://github.com/CosmWasm/rust-optimizer/issues/21).\n\n**Content Preview:**\n```\n\nSometime you want many contracts to be related and import common functionality. This is exactly the case of [`cosmwasm-plus`](https://github.com/CosmWasm/cosmwasm-plus). In such a case, we can often not just compile from root, as the compile order is not deterministic and there are feature flags shared among the repos. This has lead to [issues in the past](https://github.com/CosmWasm/rust-optimizer/issues/21).\n\n```\n\n---\n\n## 8. Local Interchain\n**File:** /root/neutron/juno/developer-guides/local-interchain/README.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 45: ### **Step 5: Explore Local Interchain Features**\n\n**Content Preview:**\n```\n\n### **Step 5: Explore Local Interchain Features**\n\n```\n\n---\n\n## 9. IBC Transfer\n**File:** /root/neutron/juno/developer-guides/miscellaneous/ibc-transfer.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 7: One of the highlighted features of CosmosSDK chains is the ability to transfer tokens permissionless to other chains in the network. This is also possible with Juno to and from other chains.\\\n\n**Content Preview:**\n```\n\nOne of the highlighted features of CosmosSDK chains is the ability to transfer tokens permissionless to other chains in the network. This is also possible with Juno to and from other chains.\\\n\\\n```\n\n---\n\n## 10. SubQuery Indexer\n**File:** /root/neutron/juno/developer-guides/subquery.md\n**Section:** developer-guides\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 7: Another one of SubQuery's competitive advantages is the ability to aggregate data not only within a chain but across multiple blockchains all within a single project. This allows the creation of feature-rich dashboard analytics, multi-chain block scanners, or projects that index IBC transactions across zones.\n\n**Content Preview:**\n```\n\nAnother one of SubQuery's competitive advantages is the ability to aggregate data not only within a chain but across multiple blockchains all within a single project. This allows the creation of feature-rich dashboard analytics, multi-chain block scanners, or projects that index IBC transactions across zones.\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "43009bae-b272-4656-bfb1-8267793627e1",
+            "tool_call_id": "call_G74fXd3tHiuzW9JSoIA6VD5D",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 365,
+                    "prompt_tokens": 6061,
+                    "total_tokens": 6426,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 320,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 3328
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6nAFKHs1zwQh190otk9lgSLz1Dy",
+                "service_tier": "default",
+                "finish_reason": "tool_calls",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--a313f124-0548-4438-ac53-7288e2729ec6-0",
+            "tool_calls": [
+                {
+                    "name": "search",
+                    "args": {
+                        "query": "base64 encode query wasm contract rest endpoint",
+                        "section": "developer-guides",
+                        "max_results": 10
+                    },
+                    "id": "call_1ocqLJeNJKl9NXH3LOdgJ1hA",
+                    "type": "tool_call"
+                }
+            ],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 6061,
+                "output_tokens": 365,
+                "total_tokens": 6426,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 3328
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 320
+                }
+            }
+        },
+        {
+            "content": "Found 10 result(s) for \"base64 encode query wasm contract rest endpoint\":\n\n## 1. Query A Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/query-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 23\n\n**Matching lines:**\n- Line 2: description: Describes how to query a cosmwasm smart contract with the CLI & REST API.\n- Line 5: # Query A Contract\n- Line 9: The most common way to query a cosmwasm smart contract is within the junod wasm smart query command. This follows the following format where query is a JSON string with no spaces. By default, the least amount of data this can be is an empty JSON payload `'{}'.`\n- Line 12: junod query wasm contract-state smart [contract_bech32] [query] [flags]\n- Line 15: For this example, we are going to use a random NFT contract on the juno chain. This will show you how to brute force query a contract if you have no idea what the query schema of the contract is. At this time, there is no way to query the format of a contract's requests, but this is something many are actively working on.\n\n**Content Preview:**\n```\n---\ndescription: Describes how to query a cosmwasm smart contract with the CLI & REST API.\n---\n\n---\n\n\n# Query A Contract\n\n\n---\n\n\nThe most common way to query a cosmwasm smart contract is within the junod wasm smart query command. This follows the following format where query is a JSON string with no spaces. By default, the least amount of data this can be is an empty JSON payload `'{}'.`\n\n```\n\n---\n\n## 2. Query A Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/query-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 23\n\n**Matching lines:**\n- Line 2: description: Describes how to query a cosmwasm smart contract with the CLI & REST API.\n- Line 5: # Query A Contract\n- Line 9: The most common way to query a cosmwasm smart contract is within the junod wasm smart query command. This follows the following format where query is a JSON string with no spaces. By default, the least amount of data this can be is an empty JSON payload `'{}'.`\n- Line 12: junod query wasm contract-state smart [contract_bech32] [query] [flags]\n- Line 15: For this example, we are going to use a random NFT contract on the juno chain. This will show you how to brute force query a contract if you have no idea what the query schema of the contract is. At this time, there is no way to query the format of a contract's requests, but this is something many are actively working on.\n\n**Content Preview:**\n```\n---\ndescription: Describes how to query a cosmwasm smart contract with the CLI & REST API.\n---\n\n---\n\n\n# Query A Contract\n\n\n---\n\n\nThe most common way to query a cosmwasm smart contract is within the junod wasm smart query command. This follows the following format where query is a JSON string with no spaces. By default, the least amount of data this can be is an empty JSON payload `'{}'.`\n\n```\n\n---\n\n## 3. Send Tokens to a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/send-tokens-to-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 21\n\n**Matching lines:**\n- Line 1: # Send Tokens to a Contract\n- Line 5: When you execute a message, a user can also pass through a flag which sends funds from their account to the contract to do logic. You can check if a user sends any funds in your contract's execute endpoint with the `info.funds` array of Coins sent by the user. These funds then get added to the contracts balance just like any other account. So it is up to you as the developer to ensure to save how many funds each user has sent via a BTreeMap or other object storage in state (if they can redeem funds back at a later time).\n- Line 7: To send funds to a contract with some arbitrary endpoint, you use the `--amount` flag.\n- Line 10: junod tx wasm execute CONTRACT '{\"some_endpoint\":{}}' --amount 1000000ujuno\n- Line 24: import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';\n\n**Content Preview:**\n```\n# Send Tokens to a Contract\n\n\n---\n\n\nWhen you execute a message, a user can also pass through a flag which sends funds from their account to the contract to do logic. You can check if a user sends any funds in your contract's execute endpoint with the `info.funds` array of Coins sent by the user. These funds then get added to the contracts balance just like any other account. So it is up to you as the developer to ensure to save how many funds each user has sent via a BTreeMap or other object storage in state (if they can redeem funds back at a later time).\n\n\n---\n\n\nTo send funds to a contract with some arbitrary endpoint, you use the `--amount` flag.\n\n```\n\n---\n\n## 4. Send Tokens to a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/send-tokens-to-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 21\n\n**Matching lines:**\n- Line 1: # Send Tokens to a Contract\n- Line 5: When you execute a message, a user can also pass through a flag which sends funds from their account to the contract to do logic. You can check if a user sends any funds in your contract's execute endpoint with the `info.funds` array of Coins sent by the user. These funds then get added to the contracts balance just like any other account. So it is up to you as the developer to ensure to save how many funds each user has sent via a BTreeMap or other object storage in state (if they can redeem funds back at a later time).\n- Line 7: To send funds to a contract with some arbitrary endpoint, you use the `--amount` flag.\n- Line 10: junod tx wasm execute CONTRACT '{\"some_endpoint\":{}}' --amount 1000000ujuno\n- Line 24: import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';\n\n**Content Preview:**\n```\n# Send Tokens to a Contract\n\n\n---\n\n\nWhen you execute a message, a user can also pass through a flag which sends funds from their account to the contract to do logic. You can check if a user sends any funds in your contract's execute endpoint with the `info.funds` array of Coins sent by the user. These funds then get added to the contracts balance just like any other account. So it is up to you as the developer to ensure to save how many funds each user has sent via a BTreeMap or other object storage in state (if they can redeem funds back at a later time).\n\n\n---\n\n\nTo send funds to a contract with some arbitrary endpoint, you use the `--amount` flag.\n\n```\n\n---\n\n## 5. Compile a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/compile-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: description: How to Compile CosmWasm Smart Contracts\n- Line 5: # Compile a Contract\n- Line 7: [This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n- Line 9: Example contracts for this can be found at [https://github.com/CosmWasm/cw-examples](https://github.com/CosmWasm/cw-examples). This repository [requires this section to compile](compile-a-contract.md#multiple-contract-repository-mono-repo) since multiple contracts are involved in a single repository.\n- Line 13: ## Single Contract Repository\n\n**Content Preview:**\n```\n---\ndescription: How to Compile CosmWasm Smart Contracts\n---\n\n---\n\n\n# Compile a Contract\n\n\n---\n\n\n[This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n\n```\n\n---\n\n## 6. Deploy a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/deploy-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: description: Submit the code of a smart contract to chain and get its code id\n- Line 5: # Deploy a Contract\n- Line 9: Make sure you follow the [compile a contract](compile-a-contract.md) guide first for your project. Once you have a contract compiled in the artifacts/\\*.wasm directory, you are ready for this guide.\n- Line 11: This guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n- Line 16: You need to upload the contract via the CLI to chain. To do this, perform the following\n\n**Content Preview:**\n```\n---\ndescription: Submit the code of a smart contract to chain and get its code id\n---\n\n---\n\n\n# Deploy a Contract\n\n\n---\n\n\nMake sure you follow the [compile a contract](compile-a-contract.md) guide first for your project. Once you have a contract compiled in the artifacts/\\*.wasm directory, you are ready for this guide.\n\n```\n\n---\n\n## 7. SubQuery Indexer\n**File:** /root/neutron/juno/developer-guides/subquery.md\n**Section:** developer-guides\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 1: # SubQuery Indexer\n- Line 5: SubQuery is a leading blockchain data indexer that provides developers with fast, flexible, universal, open source and decentralised APIs for web3 projects. SubQuery SDK allows developers to get rich indexed data and build intuitive and immersive decentralised applications in a faster and more efficient way. SubQuery supports 100+ ecosystems including Juno, Cosmos, Ethereum, Polygon, Polkadot, Algorand, NEAR, and Avalanche.\n- Line 7: Another one of SubQuery's competitive advantages is the ability to aggregate data not only within a chain but across multiple blockchains all within a single project. This allows the creation of feature-rich dashboard analytics, multi-chain block scanners, or projects that index IBC transactions across zones.\n- Line 9: Other advantages include superior performance with multiple RPC endpoint configurations, multi-worker capabilities and a configurable caching architecture. To find out more, visit our [documentation](https://academy.subquery.network/).\n- Line 12: - SubQuery Docs: [SubQuery Academy (Documentation)](https://academy.subquery.network/)\n\n**Content Preview:**\n```\n# SubQuery Indexer\n\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides developers with fast, flexible, universal, open source and decentralised APIs for web3 projects. SubQuery SDK allows developers to get rich indexed data and build intuitive and immersive decentralised applications in a faster and more efficient way. SubQuery supports 100+ ecosystems including Juno, Cosmos, Ethereum, Polygon, Polkadot, Algorand, NEAR, and Avalanche.\n\n\n---\n\n\nAnother one of SubQuery's competitive advantages is the ability to aggregate data not only within a chain but across multiple blockchains all within a single project. This allows the creation of feature-rich dashboard analytics, multi-chain block scanners, or projects that index IBC transactions across zones.\n\n```\n\n---\n\n## 8. Compile a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/compile-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: description: How to Compile CosmWasm Smart Contracts\n- Line 5: # Compile a Contract\n- Line 7: [This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n- Line 9: Example contracts for this can be found at [https://github.com/CosmWasm/cw-examples](https://github.com/CosmWasm/cw-examples). This repository [requires this section to compile](compile-a-contract.md#multiple-contract-repository-mono-repo) since multiple contracts are involved in a single repository.\n- Line 13: ## Single Contract Repository\n\n**Content Preview:**\n```\n---\ndescription: How to Compile CosmWasm Smart Contracts\n---\n\n---\n\n\n# Compile a Contract\n\n\n---\n\n\n[This guide is from the official CosmWasm/rust-optimizer repository](https://github.com/CosmWasm/rust-optimizer). This method of compiling the contract will optimize the final build so that it reduces gas consumption.\n\n```\n\n---\n\n## 9. Deploy a Contract\n**File:** /root/neutron/juno/developer-guides/cosmwasm-contracts/deploy-a-contract.md\n**Section:** developer-guides\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 2: description: Submit the code of a smart contract to chain and get its code id\n- Line 5: # Deploy a Contract\n- Line 9: Make sure you follow the [compile a contract](compile-a-contract.md) guide first for your project. Once you have a contract compiled in the artifacts/\\*.wasm directory, you are ready for this guide.\n- Line 11: This guide will show you how to deploy and interact with a contract using CLI. For scripting using Rust, you can use [cw-orchestrator](./cw-orchestrator.md).\n- Line 16: You need to upload the contract via the CLI to chain. To do this, perform the following\n\n**Content Preview:**\n```\n---\ndescription: Submit the code of a smart contract to chain and get its code id\n---\n\n---\n\n\n# Deploy a Contract\n\n\n---\n\n\nMake sure you follow the [compile a contract](compile-a-contract.md) guide first for your project. Once you have a contract compiled in the artifacts/\\*.wasm directory, you are ready for this guide.\n\n```\n\n---\n\n## 10. SubQuery Indexer\n**File:** /root/neutron/juno/developer-guides/subquery.md\n**Section:** developer-guides\n**Relevance Score:** 19\n\n**Matching lines:**\n- Line 1: # SubQuery Indexer\n- Line 5: SubQuery is a leading blockchain data indexer that provides developers with fast, flexible, universal, open source and decentralised APIs for web3 projects. SubQuery SDK allows developers to get rich indexed data and build intuitive and immersive decentralised applications in a faster and more efficient way. SubQuery supports 100+ ecosystems including Juno, Cosmos, Ethereum, Polygon, Polkadot, Algorand, NEAR, and Avalanche.\n- Line 7: Another one of SubQuery's competitive advantages is the ability to aggregate data not only within a chain but across multiple blockchains all within a single project. This allows the creation of feature-rich dashboard analytics, multi-chain block scanners, or projects that index IBC transactions across zones.\n- Line 9: Other advantages include superior performance with multiple RPC endpoint configurations, multi-worker capabilities and a configurable caching architecture. To find out more, visit our [documentation](https://academy.subquery.network/).\n- Line 12: - SubQuery Docs: [SubQuery Academy (Documentation)](https://academy.subquery.network/)\n\n**Content Preview:**\n```\n# SubQuery Indexer\n\n\n---\n\n\nSubQuery is a leading blockchain data indexer that provides developers with fast, flexible, universal, open source and decentralised APIs for web3 projects. SubQuery SDK allows developers to get rich indexed data and build intuitive and immersive decentralised applications in a faster and more efficient way. SubQuery supports 100+ ecosystems including Juno, Cosmos, Ethereum, Polygon, Polkadot, Algorand, NEAR, and Avalanche.\n\n\n---\n\n\nAnother one of SubQuery's competitive advantages is the ability to aggregate data not only within a chain but across multiple blockchains all within a single project. This allows the creation of feature-rich dashboard analytics, multi-chain block scanners, or projects that index IBC transactions across zones.\n\n```\n\n---\n\n",
+            "additional_kwargs": {},
+            "response_metadata": {},
+            "type": "tool",
+            "name": "search",
+            "id": "8d070f07-9650-4081-97c3-cfd96c367b5b",
+            "tool_call_id": "call_1ocqLJeNJKl9NXH3LOdgJ1hA",
+            "artifact": null,
+            "status": "success"
+        },
+        {
+            "content": "[\n  {\n    \"intent\": \"Add an \u201cinterface\u201d feature flag in Cargo.toml to enable cw-orch for a CosmWasm contract\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"open_file\",\n        \"description\": \"Open the project\u2019s Cargo.toml in edit mode.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"add_dependency\",\n        \"description\": \"Under the [dependencies] section, add cw-orch as an optional dependency, e.g.  cw-orch = { version = \\\"*\\\", optional = true }.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"append_feature_flag\",\n        \"description\": \"Locate or create the [features] table and insert  interface = [\\\"dep:cw-orch\\\"]  to activate cw-orch when the feature is requested.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"save_file\",\n        \"description\": \"Save Cargo.toml with the new dependency and feature flag.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"cargo_build\",\n        \"description\": \"Run  cargo build --features interface  to be sure the build succeeds with the new flag.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Cargo.toml now contains cw-orch as an optional dependency and an interface feature pointing at it.\",\n      \"A build with cargo build --features interface completes without errors.\"\n    ]\n  },\n  {\n    \"intent\": \"Query a CosmWasm smart contract through a REST endpoint using a base64-encoded query\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"prepare_query_payload\",\n        \"description\": \"Create the JSON query object, e.g. {\\\"get_config\\\":{}} with no extra whitespace.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"encode_to_base64\",\n        \"description\": \"Base64-encode the JSON query string.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"http_get\",\n        \"description\": \"Send a GET request to /cosmwasm/wasm/v1/contract/{contract_addr}/smart/{base64_query} (or the chain-specific REST path).\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"parse_response\",\n        \"description\": \"Decode and display the JSON result returned by the endpoint.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"HTTP status 200 is returned.\",\n      \"The response body contains the expected JSON fields from the contract\u2019s query.\"\n    ]\n  },\n  {\n    \"intent\": \"Compile the clock_example.wasm contract and upload it to the Juno testnet\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"rust_optimizer_build\",\n        \"description\": \"Run the CosmWasm rust-optimizer (e.g. docker run \u2026) to compile clock_example and create artifacts/clock_example.wasm.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"junod_tx_wasm_store\",\n        \"description\": \"Broadcast junod tx wasm store artifacts/clock_example.wasm --chain-id=uni-6 --from <KEY> --gas=auto --gas-prices=0.025ujunox -y.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"poll_tx_hash\",\n        \"description\": \"Wait for the transaction to be included in a block and capture the resulting code_id.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The build produces artifacts/clock_example.wasm below 2 MiB.\",\n      \"The store transaction is confirmed and a numeric code_id is returned on Juno testnet (uni-6).\"\n    ]\n  },\n  {\n    \"intent\": \"Execute a contract and attach tokens with the --amount flag\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"construct_execute_msg\",\n        \"description\": \"Prepare the JSON execute message for the desired contract endpoint.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"junod_tx_wasm_execute\",\n        \"description\": \"Run  junod tx wasm execute <CONTRACT_ADDR> '<MSG_JSON>' --amount <NUMBER><DENOM> --from <KEY> --gas=auto -y.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"poll_tx_hash\",\n        \"description\": \"Wait until the execute transaction is finalized in a block.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"Transaction success flag true in the Tx response.\",\n      \"The contract balance increases by the specified amount and/or the contract logic emits the expected event.\"\n    ]\n  },\n  {\n    \"intent\": \"Generate a TypeScript client for a contract using ts-codegen\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"install_ts_codegen\",\n        \"description\": \"Ensure ts-node and cosmwasm-ts-codegen are installed globally or in the project (e.g. npm i -D @cosmwasm/ts-codegen ts-node).\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"run_ts_codegen\",\n        \"description\": \"Execute  ts-node ./node_modules/@cosmwasm/ts-codegen/bin/cli.js --schema ./schema --out ./src/ts --client react-query  (adjust paths as needed).\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"compile_typescript\",\n        \"description\": \"Run  tsc  or build the project to confirm the generated client compiles.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"src/ts (or chosen output dir) now contains generated .ts files (contracts, messages, react-query hooks, etc.).\",\n      \"TypeScript compilation succeeds without type errors.\"\n    ]\n  }\n]",
+            "additional_kwargs": {
+                "refusal": null
+            },
+            "response_metadata": {
+                "token_usage": {
+                    "completion_tokens": 2310,
+                    "prompt_tokens": 10356,
+                    "total_tokens": 12666,
+                    "completion_tokens_details": {
+                        "accepted_prediction_tokens": 0,
+                        "audio_tokens": 0,
+                        "reasoning_tokens": 1024,
+                        "rejected_prediction_tokens": 0
+                    },
+                    "prompt_tokens_details": {
+                        "audio_tokens": 0,
+                        "cached_tokens": 6016
+                    }
+                },
+                "model_provider": "openai",
+                "model_name": "o3-2025-04-16",
+                "system_fingerprint": null,
+                "id": "chatcmpl-Cb6nGJijNFv9Vel1RVJ1xvicwp9G9",
+                "service_tier": "default",
+                "finish_reason": "stop",
+                "logprobs": null
+            },
+            "type": "ai",
+            "name": null,
+            "id": "lc_run--b579f0a3-4d78-4917-acf6-80dec00943f0-0",
+            "tool_calls": [],
+            "invalid_tool_calls": [],
+            "usage_metadata": {
+                "input_tokens": 10356,
+                "output_tokens": 2310,
+                "total_tokens": 12666,
+                "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 6016
+                },
+                "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1024
+                }
+            }
+        }
+    ]
+}

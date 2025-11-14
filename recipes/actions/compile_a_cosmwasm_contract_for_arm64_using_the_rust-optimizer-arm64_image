@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 provides a Python utility that programmatically pulls the CosmWasm Rust optimizer Docker image so that subsequent build steps have the correct compiler environment.",
+            "code": "#!/usr/bin/env python3\n\"\"\"\npull_optimizer.py\nUtility script to pull CosmWasm Rust optimizer Docker image.\n\"\"\"\n\nimport subprocess\nimport sys\n\ndef pull_optimizer_image(image=\"cosmwasm/rust-optimizer-arm64:latest\"):\n    \"\"\"Pulls the CosmWasm Rust optimizer Docker image.\"\"\"\n    print(f\"Pulling Docker image: {image}\")\n    try:\n        result = subprocess.run([\"docker\", \"pull\", image], check=True, capture_output=True, text=True)\n        print(result.stdout)\n        print(\"\u2705  Docker image pulled successfully.\")\n        return True\n    except subprocess.CalledProcessError as e:\n        print(\"\u274c  Failed to pull docker image:\", e.stderr, file=sys.stderr)\n        return False\n\nif __name__ == \"__main__\":\n    success = pull_optimizer_image()\n    if not success:\n        sys.exit(1)\n",
+            "usage": "python pull_optimizer.py"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 runs the Rust optimizer container, mounting the current contract directory and producing optimized `.wasm` binaries in an `artifacts/` folder.",
+            "code": "#!/usr/bin/env python3\n\"\"\"\nrun_optimizer.py\nRuns CosmWasm's Rust optimizer Docker container to build optimized .wasm binaries.\n\"\"\"\n\nimport subprocess\nimport sys\nfrom pathlib import Path\n\ndef run_rust_optimizer(contract_path: str = \".\"):\n    \"\"\"Runs the CosmWasm Rust optimizer docker container mounting the given contract directory.\"\"\"\n    contract_path = Path(contract_path).resolve()\n\n    if not contract_path.exists():\n        raise FileNotFoundError(f\"Contract path {contract_path} does not exist\")\n\n    docker_cmd = [\"docker\", \"run\", \"--rm\", \"-v\", f\"{contract_path}:/code:Z\", \"cosmwasm/rust-optimizer-arm64:latest\"]\n\n    print(\"Running Docker command:\", \" \".join(docker_cmd))\n    try:\n        subprocess.run(docker_cmd, check=True)\n        artifacts_dir = contract_path / \"artifacts\"\n        if artifacts_dir.exists():\n            print(f\"\u2705  Artifacts generated successfully in {artifacts_dir}\")\n        else:\n            print(\"\u26a0\ufe0f  Artifacts directory not found after optimizer run.\")\n        return True\n    except subprocess.CalledProcessError as e:\n        print(\"\u274c  Error while running rust optimizer:\", e, file=sys.stderr)\n        return False\n\nif __name__ == \"__main__\":\n    run_rust_optimizer(sys.argv[1] if len(sys.argv) > 1 else \".\")\n",
+            "usage": "python run_optimizer.py /absolute/path/to/contract_root  # defaults to current directory if omitted"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 verifies that the optimizer produced the expected `.wasm` and checksum files inside the `artifacts/` directory.",
+            "code": "#!/usr/bin/env python3\n\"\"\"\nverify_artifacts.py\nValidates that the optimizer produced .wasm and checksum files in the artifacts directory.\n\"\"\"\n\nfrom pathlib import Path\nimport sys\nimport json\n\ndef verify_artifacts(artifacts_path: str = \"./artifacts\"):\n    \"\"\"Verifies the presence of .wasm and checksum files in `artifacts/`.\"\"\"\n    apath = Path(artifacts_path).resolve()\n\n    if not apath.exists() or not apath.is_dir():\n        raise FileNotFoundError(f\"Artifacts directory not found at {apath}\")\n\n    wasm_files = list(apath.glob(\"*.wasm\"))\n    checksum_files = [f for f in apath.glob(\"*.wasm.*\")] + list(apath.glob(\"*.sha256\")) + list(apath.glob(\"*.checksums\"))\n\n    result = {\"wasm_files\": [f.name for f in wasm_files], \"checksum_files\": [f.name for f in checksum_files]}\n\n    if wasm_files:\n        print(\"\u2705  Found .wasm files:\", \", \".join(result[\"wasm_files\"]))\n    else:\n        print(\"\u274c  No .wasm files found.\", file=sys.stderr)\n\n    if checksum_files:\n        print(\"\u2705  Found checksum files:\", \", \".join(result[\"checksum_files\"]))\n    else:\n        print(\"\u26a0\ufe0f  No checksum files found.\")\n\n    return result\n\nif __name__ == \"__main__\":\n    directory = sys.argv[1] if len(sys.argv) > 1 else \"./artifacts\"\n    summary = verify_artifacts(directory)\n    print(json.dumps(summary, indent=2))\n",
+            "usage": "python verify_artifacts.py ./artifacts"
+        }
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates a FastAPI endpoint that guarantees `ts-node` and `@cosmwasm/ts-codegen` are installed as dev-dependencies. Missing packages are installed automatically.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport subprocess, json\n\napp = FastAPI()\n\nREQUIRED_PACKAGES = [\"ts-node\", \"@cosmwasm/ts-codegen\"]\n\n\ndef _package_installed(pkg: str) -> bool:\n    \"\"\"Return True if the npm package is available locally or globally.\"\"\"\n    try:\n        local = subprocess.run([\n            \"npm\", \"list\", pkg, \"--depth\", \"0\", \"--json\"\n        ], capture_output=True, text=True, check=False)\n        local_data = json.loads(local.stdout or \"{}\")\n        if \"dependencies\" in local_data and pkg in local_data[\"dependencies\"]:\n            return True\n        global_ = subprocess.run([\n            \"npm\", \"list\", \"-g\", pkg, \"--depth\", \"0\", \"--json\"\n        ], capture_output=True, text=True, check=False)\n        global_data = json.loads(global_.stdout or \"{}\")\n        return \"dependencies\" in global_data and pkg in global_data[\"dependencies\"]\n    except Exception:\n        return False\n\n\n@app.post(\"/api/codegen/install\")\nasync def install_ts_codegen():\n    \"\"\"Ensure cosmwasm-ts-codegen tooling is present in the project.\"\"\"\n    missing = [p for p in REQUIRED_PACKAGES if not _package_installed(p)]\n    if not missing:\n        return {\"status\": \"ok\", \"message\": \"All required packages are already installed.\"}\n    try:\n        subprocess.run([\"npm\", \"install\", \"-D\", *missing], check=True)\n        return {\"status\": \"ok\", \"message\": f\"Installed missing packages: {', '.join(missing)}\"}\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=f\"npm install failed: {err}\")",
+            "usage": "await fetch('/api/codegen/install', { method: 'POST' });"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Exposes an endpoint that runs CosmWasm\u2019s TypeScript code-generator with configurable paths and client style.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport subprocess\nfrom pathlib import Path\n\napp = FastAPI()\n\n@app.post(\"/api/codegen/generate\")\nasync def run_ts_codegen(schema_dir: str = \"./schema\", out_dir: str = \"./src/ts\", client: str = \"react-query\"):\n    \"\"\"Run ts-codegen to generate typed clients from the contract JSON schema.\"\"\"\n    Path(out_dir).mkdir(parents=True, exist_ok=True)\n    cmd = [\n        \"npx\", \"ts-node\", \"./node_modules/@cosmwasm/ts-codegen/bin/cli.js\",\n        \"--schema\", schema_dir,\n        \"--out\", out_dir,\n        \"--client\", client\n    ]\n    try:\n        subprocess.run(cmd, check=True)\n        return {\"status\": \"ok\", \"message\": \"TypeScript client generated successfully.\"}\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=f\"ts-codegen failed: {err}\")",
+            "usage": "await fetch('/api/codegen/generate?schema_dir=./schema&out_dir=./src/ts&client=react-query', { method: 'POST' });"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Adds an endpoint that compiles the TypeScript project (without emitting files) to confirm the generated code is type-safe.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport subprocess\n\napp = FastAPI()\n\n@app.post(\"/api/codegen/compile\")\nasync def compile_typescript(tsconfig_path: str = \"tsconfig.json\"):\n    \"\"\"Run the TypeScript compiler in no-emit mode to validate typings.\"\"\"\n    cmd = [\"npx\", \"tsc\", \"--project\", tsconfig_path, \"--noEmit\"]\n    try:\n        subprocess.run(cmd, check=True)\n        return {\"status\": \"ok\", \"message\": \"TypeScript compilation succeeded.\"}\n    except subprocess.CalledProcessError as err:\n        raise HTTPException(status_code=500, detail=f\"TypeScript compilation failed: {err}\")",
+            "usage": "await fetch('/api/codegen/compile', { method: 'POST' });"
+        }
+    ]
+}

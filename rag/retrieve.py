@@ -31,3 +31,22 @@ def retrieve (query, client, model):
     )
 
     return (answer.choices[0].message.content)
+
+
+def explain_workflow(query):
+    prompt = f"""You will be given a Juno Blockhain workflow:
+    
+    Name: {query['recipe']}
+    
+    
+    Workflow: {query['workflow']}. Describe very shortly to user how it works.
+    """
+
+    from openai import OpenAI
+    client = OpenAI()
+    answer = client.chat.completions.create(
+        model="gpt-4.1",
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    return (answer.choices[0].message.content)
