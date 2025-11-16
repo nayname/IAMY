@@ -8,6 +8,9 @@ from starlette.responses import JSONResponse
 from prepare_data import escape, pick_intent
 from rag.retrieve import retrieve, explain_workflow
 
+from qdrant_client import QdrantClient
+from sentence_transformers import SentenceTransformer
+
 
 def get_answer(input_text, quadrant_client, embedding_model, query):
     if query["recipe"] == "none" or query["recipe"] == "None":

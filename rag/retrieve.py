@@ -2,7 +2,8 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 from sentence_transformers import SentenceTransformer
 
-def retrieve (query, client, model):
+
+def retrieve(query, client, model):
     # query = "how to deploy a contract on juno"
     q_vec = model.encode(query, normalize_embeddings=True).tolist()
 
@@ -50,3 +51,14 @@ def explain_workflow(query):
     )
 
     return (answer.choices[0].message.content)
+
+
+def show_apis(query):
+    print("!!!!")
+    embedding_model = SentenceTransformer("BAAI/bge-large-en-v1.5")
+    quadrant_client = QdrantClient("localhost", port=6333)
+
+    print(retrieve(query, quadrant_client, embedding_model))
+
+
+show_apis("/cosmos/bank/v1beta1/denom_owners")

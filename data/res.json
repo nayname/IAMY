@@ -1,0 +1,4918 @@
+{
+    "/cosmos/tx/v1beta1/simulate": {
+        "parameters": {
+            "tx": {
+                "body": {
+                    "messages": [
+                        {
+                            "type_url": "text",
+                            "value": "Ynl0ZXM="
+                        }
+                    ],
+                    "memo": "text",
+                    "timeout_height": "text",
+                    "extension_options": [
+                        {
+                            "type_url": "text",
+                            "value": "Ynl0ZXM="
+                        }
+                    ],
+                    "non_critical_extension_options": [
+                        {
+                            "type_url": "text",
+                            "value": "Ynl0ZXM="
+                        }
+                    ]
+                },
+                "auth_info": {
+                    "signer_infos": [
+                        {
+                            "public_key": {
+                                "type_url": "text",
+                                "value": "Ynl0ZXM="
+                            },
+                            "mode_info": {
+                                "single": {
+                                    "mode": "SIGN_MODE_UNSPECIFIED"
+                                },
+                                "multi": {
+                                    "bitarray": {
+                                        "extra_bits_stored": 1,
+                                        "elems": "Ynl0ZXM="
+                                    },
+                                    "mode_infos": [
+                                        null
+                                    ]
+                                }
+                            },
+                            "sequence": "text"
+                        }
+                    ],
+                    "fee": {
+                        "amount": [
+                            {
+                                "denom": "text",
+                                "amount": "text"
+                            }
+                        ],
+                        "gas_limit": "text",
+                        "payer": "text",
+                        "granter": "text"
+                    }
+                },
+                "signatures": [
+                    "Ynl0ZXM="
+                ]
+            },
+            "tx_bytes": "Ynl0ZXM="
+        },
+        "responses": {
+            "gas_info": {
+                "gas_wanted": "text",
+                "gas_used": "text"
+            },
+            "result": {
+                "data": "Ynl0ZXM=",
+                "log": "text",
+                "events": [
+                    {
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "key": "Ynl0ZXM=",
+                                "value": "Ynl0ZXM=",
+                                "index": true
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "descriptions": {
+            "gas_wanted": "Maximum allowed gas for the transaction.",
+            "gas_used": "Actual gas consumed during execution.",
+            "gas_info": "Gas usage details from simulation.",
+            "data": "Optional returned execution data, length-prefixed if multiple messages.",
+            "log": "Execution log output.",
+            "events": "Events emitted during transaction processing, including ante handler.",
+            "result": "Simulation result object.",
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "messages": "Messages included in the transaction defining required signers.",
+            "memo": "Optional note attached to the transaction.",
+            "body": "The signed transaction body.",
+            "public_key": "Public key used in signature verification.",
+            "mode": "Defines how the transaction is broadcast. Values: BLOCK, SYNC, ASYNC, UNSPECIFIED.",
+            "bitarray": "Space-efficient bit array representation.",
+            "mode_info": "Signing mode details for single or multisig signer.",
+            "sequence": "Account sequence number used to prevent replay.",
+            "signer_infos": "Signing metadata including signing mode for required signers.",
+            "payer": "Optional alternate fee payer; must also be a signer.",
+            "fee": "Fee and gas limits for the transaction.",
+            "auth_info": "Fee and signer metadata used while signing.",
+            "signatures": "Signatures matching signer order from signer_infos.",
+            "tx": "Full transaction object (deprecated in favor of raw bytes).",
+            "tx_bytes": "Raw serialized transaction bytes."
+        }
+    },
+    "/cosmos/tx/v1beta1/txs": {
+        "parameters": {
+            "tx_bytes": "Ynl0ZXM=",
+            "mode": "BROADCAST_MODE_UNSPECIFIED"
+        },
+        "responses": {
+            "tx_response": {
+                "height": "text",
+                "txhash": "text",
+                "codespace": "text",
+                "code": 1,
+                "data": "text",
+                "raw_log": "text",
+                "logs": [
+                    {
+                        "msg_index": 1,
+                        "log": "text",
+                        "events": [
+                            {
+                                "type": "text",
+                                "attributes": [
+                                    {
+                                        "key": "text",
+                                        "value": "text"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "info": "text",
+                "gas_wanted": "text",
+                "gas_used": "text",
+                "tx": {
+                    "type_url": "text",
+                    "value": "Ynl0ZXM="
+                },
+                "timestamp": "text",
+                "events": [
+                    {
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "key": "Ynl0ZXM=",
+                                "value": "Ynl0ZXM=",
+                                "index": true
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "descriptions": {
+            "txhash": "Transaction hash string.",
+            "code": "Execution response code.",
+            "data": "Optional returned execution data, length-prefixed if multiple messages.",
+            "raw_log": "Raw log output (may be nondeterministic).",
+            "events": "Events emitted during transaction processing, including ante handler.",
+            "logs": "Structured logs from execution.",
+            "info": "Additional execution metadata.",
+            "gas_wanted": "Maximum allowed gas for the transaction.",
+            "gas_used": "Actual gas consumed during execution.",
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "tx": "Full transaction object (deprecated in favor of raw bytes).",
+            "timestamp": "Block timestamp.",
+            "tx_response": "Formatted response with transaction metadata.",
+            "tx_bytes": "Raw serialized transaction bytes.",
+            "mode": "Defines how the transaction is broadcast. Values: BLOCK, SYNC, ASYNC, UNSPECIFIED."
+        }
+    },
+    "/cosmos/tx/v1beta1/txs/block/{height}": {
+        "parameters": [
+            {
+                "name": "height",
+                "required": true,
+                "type": "string",
+                "description": "Block height to query historical state."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "txs": [
+                {
+                    "body": {
+                        "messages": [
+                            {
+                                "type_url": "text",
+                                "value": "Ynl0ZXM="
+                            }
+                        ],
+                        "memo": "text",
+                        "timeout_height": "text",
+                        "extension_options": [
+                            {
+                                "type_url": "text",
+                                "value": "Ynl0ZXM="
+                            }
+                        ],
+                        "non_critical_extension_options": [
+                            {
+                                "type_url": "text",
+                                "value": "Ynl0ZXM="
+                            }
+                        ]
+                    },
+                    "auth_info": {
+                        "signer_infos": [
+                            {
+                                "public_key": {
+                                    "type_url": "text",
+                                    "value": "Ynl0ZXM="
+                                },
+                                "mode_info": {
+                                    "single": {
+                                        "mode": "SIGN_MODE_UNSPECIFIED"
+                                    },
+                                    "multi": {
+                                        "bitarray": {
+                                            "extra_bits_stored": 1,
+                                            "elems": "Ynl0ZXM="
+                                        },
+                                        "mode_infos": [
+                                            null
+                                        ]
+                                    }
+                                },
+                                "sequence": "text"
+                            }
+                        ],
+                        "fee": {
+                            "amount": [
+                                {
+                                    "denom": "text",
+                                    "amount": "text"
+                                }
+                            ],
+                            "gas_limit": "text",
+                            "payer": "text",
+                            "granter": "text"
+                        }
+                    },
+                    "signatures": [
+                        "Ynl0ZXM="
+                    ]
+                }
+            ],
+            "block_id": {
+                "hash": "Ynl0ZXM=",
+                "part_set_header": {
+                    "total": 1,
+                    "hash": "Ynl0ZXM="
+                }
+            },
+            "block": {
+                "header": {
+                    "version": {
+                        "block": "text",
+                        "app": "text"
+                    },
+                    "chain_id": "text",
+                    "height": "text",
+                    "time": "2025-11-16T12:37:10.832Z",
+                    "last_block_id": {
+                        "hash": "Ynl0ZXM=",
+                        "part_set_header": {
+                            "total": 1,
+                            "hash": "Ynl0ZXM="
+                        }
+                    },
+                    "last_commit_hash": "Ynl0ZXM=",
+                    "data_hash": "Ynl0ZXM=",
+                    "validators_hash": "Ynl0ZXM=",
+                    "next_validators_hash": "Ynl0ZXM=",
+                    "consensus_hash": "Ynl0ZXM=",
+                    "app_hash": "Ynl0ZXM=",
+                    "last_results_hash": "Ynl0ZXM=",
+                    "evidence_hash": "Ynl0ZXM=",
+                    "proposer_address": "Ynl0ZXM="
+                },
+                "data": {
+                    "txs": [
+                        "Ynl0ZXM="
+                    ]
+                },
+                "evidence": {
+                    "evidence": [
+                        {
+                            "duplicate_vote_evidence": {
+                                "vote_a": {
+                                    "type": "SIGNED_MSG_TYPE_UNKNOWN",
+                                    "height": "text",
+                                    "round": 1,
+                                    "block_id": {
+                                        "hash": "Ynl0ZXM=",
+                                        "part_set_header": {
+                                            "total": 1,
+                                            "hash": "Ynl0ZXM="
+                                        }
+                                    },
+                                    "timestamp": "2025-11-16T12:37:10.832Z",
+                                    "validator_address": "Ynl0ZXM=",
+                                    "validator_index": 1,
+                                    "signature": "Ynl0ZXM="
+                                },
+                                "vote_b": {
+                                    "type": "SIGNED_MSG_TYPE_UNKNOWN",
+                                    "height": "text",
+                                    "round": 1,
+                                    "block_id": {
+                                        "hash": "Ynl0ZXM=",
+                                        "part_set_header": {
+                                            "total": 1,
+                                            "hash": "Ynl0ZXM="
+                                        }
+                                    },
+                                    "timestamp": "2025-11-16T12:37:10.832Z",
+                                    "validator_address": "Ynl0ZXM=",
+                                    "validator_index": 1,
+                                    "signature": "Ynl0ZXM="
+                                },
+                                "total_voting_power": "text",
+                                "validator_power": "text",
+                                "timestamp": "2025-11-16T12:37:10.832Z"
+                            },
+                            "light_client_attack_evidence": {
+                                "conflicting_block": {
+                                    "signed_header": {
+                                        "header": {
+                                            "version": {
+                                                "block": "text",
+                                                "app": "text"
+                                            },
+                                            "chain_id": "text",
+                                            "height": "text",
+                                            "time": "2025-11-16T12:37:10.832Z",
+                                            "last_block_id": {
+                                                "hash": "Ynl0ZXM=",
+                                                "part_set_header": {
+                                                    "total": 1,
+                                                    "hash": "Ynl0ZXM="
+                                                }
+                                            },
+                                            "last_commit_hash": "Ynl0ZXM=",
+                                            "data_hash": "Ynl0ZXM=",
+                                            "validators_hash": "Ynl0ZXM=",
+                                            "next_validators_hash": "Ynl0ZXM=",
+                                            "consensus_hash": "Ynl0ZXM=",
+                                            "app_hash": "Ynl0ZXM=",
+                                            "last_results_hash": "Ynl0ZXM=",
+                                            "evidence_hash": "Ynl0ZXM=",
+                                            "proposer_address": "Ynl0ZXM="
+                                        },
+                                        "commit": {
+                                            "height": "text",
+                                            "round": 1,
+                                            "block_id": {
+                                                "hash": "Ynl0ZXM=",
+                                                "part_set_header": {
+                                                    "total": 1,
+                                                    "hash": "Ynl0ZXM="
+                                                }
+                                            },
+                                            "signatures": [
+                                                {
+                                                    "block_id_flag": "BLOCK_ID_FLAG_UNKNOWN",
+                                                    "validator_address": "Ynl0ZXM=",
+                                                    "timestamp": "2025-11-16T12:37:10.832Z",
+                                                    "signature": "Ynl0ZXM="
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "validator_set": {
+                                        "validators": [
+                                            {
+                                                "address": "Ynl0ZXM=",
+                                                "pub_key": {
+                                                    "ed25519": "Ynl0ZXM=",
+                                                    "secp256k1": "Ynl0ZXM="
+                                                },
+                                                "voting_power": "text",
+                                                "proposer_priority": "text"
+                                            }
+                                        ],
+                                        "proposer": {
+                                            "address": "Ynl0ZXM=",
+                                            "pub_key": {
+                                                "ed25519": "Ynl0ZXM=",
+                                                "secp256k1": "Ynl0ZXM="
+                                            },
+                                            "voting_power": "text",
+                                            "proposer_priority": "text"
+                                        },
+                                        "total_voting_power": "text"
+                                    }
+                                },
+                                "common_height": "text",
+                                "byzantine_validators": [
+                                    {
+                                        "address": "Ynl0ZXM=",
+                                        "pub_key": {
+                                            "ed25519": "Ynl0ZXM=",
+                                            "secp256k1": "Ynl0ZXM="
+                                        },
+                                        "voting_power": "text",
+                                        "proposer_priority": "text"
+                                    }
+                                ],
+                                "total_voting_power": "text",
+                                "timestamp": "2025-11-16T12:37:10.832Z"
+                            }
+                        }
+                    ]
+                },
+                "last_commit": {
+                    "height": "text",
+                    "round": 1,
+                    "block_id": {
+                        "hash": "Ynl0ZXM=",
+                        "part_set_header": {
+                            "total": 1,
+                            "hash": "Ynl0ZXM="
+                        }
+                    },
+                    "signatures": [
+                        {
+                            "block_id_flag": "BLOCK_ID_FLAG_UNKNOWN",
+                            "validator_address": "Ynl0ZXM=",
+                            "timestamp": "2025-11-16T12:37:10.832Z",
+                            "signature": "Ynl0ZXM="
+                        }
+                    ]
+                }
+            },
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "messages": "Messages included in the transaction defining required signers.",
+            "memo": "Optional note attached to the transaction.",
+            "body": "The signed transaction body.",
+            "public_key": "Public key used in signature verification.",
+            "mode": "Defines how the transaction is broadcast. Values: BLOCK, SYNC, ASYNC, UNSPECIFIED.",
+            "bitarray": "Space-efficient bit array representation.",
+            "mode_info": "Signing mode details for single or multisig signer.",
+            "sequence": "Account sequence number used to prevent replay.",
+            "signer_infos": "Signing metadata including signing mode for required signers.",
+            "payer": "Optional alternate fee payer; must also be a signer.",
+            "fee": "Fee and gas limits for the transaction.",
+            "auth_info": "Fee and signer metadata used while signing.",
+            "signatures": "Signatures matching signer order from signer_infos.",
+            "txs": "List of included transactions.",
+            "version": "Consensus rule configuration.",
+            "header": "Block header metadata.",
+            "type": "Signed consensus message type. Values: PREVOTE, PROPOSAL.",
+            "vote_a": "Vote metadata (prevote, precommit, commit).",
+            "vote_b": "Vote metadata (prevote, precommit, commit).",
+            "duplicate_vote_evidence": "Evidence that a validator signed conflicting votes.",
+            "commit": "Commit proof demonstrating validator approval.",
+            "light_client_attack_evidence": "Evidence of attempted misbehavior against light clients.",
+            "last_commit": "Final commit proof for previous block.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/tx/v1beta1/txs/{hash}": {
+        "parameters": [
+            {
+                "name": "hash",
+                "required": true,
+                "type": "string",
+                "description": "Hex-encoded transaction hash."
+            }
+        ],
+        "responses": {
+            "tx": {
+                "body": {
+                    "messages": [
+                        {
+                            "type_url": "text",
+                            "value": "Ynl0ZXM="
+                        }
+                    ],
+                    "memo": "text",
+                    "timeout_height": "text",
+                    "extension_options": [
+                        {
+                            "type_url": "text",
+                            "value": "Ynl0ZXM="
+                        }
+                    ],
+                    "non_critical_extension_options": [
+                        {
+                            "type_url": "text",
+                            "value": "Ynl0ZXM="
+                        }
+                    ]
+                },
+                "auth_info": {
+                    "signer_infos": [
+                        {
+                            "public_key": {
+                                "type_url": "text",
+                                "value": "Ynl0ZXM="
+                            },
+                            "mode_info": {
+                                "single": {
+                                    "mode": "SIGN_MODE_UNSPECIFIED"
+                                },
+                                "multi": {
+                                    "bitarray": {
+                                        "extra_bits_stored": 1,
+                                        "elems": "Ynl0ZXM="
+                                    },
+                                    "mode_infos": [
+                                        null
+                                    ]
+                                }
+                            },
+                            "sequence": "text"
+                        }
+                    ],
+                    "fee": {
+                        "amount": [
+                            {
+                                "denom": "text",
+                                "amount": "text"
+                            }
+                        ],
+                        "gas_limit": "text",
+                        "payer": "text",
+                        "granter": "text"
+                    }
+                },
+                "signatures": [
+                    "Ynl0ZXM="
+                ]
+            },
+            "tx_response": {
+                "height": "text",
+                "txhash": "text",
+                "codespace": "text",
+                "code": 1,
+                "data": "text",
+                "raw_log": "text",
+                "logs": [
+                    {
+                        "msg_index": 1,
+                        "log": "text",
+                        "events": [
+                            {
+                                "type": "text",
+                                "attributes": [
+                                    {
+                                        "key": "text",
+                                        "value": "text"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "info": "text",
+                "gas_wanted": "text",
+                "gas_used": "text",
+                "tx": {
+                    "type_url": "text",
+                    "value": "Ynl0ZXM="
+                },
+                "timestamp": "text",
+                "events": [
+                    {
+                        "type": "text",
+                        "attributes": [
+                            {
+                                "key": "Ynl0ZXM=",
+                                "value": "Ynl0ZXM=",
+                                "index": true
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "descriptions": {
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "messages": "Messages included in the transaction defining required signers.",
+            "memo": "Optional note attached to the transaction.",
+            "body": "The signed transaction body.",
+            "public_key": "Public key used in signature verification.",
+            "mode": "Defines how the transaction is broadcast. Values: BLOCK, SYNC, ASYNC, UNSPECIFIED.",
+            "bitarray": "Space-efficient bit array representation.",
+            "mode_info": "Signing mode details for single or multisig signer.",
+            "sequence": "Account sequence number used to prevent replay.",
+            "signer_infos": "Signing metadata including signing mode for required signers.",
+            "payer": "Optional alternate fee payer; must also be a signer.",
+            "fee": "Fee and gas limits for the transaction.",
+            "auth_info": "Fee and signer metadata used while signing.",
+            "signatures": "Signatures matching signer order from signer_infos.",
+            "tx": "Full transaction object (deprecated in favor of raw bytes).",
+            "txhash": "Transaction hash string.",
+            "code": "Execution response code.",
+            "data": "Optional returned execution data, length-prefixed if multiple messages.",
+            "raw_log": "Raw log output (may be nondeterministic).",
+            "events": "Events emitted during transaction processing, including ante handler.",
+            "logs": "Structured logs from execution.",
+            "info": "Additional execution metadata.",
+            "gas_wanted": "Maximum allowed gas for the transaction.",
+            "gas_used": "Actual gas consumed during execution.",
+            "timestamp": "Block timestamp.",
+            "tx_response": "Formatted response with transaction metadata."
+        }
+    },
+    "/cosmos/params/v1beta1/params": {
+        "parameters": [
+            {
+                "name": "subspace",
+                "required": false,
+                "type": "string",
+                "description": "Target module for parameter query."
+            },
+            {
+                "name": "key",
+                "required": false,
+                "type": "string",
+                "description": "Key of the parameter in the module."
+            }
+        ],
+        "responses": {
+            "param": {
+                "subspace": "text",
+                "key": "text",
+                "value": "text"
+            }
+        },
+        "descriptions": {
+            "param": "Queried module parameter."
+        }
+    },
+    "/cosmos/bank/v1beta1/balances/{address}": {
+        "parameters": [
+            {
+                "name": "address",
+                "required": true,
+                "type": "string",
+                "description": "Target account or contract address."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "balances": [
+                {
+                    "denom": "text",
+                    "amount": "text"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "balances": "List of coin balances.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/bank/v1beta1/balances/{address}/by_denom": {
+        "parameters": [
+            {
+                "name": "address",
+                "required": true,
+                "type": "string",
+                "description": "Target account or contract address."
+            },
+            {
+                "name": "denom",
+                "required": false,
+                "type": "string",
+                "description": "Token denomination to query."
+            }
+        ],
+        "responses": {
+            "balance": {
+                "denom": "text",
+                "amount": "text"
+            }
+        },
+        "descriptions": {
+            "balance": "Token balance information."
+        }
+    },
+    "/cosmos/bank/v1beta1/denoms_metadata": {
+        "parameters": [
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "metadatas": [
+                {
+                    "description": "text",
+                    "denom_units": [
+                        {
+                            "denom": "text",
+                            "exponent": 1,
+                            "aliases": [
+                                "text"
+                            ]
+                        }
+                    ],
+                    "base": "text",
+                    "display": "text",
+                    "name": "text",
+                    "symbol": "text"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "denom": "Token denomination identifier.",
+            "exponent": "Exponent used to scale denomination (10^exponent).",
+            "base": "Base denomination for the token.",
+            "display": "Human-friendly display denomination.",
+            "name": "Upgrade name or metadata key.",
+            "symbol": "Token symbol normally used in UI.",
+            "metadatas": "Metadata for registered tokens.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/bank/v1beta1/denoms_metadata/{denom}": {
+        "parameters": [
+            {
+                "name": "denom",
+                "required": true,
+                "type": "string",
+                "description": "Token denomination to query."
+            }
+        ],
+        "responses": {
+            "metadata": {
+                "description": "text",
+                "denom_units": [
+                    {
+                        "denom": "text",
+                        "exponent": 1,
+                        "aliases": [
+                            "text"
+                        ]
+                    }
+                ],
+                "base": "text",
+                "display": "text",
+                "name": "text",
+                "symbol": "text"
+            }
+        },
+        "descriptions": {
+            "denom": "Token denomination identifier.",
+            "exponent": "Exponent used to scale denomination (10^exponent).",
+            "base": "Base denomination for the token.",
+            "display": "Human-friendly display denomination.",
+            "name": "Upgrade name or metadata key.",
+            "symbol": "Token symbol normally used in UI.",
+            "metadata": "Token metadata definition."
+        }
+    },
+    "/cosmos/bank/v1beta1/params": {
+        "parameters": [],
+        "responses": {
+            "params": {
+                "send_enabled": [
+                    {
+                        "denom": "text",
+                        "enabled": true
+                    }
+                ],
+                "default_send_enabled": true
+            }
+        },
+        "descriptions": {
+            "params": "Module-specific configuration parameters."
+        }
+    },
+    "/cosmos/bank/v1beta1/spendable_balances/{address}": {
+        "parameters": [
+            {
+                "name": "address",
+                "required": true,
+                "type": "string",
+                "description": "Target account or contract address."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "balances": [
+                {
+                    "denom": "text",
+                    "amount": "text"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "balances": "List of coin balances.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/bank/v1beta1/supply": {
+        "parameters": [
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "supply": [
+                {
+                    "denom": "text",
+                    "amount": "text"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/bank/v1beta1/supply/{denom}": {
+        "parameters": [
+            {
+                "name": "denom",
+                "required": true,
+                "type": "string",
+                "description": "Token denomination to query."
+            }
+        ],
+        "responses": {
+            "amount": {
+                "denom": "text",
+                "amount": "text"
+            }
+        },
+        "descriptions": {
+            "amount": "Coin amount with denomination."
+        }
+    },
+    "/cosmwasm/wasm/v1/code": {
+        "parameters": [
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "code_infos": [
+                {
+                    "code_id": "text",
+                    "creator": "text",
+                    "data_hash": "Ynl0ZXM=",
+                    "instantiate_permission": {
+                        "permission": "ACCESS_TYPE_UNSPECIFIED",
+                        "address": "text",
+                        "addresses": [
+                            "text"
+                        ]
+                    }
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "permission": "Access control type. Values: UNSPECIFIED, NOBODY, ADDRESS, ANY.",
+            "instantiate_permission": "Instantiation access configuration.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmwasm/wasm/v1/code/{code_id}": {
+        "parameters": [
+            {
+                "name": "code_id",
+                "required": true,
+                "type": "string"
+            }
+        ],
+        "responses": {
+            "code_info": {
+                "code_id": "text",
+                "creator": "text",
+                "data_hash": "Ynl0ZXM=",
+                "instantiate_permission": {
+                    "permission": "ACCESS_TYPE_UNSPECIFIED",
+                    "address": "text",
+                    "addresses": [
+                        "text"
+                    ]
+                }
+            },
+            "data": "Ynl0ZXM="
+        },
+        "descriptions": {
+            "permission": "Access control type. Values: UNSPECIFIED, NOBODY, ADDRESS, ANY.",
+            "instantiate_permission": "Instantiation access configuration."
+        }
+    },
+    "/cosmwasm/wasm/v1/code/{code_id}/contracts": {
+        "parameters": [
+            {
+                "name": "code_id",
+                "required": true,
+                "type": "string"
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "contracts": [
+                "text"
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmwasm/wasm/v1/codes/params": {
+        "parameters": [],
+        "responses": {
+            "params": {
+                "code_upload_access": {
+                    "permission": "ACCESS_TYPE_UNSPECIFIED",
+                    "address": "text",
+                    "addresses": [
+                        "text"
+                    ]
+                },
+                "instantiate_default_permission": "ACCESS_TYPE_UNSPECIFIED"
+            }
+        },
+        "descriptions": {
+            "permission": "Access control type. Values: UNSPECIFIED, NOBODY, ADDRESS, ANY.",
+            "code_upload_access": "Access rules for uploading new wasm code.",
+            "instantiate_default_permission": "Default contract instantiation permissions.",
+            "params": "Module-specific configuration parameters."
+        }
+    },
+    "/cosmwasm/wasm/v1/codes/pinned": {
+        "parameters": [
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "code_ids": [
+                "text"
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmwasm/wasm/v1/contract/{address}": {
+        "parameters": [
+            {
+                "name": "address",
+                "required": true,
+                "type": "string",
+                "description": "Target account or contract address."
+            }
+        ],
+        "responses": {
+            "address": "text",
+            "contract_info": {
+                "code_id": "text",
+                "creator": "text",
+                "admin": "text",
+                "label": "text",
+                "created": {
+                    "block_height": "text",
+                    "tx_index": "text"
+                },
+                "ibc_port_id": "text",
+                "extension": {
+                    "type_url": "text",
+                    "value": "Ynl0ZXM="
+                }
+            }
+        },
+        "descriptions": {
+            "label": "Human-readable label for a contract instance.",
+            "created": "Block height where contract was instantiated.",
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "extension": "Extended protobuf metadata attached to the object."
+        }
+    },
+    "/cosmwasm/wasm/v1/contract/{address}/history": {
+        "parameters": [
+            {
+                "name": "address",
+                "required": true,
+                "type": "string",
+                "description": "Target account or contract address."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "entries": [
+                {
+                    "operation": "CONTRACT_CODE_HISTORY_OPERATION_TYPE_UNSPECIFIED",
+                    "code_id": "text",
+                    "updated": {
+                        "block_height": "text",
+                        "tx_index": "text"
+                    },
+                    "msg": "Ynl0ZXM="
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "operation": "Contract operation type. Values: INIT, MIGRATE, GENESIS.",
+            "updated": "Block height where the operation occurred.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmwasm/wasm/v1/contract/{address}/raw/{query_data}": {
+        "parameters": [
+            {
+                "name": "address",
+                "required": true,
+                "type": "string",
+                "description": "Target account or contract address."
+            },
+            {
+                "name": "query_data",
+                "required": true,
+                "type": "string"
+            }
+        ],
+        "responses": {
+            "data": "Ynl0ZXM="
+        },
+        "descriptions": {}
+    },
+    "/cosmwasm/wasm/v1/contract/{address}/smart/{query_data}": {
+        "parameters": [
+            {
+                "name": "address",
+                "required": true,
+                "type": "string",
+                "description": "Target account or contract address."
+            },
+            {
+                "name": "query_data",
+                "required": true,
+                "type": "string",
+                "description": "Payload sent to contract query endpoint."
+            }
+        ],
+        "responses": {
+            "data": "Ynl0ZXM="
+        },
+        "descriptions": {}
+    },
+    "/cosmwasm/wasm/v1/contract/{address}/state": {
+        "parameters": [
+            {
+                "name": "address",
+                "required": true,
+                "type": "string",
+                "description": "Target account or contract address."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "models": [
+                {
+                    "key": "Ynl0ZXM=",
+                    "value": "Ynl0ZXM="
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmwasm/wasm/v1/contracts/creator/{creator_address}": {
+        "parameters": [
+            {
+                "name": "creator_address",
+                "required": true,
+                "type": "string",
+                "description": "Contract creator address."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "contract_addresses": [
+                "text"
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/upgrade/v1beta1/applied_plan/{name}": {
+        "parameters": [
+            {
+                "name": "name",
+                "required": true,
+                "type": "string",
+                "description": "Name of upgrade plan to query."
+            }
+        ],
+        "responses": {
+            "height": "text"
+        },
+        "descriptions": {
+            "height": "Block height of the record."
+        }
+    },
+    "/cosmos/upgrade/v1beta1/current_plan": {
+        "parameters": [],
+        "responses": {
+            "plan": {
+                "name": "text",
+                "time": "2025-11-16T12:37:10.832Z",
+                "height": "text",
+                "info": "text",
+                "upgraded_client_state": {
+                    "type_url": "text",
+                    "value": "Ynl0ZXM="
+                }
+            }
+        },
+        "descriptions": {
+            "name": "Upgrade name or metadata key.",
+            "time": "Upgrade time (deprecated).",
+            "height": "Block height of the record.",
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "upgraded_client_state": "Updated client state after upgrade.",
+            "plan": "Active upgrade plan details."
+        }
+    },
+    "/cosmos/upgrade/v1beta1/module_versions": {
+        "parameters": [
+            {
+                "name": "module_name",
+                "required": false,
+                "type": "string",
+                "description": "Specific module name for version query."
+            }
+        ],
+        "responses": {
+            "module_versions": [
+                {
+                    "name": "text",
+                    "version": "text"
+                }
+            ]
+        },
+        "descriptions": {
+            "module_versions": "Module version list."
+        }
+    },
+    "/cosmos/upgrade/v1beta1/upgraded_consensus_state/{last_height}": {
+        "parameters": [
+            {
+                "name": "last_height",
+                "required": true,
+                "type": "string",
+                "description": "Latest chain height known by the requester."
+            }
+        ],
+        "responses": {
+            "upgraded_consensus_state": "Ynl0ZXM="
+        },
+        "descriptions": {}
+    },
+    "/cosmos/base/tendermint/v1beta1/blocks/latest": {
+        "parameters": [],
+        "responses": {
+            "block_id": {
+                "hash": "Ynl0ZXM=",
+                "part_set_header": {
+                    "total": 1,
+                    "hash": "Ynl0ZXM="
+                }
+            },
+            "block": {
+                "header": {
+                    "version": {
+                        "block": "text",
+                        "app": "text"
+                    },
+                    "chain_id": "text",
+                    "height": "text",
+                    "time": "2025-11-16T12:37:10.832Z",
+                    "last_block_id": {
+                        "hash": "Ynl0ZXM=",
+                        "part_set_header": {
+                            "total": 1,
+                            "hash": "Ynl0ZXM="
+                        }
+                    },
+                    "last_commit_hash": "Ynl0ZXM=",
+                    "data_hash": "Ynl0ZXM=",
+                    "validators_hash": "Ynl0ZXM=",
+                    "next_validators_hash": "Ynl0ZXM=",
+                    "consensus_hash": "Ynl0ZXM=",
+                    "app_hash": "Ynl0ZXM=",
+                    "last_results_hash": "Ynl0ZXM=",
+                    "evidence_hash": "Ynl0ZXM=",
+                    "proposer_address": "Ynl0ZXM="
+                },
+                "data": {
+                    "txs": [
+                        "Ynl0ZXM="
+                    ]
+                },
+                "evidence": {
+                    "evidence": [
+                        {
+                            "duplicate_vote_evidence": {
+                                "vote_a": {
+                                    "type": "SIGNED_MSG_TYPE_UNKNOWN",
+                                    "height": "text",
+                                    "round": 1,
+                                    "block_id": {
+                                        "hash": "Ynl0ZXM=",
+                                        "part_set_header": {
+                                            "total": 1,
+                                            "hash": "Ynl0ZXM="
+                                        }
+                                    },
+                                    "timestamp": "2025-11-16T12:37:10.832Z",
+                                    "validator_address": "Ynl0ZXM=",
+                                    "validator_index": 1,
+                                    "signature": "Ynl0ZXM="
+                                },
+                                "vote_b": {
+                                    "type": "SIGNED_MSG_TYPE_UNKNOWN",
+                                    "height": "text",
+                                    "round": 1,
+                                    "block_id": {
+                                        "hash": "Ynl0ZXM=",
+                                        "part_set_header": {
+                                            "total": 1,
+                                            "hash": "Ynl0ZXM="
+                                        }
+                                    },
+                                    "timestamp": "2025-11-16T12:37:10.832Z",
+                                    "validator_address": "Ynl0ZXM=",
+                                    "validator_index": 1,
+                                    "signature": "Ynl0ZXM="
+                                },
+                                "total_voting_power": "text",
+                                "validator_power": "text",
+                                "timestamp": "2025-11-16T12:37:10.832Z"
+                            },
+                            "light_client_attack_evidence": {
+                                "conflicting_block": {
+                                    "signed_header": {
+                                        "header": {
+                                            "version": {
+                                                "block": "text",
+                                                "app": "text"
+                                            },
+                                            "chain_id": "text",
+                                            "height": "text",
+                                            "time": "2025-11-16T12:37:10.832Z",
+                                            "last_block_id": {
+                                                "hash": "Ynl0ZXM=",
+                                                "part_set_header": {
+                                                    "total": 1,
+                                                    "hash": "Ynl0ZXM="
+                                                }
+                                            },
+                                            "last_commit_hash": "Ynl0ZXM=",
+                                            "data_hash": "Ynl0ZXM=",
+                                            "validators_hash": "Ynl0ZXM=",
+                                            "next_validators_hash": "Ynl0ZXM=",
+                                            "consensus_hash": "Ynl0ZXM=",
+                                            "app_hash": "Ynl0ZXM=",
+                                            "last_results_hash": "Ynl0ZXM=",
+                                            "evidence_hash": "Ynl0ZXM=",
+                                            "proposer_address": "Ynl0ZXM="
+                                        },
+                                        "commit": {
+                                            "height": "text",
+                                            "round": 1,
+                                            "block_id": {
+                                                "hash": "Ynl0ZXM=",
+                                                "part_set_header": {
+                                                    "total": 1,
+                                                    "hash": "Ynl0ZXM="
+                                                }
+                                            },
+                                            "signatures": [
+                                                {
+                                                    "block_id_flag": "BLOCK_ID_FLAG_UNKNOWN",
+                                                    "validator_address": "Ynl0ZXM=",
+                                                    "timestamp": "2025-11-16T12:37:10.832Z",
+                                                    "signature": "Ynl0ZXM="
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "validator_set": {
+                                        "validators": [
+                                            {
+                                                "address": "Ynl0ZXM=",
+                                                "pub_key": {
+                                                    "ed25519": "Ynl0ZXM=",
+                                                    "secp256k1": "Ynl0ZXM="
+                                                },
+                                                "voting_power": "text",
+                                                "proposer_priority": "text"
+                                            }
+                                        ],
+                                        "proposer": {
+                                            "address": "Ynl0ZXM=",
+                                            "pub_key": {
+                                                "ed25519": "Ynl0ZXM=",
+                                                "secp256k1": "Ynl0ZXM="
+                                            },
+                                            "voting_power": "text",
+                                            "proposer_priority": "text"
+                                        },
+                                        "total_voting_power": "text"
+                                    }
+                                },
+                                "common_height": "text",
+                                "byzantine_validators": [
+                                    {
+                                        "address": "Ynl0ZXM=",
+                                        "pub_key": {
+                                            "ed25519": "Ynl0ZXM=",
+                                            "secp256k1": "Ynl0ZXM="
+                                        },
+                                        "voting_power": "text",
+                                        "proposer_priority": "text"
+                                    }
+                                ],
+                                "total_voting_power": "text",
+                                "timestamp": "2025-11-16T12:37:10.832Z"
+                            }
+                        }
+                    ]
+                },
+                "last_commit": {
+                    "height": "text",
+                    "round": 1,
+                    "block_id": {
+                        "hash": "Ynl0ZXM=",
+                        "part_set_header": {
+                            "total": 1,
+                            "hash": "Ynl0ZXM="
+                        }
+                    },
+                    "signatures": [
+                        {
+                            "block_id_flag": "BLOCK_ID_FLAG_UNKNOWN",
+                            "validator_address": "Ynl0ZXM=",
+                            "timestamp": "2025-11-16T12:37:10.832Z",
+                            "signature": "Ynl0ZXM="
+                        }
+                    ]
+                }
+            }
+        },
+        "descriptions": {
+            "version": "Consensus rule configuration.",
+            "header": "Block header metadata.",
+            "txs": "List of included transactions.",
+            "type": "Signed consensus message type. Values: PREVOTE, PROPOSAL.",
+            "vote_a": "Vote metadata (prevote, precommit, commit).",
+            "vote_b": "Vote metadata (prevote, precommit, commit).",
+            "duplicate_vote_evidence": "Evidence that a validator signed conflicting votes.",
+            "commit": "Commit proof demonstrating validator approval.",
+            "light_client_attack_evidence": "Evidence of attempted misbehavior against light clients.",
+            "last_commit": "Final commit proof for previous block."
+        }
+    },
+    "/cosmos/base/tendermint/v1beta1/blocks/{height}": {
+        "parameters": [
+            {
+                "name": "height",
+                "required": true,
+                "type": "string"
+            }
+        ],
+        "responses": {
+            "block_id": {
+                "hash": "Ynl0ZXM=",
+                "part_set_header": {
+                    "total": 1,
+                    "hash": "Ynl0ZXM="
+                }
+            },
+            "block": {
+                "header": {
+                    "version": {
+                        "block": "text",
+                        "app": "text"
+                    },
+                    "chain_id": "text",
+                    "height": "text",
+                    "time": "2025-11-16T12:37:10.832Z",
+                    "last_block_id": {
+                        "hash": "Ynl0ZXM=",
+                        "part_set_header": {
+                            "total": 1,
+                            "hash": "Ynl0ZXM="
+                        }
+                    },
+                    "last_commit_hash": "Ynl0ZXM=",
+                    "data_hash": "Ynl0ZXM=",
+                    "validators_hash": "Ynl0ZXM=",
+                    "next_validators_hash": "Ynl0ZXM=",
+                    "consensus_hash": "Ynl0ZXM=",
+                    "app_hash": "Ynl0ZXM=",
+                    "last_results_hash": "Ynl0ZXM=",
+                    "evidence_hash": "Ynl0ZXM=",
+                    "proposer_address": "Ynl0ZXM="
+                },
+                "data": {
+                    "txs": [
+                        "Ynl0ZXM="
+                    ]
+                },
+                "evidence": {
+                    "evidence": [
+                        {
+                            "duplicate_vote_evidence": {
+                                "vote_a": {
+                                    "type": "SIGNED_MSG_TYPE_UNKNOWN",
+                                    "height": "text",
+                                    "round": 1,
+                                    "block_id": {
+                                        "hash": "Ynl0ZXM=",
+                                        "part_set_header": {
+                                            "total": 1,
+                                            "hash": "Ynl0ZXM="
+                                        }
+                                    },
+                                    "timestamp": "2025-11-16T12:37:10.832Z",
+                                    "validator_address": "Ynl0ZXM=",
+                                    "validator_index": 1,
+                                    "signature": "Ynl0ZXM="
+                                },
+                                "vote_b": {
+                                    "type": "SIGNED_MSG_TYPE_UNKNOWN",
+                                    "height": "text",
+                                    "round": 1,
+                                    "block_id": {
+                                        "hash": "Ynl0ZXM=",
+                                        "part_set_header": {
+                                            "total": 1,
+                                            "hash": "Ynl0ZXM="
+                                        }
+                                    },
+                                    "timestamp": "2025-11-16T12:37:10.832Z",
+                                    "validator_address": "Ynl0ZXM=",
+                                    "validator_index": 1,
+                                    "signature": "Ynl0ZXM="
+                                },
+                                "total_voting_power": "text",
+                                "validator_power": "text",
+                                "timestamp": "2025-11-16T12:37:10.832Z"
+                            },
+                            "light_client_attack_evidence": {
+                                "conflicting_block": {
+                                    "signed_header": {
+                                        "header": {
+                                            "version": {
+                                                "block": "text",
+                                                "app": "text"
+                                            },
+                                            "chain_id": "text",
+                                            "height": "text",
+                                            "time": "2025-11-16T12:37:10.832Z",
+                                            "last_block_id": {
+                                                "hash": "Ynl0ZXM=",
+                                                "part_set_header": {
+                                                    "total": 1,
+                                                    "hash": "Ynl0ZXM="
+                                                }
+                                            },
+                                            "last_commit_hash": "Ynl0ZXM=",
+                                            "data_hash": "Ynl0ZXM=",
+                                            "validators_hash": "Ynl0ZXM=",
+                                            "next_validators_hash": "Ynl0ZXM=",
+                                            "consensus_hash": "Ynl0ZXM=",
+                                            "app_hash": "Ynl0ZXM=",
+                                            "last_results_hash": "Ynl0ZXM=",
+                                            "evidence_hash": "Ynl0ZXM=",
+                                            "proposer_address": "Ynl0ZXM="
+                                        },
+                                        "commit": {
+                                            "height": "text",
+                                            "round": 1,
+                                            "block_id": {
+                                                "hash": "Ynl0ZXM=",
+                                                "part_set_header": {
+                                                    "total": 1,
+                                                    "hash": "Ynl0ZXM="
+                                                }
+                                            },
+                                            "signatures": [
+                                                {
+                                                    "block_id_flag": "BLOCK_ID_FLAG_UNKNOWN",
+                                                    "validator_address": "Ynl0ZXM=",
+                                                    "timestamp": "2025-11-16T12:37:10.832Z",
+                                                    "signature": "Ynl0ZXM="
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    "validator_set": {
+                                        "validators": [
+                                            {
+                                                "address": "Ynl0ZXM=",
+                                                "pub_key": {
+                                                    "ed25519": "Ynl0ZXM=",
+                                                    "secp256k1": "Ynl0ZXM="
+                                                },
+                                                "voting_power": "text",
+                                                "proposer_priority": "text"
+                                            }
+                                        ],
+                                        "proposer": {
+                                            "address": "Ynl0ZXM=",
+                                            "pub_key": {
+                                                "ed25519": "Ynl0ZXM=",
+                                                "secp256k1": "Ynl0ZXM="
+                                            },
+                                            "voting_power": "text",
+                                            "proposer_priority": "text"
+                                        },
+                                        "total_voting_power": "text"
+                                    }
+                                },
+                                "common_height": "text",
+                                "byzantine_validators": [
+                                    {
+                                        "address": "Ynl0ZXM=",
+                                        "pub_key": {
+                                            "ed25519": "Ynl0ZXM=",
+                                            "secp256k1": "Ynl0ZXM="
+                                        },
+                                        "voting_power": "text",
+                                        "proposer_priority": "text"
+                                    }
+                                ],
+                                "total_voting_power": "text",
+                                "timestamp": "2025-11-16T12:37:10.832Z"
+                            }
+                        }
+                    ]
+                },
+                "last_commit": {
+                    "height": "text",
+                    "round": 1,
+                    "block_id": {
+                        "hash": "Ynl0ZXM=",
+                        "part_set_header": {
+                            "total": 1,
+                            "hash": "Ynl0ZXM="
+                        }
+                    },
+                    "signatures": [
+                        {
+                            "block_id_flag": "BLOCK_ID_FLAG_UNKNOWN",
+                            "validator_address": "Ynl0ZXM=",
+                            "timestamp": "2025-11-16T12:37:10.832Z",
+                            "signature": "Ynl0ZXM="
+                        }
+                    ]
+                }
+            }
+        },
+        "descriptions": {
+            "version": "Consensus rule configuration.",
+            "header": "Block header metadata.",
+            "txs": "List of included transactions.",
+            "type": "Signed consensus message type. Values: PREVOTE, PROPOSAL.",
+            "vote_a": "Vote metadata (prevote, precommit, commit).",
+            "vote_b": "Vote metadata (prevote, precommit, commit).",
+            "duplicate_vote_evidence": "Evidence that a validator signed conflicting votes.",
+            "commit": "Commit proof demonstrating validator approval.",
+            "light_client_attack_evidence": "Evidence of attempted misbehavior against light clients.",
+            "last_commit": "Final commit proof for previous block."
+        }
+    },
+    "/cosmos/base/tendermint/v1beta1/node_info": {
+        "parameters": [],
+        "responses": {
+            "default_node_info": {
+                "protocol_version": {
+                    "p2p": "text",
+                    "block": "text",
+                    "app": "text"
+                },
+                "default_node_id": "text",
+                "listen_addr": "text",
+                "network": "text",
+                "version": "text",
+                "channels": "Ynl0ZXM=",
+                "moniker": "text",
+                "other": {
+                    "tx_index": "text",
+                    "rpc_address": "text"
+                }
+            },
+            "application_version": {
+                "name": "text",
+                "app_name": "text",
+                "version": "text",
+                "git_commit": "text",
+                "build_tags": "text",
+                "go_version": "text",
+                "build_deps": [
+                    {
+                        "path": "text",
+                        "version": "text",
+                        "sum": "text"
+                    }
+                ],
+                "cosmos_sdk_version": "text"
+            }
+        },
+        "descriptions": {
+            "application_version": "Application version and build metadata."
+        }
+    },
+    "/cosmos/base/tendermint/v1beta1/syncing": {
+        "parameters": [],
+        "responses": {
+            "syncing": true
+        },
+        "descriptions": {}
+    },
+    "/cosmos/base/tendermint/v1beta1/validatorsets/latest": {
+        "parameters": [
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "block_height": "text",
+            "validators": [
+                {
+                    "address": "text",
+                    "pub_key": {
+                        "type_url": "text",
+                        "value": "Ynl0ZXM="
+                    },
+                    "voting_power": "text",
+                    "proposer_priority": "text"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "pub_key": "Validator\u2019s consensus public key.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/base/tendermint/v1beta1/validatorsets/{height}": {
+        "parameters": [
+            {
+                "name": "height",
+                "required": true,
+                "type": "string"
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "block_height": "text",
+            "validators": [
+                {
+                    "address": "text",
+                    "pub_key": {
+                        "type_url": "text",
+                        "value": "Ynl0ZXM="
+                    },
+                    "voting_power": "text",
+                    "proposer_priority": "text"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "pub_key": "Validator\u2019s consensus public key.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/auth/v1beta1/accounts": {
+        "parameters": [
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "accounts": [
+                {
+                    "type_url": "text",
+                    "value": "Ynl0ZXM="
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/auth/v1beta1/accounts/{address}": {
+        "parameters": [
+            {
+                "name": "address",
+                "required": true,
+                "type": "string",
+                "description": "Target account or contract address."
+            }
+        ],
+        "responses": {
+            "account": {
+                "type_url": "text",
+                "value": "Ynl0ZXM="
+            }
+        },
+        "descriptions": {
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "account": "Account data container."
+        }
+    },
+    "/cosmos/auth/v1beta1/module_accounts/{name}": {
+        "parameters": [
+            {
+                "name": "name",
+                "required": true,
+                "type": "string"
+            }
+        ],
+        "responses": {
+            "account": {
+                "type_url": "text",
+                "value": "Ynl0ZXM="
+            }
+        },
+        "descriptions": {
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "account": "Account data container."
+        }
+    },
+    "/cosmos/auth/v1beta1/params": {
+        "parameters": [],
+        "responses": {
+            "params": {
+                "max_memo_characters": "text",
+                "tx_sig_limit": "text",
+                "tx_size_cost_per_byte": "text",
+                "sig_verify_cost_ed25519": "text",
+                "sig_verify_cost_secp256k1": "text"
+            }
+        },
+        "descriptions": {
+            "params": "Module-specific configuration parameters."
+        }
+    },
+    "/cosmos/staking/v1beta1/delegations/{delegator_addr}": {
+        "parameters": [
+            {
+                "name": "delegator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Delegator address."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "delegation_responses": [
+                {
+                    "delegation": {
+                        "delegator_address": "text",
+                        "validator_address": "text",
+                        "shares": "text"
+                    },
+                    "balance": {
+                        "denom": "text",
+                        "amount": "text"
+                    }
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "delegator_address": "Bech32 encoded delegator address.",
+            "validator_address": "Bech32 encoded validator address.",
+            "shares": "Delegation share units.",
+            "delegation": "Delegation object linking delegator and validator.",
+            "balance": "Token balance information.",
+            "delegation_responses": "List of delegation responses for a delegator.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/staking/v1beta1/delegators/{delegator_addr}/redelegations": {
+        "parameters": [
+            {
+                "name": "delegator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Delegator address."
+            },
+            {
+                "name": "src_validator_addr",
+                "required": false,
+                "type": "string",
+                "description": "Validator redelegation source."
+            },
+            {
+                "name": "dst_validator_addr",
+                "required": false,
+                "type": "string",
+                "description": "Validator redelegation target."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "redelegation_responses": [
+                {
+                    "redelegation": {
+                        "delegator_address": "text",
+                        "validator_src_address": "text",
+                        "validator_dst_address": "text",
+                        "entries": [
+                            {
+                                "creation_height": "text",
+                                "completion_time": "2025-11-16T12:37:10.832Z",
+                                "initial_balance": "text",
+                                "shares_dst": "text"
+                            }
+                        ]
+                    },
+                    "entries": [
+                        {
+                            "redelegation_entry": {
+                                "creation_height": "text",
+                                "completion_time": "2025-11-16T12:37:10.832Z",
+                                "initial_balance": "text",
+                                "shares_dst": "text"
+                            },
+                            "balance": "text"
+                        }
+                    ]
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "delegator_address": "Bech32 encoded delegator address.",
+            "validator_src_address": "Validator address where redelegation originates.",
+            "validator_dst_address": "Destination validator address for redelegation.",
+            "creation_height": "Height where unbonding or redelegation started.",
+            "completion_time": "Time when unbonding or redelegation completes.",
+            "initial_balance": "Balance at start of unbonding or redelegation.",
+            "shares_dst": "Shares created during redelegation.",
+            "entries": "Redelegation or unbonding entry list.",
+            "redelegation": "Redelegation structure.",
+            "redelegation_entry": "Single redelegation entry with metadata.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/staking/v1beta1/delegators/{delegator_addr}/unbonding_delegations": {
+        "parameters": [
+            {
+                "name": "delegator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Delegator address."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "unbonding_responses": [
+                {
+                    "delegator_address": "text",
+                    "validator_address": "text",
+                    "entries": [
+                        {
+                            "creation_height": "text",
+                            "completion_time": "2025-11-16T12:37:10.832Z",
+                            "initial_balance": "text",
+                            "balance": "text"
+                        }
+                    ]
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "delegator_address": "Bech32 encoded delegator address.",
+            "validator_address": "Bech32 encoded validator address.",
+            "creation_height": "Height where unbonding or redelegation started.",
+            "completion_time": "Time when unbonding or redelegation completes.",
+            "initial_balance": "Balance at start of unbonding or redelegation.",
+            "balance": "Token balance information.",
+            "entries": "Redelegation or unbonding entry list.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/staking/v1beta1/delegators/{delegator_addr}/validators": {
+        "parameters": [
+            {
+                "name": "delegator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Delegator address."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "validators": [
+                {
+                    "operator_address": "text",
+                    "consensus_pubkey": {
+                        "type_url": "text",
+                        "value": "Ynl0ZXM="
+                    },
+                    "jailed": true,
+                    "status": "BOND_STATUS_UNSPECIFIED",
+                    "tokens": "text",
+                    "delegator_shares": "text",
+                    "description": {
+                        "moniker": "text",
+                        "identity": "text",
+                        "website": "text",
+                        "security_contact": "text",
+                        "details": "text"
+                    },
+                    "unbonding_height": "text",
+                    "unbonding_time": "2025-11-16T12:37:10.832Z",
+                    "commission": {
+                        "commission_rates": {
+                            "rate": "text",
+                            "max_rate": "text",
+                            "max_change_rate": "text"
+                        },
+                        "update_time": "2025-11-16T12:37:10.832Z"
+                    },
+                    "min_self_delegation": "text"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "operator_address": "Validator operator address.",
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "consensus_pubkey": "Consensus key used by validator.",
+            "jailed": "Whether the validator is jailed.",
+            "status": "Validator status. Values: BONDED, UNBONDING, UNBONDED.",
+            "tokens": "Total delegated tokens including self-delegation.",
+            "delegator_shares": "Total issued shares to delegators.",
+            "moniker": "Validator public name.",
+            "identity": "Optional profile or verification reference.",
+            "website": "Validator website URL.",
+            "security_contact": "Security-related contact address.",
+            "details": "Additional validator metadata.",
+            "description": "Validator description fields.",
+            "unbonding_height": "Height when validator began unbonding.",
+            "unbonding_time": "Duration or timestamp until unbonding completes.",
+            "rate": "Current commission rate.",
+            "max_rate": "Maximum possible commission rate.",
+            "max_change_rate": "Maximum allowed daily commission increase.",
+            "commission_rates": "Initial commission configuration.",
+            "update_time": "Last time commission was updated.",
+            "commission": "Validator commission configuration.",
+            "min_self_delegation": "Minimum required self-delegation.",
+            "validators": "List of validator entries.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/staking/v1beta1/delegators/{delegator_addr}/validators/{validator_addr}": {
+        "parameters": [
+            {
+                "name": "delegator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Delegator address."
+            },
+            {
+                "name": "validator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Address of validator being queried."
+            }
+        ],
+        "responses": {
+            "validator": {
+                "operator_address": "text",
+                "consensus_pubkey": {
+                    "type_url": "text",
+                    "value": "Ynl0ZXM="
+                },
+                "jailed": true,
+                "status": "BOND_STATUS_UNSPECIFIED",
+                "tokens": "text",
+                "delegator_shares": "text",
+                "description": {
+                    "moniker": "text",
+                    "identity": "text",
+                    "website": "text",
+                    "security_contact": "text",
+                    "details": "text"
+                },
+                "unbonding_height": "text",
+                "unbonding_time": "2025-11-16T12:37:10.832Z",
+                "commission": {
+                    "commission_rates": {
+                        "rate": "text",
+                        "max_rate": "text",
+                        "max_change_rate": "text"
+                    },
+                    "update_time": "2025-11-16T12:37:10.832Z"
+                },
+                "min_self_delegation": "text"
+            }
+        },
+        "descriptions": {
+            "operator_address": "Validator operator address.",
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "consensus_pubkey": "Consensus key used by validator.",
+            "jailed": "Whether the validator is jailed.",
+            "status": "Validator status. Values: BONDED, UNBONDING, UNBONDED.",
+            "tokens": "Total delegated tokens including self-delegation.",
+            "delegator_shares": "Total issued shares to delegators.",
+            "moniker": "Validator public name.",
+            "identity": "Optional profile or verification reference.",
+            "website": "Validator website URL.",
+            "security_contact": "Security-related contact address.",
+            "details": "Additional validator metadata.",
+            "description": "Validator description fields.",
+            "unbonding_height": "Height when validator began unbonding.",
+            "unbonding_time": "Duration or timestamp until unbonding completes.",
+            "rate": "Current commission rate.",
+            "max_rate": "Maximum possible commission rate.",
+            "max_change_rate": "Maximum allowed daily commission increase.",
+            "commission_rates": "Initial commission configuration.",
+            "update_time": "Last time commission was updated.",
+            "commission": "Validator commission configuration.",
+            "min_self_delegation": "Minimum required self-delegation.",
+            "validator": "Validator object including token and share state."
+        }
+    },
+    "/cosmos/staking/v1beta1/historical_info/{height}": {
+        "parameters": [
+            {
+                "name": "height",
+                "required": true,
+                "type": "string",
+                "description": "Block height to query historical state."
+            }
+        ],
+        "responses": {
+            "hist": {
+                "header": {
+                    "version": {
+                        "block": "text",
+                        "app": "text"
+                    },
+                    "chain_id": "text",
+                    "height": "text",
+                    "time": "2025-11-16T12:37:10.832Z",
+                    "last_block_id": {
+                        "hash": "Ynl0ZXM=",
+                        "part_set_header": {
+                            "total": 1,
+                            "hash": "Ynl0ZXM="
+                        }
+                    },
+                    "last_commit_hash": "Ynl0ZXM=",
+                    "data_hash": "Ynl0ZXM=",
+                    "validators_hash": "Ynl0ZXM=",
+                    "next_validators_hash": "Ynl0ZXM=",
+                    "consensus_hash": "Ynl0ZXM=",
+                    "app_hash": "Ynl0ZXM=",
+                    "last_results_hash": "Ynl0ZXM=",
+                    "evidence_hash": "Ynl0ZXM=",
+                    "proposer_address": "Ynl0ZXM="
+                },
+                "valset": [
+                    {
+                        "operator_address": "text",
+                        "consensus_pubkey": {
+                            "type_url": "text",
+                            "value": "Ynl0ZXM="
+                        },
+                        "jailed": true,
+                        "status": "BOND_STATUS_UNSPECIFIED",
+                        "tokens": "text",
+                        "delegator_shares": "text",
+                        "description": {
+                            "moniker": "text",
+                            "identity": "text",
+                            "website": "text",
+                            "security_contact": "text",
+                            "details": "text"
+                        },
+                        "unbonding_height": "text",
+                        "unbonding_time": "2025-11-16T12:37:10.832Z",
+                        "commission": {
+                            "commission_rates": {
+                                "rate": "text",
+                                "max_rate": "text",
+                                "max_change_rate": "text"
+                            },
+                            "update_time": "2025-11-16T12:37:10.832Z"
+                        },
+                        "min_self_delegation": "text"
+                    }
+                ]
+            }
+        },
+        "descriptions": {
+            "version": "Consensus rule configuration.",
+            "header": "Block header metadata.",
+            "operator_address": "Validator operator address.",
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "consensus_pubkey": "Consensus key used by validator.",
+            "jailed": "Whether the validator is jailed.",
+            "status": "Validator status. Values: BONDED, UNBONDING, UNBONDED.",
+            "tokens": "Total delegated tokens including self-delegation.",
+            "delegator_shares": "Total issued shares to delegators.",
+            "moniker": "Validator public name.",
+            "identity": "Optional profile or verification reference.",
+            "website": "Validator website URL.",
+            "security_contact": "Security-related contact address.",
+            "details": "Additional validator metadata.",
+            "description": "Validator description fields.",
+            "unbonding_height": "Height when validator began unbonding.",
+            "unbonding_time": "Duration or timestamp until unbonding completes.",
+            "rate": "Current commission rate.",
+            "max_rate": "Maximum possible commission rate.",
+            "max_change_rate": "Maximum allowed daily commission increase.",
+            "commission_rates": "Initial commission configuration.",
+            "update_time": "Last time commission was updated.",
+            "commission": "Validator commission configuration.",
+            "min_self_delegation": "Minimum required self-delegation.",
+            "hist": "Historical validator information at given height."
+        }
+    },
+    "/cosmos/staking/v1beta1/params": {
+        "parameters": [],
+        "responses": {
+            "params": {
+                "unbonding_time": "text",
+                "max_validators": 1,
+                "max_entries": 1,
+                "historical_entries": 1,
+                "bond_denom": "text"
+            }
+        },
+        "descriptions": {
+            "unbonding_time": "Duration or timestamp until unbonding completes.",
+            "max_validators": "Maximum allowed validators.",
+            "max_entries": "Maximum redelegation or unbonding entries allowed.",
+            "historical_entries": "Number of historical staking records to retain.",
+            "bond_denom": "Native staking denomination.",
+            "params": "Module-specific configuration parameters."
+        }
+    },
+    "/cosmos/staking/v1beta1/pool": {
+        "parameters": [],
+        "responses": {
+            "pool": {
+                "not_bonded_tokens": "text",
+                "bonded_tokens": "text"
+            }
+        },
+        "descriptions": {
+            "pool": "Staking pool or community pool balances."
+        }
+    },
+    "/cosmos/staking/v1beta1/validators": {
+        "parameters": [
+            {
+                "name": "status",
+                "required": false,
+                "type": "string",
+                "description": "Filter validators by status."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "validators": [
+                {
+                    "operator_address": "text",
+                    "consensus_pubkey": {
+                        "type_url": "text",
+                        "value": "Ynl0ZXM="
+                    },
+                    "jailed": true,
+                    "status": "BOND_STATUS_UNSPECIFIED",
+                    "tokens": "text",
+                    "delegator_shares": "text",
+                    "description": {
+                        "moniker": "text",
+                        "identity": "text",
+                        "website": "text",
+                        "security_contact": "text",
+                        "details": "text"
+                    },
+                    "unbonding_height": "text",
+                    "unbonding_time": "2025-11-16T12:37:10.832Z",
+                    "commission": {
+                        "commission_rates": {
+                            "rate": "text",
+                            "max_rate": "text",
+                            "max_change_rate": "text"
+                        },
+                        "update_time": "2025-11-16T12:37:10.832Z"
+                    },
+                    "min_self_delegation": "text"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "operator_address": "Validator operator address.",
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "consensus_pubkey": "Consensus key used by validator.",
+            "jailed": "Whether the validator is jailed.",
+            "status": "Validator status. Values: BONDED, UNBONDING, UNBONDED.",
+            "tokens": "Total delegated tokens including self-delegation.",
+            "delegator_shares": "Total issued shares to delegators.",
+            "moniker": "Validator public name.",
+            "identity": "Optional profile or verification reference.",
+            "website": "Validator website URL.",
+            "security_contact": "Security-related contact address.",
+            "details": "Additional validator metadata.",
+            "description": "Validator description fields.",
+            "unbonding_height": "Height when validator began unbonding.",
+            "unbonding_time": "Duration or timestamp until unbonding completes.",
+            "rate": "Current commission rate.",
+            "max_rate": "Maximum possible commission rate.",
+            "max_change_rate": "Maximum allowed daily commission increase.",
+            "commission_rates": "Initial commission configuration.",
+            "update_time": "Last time commission was updated.",
+            "commission": "Validator commission configuration.",
+            "min_self_delegation": "Minimum required self-delegation.",
+            "validators": "List of validator entries.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/staking/v1beta1/validators/{validator_addr}": {
+        "parameters": [
+            {
+                "name": "validator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Address of validator being queried."
+            }
+        ],
+        "responses": {
+            "validator": {
+                "operator_address": "text",
+                "consensus_pubkey": {
+                    "type_url": "text",
+                    "value": "Ynl0ZXM="
+                },
+                "jailed": true,
+                "status": "BOND_STATUS_UNSPECIFIED",
+                "tokens": "text",
+                "delegator_shares": "text",
+                "description": {
+                    "moniker": "text",
+                    "identity": "text",
+                    "website": "text",
+                    "security_contact": "text",
+                    "details": "text"
+                },
+                "unbonding_height": "text",
+                "unbonding_time": "2025-11-16T12:37:10.832Z",
+                "commission": {
+                    "commission_rates": {
+                        "rate": "text",
+                        "max_rate": "text",
+                        "max_change_rate": "text"
+                    },
+                    "update_time": "2025-11-16T12:37:10.832Z"
+                },
+                "min_self_delegation": "text"
+            }
+        },
+        "descriptions": {
+            "operator_address": "Validator operator address.",
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "consensus_pubkey": "Consensus key used by validator.",
+            "jailed": "Whether the validator is jailed.",
+            "status": "Validator status. Values: BONDED, UNBONDING, UNBONDED.",
+            "tokens": "Total delegated tokens including self-delegation.",
+            "delegator_shares": "Total issued shares to delegators.",
+            "moniker": "Validator public name.",
+            "identity": "Optional profile or verification reference.",
+            "website": "Validator website URL.",
+            "security_contact": "Security-related contact address.",
+            "details": "Additional validator metadata.",
+            "description": "Validator description fields.",
+            "unbonding_height": "Height when validator began unbonding.",
+            "unbonding_time": "Duration or timestamp until unbonding completes.",
+            "rate": "Current commission rate.",
+            "max_rate": "Maximum possible commission rate.",
+            "max_change_rate": "Maximum allowed daily commission increase.",
+            "commission_rates": "Initial commission configuration.",
+            "update_time": "Last time commission was updated.",
+            "commission": "Validator commission configuration.",
+            "min_self_delegation": "Minimum required self-delegation.",
+            "validator": "Validator object including token and share state."
+        }
+    },
+    "/cosmos/staking/v1beta1/validators/{validator_addr}/delegations": {
+        "parameters": [
+            {
+                "name": "validator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Address of validator being queried."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "delegation_responses": [
+                {
+                    "delegation": {
+                        "delegator_address": "text",
+                        "validator_address": "text",
+                        "shares": "text"
+                    },
+                    "balance": {
+                        "denom": "text",
+                        "amount": "text"
+                    }
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "delegator_address": "Bech32 encoded delegator address.",
+            "validator_address": "Bech32 encoded validator address.",
+            "shares": "Delegation share units.",
+            "delegation": "Delegation object linking delegator and validator.",
+            "balance": "Token balance information.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/staking/v1beta1/validators/{validator_addr}/delegations/{delegator_addr}": {
+        "parameters": [
+            {
+                "name": "validator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Address of validator being queried."
+            },
+            {
+                "name": "delegator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Delegator address."
+            }
+        ],
+        "responses": {
+            "delegation_response": {
+                "delegation": {
+                    "delegator_address": "text",
+                    "validator_address": "text",
+                    "shares": "text"
+                },
+                "balance": {
+                    "denom": "text",
+                    "amount": "text"
+                }
+            }
+        },
+        "descriptions": {
+            "delegator_address": "Bech32 encoded delegator address.",
+            "validator_address": "Bech32 encoded validator address.",
+            "shares": "Delegation share units.",
+            "delegation": "Delegation object linking delegator and validator.",
+            "balance": "Token balance information.",
+            "delegation_response": "Delegation response object with share and balance."
+        }
+    },
+    "/cosmos/staking/v1beta1/validators/{validator_addr}/delegations/{delegator_addr}/unbonding_delegation": {
+        "parameters": [
+            {
+                "name": "validator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Address of validator being queried."
+            },
+            {
+                "name": "delegator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Delegator address."
+            }
+        ],
+        "responses": {
+            "unbond": {
+                "delegator_address": "text",
+                "validator_address": "text",
+                "entries": [
+                    {
+                        "creation_height": "text",
+                        "completion_time": "2025-11-16T12:37:10.832Z",
+                        "initial_balance": "text",
+                        "balance": "text"
+                    }
+                ]
+            }
+        },
+        "descriptions": {
+            "delegator_address": "Bech32 encoded delegator address.",
+            "validator_address": "Bech32 encoded validator address.",
+            "creation_height": "Height where unbonding or redelegation started.",
+            "completion_time": "Time when unbonding or redelegation completes.",
+            "initial_balance": "Balance at start of unbonding or redelegation.",
+            "balance": "Token balance information.",
+            "entries": "Redelegation or unbonding entry list.",
+            "unbond": "Unbonding delegation structure."
+        }
+    },
+    "/cosmos/staking/v1beta1/validators/{validator_addr}/unbonding_delegations": {
+        "parameters": [
+            {
+                "name": "validator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Address of validator being queried."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "unbonding_responses": [
+                {
+                    "delegator_address": "text",
+                    "validator_address": "text",
+                    "entries": [
+                        {
+                            "creation_height": "text",
+                            "completion_time": "2025-11-16T12:37:10.832Z",
+                            "initial_balance": "text",
+                            "balance": "text"
+                        }
+                    ]
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "delegator_address": "Bech32 encoded delegator address.",
+            "validator_address": "Bech32 encoded validator address.",
+            "creation_height": "Height where unbonding or redelegation started.",
+            "completion_time": "Time when unbonding or redelegation completes.",
+            "initial_balance": "Balance at start of unbonding or redelegation.",
+            "balance": "Token balance information.",
+            "entries": "Redelegation or unbonding entry list.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/juno/feeshare/v1/fee_shares": {
+        "parameters": [
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "feeshare": [
+                {
+                    "contract_address": "text",
+                    "deployer_address": "text",
+                    "withdrawer_address": "text"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "deployer_address": "Bech32 address of the deployer.",
+            "withdrawer_address": "Bech32 address for receiving fees.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/juno/feeshare/v1/fee_shares/{contract_address}": {
+        "parameters": [
+            {
+                "name": "contract_address",
+                "required": true,
+                "type": "string",
+                "description": "Registered contract address."
+            }
+        ],
+        "responses": {
+            "feeshare": {
+                "contract_address": "text",
+                "deployer_address": "text",
+                "withdrawer_address": "text"
+            }
+        },
+        "descriptions": {
+            "deployer_address": "Bech32 address of the deployer.",
+            "withdrawer_address": "Bech32 address for receiving fees."
+        }
+    },
+    "/juno/feeshare/v1/fee_shares/{deployer_address}": {
+        "parameters": [
+            {
+                "name": "deployer_address",
+                "required": true,
+                "type": "string",
+                "description": "Deployer address in bech32."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "contract_addresses": [
+                "text"
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/juno/feeshare/v1/fee_shares/{withdrawer_address}": {
+        "parameters": [
+            {
+                "name": "withdrawer_address",
+                "required": true,
+                "type": "string",
+                "description": "Fee withdrawal address."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "contract_addresses": [
+                "text"
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/juno/feeshare/v1/params": {
+        "parameters": [],
+        "responses": {
+            "params": {
+                "enable_fee_share": true,
+                "developer_shares": "text",
+                "allowed_denoms": [
+                    "text"
+                ]
+            }
+        },
+        "descriptions": {
+            "allowed_denoms": "Allowed token denominations."
+        }
+    },
+    "/juno/oracle/v1/denoms/active_exchange_rates": {
+        "parameters": [],
+        "responses": {
+            "active_rates": [
+                "text"
+            ]
+        },
+        "descriptions": {
+            "active_rates": "Active oracle exchange rate entries."
+        }
+    },
+    "/juno/oracle/v1/denoms/exchange_rates/{denom}": {
+        "parameters": [
+            {
+                "name": "denom",
+                "required": true,
+                "type": "string",
+                "description": "Token denomination to query."
+            }
+        ],
+        "responses": {
+            "exchange_rates": [
+                {
+                    "denom": "text",
+                    "amount": "text"
+                }
+            ]
+        },
+        "descriptions": {
+            "exchange_rates": "List of available token exchange rates."
+        }
+    },
+    "/juno/oracle/v1/params": {
+        "parameters": [],
+        "responses": {
+            "params": {
+                "vote_period": "text",
+                "vote_threshold": "text",
+                "reward_band": "text",
+                "reward_distribution_window": "text",
+                "whitelist": [
+                    {
+                        "base_denom": "text",
+                        "symbol_denom": "text",
+                        "exponent": 1
+                    }
+                ],
+                "slash_fraction": "text",
+                "slash_window": "text",
+                "min_valid_per_window": "text",
+                "twap_tracking_list": [
+                    {
+                        "base_denom": "text",
+                        "symbol_denom": "text",
+                        "exponent": 1
+                    }
+                ],
+                "twap_duration": "text"
+            }
+        },
+        "descriptions": {
+            "params": "Module-specific configuration parameters."
+        }
+    },
+    "/juno/oracle/v1/price_history/ArithmeticTwapPriceBetweenTime": {
+        "parameters": [
+            {
+                "name": "denom",
+                "required": false,
+                "type": "string"
+            },
+            {
+                "name": "start_time",
+                "required": false,
+                "type": "string"
+            },
+            {
+                "name": "end_time",
+                "required": false,
+                "type": "string"
+            }
+        ],
+        "responses": {
+            "twap_price": {
+                "denom": "text",
+                "amount": "text"
+            }
+        },
+        "descriptions": {
+            "twap_price": "Time-weighted average price."
+        }
+    },
+    "/juno/oracle/v1/price_history/PriceHistoryAtTime": {
+        "parameters": [
+            {
+                "name": "denom",
+                "required": false,
+                "type": "string"
+            },
+            {
+                "name": "time",
+                "required": false,
+                "type": "string"
+            }
+        ],
+        "responses": {
+            "denom": {
+                "base_denom": "text",
+                "symbol_denom": "text",
+                "exponent": 1
+            },
+            "price_history_entry": {
+                "price": "text",
+                "vote_period_count": "text",
+                "price_update_time": "2025-11-16T12:37:10.832Z"
+            }
+        },
+        "descriptions": {}
+    },
+    "/juno/oracle/v1/price_history/tracking_lists": {
+        "parameters": [],
+        "responses": {
+            "twap_tracking_lists": [
+                "text"
+            ]
+        },
+        "descriptions": {}
+    },
+    "/juno/oracle/v1/price_history/{denom}": {
+        "parameters": [
+            {
+                "name": "denom",
+                "required": true,
+                "type": "string"
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "denom": {
+                "base_denom": "text",
+                "symbol_denom": "text",
+                "exponent": 1
+            },
+            "price_history_entrys": [
+                {
+                    "price": "text",
+                    "vote_period_count": "text",
+                    "price_update_time": "2025-11-16T12:37:10.832Z"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/juno/oracle/v1/slash_window": {
+        "parameters": [],
+        "responses": {
+            "window_progress": "text"
+        },
+        "descriptions": {
+            "window_progress": "Number of voting windows since last slash."
+        }
+    },
+    "/juno/oracle/v1/valdiators/{validator_addr}/aggregate_vote": {
+        "parameters": [
+            {
+                "name": "validator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Address of validator being queried."
+            }
+        ],
+        "responses": {
+            "aggregate_vote": {
+                "exchange_rate_tuples": [
+                    {
+                        "denom": "text",
+                        "exchange_rate": "text"
+                    }
+                ],
+                "voter": "text"
+            }
+        },
+        "descriptions": {
+            "aggregate_vote": "Aggregated exchange rate vote."
+        }
+    },
+    "/juno/oracle/v1/validators/aggregate_prevotes": {
+        "parameters": [],
+        "responses": {
+            "aggregate_prevotes": [
+                {
+                    "hash": "text",
+                    "voter": "text",
+                    "submit_block": "text"
+                }
+            ]
+        },
+        "descriptions": {}
+    },
+    "/juno/oracle/v1/validators/aggregate_votes": {
+        "parameters": [],
+        "responses": {
+            "aggregate_votes": [
+                {
+                    "exchange_rate_tuples": [
+                        {
+                            "denom": "text",
+                            "exchange_rate": "text"
+                        }
+                    ],
+                    "voter": "text"
+                }
+            ]
+        },
+        "descriptions": {}
+    },
+    "/juno/oracle/v1/validators/{validator_addr}/aggregate_prevote": {
+        "parameters": [
+            {
+                "name": "validator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Address of validator being queried."
+            }
+        ],
+        "responses": {
+            "aggregate_prevote": {
+                "hash": "text",
+                "voter": "text",
+                "submit_block": "text"
+            }
+        },
+        "descriptions": {}
+    },
+    "/juno/oracle/v1/validators/{validator_addr}/feeder": {
+        "parameters": [
+            {
+                "name": "validator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Address of validator being queried."
+            }
+        ],
+        "responses": {
+            "feeder_addr": "text"
+        },
+        "descriptions": {}
+    },
+    "/juno/oracle/v1/validators/{validator_addr}/miss": {
+        "parameters": [
+            {
+                "name": "validator_addr",
+                "required": true,
+                "type": "string",
+                "description": "Address of validator being queried."
+            }
+        ],
+        "responses": {
+            "miss_counter": "text"
+        },
+        "descriptions": {}
+    },
+    "/cosmos/base/node/v1beta1/config": {
+        "parameters": [],
+        "responses": {
+            "minimum_gas_price": "text"
+        },
+        "descriptions": {}
+    },
+    "/ibc/apps/router/v1/params": {
+        "parameters": [],
+        "responses": {
+            "params": {
+                "fee_percentage": "text"
+            }
+        },
+        "descriptions": {
+            "params": "Module-specific configuration parameters."
+        }
+    },
+    "/cosmos/evidence/v1beta1/evidence": {
+        "parameters": [
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "evidence": [
+                {
+                    "type_url": "text",
+                    "value": "Ynl0ZXM="
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "evidence": "Evidence of misbehavior.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/evidence/v1beta1/evidence/{evidence_hash}": {
+        "parameters": [
+            {
+                "name": "evidence_hash",
+                "required": true,
+                "type": "string",
+                "description": "Hash identifying evidence record."
+            }
+        ],
+        "responses": {
+            "evidence": {
+                "type_url": "text",
+                "value": "Ynl0ZXM="
+            }
+        },
+        "descriptions": {
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "evidence": "Evidence of misbehavior."
+        }
+    },
+    "/cosmos/mint/v1beta1/annual_provisions": {
+        "parameters": [],
+        "responses": {
+            "annual_provisions": "Ynl0ZXM="
+        },
+        "descriptions": {
+            "annual_provisions": "Annual minting provision."
+        }
+    },
+    "/cosmos/mint/v1beta1/inflation": {
+        "parameters": [],
+        "responses": {
+            "inflation": "Ynl0ZXM="
+        },
+        "descriptions": {
+            "inflation": "Current inflation rate."
+        }
+    },
+    "/cosmos/mint/v1beta1/params": {
+        "parameters": [],
+        "responses": {
+            "params": {
+                "mint_denom": "text",
+                "blocks_per_year": "text"
+            }
+        },
+        "descriptions": {
+            "params": "Module-specific configuration parameters."
+        }
+    },
+    "/cosmos/feegrant/v1beta1/allowance/{granter}/{grantee}": {
+        "parameters": [
+            {
+                "name": "granter",
+                "required": true,
+                "type": "string",
+                "description": "Address granting an allowance."
+            },
+            {
+                "name": "grantee",
+                "required": true,
+                "type": "string",
+                "description": "Address receiving an allowance."
+            }
+        ],
+        "responses": {
+            "allowance": {
+                "granter": "text",
+                "grantee": "text",
+                "allowance": {
+                    "type_url": "text",
+                    "value": "Ynl0ZXM="
+                }
+            }
+        },
+        "descriptions": {
+            "granter": "Address granting allowance.",
+            "grantee": "Address receiving allowance.",
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "allowance": "Granted spending authorization."
+        }
+    },
+    "/cosmos/feegrant/v1beta1/allowances/{grantee}": {
+        "parameters": [
+            {
+                "name": "grantee",
+                "required": true,
+                "type": "string"
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "allowances": [
+                {
+                    "granter": "text",
+                    "grantee": "text",
+                    "allowance": {
+                        "type_url": "text",
+                        "value": "Ynl0ZXM="
+                    }
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "granter": "Address granting allowance.",
+            "grantee": "Address receiving allowance.",
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "allowance": "Granted spending authorization.",
+            "allowances": "List of allowances granted.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/feegrant/v1beta1/issued/{granter}": {
+        "parameters": [
+            {
+                "name": "granter",
+                "required": true,
+                "type": "string"
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "allowances": [
+                {
+                    "granter": "text",
+                    "grantee": "text",
+                    "allowance": {
+                        "type_url": "text",
+                        "value": "Ynl0ZXM="
+                    }
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "granter": "Address granting allowance.",
+            "grantee": "Address receiving allowance.",
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "allowance": "Granted spending authorization.",
+            "allowances": "List of allowances granted.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/gov/v1beta1/params/{params_type}": {
+        "parameters": [
+            {
+                "name": "params_type",
+                "required": true,
+                "type": "string",
+                "description": "Parameter query type: voting, tallying, or deposit."
+            }
+        ],
+        "responses": {
+            "voting_params": {
+                "voting_period": "text"
+            },
+            "deposit_params": {
+                "min_deposit": [
+                    {
+                        "denom": "text",
+                        "amount": "text"
+                    }
+                ],
+                "max_deposit_period": "text"
+            },
+            "tally_params": {
+                "quorum": "Ynl0ZXM=",
+                "threshold": "Ynl0ZXM=",
+                "veto_threshold": "Ynl0ZXM="
+            }
+        },
+        "descriptions": {
+            "voting_period": "Proposal voting duration.",
+            "voting_params": "Voting configuration parameters.",
+            "min_deposit": "Minimum proposal deposit.",
+            "max_deposit_period": "Time allowed for deposit collection.",
+            "deposit_params": "Deposit configuration parameters.",
+            "quorum": "Minimum participation required.",
+            "threshold": "Minimum passing threshold.",
+            "veto_threshold": "Minimum veto percentage.",
+            "tally_params": "Tallying rules for proposals."
+        }
+    },
+    "/cosmos/gov/v1beta1/proposals": {
+        "parameters": [
+            {
+                "name": "proposal_status",
+                "required": false,
+                "type": "string",
+                "description": "Filter proposals by status."
+            },
+            {
+                "name": "voter",
+                "required": false,
+                "type": "string",
+                "description": "Address filtering proposals by voter."
+            },
+            {
+                "name": "depositor",
+                "required": false,
+                "type": "string",
+                "description": "Address filtering proposals by deposits."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "proposals": [
+                {
+                    "proposal_id": "text",
+                    "content": {
+                        "type_url": "text",
+                        "value": "Ynl0ZXM="
+                    },
+                    "status": "PROPOSAL_STATUS_UNSPECIFIED",
+                    "final_tally_result": {
+                        "true": "text",
+                        "abstain": "text",
+                        "false": "text",
+                        "no_with_veto": "text"
+                    },
+                    "submit_time": "2025-11-16T12:37:10.832Z",
+                    "deposit_end_time": "2025-11-16T12:37:10.832Z",
+                    "total_deposit": [
+                        {
+                            "denom": "text",
+                            "amount": "text"
+                        }
+                    ],
+                    "voting_start_time": "2025-11-16T12:37:10.832Z",
+                    "voting_end_time": "2025-11-16T12:37:10.832Z"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "content": "Proposal content message.",
+            "status": "Validator status. Values: BONDED, UNBONDING, UNBONDED.",
+            "final_tally_result": "Final tally result summary.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/gov/v1beta1/proposals/{proposal_id}": {
+        "parameters": [
+            {
+                "name": "proposal_id",
+                "required": true,
+                "type": "string",
+                "description": "Unique identifier of a proposal."
+            }
+        ],
+        "responses": {
+            "proposal": {
+                "proposal_id": "text",
+                "content": {
+                    "type_url": "text",
+                    "value": "Ynl0ZXM="
+                },
+                "status": "PROPOSAL_STATUS_UNSPECIFIED",
+                "final_tally_result": {
+                    "true": "text",
+                    "abstain": "text",
+                    "false": "text",
+                    "no_with_veto": "text"
+                },
+                "submit_time": "2025-11-16T12:37:10.832Z",
+                "deposit_end_time": "2025-11-16T12:37:10.832Z",
+                "total_deposit": [
+                    {
+                        "denom": "text",
+                        "amount": "text"
+                    }
+                ],
+                "voting_start_time": "2025-11-16T12:37:10.832Z",
+                "voting_end_time": "2025-11-16T12:37:10.832Z"
+            }
+        },
+        "descriptions": {
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "content": "Proposal content message.",
+            "status": "Validator status. Values: BONDED, UNBONDING, UNBONDED.",
+            "final_tally_result": "Final tally result summary.",
+            "proposal": "Governance proposal record."
+        }
+    },
+    "/cosmos/gov/v1beta1/proposals/{proposal_id}/deposits": {
+        "parameters": [
+            {
+                "name": "proposal_id",
+                "required": true,
+                "type": "string",
+                "description": "Unique identifier of a proposal."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "deposits": [
+                {
+                    "proposal_id": "text",
+                    "depositor": "text",
+                    "amount": [
+                        {
+                            "denom": "text",
+                            "amount": "text"
+                        }
+                    ]
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/gov/v1beta1/proposals/{proposal_id}/deposits/{depositor}": {
+        "parameters": [
+            {
+                "name": "proposal_id",
+                "required": true,
+                "type": "string",
+                "description": "Unique identifier of a proposal."
+            },
+            {
+                "name": "depositor",
+                "required": true,
+                "type": "string",
+                "description": "Address filtering proposals by deposits."
+            }
+        ],
+        "responses": {
+            "deposit": {
+                "proposal_id": "text",
+                "depositor": "text",
+                "amount": [
+                    {
+                        "denom": "text",
+                        "amount": "text"
+                    }
+                ]
+            }
+        },
+        "descriptions": {
+            "deposit": "Deposit associated with a proposal."
+        }
+    },
+    "/cosmos/gov/v1beta1/proposals/{proposal_id}/tally": {
+        "parameters": [
+            {
+                "name": "proposal_id",
+                "required": true,
+                "type": "string",
+                "description": "Unique identifier of a proposal."
+            }
+        ],
+        "responses": {
+            "tally": {
+                "true": "text",
+                "abstain": "text",
+                "false": "text",
+                "no_with_veto": "text"
+            }
+        },
+        "descriptions": {
+            "tally": "Proposal tally result."
+        }
+    },
+    "/cosmos/gov/v1beta1/proposals/{proposal_id}/votes": {
+        "parameters": [
+            {
+                "name": "proposal_id",
+                "required": true,
+                "type": "string",
+                "description": "Unique identifier of a proposal."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "votes": [
+                {
+                    "proposal_id": "text",
+                    "voter": "text",
+                    "option": "VOTE_OPTION_UNSPECIFIED",
+                    "options": [
+                        {
+                            "option": "VOTE_OPTION_UNSPECIFIED",
+                            "weight": "text"
+                        }
+                    ]
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "option": "Vote option. Values: YES, NO, NO_WITH_VETO, ABSTAIN, UNSPECIFIED.",
+            "votes": "List of proposal votes.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/gov/v1beta1/proposals/{proposal_id}/votes/{voter}": {
+        "parameters": [
+            {
+                "name": "proposal_id",
+                "required": true,
+                "type": "string",
+                "description": "Unique identifier of a proposal."
+            },
+            {
+                "name": "voter",
+                "required": true,
+                "type": "string",
+                "description": "Address filtering proposals by voter."
+            }
+        ],
+        "responses": {
+            "vote": {
+                "proposal_id": "text",
+                "voter": "text",
+                "option": "VOTE_OPTION_UNSPECIFIED",
+                "options": [
+                    {
+                        "option": "VOTE_OPTION_UNSPECIFIED",
+                        "weight": "text"
+                    }
+                ]
+            }
+        },
+        "descriptions": {
+            "option": "Vote option. Values: YES, NO, NO_WITH_VETO, ABSTAIN, UNSPECIFIED.",
+            "vote": "Individual governance vote."
+        }
+    },
+    "/inter-tx/interchain_account/owner/{owner}/connection/{connection_id}": {
+        "parameters": [
+            {
+                "name": "owner",
+                "required": true,
+                "type": "string"
+            },
+            {
+                "name": "connection_id",
+                "required": true,
+                "type": "string"
+            }
+        ],
+        "responses": {
+            "interchain_account_address": "text"
+        },
+        "descriptions": {}
+    },
+    "/cosmos/distribution/v1beta1/community_pool": {
+        "parameters": [],
+        "responses": {
+            "pool": [
+                {
+                    "denom": "text",
+                    "amount": "text"
+                }
+            ]
+        },
+        "descriptions": {
+            "pool": "Staking pool or community pool balances."
+        }
+    },
+    "/cosmos/distribution/v1beta1/delegators/{delegator_address}/rewards": {
+        "parameters": [
+            {
+                "name": "delegator_address",
+                "required": true,
+                "type": "string",
+                "description": "Delegator address for staking queries."
+            }
+        ],
+        "responses": {
+            "rewards": [
+                {
+                    "validator_address": "text",
+                    "reward": [
+                        {
+                            "denom": "text",
+                            "amount": "text"
+                        }
+                    ]
+                }
+            ],
+            "total": [
+                {
+                    "denom": "text",
+                    "amount": "text"
+                }
+            ]
+        },
+        "descriptions": {
+            "rewards": "Pending validator or delegation rewards.",
+            "total": "Total accumulated amount."
+        }
+    },
+    "/cosmos/distribution/v1beta1/delegators/{delegator_address}/rewards/{validator_address}": {
+        "parameters": [
+            {
+                "name": "delegator_address",
+                "required": true,
+                "type": "string",
+                "description": "Delegator address for staking queries."
+            },
+            {
+                "name": "validator_address",
+                "required": true,
+                "type": "string",
+                "description": "Validator address for staking queries."
+            }
+        ],
+        "responses": {
+            "rewards": [
+                {
+                    "denom": "text",
+                    "amount": "text"
+                }
+            ]
+        },
+        "descriptions": {
+            "rewards": "Pending validator or delegation rewards."
+        }
+    },
+    "/cosmos/distribution/v1beta1/delegators/{delegator_address}/validators": {
+        "parameters": [
+            {
+                "name": "delegator_address",
+                "required": true,
+                "type": "string",
+                "description": "Delegator address for staking queries."
+            }
+        ],
+        "responses": {
+            "validators": [
+                "text"
+            ]
+        },
+        "descriptions": {
+            "validators": "List of validator entries."
+        }
+    },
+    "/cosmos/distribution/v1beta1/delegators/{delegator_address}/withdraw_address": {
+        "parameters": [
+            {
+                "name": "delegator_address",
+                "required": true,
+                "type": "string",
+                "description": "Delegator address for staking queries."
+            }
+        ],
+        "responses": {
+            "withdraw_address": "text"
+        },
+        "descriptions": {
+            "withdraw_address": "Delegator withdrawal address."
+        }
+    },
+    "/cosmos/distribution/v1beta1/params": {
+        "parameters": [],
+        "responses": {
+            "params": {
+                "community_tax": "text",
+                "base_proposer_reward": "text",
+                "bonus_proposer_reward": "text",
+                "withdraw_addr_enabled": true
+            }
+        },
+        "descriptions": {
+            "params": "Module-specific configuration parameters."
+        }
+    },
+    "/cosmos/distribution/v1beta1/validators/{validator_address}/commission": {
+        "parameters": [
+            {
+                "name": "validator_address",
+                "required": true,
+                "type": "string",
+                "description": "Validator address for staking queries."
+            }
+        ],
+        "responses": {
+            "commission": {
+                "commission": [
+                    {
+                        "denom": "text",
+                        "amount": "text"
+                    }
+                ]
+            }
+        },
+        "descriptions": {
+            "commission": "Validator commission configuration."
+        }
+    },
+    "/cosmos/distribution/v1beta1/validators/{validator_address}/outstanding_rewards": {
+        "parameters": [
+            {
+                "name": "validator_address",
+                "required": true,
+                "type": "string",
+                "description": "Validator address for staking queries."
+            }
+        ],
+        "responses": {
+            "rewards": {
+                "rewards": [
+                    {
+                        "denom": "text",
+                        "amount": "text"
+                    }
+                ]
+            }
+        },
+        "descriptions": {
+            "rewards": "Pending validator or delegation rewards."
+        }
+    },
+    "/cosmos/distribution/v1beta1/validators/{validator_address}/slashes": {
+        "parameters": [
+            {
+                "name": "validator_address",
+                "required": true,
+                "type": "string",
+                "description": "Validator address for staking queries."
+            },
+            {
+                "name": "starting_height",
+                "required": false,
+                "type": "string",
+                "description": "Start height for slash query."
+            },
+            {
+                "name": "ending_height",
+                "required": false,
+                "type": "string",
+                "description": "End height for slash query."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "slashes": [
+                {
+                    "validator_period": "text",
+                    "fraction": "text"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "slashes": "Validator slash history.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/slashing/v1beta1/params": {
+        "parameters": [],
+        "responses": {
+            "params": {
+                "signed_blocks_window": "text",
+                "min_signed_per_window": "Ynl0ZXM=",
+                "downtime_jail_duration": "text",
+                "slash_fraction_double_sign": "Ynl0ZXM=",
+                "slash_fraction_downtime": "Ynl0ZXM="
+            }
+        },
+        "descriptions": {
+            "params": "Module-specific configuration parameters."
+        }
+    },
+    "/cosmos/slashing/v1beta1/signing_infos": {
+        "parameters": [
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "info": [
+                {
+                    "address": "text",
+                    "start_height": "text",
+                    "index_offset": "text",
+                    "jailed_until": "2025-11-16T12:37:10.832Z",
+                    "tombstoned": true,
+                    "missed_blocks_counter": "text"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "index_offset": "Counter for missed block tracking.",
+            "jailed_until": "Time until validator is unjailed.",
+            "tombstoned": "Whether validator is permanently removed.",
+            "missed_blocks_counter": "Number of missed blocks.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/slashing/v1beta1/signing_infos/{cons_address}": {
+        "parameters": [
+            {
+                "name": "cons_address",
+                "required": true,
+                "type": "string",
+                "description": "Consensus address for signing info."
+            }
+        ],
+        "responses": {
+            "val_signing_info": {
+                "address": "text",
+                "start_height": "text",
+                "index_offset": "text",
+                "jailed_until": "2025-11-16T12:37:10.832Z",
+                "tombstoned": true,
+                "missed_blocks_counter": "text"
+            }
+        },
+        "descriptions": {
+            "index_offset": "Counter for missed block tracking.",
+            "jailed_until": "Time until validator is unjailed.",
+            "tombstoned": "Whether validator is permanently removed.",
+            "missed_blocks_counter": "Number of missed blocks.",
+            "val_signing_info": "Validator signing history and penalty tracking."
+        }
+    },
+    "/osmosis/tokenfactory/v1beta1/denoms/{denom}/authority_metadata": {
+        "parameters": [
+            {
+                "name": "denom",
+                "required": true,
+                "type": "string"
+            }
+        ],
+        "responses": {
+            "authority_metadata": {
+                "admin": "text"
+            }
+        },
+        "descriptions": {
+            "authority_metadata": "Metadata for token factory authorities."
+        }
+    },
+    "/osmosis/tokenfactory/v1beta1/denoms_from_creator/{creator}": {
+        "parameters": [
+            {
+                "name": "creator",
+                "required": true,
+                "type": "string"
+            }
+        ],
+        "responses": {
+            "denoms": [
+                "text"
+            ]
+        },
+        "descriptions": {}
+    },
+    "/osmosis/tokenfactory/v1beta1/params": {
+        "parameters": [],
+        "responses": {
+            "params": {
+                "denom_creation_fee": [
+                    {
+                        "denom": "text",
+                        "amount": "text"
+                    }
+                ]
+            }
+        },
+        "descriptions": {
+            "params": "Module-specific configuration parameters."
+        }
+    },
+    "/cosmos/authz/v1beta1/grants": {
+        "parameters": [
+            {
+                "name": "granter",
+                "required": false,
+                "type": "string"
+            },
+            {
+                "name": "grantee",
+                "required": false,
+                "type": "string"
+            },
+            {
+                "name": "msg_type_url",
+                "required": false,
+                "type": "string",
+                "description": "Optional filter for grants by message type."
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "grants": [
+                {
+                    "authorization": {
+                        "type_url": "text",
+                        "value": "Ynl0ZXM="
+                    },
+                    "expiration": "2025-11-16T12:37:10.832Z"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "authorization": "Granted authorization message.",
+            "grants": "List of authorizations linked to a grantee.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/authz/v1beta1/grants/grantee/{grantee}": {
+        "parameters": [
+            {
+                "name": "grantee",
+                "required": true,
+                "type": "string"
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "grants": [
+                {
+                    "granter": "text",
+                    "grantee": "text",
+                    "authorization": {
+                        "type_url": "text",
+                        "value": "Ynl0ZXM="
+                    },
+                    "expiration": "2025-11-16T12:37:10.832Z"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "authorization": "Granted authorization message.",
+            "grants": "List of authorizations linked to a grantee.",
+            "pagination": "Pagination metadata included in response."
+        }
+    },
+    "/cosmos/authz/v1beta1/grants/granter/{granter}": {
+        "parameters": [
+            {
+                "name": "granter",
+                "required": true,
+                "type": "string"
+            },
+            {
+                "name": "pagination.key",
+                "required": false,
+                "type": "string",
+                "description": "Key used to continue pagination."
+            },
+            {
+                "name": "pagination.offset",
+                "required": false,
+                "type": "string",
+                "description": "Numeric offset when key is not provided."
+            },
+            {
+                "name": "pagination.limit",
+                "required": false,
+                "type": "string",
+                "description": "Maximum number of returned results."
+            },
+            {
+                "name": "pagination.count_total",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to include total count metadata."
+            },
+            {
+                "name": "pagination.reverse",
+                "required": false,
+                "type": "boolean",
+                "description": "Whether to return results in reverse order."
+            }
+        ],
+        "responses": {
+            "grants": [
+                {
+                    "granter": "text",
+                    "grantee": "text",
+                    "authorization": {
+                        "type_url": "text",
+                        "value": "Ynl0ZXM="
+                    },
+                    "expiration": "2025-11-16T12:37:10.832Z"
+                }
+            ],
+            "pagination": {
+                "next_key": "Ynl0ZXM=",
+                "total": "text"
+            }
+        },
+        "descriptions": {
+            "type_url": "URL that identifies the protobuf message type.",
+            "value": "Serialized protobuf value matching the type_url.",
+            "authorization": "Granted authorization message.",
+            "grants": "List of authorizations linked to a grantee.",
+            "pagination": "Pagination metadata included in response."
+        }
+    }
+}
