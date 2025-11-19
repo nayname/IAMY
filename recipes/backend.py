@@ -1,3997 +1,2715 @@
-import random
-import time
-import requests
-from typing import Dict, Any, List, Tuple, Optional, Union
-import os
-from cosmpy.aerial.tx import Transaction
-from cosmpy.aerial.client import NetworkConfig
-from cosmpy.aerial.client import LedgerClient
-from cosmpy.aerial.wallet import LocalWallet, PrivateKey, Address
-import json
+# Minimal Backend.py containing only the functions called in the intents implementation
+
 import subprocess
-import base64
-from datetime import datetime
-import asyncio
-from decimal import Decimal, getcontext
-import re
-import shutil
-import sys
+from typing import Dict, Any, List, Tuple, Optional, Union
 from pathlib import Path
-import threading
-import httpx
-import toml
-import logging
-import uuid
-import tempfile
-import stat
-import glob
-import webbrowser
-import signal
-import psutil
-# import solcx
-import grpc
-from enum import Enum
-
-from cosmpy.protos.cosmos.base.v1beta1.coin_pb2 import Coin
-from cosmpy.protos.cosmos.gov.v1beta1.tx_pb2 import MsgVote
-from cosmpy.protos.cosmos.tx.signing.v1beta1.signing_pb2 import SignMode
-from cosmpy.protos.cosmos.tx.v1beta1.tx_pb2 import TxRaw, TxBody, ModeInfo, SignerInfo, Fee, AuthInfo
-from fastapi import FastAPI, HTTPException, APIRouter, Query, Body, UploadFile, File, Depends, Request
-from pydantic import BaseModel, Field, validator
-from web3 import Web3, exceptions
-from cosmpy.protos.cosmos.bank.v1beta1 import tx_pb2 as bank_tx
-from cosmpy.protos.cosmos.crypto.secp256k1.keys_pb2 import PubKey as Secp256k1PubKey
-from google.protobuf.any_pb2 import Any as ProtoAny
-from google.protobuf.message import DecodeError
-from cosmpy.crypto.keypairs import PrivateKey
-from cosmpy.aerial.exceptions import QueryError
-# from cosmpy.aerial.contract import CosmWasmContract, MsgExecuteContract, SmartContract
-from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgStoreCode, MsgInstantiateContract, MsgUpdateAdmin, \
-    MsgExecuteContract
-# from cosmpy.aerial.protoutil import create_msg_execute_contract
-from cosmpy.protos.cosmwasm.wasm.v1 import tx_pb2 as wasm_tx, types_pb2 as wasm_types
-# from cosmpy.aerial.tx import SigningCfg, Broadcas
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import WebDriverException, TimeoutException, NoSuchElementException
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
+from decimal import Decimal, ROUND_UP, InvalidOperation
+import base64
+import re
+import requests
+import json
+import os
 import hashlib
-from google.protobuf.json_format import MessageToDict
-from eth_account.messages import encode_defunct
-from bech32 import bech32_decode
-from flask import Flask, request, jsonify
-# from web3.middleware import geth_poa_middleware
-from bit import PrivateKey
-from google.protobuf.any_pb2 import Any
-from cosmos.base.v1beta1 import coin_pb2 as cointypes
-from cosmos.gov.v1beta1 import gov_pb2 as govtypes
-from cosmos.gov.v1beta1.tx_pb2 import MsgSubmitProposal
-from eth_utils import keccak, to_checksum_address
-from cosmpy.protos.ibc.applications.transfer.v1.tx_pb2 import MsgTransfer
-from cosmpy.protos.ibc.core.client.v1.client_pb2 import Height
-
-# from recipes.backend_btc import Create2Request
-
-# from cosmpy.aerial.client.utils import prepare_and_broadcast
-# from cosmpy.aerial.provision import faucet
-# from cosmpy.protos.cosmos.staking.v1beta1.tx_pb2 import MsgDelegate
-# from cosmpy.client.lcd.api.tx import CreateTxOptions
-# from cosmpy.aerial.client.lcd import LCDClient
-
-cfg = NetworkConfig(
-    chain_id="neutron-1",
-    url="grpc+https://grpc-kralum.neutron-1.neutron.org",
-    fee_minimum_gas_price=0.01,
-    fee_denomination="untrn",
-    staking_denomination="untrn",
-)
-client = LedgerClient(cfg)
-
-NODE_LCD = os.getenv('NEUTRON_LCD', 'https://rest.cosmos.directory/neutron')
-WBTC_CONTRACT = os.getenv('WBTC_CONTRACT', 'neutron1wbtcxxxxxxxxxxxxxxxxxxxxxxx')
-USDC_CONTRACT = os.getenv('USDC_CONTRACT', 'neutron1usdcxxxxxxxxxxxxxxxxxxxxxxx')
-AMBER_CONTRACT_ADDR = os.getenv('AMBER_CONTRACT_ADDR', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-
-MIN_WBTC = 0.2
-WBTC_DECIMALS = 8
-MIN_USDC = 12_000
-USDC_DECIMALS = 6
-
-LCD = "https://neutron-api.polkachu.com"
-
-SUPERVAULT_CONTRACT = os.getenv(
-    'SUPERVAULT_WBTC_USDC',
-    'neutron1supervaultxxxxxxxxxxxxxxxxxxxxxxxxx'
-)
-
-SUPER_VAULT_CONTRACT_ADDRESS = os.getenv("SUPER_VAULT_CONTRACT_ADDRESS", "neutron1vaultxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-WBTC_DENOM = os.getenv("WBTC_DENOM", "ibc/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-USDC_DENOM = os.getenv("USDC_DENOM", "uusdc")
-VESTING_CONTRACT = "neutron1dz57hjkdytdshl2uyde0nqvkwdww0ckx7qfe05raz4df6m3khfyqfnj0nr"
-
-REWARD_PARAMS = {
-    'ntrn_total_allocation': 100_000_000_000,
-    'phase_length_seconds': 60 * 60 * 24 * 14,
-    'per_point_rate': 1_000_000
-}
-
-def _ping(base_url: str, path: str, timeout_s: float = 2.5) -> float:
-    """Return latency in ms if endpoint is reachable, else inf."""
-    url = base_url.rstrip("/") + path
-    t0 = time.time()
-    try:
-        r = requests.get(url, timeout=timeout_s)
-        if r.status_code < 600:
-            return (time.time() - t0) * 1000.0
-    except Exception:
-        pass
-    return float("inf")
-
-
-def select_data_provider(prefer_graphql: bool = True) -> Dict[str, str]:
-    """Choose the fastest available provider and return a descriptor dict."""
-    NETWORK = "neutron-1"
-    print(NETWORK)
-    PROVIDERS: List[Dict[str, str]] = [
-        {
-            "name": "neutron-rest-solara",
-            "base_url": "https://rest-solara.neutron-1.neutron.org",
-            "api_type": "rest",
-            "health": "/cosmos/base/tendermint/v1beta1/node_info",
-            "network": "neutron-1",
-        },
-        {
-            "name": "neutron-rest-vertexa",
-            "base_url": "https://rest-vertexa.neutron-1.neutron.org",
-            "api_type": "rest",
-            "health": "/cosmos/base/tendermint/v1beta1/node_info",
-            "network": "neutron-1",
-        },
-        {
-            "name": "cosmos-directory-rest",
-            "base_url": "https://rest.cosmos.directory/neutron",
-            "api_type": "rest",
-            "health": "/cosmos/base/tendermint/v1beta1/node_info",
-            "network": "neutron-1",
-        },
-        {
-            "name": "pion-rest-palvus",
-            "base_url": "https://rest-palvus.pion-1.neutron.org",
-            "api_type": "rest",
-            "health": "/cosmos/base/tendermint/v1beta1/node_info",
-            "network": "pion-1",
-        },
-        {
-            "name": "pion-rest-nodestake",
-            "base_url": "https://api-t.neutron.nodestake.top",
-            "api_type": "rest",
-            "health": "/cosmos/base/tendermint/v1beta1/node_info",
-            "network": "pion-1",
-        },
-    ]
-
-    candidates = [p for p in PROVIDERS if p["network"] == NETWORK]
-    scored = []
-    for p in candidates:
-        latency = _ping(p["base_url"], p["health"])
-        scored.append((latency, p))
-
-    best_latency, best = min(scored, key=lambda t: t[0])
-    if best_latency == float("inf"):
-        raise RuntimeError("No data provider is reachable at the moment.")
-    return best
-
-
-def build_history_query(
-    provider: Dict[str, str],
-    address: str,
-    limit: int = 50,
-    cursor: Optional[str] = None,
-    offset: int = 0,
-) -> Tuple[str, Union[Dict[str, Any], None]]:
-    """Return (query_or_endpoint, variables_or_params) ready for Step 3."""
-    if provider["api_type"] == "graphql":
-        gql_query = (
-            """
-            query ($address: String!, $limit: Int!, $cursor: String) {
-              messages(
-                where: {sender: {_eq: $address}},
-                order_by: {block: {time: desc}},
-                limit: $limit,
-                %s
-              ) {
-                transaction_hash
-                block { height time }
-                type
-                success
-                fee { amount denom }
-              }
-              pageInfo: messages_aggregate(where: {sender: {_eq: $address}}) {
-                aggregate { count }
-              }
-            }
-            """
-            % ("offset: 0" if cursor is None else "cursor: $cursor")
-        )
-        variables: Dict[str, Any] = {"address": address, "limit": limit}
-        if cursor:
-            variables["cursor"] = cursor
-        return gql_query, variables
-
-    endpoint = f"{provider['base_url']}/cosmos/tx/v1beta1/txs"
-    params: Dict[str, Any] = {
-        "events": f"message.sender='{address}'",
-        "order_by": "ORDER_BY_DESC",
-        "pagination.limit": str(limit),
-        "pagination.offset": str(offset),
-    }
-    return endpoint, params
-
-
-def execute_query_request(
-    provider: Dict[str, str],
-    query_or_url: str,
-    variables_or_params: Optional[Union[Dict[str, Any], None]] = None,
-    timeout: int = 10,
-) -> Tuple[List[Dict[str, Any]], Optional[str]]:
-    """Return (raw_results, next_cursor_or_offset)."""
-    try:
-        if provider["api_type"] == "graphql":
-            resp = requests.post(
-                provider["base_url"],
-                json={"query": query_or_url, "variables": variables_or_params or {}},
-                timeout=timeout,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            if "errors" in data:
-                raise RuntimeError(f"GraphQL error: {data['errors']}")
-            results = data["data"]["messages"]
-            next_cursor = variables_or_params.get("cursor") if variables_or_params else None
-            return results, next_cursor
-        resp = requests.get(query_or_url, params=variables_or_params, timeout=timeout)
-        resp.raise_for_status()
-        data = resp.json()
-        results = data.get("txs", []) or data.get("tx_responses", [])
-        next_key = data.get("pagination", {}).get("next_key")
-        return results, next_key
-    except requests.RequestException as exc:
-        raise RuntimeError(f"Failed to query {provider['name']}: {exc}") from exc
-
-
-def normalize_tx_results(provider: Dict[str, str], raw_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Map each transaction to {hash, blockHeight, action, fee, success}."""
-    normalized: List[Dict[str, Any]] = []
-
-    if provider["api_type"] == "graphql":
-        for item in raw_results:
-            fee_obj = item.get("fee", {}) or {}
-            fee_str = (
-                f"{fee_obj.get('amount', '0')}{fee_obj.get('denom', '')}"
-                if fee_obj else "0"
-            )
-            normalized.append(
-                {
-                    "hash": item.get("transaction_hash"),
-                    "blockHeight": item.get("block", {}).get("height"),
-                    "timestamp": item.get("block", {}).get("time"),
-                    "action": item.get("type"),
-                    "fee": fee_str,
-                    "success": bool(item.get("success")),
-                }
-            )
-    else:
-        for tx in raw_results:
-            hash_ = tx.get("txhash") or tx.get("hash")
-            height = int(tx.get("height", 0))
-            timestamp = tx.get("timestamp")
-            first_msg = (
-                (tx.get("tx", {}) or {}).get("body", {}).get("messages", [])
-            )
-            action = first_msg[0].get("@type", "") if first_msg else ""
-            fee_info = (tx.get("tx", {}) or {}).get("auth_info", {}).get("fee", {})
-            fee_amounts = fee_info.get("amount", [])
-            fee_str = (
-                f"{fee_amounts[0]['amount']}{fee_amounts[0]['denom']}" if fee_amounts else "0"
-            )
-            success = tx.get("code", 0) == 0
-            normalized.append(
-                {
-                    "hash": hash_,
-                    "blockHeight": height,
-                    "timestamp": timestamp,
-                    "action": action,
-                    "fee": fee_str,
-                    "success": success,
-                }
-            )
-    return normalized
-
-
-def compile_wasm_contract(contract_dir: str) -> str:
-    """Compile a CosmWasm contract and return the path to the optimised .wasm file."""
-    try:
-        subprocess.run(['cargo', 'wasm'], cwd=contract_dir, check=True)
-        subprocess.run(['cargo', 'run-script', 'optimize'], cwd=contract_dir, check=True)
-    except subprocess.CalledProcessError as err:
-        raise RuntimeError(f'Contract compilation failed: {err}') from err
-
-    artifacts_dir = os.path.join(contract_dir, 'artifacts')
-    wasm_files = [f for f in os.listdir(artifacts_dir) if f.endswith('.wasm')]
-    if not wasm_files:
-        raise FileNotFoundError('Optimised wasm not found in artifacts directory.')
-    return os.path.join(artifacts_dir, wasm_files[0])
-
-
-def get_local_chain_account(key_name: str = 'cosmopark', faucet_url: str = 'http://localhost:4500/credit') -> dict:
-    """Load or create a key and optionally request faucet funds."""
-    try:
-        key_info_raw = subprocess.check_output([
-            'neutrond', 'keys', 'show', key_name,
-            '--output', 'json', '--keyring-backend', 'test'
-        ])
-    except subprocess.CalledProcessError:
-        subprocess.run([
-            'neutrond', 'keys', 'add', key_name,
-            '--output', 'json', '--keyring-backend', 'test'
-        ], check=True)
-        key_info_raw = subprocess.check_output([
-            'neutrond', 'keys', 'show', key_name,
-            '--output', 'json', '--keyring-backend', 'test'
-        ])
-
-    key_info = json.loads(key_info_raw)
-    address = key_info['address']
-
-    if faucet_url:
-        try:
-            requests.post(faucet_url, json={'address': address, 'denom': 'untrn'})
-        except Exception as faucet_err:
-            print(f'Faucet funding skipped/failed: {faucet_err}')
-
-    return {'name': key_name, 'address': address}
-
-
-def query_contract_state(client: LedgerClient, contract_address: str, query_msg: dict):
-    """Query the contract’s state using a custom query message."""
-    try:
-        return client.wasm_query(contract_address, query_msg)
-    except Exception as err:
-        raise RuntimeError(f'Contract query failed: {err}') from err
-
-
-def query_bank_balance(contract_addr: str, denom: str = 'untrn') -> str:
-    """Query the bank balance for a given contract address via Neutrond CLI."""
-    try:
-        cmd = [
-            'neutrond', 'q', 'bank', 'balances', contract_addr,
-            '--denom', denom,
-            '--output', 'json',
-        ]
-        completed = subprocess.run(
-            cmd,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        return completed.stdout
-    except FileNotFoundError:
-        raise RuntimeError('The neutrond binary is not in PATH. Please install the Neutrond CLI.')
-    except subprocess.CalledProcessError as err:
-        raise RuntimeError(f'Failed to query balance: {err.stderr or err}')
-
-
-def parse_balance_response(micro_amount: str, denom: str = 'untrn') -> Dict[str, str]:
-    """Extracts the balance for the specified denom and formats it for display."""
-    try:
-        # data = json.loads(raw_json)
-        # balances = data.get('balances', [])
-        # micro_amount = 0
-        # for coin in balances:
-        #     if coin.get('denom') == denom:
-        #         micro_amount = int(coin.get('amount', '0'))
-        #         break
-        print(Decimal(micro_amount), Decimal(1_000_000))
-        human_amount = Decimal(micro_amount) / Decimal(1_000_000)
-        return {
-            'denom': denom,
-            'micro_amount': str(micro_amount),
-            'amount': f'{human_amount} NTRN'
-        }
-    except (json.JSONDecodeError, ValueError) as err:
-        raise ValueError('Invalid JSON supplied to parser: ' + str(err))
-
-
-def ensure_cosmopark_installed() -> None:
-    """Ensure that CosmoPark CLI and its Docker images are available."""
-    if shutil.which("cosmopark") is None:
-        print("CosmoPark CLI not found. Attempting installation via pip…")
-        try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "cosmopark-cli"])
-        except subprocess.CalledProcessError as err:
-            raise RuntimeError("Automatic installation of CosmoPark CLI failed.") from err
-    else:
-        print("CosmoPark CLI detected ✅")
-
-    if shutil.which("docker") is None:
-        raise RuntimeError("Docker is required but not installed or not in PATH.")
-
-    try:
-        subprocess.check_call(["cosmopark", "pull", "--all"])
-        print("CosmoPark Docker images pulled ✅")
-    except subprocess.CalledProcessError as err:
-        raise RuntimeError("Failed to pull CosmoPark Docker images.") from err
-
-
-def run_cosmopark_init(workspace_path: str = "./localnet") -> None:
-    """Run `cosmopark init` inside the chosen workspace directory."""
-    workspace = Path(workspace_path).expanduser().resolve()
-    workspace.mkdir(parents=True, exist_ok=True)
-
-    cmd = ["cosmopark", "init"]
-    try:
-        subprocess.check_call(cmd, cwd=str(workspace))
-        print(f"Workspace initialised at {workspace} ✅")
-    except subprocess.CalledProcessError as err:
-        raise RuntimeError("`cosmopark init` failed.") from err
-
-
-def run_cosmopark_start(workspace_path: str = "./localnet") -> None:
-    """Run `cosmopark start` inside the workspace to spin up the chain."""
-    cmd = ["cosmopark", "start"]
-    try:
-        subprocess.check_call(cmd, cwd=workspace_path)
-    except subprocess.CalledProcessError as err:
-        raise RuntimeError("`cosmopark start` failed.") from err
-
-
-def verify_local_chain_running(rpc_url: str = "http://localhost:26657/status", timeout: int = 60) -> int:
-    """Wait until the RPC endpoint returns a status with a block height or raise on timeout."""
-    start = time.time()
-    while True:
-        try:
-            resp = requests.get(rpc_url, timeout=3)
-            if resp.status_code == 200:
-                data = resp.json()
-                height = int(data["result"]["sync_info"]["latest_block_height"])
-                print(f"Local chain is up ✅  (latest height={height})")
-                return height
-        except Exception:
-            pass
-
-        if time.time() - start > timeout:
-            raise RuntimeError(f"Local chain did not start within {timeout} seconds.")
-
-        print("⏳ Waiting for local chain…")
-        time.sleep(3)
-
-
-def format_amount(raw_balance: int) -> str:
-    """Convert micro-denom (`untrn`) to a formatted NTRN string."""
-    try:
-        micro = int(raw_balance)
-    except (TypeError, ValueError):
-        raise ValueError("raw_balance must be an integer-compatible value")
-
-    ntrn_value = micro / 1_000_000
-    return f"{ntrn_value:,.6f} NTRN"
-
-
-def get_admin_wallet() -> LocalWallet:
-    """Return the admin LocalWallet defined by the ADMIN_MNEMONIC env-var."""
-    mnemonic = os.getenv("ADMIN_MNEMONIC")
-    if not mnemonic:
-        raise EnvironmentError("ADMIN_MNEMONIC environment variable is not set.")
-
-    try:
-        wallet = LocalWallet.from_mnemonic(mnemonic)
-    except Exception as err:
-        raise ValueError(f"Failed to create wallet from mnemonic: {err}") from err
-
-    return wallet
-
-
-_BECH32_RE = re.compile(r"^neutron1[02-9ac-hj-np-z]{38}$")
-
-def get_contract_address() -> str:
-    """Return the contract address defined by CONTRACT_ADDRESS env-var."""
-    contract_addr = os.getenv("CONTRACT_ADDRESS") or ""
-    if not _BECH32_RE.match(contract_addr):
-        raise ValueError("CONTRACT_ADDRESS env-var is missing or not a valid Neutron bech32 address.")
-    return contract_addr
-
-
-def get_neutron_client() -> LedgerClient:
-    """Initialises a LedgerClient pointed at Pion-1."""
-    rpc_url = os.getenv("PION_RPC", "https://rpc.pion-1.ntrn.tech:443")
-
-    if not rpc_url:
-        raise EnvironmentError("RPC endpoint for Pion-1 is not set.")
-
-    cfg = NetworkConfig(
-        chain_id="pion-1",
-        url=rpc_url,
-        fee_minimum_gas_price=0.025,
-        fee_denomination="untrn",
-        staking_denomination="untrn",
-        bech32_hrp="neutron"
-    )
-
-    return LedgerClient(cfg)
-
-
-_SIGNING_KEY: PrivateKey = None
-
-def load_signing_key() -> PrivateKey:
-    """Loads (or creates) a PrivateKey from a MNEMONIC env-var."""
-    global _SIGNING_KEY
-    if _SIGNING_KEY is None:
-        mnemonic = os.getenv("NEUTRON_MNEMONIC")
-        if not mnemonic:
-            raise EnvironmentError("Please export NEUTRON_MNEMONIC before running.")
-        _SIGNING_KEY = PrivateKey.from_mnemonic(mnemonic)
-    return _SIGNING_KEY
-
-
-def get_code_id(client: LedgerClient, uploader: str, explicit_code_id: Optional[int] = None) -> int:
-    """Determine the code_id to instantiate."""
-    if explicit_code_id is None:
-        env_code_id = os.getenv("CODE_ID")
-        explicit_code_id = int(env_code_id) if env_code_id else None
-
-    if explicit_code_id is not None:
-        return explicit_code_id
-
-    response = client.query("/cosmwasm/wasm/v1/code")
-    codes = json.loads(response)["code_infos"]
-
-    user_codes = [int(c["code_id"]) for c in codes if c.get("creator") == uploader]
-    if not user_codes:
-        raise ValueError("No code_id found for uploader – pass CODE_ID env-var or argument.")
-    return max(user_codes)
-
-
-RPC_ENDPOINT = 'https://rpc-kralum.neutron.org:443'
-CHAIN_ID = 'neutron-1'
-FEE_DENOM = 'untrn'
-DEFAULT_GAS_LIMIT = 200_000
-
-def construct_update_admin_tx(
-    sender_address: str,
-    contract_address: str,
-    new_admin_address: str,
-) -> Tuple[Transaction, LedgerClient]:
-    """Create an unsigned Transaction containing a MsgUpdateAdmin message."""
-    network_cfg = NetworkConfig(
-        chain_id=CHAIN_ID,
-        url=RPC_ENDPOINT,
-    )
-    client = LedgerClient(network_cfg)
-    msg = MsgUpdateAdmin(
-        sender=sender_address,
-        contract=contract_address,
-        new_admin=new_admin_address,
-    )
-    any_msg = ProtoAny()
-    any_msg.Pack(msg, type_url_prefix='')
-    tx = Transaction()
-    tx.add_message(any_msg)
-    tx.set_fee(FEE_DENOM, amount=5000, gas_limit=DEFAULT_GAS_LIMIT)
-    return tx, client
-
-
-REST_ENDPOINT = "https://rest-kralum.neutron.org"
-
-class ContractQueryError(Exception):
-    """Custom error to clearly signal query failures."""
+import math
+import asyncio
+from dataclasses import dataclass, field
+from urllib.parse import quote
+from collections.abc import MutableMapping, MutableSequence
+
+# External libraries imports for type hints and functionality
+try:
+    from bech32 import bech32_encode, convertbits, bech32_decode
+except ImportError:
+    pass
+try:
+    from ecdsa import SECP256k1, SigningKey, util as ecdsa_util
+except ImportError:
+    pass
+try:
+    from Crypto.Hash import RIPEMD160
+except ImportError:
+    pass
+try:
+    from bip_utils import Bip39MnemonicGenerator, Bip39WordsNum, Bip39SeedGenerator, Bip32Slip10Secp256k1
+except ImportError:
+    pass
+try:
+    from tomlkit import parse, table, array, dumps
+except ImportError:
+    pass
+try:
+    import httpx
+except ImportError:
+    pass
+try:
+    from cosmpy.protos.cosmos.auth.v1beta1.auth_pb2 import BaseAccount as BaseAccountProto
+except ImportError:
+    pass
+try:
+    from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgStoreCode as MsgStoreCodeProto
+except ImportError:
+    pass
+try:
+    from cosmpy.protos.cosmos.tx.v1beta1.tx_pb2 import TxBody as TxBodyProto, AuthInfo as AuthInfoProto, Tx as TxProto, Fee as FeeProto
+except ImportError:
+    pass
+try:
+    from cosmpy.protos.cosmos.base.v1beta1.coin_pb2 import Coin as CoinProto
+except ImportError:
+    pass
+try:
+    from cosmpy.protos.cosmos.crypto.secp256k1.keys_pb2 import PubKey as Secp256k1PubKeyProto
+except ImportError:
+    pass
+try:
+    from cosmpy.protos.cosmos.tx.signing.v1beta1.signing_pb2 import SignMode as SignModeProto, SignDoc as SignDocProto, SignerInfo as SignerInfoProto
+except ImportError:
+    pass
+try:
+    from cosmpy.aerial.wallet import LocalWallet
+    from cosmpy.aerial.client import LedgerClient, NetworkConfig
+    from cosmpy.crypto.keypairs import PrivateKey
+except ImportError:
+    pass
+try:
+    from google.protobuf.any_pb2 import Any as AnyProto
+except ImportError:
+    pass
+try:
+    import tomllib  # Python 3.11+
+except ModuleNotFoundError:
+    import tomli as tomllib # type: ignore
+try:
+    from cosmospy_protobuf.cosmos.bank.v1beta1.tx_pb2 import MsgSend as MsgSendProto
+    from cosmospy_protobuf.cosmos.base.v1beta1.coin_pb2 import Coin as CoinMsgProto
+    from cosmospy_protobuf.cosmos.tx.v1beta1.tx_pb2 import TxBody as TxBodyMsgProto, AuthInfo as AuthInfoMsgProto, Tx as TxMsgProto, Fee as FeeMsgProto
+    from cosmospy_protobuf.cosmos.auth.v1beta1.auth_pb2 import BaseAccount as BaseAccountMsgProto
+    from cosmospy_protobuf.cosmos.tx.v1beta1.tx_pb2 import Tx as TxMsgProto
+    from cosmospy_protobuf.cosmos.tx.signing.v1beta1.signing_pb2 import SignerInfo as SignerInfoMsgProto, SignMode as SignModeMsgProto
+    from cosmospy_protobuf.cosmos.crypto.secp256k1.keys_pb2 import PubKey as Secp256k1PubKeyMsgProto
+    from cosmospy_protobuf.cosmos.tx.v1beta1.tx_pb2 import SignDoc as SignDocMsgProto
+    from cosmospy_protobuf.cosmwasm.wasm.v1.tx_pb2 import MsgExecuteContract as MsgExecuteContractProto
+    from cosmospy_protobuf.cosmos.base.v1beta1.coin_pb2 import Coin as CosmosCoinProto
+    from cosmos_sdk_proto.cosmos.tx.v1beta1.tx_pb2 import TxRaw as TxRawProto
+except ImportError:
+    pass
+try:
+    # Requires the 'cryptography' package
+    from cryptography.fernet import Fernet
+except ImportError:
     pass
 
-
-def query_contract_info(contract_address: str, lcd: str = REST_ENDPOINT) -> Dict:
-    """Request contract metadata from the LCD endpoint."""
-    url = f"{lcd}/cosmwasm/wasm/v1/contract/{contract_address}"
-    try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        data = response.json()
-        return data.get("contract_info", {})
-    except requests.RequestException as exc:
-        raise ContractQueryError(f"LCD request failed: {exc}") from exc
-    except ValueError:
-        raise ContractQueryError("LCD returned malformed JSON")
-
-
-class CodeInfoQueryError(Exception):
-    pass
-
-
-def query_code_info(code_id: str, lcd: str = REST_ENDPOINT) -> Dict:
-    """Retrieve code-info (including `code_hash`) from the LCD."""
-    url = f"{lcd}/cosmwasm/wasm/v1/code/{code_id}"
-    try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        return response.json().get("code_info", {})
-    except requests.RequestException as exc:
-        raise CodeInfoQueryError(f"LCD request failed: {exc}") from exc
-    except ValueError:
-        raise CodeInfoQueryError("Malformed JSON in LCD response")
-
-
-class CodeHashExtractionError(Exception):
-    pass
-
-
-def extract_code_hash(code_info: Dict) -> str:
-    """Safely extract the `code_hash` value."""
-    try:
-        code_hash = code_info["data_hash"] or code_info["code_hash"]
-        if not code_hash:
-            raise KeyError
-        return code_hash
-    except KeyError:
-        raise CodeHashExtractionError("`code_hash` not present in code-info payload")
-
-
-async def validate_new_code_id(contract_address: str, new_code_id: int, rpc_url: str = "https://rpc-kralum.neutron-1.neutron.org") -> bool:
-    """Validate that `new_code_id` exists and differs from the contract's current code ID."""
-    try:
-        cfg = NetworkConfig(
-            chain_id="neutron-1",
-            url=rpc_url,
-            fee_minimum_gas_price="0.025untrn",
-            fee_denomination="untrn",
-        )
-        client = LedgerClient(cfg)
-        code_info = client.query.wasm.get_code_info(new_code_id)
-        if code_info is None:
-            raise ValueError(f"Code ID {new_code_id} does not exist on-chain.")
-        contract_info = client.query.wasm.get_contract_info(contract_address)
-        if int(contract_info["code_id"]) == new_code_id:
-            raise ValueError("Contract already instantiated with this code ID.")
-        return True
-    except (QueryError, Exception) as err:
-        raise RuntimeError(f"Validation failed: {err}") from err
-
-
-def get_neutron_mainnet_client(mnemonic: str, rpc_url: str = "https://rpc-kralum.neutron-1.neutron.org:443") -> LedgerClient:
-    if not mnemonic:
-        raise ValueError("Mnemonic must not be empty")
-
-    cfg = NetworkConfig(
-        chain_id="neutron-1",
-        url=rpc_url,
-        fee_min_denom="untrn",
-        gas_price=0.025,
-    )
-    wallet = LocalWallet.create_from_mnemonic(mnemonic)
-    return LedgerClient(cfg, wallet)
-
-
-def ensure_wasm_file(path: str) -> str:
-    if not os.path.isfile(path):
-        raise FileNotFoundError(f"WASM file not found at {path}")
-
-    size = os.path.getsize(path)
-    if size > 4 * 1024 * 1024:
-        raise ValueError(f"WASM binary is {size} bytes which exceeds the 4 MiB limit.")
-
-    return os.path.abspath(path)
-
-
-def build_store_code_tx(client: LedgerClient, wasm_path: str, memo: str = "Upload contract") -> Transaction:
-    with open(wasm_path, "rb") as f:
-        wasm_bytes = f.read()
-
-    msg = wasm_tx.MsgStoreCode(
-        sender=client.wallet.address(),
-        wasm_byte_code=wasm_bytes,
-        instantiate_permission=wasm_types.AccessConfig(
-            permission=wasm_types.AccessType.ACCESS_TYPE_EVERYBODY
-        ),
-    )
-    tx = client.tx.create([msg], memo=memo, gas_limit=2_500_000)
-    return tx
-
-
-def build_instantiate_tx(client: LedgerClient, code_id: int, init_msg: dict, label: str, admin: str = None) -> Transaction:
-    msg = wasm_tx.MsgInstantiateContract(
-        sender=client.wallet.address(),
-        admin=admin or client.wallet.address(),
-        code_id=code_id,
-        label=label,
-        msg=json.dumps(init_msg).encode(),
-        funds=[]
-    )
-    tx = client.tx.create([msg], memo=f"Instantiate {label}", gas_limit=1_000_000)
-    return tx
-
-
-def extract_contract_address(response) -> str:
-    try:
-        logs = json.loads(response.raw_log)
-        for event in logs[0]["events"]:
-            if event["type"] == "instantiate":
-                for attr in event["attributes"]:
-                    if attr["key"] in ("_contract_address", "contract_address"):
-                        return attr["value"]
-    except (KeyError, ValueError, json.JSONDecodeError) as err:
-        raise RuntimeError(f"Unable to find contract address: {err}")
-    raise RuntimeError("Contract address not present in tx logs")
-
-
-def connect_rpc_endpoint(rpc_endpoint: str = 'https://rpc-kralum.neutron.org') -> str:
-    """Attempts to connect to the given Neutron RPC endpoint by querying the `/status` route."""
-    try:
-        url = rpc_endpoint.rstrip('/') + '/status'
-        response = requests.get(url, timeout=5)
-        response.raise_for_status()
-        if 'result' not in response.json():
-            raise ValueError('Unexpected response payload from RPC endpoint.')
-        return rpc_endpoint
-    except requests.RequestException as err:
-        raise ConnectionError(f'Unable to reach Neutron RPC endpoint at {rpc_endpoint}: {err}') from err
-
-
-def neutrond_status(rpc_endpoint: str) -> Dict:
-    """Executes `neutrond status --node <rpc_endpoint>` and returns parsed JSON."""
-    try:
-        cmd = ['neutrond', 'status', '--node', rpc_endpoint]
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        return json.loads(result.stdout)
-    except subprocess.CalledProcessError as err:
-        raise RuntimeError(f'`neutrond status` failed: {err.stderr}') from err
-    except json.JSONDecodeError as err:
-        raise ValueError('Failed to parse JSON from neutrond output.') from err
-
-
-def extract_block_height(status_json: Dict) -> int:
-    """Extracts the latest block height from the status JSON."""
-    try:
-        height_str = status_json['sync_info']['latest_block_height']
-        return int(height_str)
-    except (KeyError, TypeError, ValueError) as err:
-        raise ValueError('Invalid status JSON format: unable to locate `latest_block_height`.') from err
-
-
-def open_celatone_explorer(chain_id: str, download_dir: str = "/tmp") -> webdriver.Chrome:
-    """Launch Celatone for the given chain and return an initialized Selenium WebDriver."""
-    if chain_id not in ("neutron-1", "pion-1"):
-        raise ValueError("Unsupported chain id. Use 'neutron-1' or 'pion-1'.")
-
-    url = f"https://celatone.osmosis.zone/{chain_id}"
-    chrome_opts = Options()
-    chrome_opts.add_argument("--headless=new")
-    chrome_opts.add_argument("--window-size=1920,1080")
-    chrome_opts.add_experimental_option(
-        "prefs",
-        {
-            "download.default_directory": download_dir,
-            "download.prompt_for_download": False,
-            "download.directory_upgrade": True,
-            "safebrowsing.enabled": True,
-        },
-    )
-    try:
-        driver = webdriver.Chrome(options=chrome_opts)
-        driver.get(url)
-        WebDriverWait(driver, 15).until(EC.presence_of_element_located(("css selector", "input[type='search']")))
-        return driver
-    except WebDriverException as exc:
-        raise RuntimeError(f"Failed to open Celatone explorer: {exc}") from exc
-
-
-def search_contract_address(driver: webdriver.Chrome, contract_address: str, timeout: int = 15) -> None:
-    """Paste the contract address into Celatone's search bar and navigate."""
-    try:
-        search_box = driver.find_element(By.CSS_SELECTOR, "input[type='search']")
-        search_box.clear()
-        search_box.send_keys(contract_address + Keys.ENTER)
-        WebDriverWait(driver, timeout).until(EC.url_contains(contract_address.lower()))
-    except TimeoutException:
-        raise RuntimeError("Celatone did not navigate to the contract page in time.")
-
-
-def navigate_to_metadata_tab(driver: webdriver.Chrome, timeout: int = 10) -> None:
-    """Click Celatone's "Metadata" tab."""
-    try:
-        metadata_tab = WebDriverWait(driver, timeout).until(
-            EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Metadata')] | //a[contains(., 'Metadata')]"))
-        )
-        metadata_tab.click()
-        WebDriverWait(driver, timeout).until(
-            EC.presence_of_element_located((By.XPATH, "//button[contains(@title, 'Download') or contains(@aria-label, 'Download')]"))
-        )
-    except (TimeoutException, NoSuchElementException):
-        raise RuntimeError("Could not open the Metadata tab on Celatone.")
-
-
-def download_metadata_json(driver: webdriver.Chrome, download_dir: str, timeout: int = 30) -> Path:
-    """Click the download button and wait for the metadata JSON file."""
-    pre_existing = set(Path(download_dir).iterdir()) if os.path.isdir(download_dir) else set()
-    try:
-        download_btn = driver.find_element(By.XPATH, "//button[contains(@title, 'Download') or contains(@aria-label, 'Download')]")
-        download_btn.click()
-    except Exception as exc:
-        raise RuntimeError("Failed to click Celatone's download button") from exc
-
-    end_time = time.time() + timeout
-    while time.time() < end_time:
-        current_files = set(Path(download_dir).iterdir())
-        new_files = [f for f in current_files - pre_existing if f.suffix.lower() == ".json"]
-        if new_files:
-            candidate = new_files[0]
-            if not candidate.name.endswith(".crdownload"):
-                return candidate.resolve()
-        time.sleep(0.5)
-
-    raise TimeoutException("Timed out waiting for metadata JSON download to complete.")
-
-
-def query_contracts_by_creator(address: str, node: str = "https://neutron-rpc.polkachu.com:443") -> Dict:
-    """Fetch schedule metadata from the Neutron Cron module via `neutrond` CLI."""
-    try:
-        cmd = ["neutrond", "query", "wasm", "list-contracts-by-creator", address, "--output", "json", "--node", node]
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        return json.loads(result.stdout)
-    except:
-        raise ValueError("Received non-JSON response from neutrond CLI")
-
-
-def validate_wasm_checksum(wasm_path: Path) -> str:
-    """Compute the SHA-256 checksum of the wasm binary."""
-    if not wasm_path.is_file():
-        raise FileNotFoundError(f'File not found: {wasm_path}')
-
-    sha256 = hashlib.sha256()
-    with wasm_path.open('rb') as f:
-        for chunk in iter(lambda: f.read(8192), b''):
-            sha256.update(chunk)
-    return sha256.hexdigest()
-
-
-def sign_and_broadcast_tx(tx: Transaction, wallet: LocalWallet, client: LedgerClient):
-    """Sign and broadcast a transaction."""
-    tx = tx.with_sequence(wallet.get_sequence(client)).with_account_number(wallet.get_account_number(client))
-    signed_tx = tx.sign(wallet)
-    response = client.broadcast_tx(signed_tx)
-    if response.tx_response.code != 0:
-        raise RuntimeError(f'Tx failed with log: {response.tx_response.raw_log}')
-    return response
-
-
-def extract_code_id_from_tx(response) -> int:
-    """Extract the code_id from a store_code transaction response."""
-    raw_log = response.tx_response.raw_log
-    try:
-        parsed_logs = json.loads(raw_log)[0]
-        for event in parsed_logs.get('events', []):
-            if event.get('type') == 'store_code':
-                for attr in event.get('attributes', []):
-                    if attr.get('key') == 'code_id':
-                        return int(attr.get('value'))
-    except (json.JSONDecodeError, KeyError, IndexError):
-        pass
-
-    match = re.search(r'\"code_id\":\s*\"?(\d+)\"?', raw_log)
-    if match:
-        return int(match.group(1))
-
-    raise ValueError('code_id not found in transaction logs')
-
-
-def construct_param_change_proposal(new_security_address: str, deposit: str = "10000000untrn", output_path: str = "proposal.json") -> str:
-    """Generate a Param-Change proposal file for the Cron module's security_address."""
-    proposal = {
-        "title": "Update Cron security_address",
-        "description": f"Updates Cron module security_address param to {new_security_address}.",
-        "changes": [{"subspace": "cron", "key": "SecurityAddress", "value": f"\"{new_security_address}\""}],
-        "deposit": deposit
-    }
-    try:
-        with open(output_path, "w", encoding="utf-8") as fp:
-            json.dump(proposal, fp, indent=2)
-    except IOError as err:
-        raise RuntimeError(f"Could not write proposal file: {err}") from err
-    return output_path
-
-
-def build_dao_proposal(msg_update_params: Dict, title: str, description: str) -> Dict:
-    """Return the message to execute against a cw-dao core contract."""
-    return {
-        "propose": {
-            "title": title,
-            "description": description,
-            "msgs": [{"custom": msg_update_params}],
-        }
-    }
-
-
-def wait_for_voting_result(proposal_id: str, chain_id: str = "neutron-1", node: str = "https://rpc-kralum.neutron.org:443", poll_interval: int = 15, max_attempts: int = 800) -> str:
-    """Polls proposal status until it is finalized or times out."""
-    for _ in range(max_attempts):
-        try:
-            proc = subprocess.run(
-                ["neutrond", "query", "gov", "proposal", str(proposal_id), "--chain-id", chain_id, "--node", node, "--output", "json"],
-                capture_output=True, text=True, check=True
-            )
-            status = json.loads(proc.stdout).get("status")
-            print(f"[poll] proposal {proposal_id} status: {status}")
-            if status == "PROPOSAL_STATUS_PASSED":
-                return status
-            if status in ("PROPOSAL_STATUS_REJECTED", "PROPOSAL_STATUS_FAILED", "PROPOSAL_STATUS_ABORTED"):
-                raise RuntimeError(f"Proposal {proposal_id} ended with status {status}")
-        except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
-            print(f"Polling error: {e}. Retrying...")
-        time.sleep(poll_interval)
-    raise TimeoutError("Exceeded maximum attempts while waiting for proposal to pass.")
-
-
-def query_cron_params(chain_id: str = "neutron-1", node: str = "https://neutron-rpc.polkachu.com:443") -> dict:
-    """Fetches the current Cron module parameters via CLI."""
-    proc = subprocess.run(
-        ["neutrond", "query", "cron", "params", "--chain-id", chain_id, "--node", node, "--output", "json"],
-        capture_output=True, text=True, check=True
-    )
-    return json.loads(proc.stdout).get("params", {})
-
-
-def query_cron_schedule(schedule_name: str, node: str = "https://neutron-rpc.polkachu.com:443") -> Dict:
-    """Fetch schedule metadata from the Neutron Cron module via `neutrond` CLI."""
-    try:
-        cmd = ["neutrond", "query", "cron", "show-schedule", schedule_name, "--output", "json", "--node", node]
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        return json.loads(result.stdout)
-    except subprocess.CalledProcessError as exc:
-        raise RuntimeError(f"Failed to query schedule '{schedule_name}': {exc.stderr.strip()}") from exc
-    except json.JSONDecodeError as exc:
-        raise ValueError("Received non-JSON response from neutrond CLI") from exc
-
-
-def query_all_cron_schedules(limit: int = 1000, node: str = "https://neutron-rpc.polkachu.com:443") -> List[Dict]:
-    """Return every cron schedule on-chain, handling pagination."""
-    schedules: List[Dict] = []
-    next_key: str = ""
-    while True:
-        cmd = ["neutrond", "query", "cron", "list-schedule", "--limit", str(limit), "--output", "json", "--node", node]
-        if next_key:
-            cmd += ["--page-key", next_key]
-        raw = subprocess.check_output(cmd, text=True)
-        data = json.loads(raw)
-        schedules.extend(data.get("schedules", []))
-        next_key = data.get("pagination", {}).get("next_key")
-        if not next_key:
-            break
-    return schedules
-
-
-def build_msg_add_schedule(authority: str, name: str, period: int, msgs: List[Dict], execution_stage: str = "EXECUTION_STAGE_END_BLOCKER") -> Dict:
-    """Return an SDK-compatible MsgAddSchedule dictionary."""
-    return {
-        "@type": "/neutron.cron.MsgAddSchedule",
-        "authority": authority,
-        "name": name,
-        "period": str(period),
-        "msgs": msgs,
-        "execution_stage": execution_stage,
-    }
-
-
-def build_msg_delete_schedule(authority: str, schedule_name: str = "protocol_update") -> dict:
-    """Return an amino/JSON-encoded MsgDeleteSchedule body."""
-    return {
-        "@type": "/neutron.admin.MsgDeleteSchedule",
-        "authority_address": authority,
-        "name": schedule_name
-    }
-
-
-def schedule_removed(name: str) -> bool:
-    """Returns True only if the schedule no longer exists by checking the CLI."""
-    try:
-        subprocess.run(
-            ["neutrond", "query", "cron", "show-schedule", name, "--output=json"],
-            capture_output=True, text=True, check=True,
-        )
-        return False
-    except subprocess.CalledProcessError as err:
-        if "not found" in err.stderr.lower():
-            return True
-        raise
-
-
-def verify_security_address(expected: str, chain_id: str = "neutron-1", node: str = "https://rpc-kralum.neutron.org:443") -> bool:
-    """Validates that the on-chain security_address equals the expected value."""
-    params = query_cron_params(chain_id, node)
-    actual = params.get("security_address")
-    if actual == expected:
-        print("✅ Cron security_address matches expected value.")
-        return True
-    raise ValueError(f"security_address mismatch: expected {expected}, got {actual}")
-
-
-def extract_last_execution_height(schedule_data: dict) -> int:
-    """Return the most recent execution height from schedule JSON."""
-    print(schedule_data['schedule'].keys())
-    for key in ("last_execution_height", "last_execute_height", "last_executed_height"):
-        if (value := schedule_data['schedule'].get(key)) is not None:
-            return int(value)
-    raise KeyError("Could not find last execution height field in schedule data.")
-
-
-def get_sender_address(wallet_alias: str = 'lender'):
-    """Return the Bech32 address for a configured backend wallet."""
-    env_key = f"{wallet_alias.upper()}_ADDRESS"
-    address = os.getenv(env_key)
-    if not address:
-        raise HTTPException(status_code=404, detail=f'Wallet alias {wallet_alias} not configured')
-    return {"wallet": wallet_alias, "address": address}
-
-
-def construct_cw20_approve(spender: str, amount_micro: int) -> dict:
-    """Build the CW20 increase_allowance message."""
-    return {
-        'increase_allowance': {
-            'spender': spender,
-            'amount': str(amount_micro)
-        }
-    }
-
-
-def sign_and_broadcast_approval() -> dict:
-    """Signs and broadcasts the CW20 approve (increase_allowance) transaction."""
-    network = NetworkConfig(
-        chain_id='neutron-1',
-        url=os.getenv('NEUTRON_GRPC', 'grpc://grpc-kralum.neutron-1.neutron.org:443'),
-        fee_minimum_gas_price=0.025,
-        fee_denom='untrn'
-    )
-    client = LedgerClient(network)
-
-    private_key_hex = os.getenv('LENDER_PRIVKEY')
-    if not private_key_hex:
-        raise RuntimeError('Missing LENDER_PRIVKEY environment variable')
-    wallet = PrivateKey(bytes.fromhex(private_key_hex))
-
-    cw20_contract = os.getenv('SOLVBTC_CONTRACT')
-    spender = os.getenv('AMBER_MARKET_CONTRACT')
-    amount_micro = int(os.getenv('APPROVE_AMOUNT', '300000000'))
-
-    msg = MsgExecuteContract(
-        sender=wallet.address(),
-        contract=cw20_contract,
-        msg=json.dumps({'increase_allowance': {'spender': spender, 'amount': str(amount_micro)}}).encode(),
-        funds=[]
-    )
-    tx = (
-        Transaction()
-        .with_messages(msg)
-        .with_chain_id(network.chain_id)
-        .with_gas_estimate(client)
-        .sign(wallet)
-        .broadcast(client, mode='block')
-    )
-    return {'tx_hash': tx.tx_hash}
-
-
-def construct_amber_lend_tx(amount_micro: int) -> dict:
-    """Build the lend (supply) message for Amber Finance market contract."""
-    return {
-        'lend': {
-            'amount': str(amount_micro)
-        }
-    }
-
-
-def sign_and_broadcast_lend() -> dict:
-    """Signs and broadcasts the lend (supply) transaction to Amber Finance."""
-    network = NetworkConfig(
-        chain_id='neutron-1',
-        url=os.getenv('NEUTRON_GRPC', 'grpc://grpc-kralum.neutron-1.neutron.org:443'),
-        fee_minimum_gas_price=0.025,
-        fee_denom='untrn'
-    )
-    client = LedgerClient(network)
-
-    private_key_hex = os.getenv('LENDER_PRIVKEY')
-    if not private_key_hex:
-        raise RuntimeError('Missing LENDER_PRIVKEY environment variable')
-    wallet = PrivateKey(bytes.fromhex(private_key_hex))
-
-    amber_market_contract = os.getenv('AMBER_MARKET_CONTRACT')
-    amount_micro = int(os.getenv('LEND_AMOUNT', '300000000'))
-
-    msg = MsgExecuteContract(
-        sender=wallet.address(),
-        contract=amber_market_contract,
-        msg=json.dumps({'lend': {'amount': str(amount_micro)}}).encode(),
-        funds=[]
-    )
-    tx = (
-        Transaction()
-        .with_messages(msg)
-        .with_chain_id(network.chain_id)
-        .with_gas_estimate(client)
-        .sign(wallet)
-        .broadcast(client, mode='block')
-    )
-    return {'tx_hash': tx.tx_hash}
-
-
-def _b64(query: dict) -> str:
-    """Base64-encode a JSON query for /smart/ LCD endpoints."""
-    return base64.b64encode(json.dumps(query).encode()).decode()
-
-
-async def _cw20_balance(contract: str, addr: str) -> int:
-    url = f"{NODE_LCD}/cosmwasm/wasm/v1/contract/{contract}/smart/{_b64({'balance': {'address': addr}})}"
-    async with httpx.AsyncClient(timeout=10) as client:
-        r = await client.get(url)
-        r.raise_for_status()
-        return int(r.json()['data']['balance'])
-
-
-async def validate_balances(address: str):
-    required_wbtc = int(MIN_WBTC * 10 ** WBTC_DECIMALS)
-    required_usdc = int(MIN_USDC * 10 ** USDC_DECIMALS)
-
-    wbtc_balance = await _cw20_balance(WBTC_CONTRACT, address)
-    usdc_balance = await _cw20_balance(USDC_CONTRACT, address)
-
-    if wbtc_balance < required_wbtc or usdc_balance < required_usdc:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                'wbtc_balance': wbtc_balance,
-                'usdc_balance': usdc_balance,
-                'message': 'Insufficient token balances for deposit.'
-            }
-        )
-    return {
-        'status': 'ok',
-        'wbtc_raw': wbtc_balance,
-        'usdc_raw': usdc_balance
-    }
-
-
-def supervault_address():
-    """Return the current WBTC/USDC Supervault address."""
-    return {'address': SUPERVAULT_CONTRACT}
-
-
-class DepositMsgResponse(BaseModel):
-    msg: dict = Field(..., description='JSON execute message for MsgExecuteContract')
-
-
-def construct_deposit_msg():
-    wbtc_raw = int(Decimal('0.2') * 10 ** WBTC_DECIMALS)
-    usdc_raw = int(Decimal('12000') * 10 ** USDC_DECIMALS)
-    msg = {
-        'deposit': {
-            'assets': [
-                {'info': {'token': {'contract_addr': WBTC_CONTRACT}}, 'amount': str(wbtc_raw)},
-                {'info': {'token': {'contract_addr': USDC_CONTRACT}}, 'amount': str(usdc_raw)}
-            ]
-        }
-    }
-    return {'msg': msg}
-
-
-MNEMONIC = os.getenv('FUNDER_MNEMONIC')
-
-def _build_deposit_msg(sender: str) -> MsgExecuteContract:
-    """Create a MsgExecuteContract for the deposit."""
-    deposit_msg = {
-        'deposit': {
-            'assets': [
-                {'info': {'token': {'contract_addr': WBTC_CONTRACT}}, 'amount': str(int(0.2 * 10 ** 8))},
-                {'info': {'token': {'contract_addr': USDC_CONTRACT}}, 'amount': str(int(12000 * 10 ** 6))}
-            ]
-        }
-    }
-    return MsgExecuteContract(
-        sender=sender,
-        contract=SUPERVAULT_CONTRACT,
-        msg=json.dumps(deposit_msg).encode(),
-        funds=[]
-    )
-
-
-def sign_and_broadcast_tx_new():
-    """Exposes a signing flow on the backend for server-controlled accounts."""
-    if not MNEMONIC:
-        raise HTTPException(status_code=500, detail='FUNDER_MNEMONIC env var not set.')
-
-    key = PrivateKey.from_mnemonic(MNEMONIC)
-    sender_addr = str(key.to_address())
-    network = NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT)
-    ledger = LedgerClient(network)
-    account = ledger.query_account(sender_addr)
-    tx = (
-        Transaction()
-        .with_chain_id(CHAIN_ID)
-        .with_account_num(account.account_number)
-        .with_sequence(account.sequence)
-        .with_gas(400_000)
-        .with_fee_limit('60000untrn')
-    )
-    tx.add_message(_build_deposit_msg(sender_addr))
-    tx_signed = tx.sign(key)
-    tx_hash = ledger.broadcast_tx(tx_signed)
-    return {'tx_hash': tx_hash.hex()}
-
-
-def construct_wasm_execute_msg(sender: str, contract_address: str, shares_to_redeem: int) -> MsgExecuteContract:
-    """Build a MsgExecuteContract for a Supervault `withdraw` call."""
-    withdraw_msg = {"withdraw": {"amount": str(shares_to_redeem)}}
-    return MsgExecuteContract(
-        sender=sender,
-        contract=contract_address,
-        msg=json.dumps(withdraw_msg).encode('utf-8'),
-        funds=[]
-    )
-
-
-def wait_for_confirmations(tx_hash: str, confirmations: int = 12, poll: int = 15) -> Dict:
-    """Blocks until `confirmations` are reached for `tx_hash`."""
-    try:
-        receipt = None
-        while receipt is None:
-            try:
-                receipt = web3.eth.get_transaction_receipt(tx_hash)
-            except exceptions.TransactionNotFound:
-                time.sleep(poll)
-        tx_block = receipt.blockNumber
-        while (web3.eth.block_number - tx_block) < confirmations:
-            time.sleep(poll)
-        return {"status": "confirmed", "txHash": tx_hash, "confirmations": confirmations}
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
-
-
-def wait_for_ibc_transfer(neutron_addr: str, source_tx: str, poll: int = 15, timeout: int = 1800) -> Dict:
-    """Polls Neutron txs until a correlated IBC transfer is observed."""
-    end_time = time.time() + timeout
-    page_key = None
-    while time.time() < end_time:
-        url = f"{LCD}/cosmos/tx/v1beta1/txs?events=transfer.recipient='" + neutron_addr + "'" + (f"&pagination.key={page_key}" if page_key else '')
-        resp = requests.get(url, timeout=10)
-        if resp.status_code == 200:
-            data = resp.json()
-            for tx in data.get('txs', []):
-                if source_tx.lower()[2:12] in str(tx):
-                    return {"status": "ibc_received", "neutron_txhash": tx['txhash']}
-            page_key = data.get('pagination', {}).get('next_key')
-        time.sleep(poll)
-    return {"status": "timeout", "message": "No IBC packet seen in allotted time."}
-
-
-def query_wbtc_balance(neutron_addr: str, ibc_denom: str) -> Dict:
-    url = f"{LCD}/cosmos/bank/v1beta1/balances/{neutron_addr}"
-    resp = requests.get(url, timeout=10)
-    if resp.status_code != 200:
-        return {"status": "error", "error": resp.text}
-    balances = resp.json().get('balances', [])
-    for coin in balances:
-        if coin.get('denom') == ibc_denom:
-            amount = int(coin.get('amount', '0'))
-            return {"status": "ok", "amount_sats": amount}
-    return {"status": "ok", "amount_sats": 0}
-
-
-async def _fetch_balance(address: str, denom: str) -> int:
-    """Query /cosmos/bank/v1beta1/balances/{address}/{denom}"""
-    url = f"{REST_ENDPOINT}/cosmos/bank/v1beta1/balances/{address}/{denom}"
-    async with httpx.AsyncClient(timeout=10) as client:
-        resp = await client.get(url)
-    if resp.status_code != 200:
-        raise HTTPException(status_code=resp.status_code, detail="Bank API error")
-    return int(resp.json().get("balance", {}).get("amount", 0))
-
-
-async def check_token_balance(address: str, wbtc_needed: int = 1, usdc_needed: int = 60000):
-    """Verify that the provided address owns ≥ required WBTC & USDC."""
-    wbtc_balance = await _fetch_balance(address, WBTC_DENOM)
-    usdc_balance = await _fetch_balance(address, USDC_DENOM)
-    sufficient = (wbtc_balance >= wbtc_needed) and (usdc_balance >= usdc_needed)
-    return {"address": address, "wbtc_balance": wbtc_balance, "usdc_balance": usdc_balance, "sufficient": sufficient}
-
-
-def construct_supervault_deposit_tx(req):
-    exec_msg = {
-        "deposit": {
-            "assets": [
-                {"info": {"native_token": {"denom": WBTC_DENOM}}, "amount": str(req['wbtc_amount'])},
-                {"info": {"native_token": {"denom": USDC_DENOM}}, "amount": str(req['usdc_amount'])}
-            ]
-        }
-    }
-    exec_msg_bytes = json.dumps(exec_msg).encode('utf-8')
-    msg = MsgExecuteContract(sender=req['address'], contract=SUPER_VAULT_CONTRACT_ADDRESS, msg=exec_msg_bytes, funds=[])
-    any_msg = ProtoAny()
-    any_msg.Pack(msg)
-    gas_estimate = 300_000
-    tx_body = TxBody(messages=[any_msg], memo="")
-    body_bytes = tx_body.SerializeToString()
-    dummy_pubkey = Secp256k1PubKey(key=b"\x02" + b"\x11" * 32)
-    any_pub = ProtoAny(type_url="/cosmos.crypto.secp256k1.PubKey", value=dummy_pubkey.SerializeToString())
-    mode_info = ModeInfo(single=ModeInfo.Single(mode=SignMode.SIGN_MODE_DIRECT))
-    signer_info = SignerInfo(public_key=any_pub, mode_info=mode_info, sequence=0)
-    fee = Fee(amount=[Coin(denom="untrn", amount="25000")], gas_limit=gas_estimate, payer="", granter="")
-    auth_info = AuthInfo(signer_infos=[signer_info], fee=fee)
-    auth_info_bytes = auth_info.SerializeToString()
-    fake_sig = b"\x01" * 64
-    tx_raw = TxRaw(body_bytes=body_bytes, auth_info_bytes=auth_info_bytes, signatures=[fake_sig])
-    tx_raw_bytes = tx_raw.SerializeToString()
-    return {"tx_base64": base64.b64encode(tx_raw_bytes).decode(), "gas_estimate": gas_estimate}
-
-
-async def sign_and_broadcast_tx_(req: Dict[str, str]) -> Dict[str, str]:
-    """MOCK implementation: Validates the payload is a TxRaw and computes a txhash."""
-    try:
-        tx_bz = base64.b64decode(req["tx_base64"])
-    except Exception as e:
-        raise ValueError(f"Invalid base64 in tx_base64: {e}")
-    try:
-        tx_raw = TxRaw()
-        tx_raw.ParseFromString(tx_bz)
-        if not tx_raw.body_bytes or not tx_raw.auth_info_bytes:
-            raise ValueError("TxRaw missing body_bytes or auth_info_bytes")
-    except DecodeError as e:
-        raise ValueError(f"tx_base64 is not a valid TxRaw bytestring: {e}")
-    txhash = hashlib.sha256(tx_bz).hexdigest().upper()
-    return {"txhash": txhash, "mock": True, "note": "No signing/broadcast performed; txhash computed from TxRaw bytes."}
-
-
-class ExecuteRequest(BaseModel):
-    mnemonic: str
+# --- Constants ---
+LCD_BASE_URL = 'https://lcd-archive.junonetwork.io'
+JUNO_HRP = "juno"
+
+# --- Data Classes ---
+
+@dataclass
+class NodeConfig:
+    lcd_url: str = LCD_BASE_URL
+    rpc_url: Optional[str] = None
+    chain_id: Optional[str] = None
+    keyring_backend: Optional[str] = None
+
+@dataclass
+class SmartQueryParameters:
     contract_address: str
-    partner_id: str = "all"
-    gas_limit: int = 200_000
-    fee_denom: str = "untrn"
-
-
-def execute_opt_in_airdrops(req: ExecuteRequest):
-    """Signs and broadcasts `{ opt_in_airdrops: { partner_id } }`"""
-    try:
-        wallet = LocalWallet.from_mnemonic(req.mnemonic)
-        sender_addr = wallet.address()
-        wasm_msg = {"opt_in_airdrops": {"partner_id": req.partner_id}}
-        tx = Transaction()
-        tx.add_execute_contract(sender_addr, req.contract_address, wasm_msg, gas_limit=req.gas_limit)
-        tx.with_chain_id(cfg.chain_id)
-        tx.with_fee(req.fee_denom)
-        signed_tx = tx.sign(wallet)
-        client = LedgerClient(cfg)
-        resp = client.broadcast_tx(signed_tx)
-        if resp.is_error():
-            raise HTTPException(status_code=400, detail=f"Broadcast failed: {resp.raw_log}")
-        return {"txhash": resp.tx_hash}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-async def _query_wasm_smart(contract_addr: str, query_msg: dict, user_address):
-    """Low-level helper that hits the LCD `/smart/` endpoint."""
-    msg_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
-    url = f"{LCD}/cosmwasm/wasm/v1/contract/{contract_addr}/smart/{msg_b64}"
-    print(url)
-    async with httpx.AsyncClient(timeout=10) as client:
-        r = await client.get(url)
-        if r.status_code != 200:
-            return {"positions": [{"id": "1", "collateral": "1000000", "debt": "500000", "health_factor": "1.45"}, {"id": "2", "collateral": "2000000", "debt": "1500000", "health_factor": "1.10"}]}
-        data = r.json()
-        return data.get('data') or data.get('result') or data
-
-
-async def amber_positions(user_address: str, contract_addr="neutron1xa7wp6r7zm3vj0vyp96zu0ptp7ksjldvxhhc5hwgsu9dgrv6vs0q8c5t0d"):
-    """Public route => `/api/amber_positions?address=<bech32>`"""
-    query_msg = {"positions_by_owner": {"owner": user_address}}
-    print(query_msg)
-    positions = await _query_wasm_smart(contract_addr, query_msg, user_address)
-    print(positions)
-    return positions
-
-
-class Fund(BaseModel):
-    denom: str
-    amount: str
-
-
-class LockRequest(BaseModel):
-    contract_address: str = Field(..., description="Lock contract address")
-    sender: str = Field(..., description="User address that appears as Msg sender")
-    msg: dict = Field(..., description="ExecuteMsg JSON body")
-    funds: list[Fund]
-
-
-def lock_tokens(req: LockRequest):
-    try:
-        wallet = LocalWallet.from_mnemonic(req.mnemonic)
-        if wallet.address() != req.sender:
-            raise HTTPException(status_code=400, detail="Backend wallet address does not match provided sender.")
-        wasm_msg_bytes = json.dumps(req.msg).encode()
-        execute_msg = MsgExecuteContract(
-            sender=req.sender,
-            contract=req.contract_address,
-            msg=wasm_msg_bytes,
-            funds=[{"denom": f.denom, "amount": f.amount} for f in req.funds],
-        )
-        tx = Transaction()
-        tx.add_message(execute_msg)
-        tx.with_sequence(LedgerClient(cfg).get_sequence(req.sender))
-        tx.with_chain_id(cfg.chain_id)
-        tx.with_gas(250_000)
-        tx.with_memo("Lock 2K NTRN for 90d")
-        tx_signed = tx.sign(wallet)
-        client = LedgerClient(cfg)
-        tx_response = client.broadcast_tx(tx_signed)
-        return {"tx_hash": tx_response.tx_hash.hex(), "height": tx_response.height, "raw_log": tx_response.raw_log}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-async def query_position_status(address: str):
-    """Returns the address’ Amber position (if any)."""
-    try:
-        async with LedgerClient(RPC_ENDPOINT) as client:
-            query_msg = {"position_status": {"address": address}}
-            result = await client.wasm_query(AMBER_CONTRACT_ADDR, json.dumps(query_msg).encode())
-            return result
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Position query failed: {exc}")
-
-
-async def close_position_sign_doc(req):
-    """Returns `sign_doc`, `body_bytes`, and `auth_info_bytes` for Keplr’s signDirect."""
-    try:
-        async with LedgerClient(RPC_ENDPOINT) as client:
-            acct = await client.query_auth_account(req.address)
-            acct = acct["base_account"] if "base_account" in acct else acct
-            account_number = int(acct["account_number"])
-            sequence = int(acct["sequence"])
-            close_msg = {"close_position": {"id": req.position_id}}
-            exec_msg = MsgExecuteContract(sender=req.address, contract=AMBER_CONTRACT_ADDR, msg=close_msg, funds=[])
-            tx = Transaction()
-            tx.add_message(exec_msg)
-            tx.with_gas(req.gas_limit)
-            tx.with_fee(req.fee_amount, req.fee_denom)
-            tx.with_chain_id(req.chain_id)
-            tx.with_memo("close Amber position")
-            sign_doc = tx.get_sign_doc(account_number, sequence)
-            return {
-                "sign_doc": base64.b64encode(sign_doc.SerializeToString()).decode(),
-                "body_bytes": base64.b64encode(tx.body.SerializeToString()).decode(),
-                "auth_info_bytes": base64.b64encode(tx.auth_info.SerializeToString()).decode()
-            }
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Failed to build sign-doc: {exc}")
-
-
-async def confirm_position_closed(address: str):
-    """Returns `{closed: true}` once the address has no outstanding debt."""
-    try:
-        data = await query_position_status(address)
-        debt = data.get("position", {}).get("debt", 0)
-        return {"closed": int(debt) == 0, "raw": data}
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Confirmation failed: {exc}")
-
-
-def _get_client():
-    """Instantiate a LedgerClient for each request."""
-    return LedgerClient(cfg)
-
-
-async def get_user_points(address: str, contract_address: str = 'neutron1yu55umrtnna36vyjvhexp6q2ktljunukzxp9vptsfnylequg7gvqrcqf42'):
-    """Return the caller's current point total from the Points contract."""
-    try:
-        client = _get_client()
-        query_msg = {'points': {'address': address}}
-        response = client.query_contract_smart(contract_address, query_msg)
-        points = int(response.get('points', 0))
-        return {'address': address, 'points': points}
-    except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
-
-
-def get_reward_params():
-    """Return constants used for reward calculations."""
-    try:
-        return REWARD_PARAMS
-    except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
-
-
-def projected_rewards(address: str, contract_address: str = 'neutron1yu55umrtnna36vyjvhexp6q2ktljunukzxp9vptsfnylequg7gvqrcqf42'):
-    """Compute and return projected NTRN rewards for the supplied address."""
-    try:
-        client = _get_client()
-        query_msg = {'points': {'address': address}}
-        points_response = client.query_contract_smart(contract_address, query_msg)
-        points = int(points_response.get('points', 0))
-        per_point_rate = REWARD_PARAMS['per_point_rate']
-        multiplier = 1
-        projected_untrn = points * per_point_rate * multiplier
-        projected_ntrn = projected_untrn / 1_000_000
-        return {
-            'address': address,
-            'points': points,
-            'projected_reward_untrn': projected_untrn,
-            'projected_reward_ntrn': projected_ntrn,
-            'assumptions': {**REWARD_PARAMS, 'multiplier': multiplier}
-        }
-    except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
-
-
-def validate_token_balance(address: str, min_offer: int = 1_000_000, min_fee: int = 50_000) -> dict:
-    """Verify that `address` owns enough tokens for an offer and fees."""
-    offer_denom = 'eBTC'
-    fee_denom = 'untrn'
-    try:
-        url = f"{REST_ENDPOINT}/cosmos/bank/v1beta1/balances/{address}"
-        resp = requests.get(url, timeout=10)
-        resp.raise_for_status()
-        balances = resp.json().get('balances', [])
-        def amount_of(denom: str) -> int:
-            for coin in balances:
-                if coin.get('denom') == denom:
-                    return int(coin.get('amount', '0'))
-            return 0
-        if amount_of(offer_denom) < min_offer:
-            raise ValueError('Insufficient eBTC balance.')
-        if amount_of(fee_denom) < min_fee:
-            raise ValueError('Insufficient untrn balance for fees.')
-        return {"valid": True}
-    except Exception as err:
-        return {"valid": False, "error": str(err)}
-
-
-PAIR_CONTRACT = os.getenv('PAIR_CONTRACT', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-
-def query_dex_pool(offer_denom: str = 'eBTC', ask_denom: str = 'uniBTC') -> dict:
-    """Returns raw pool data for the requested trading pair."""
-    query_msg = {"pool": {"pair": {"asset_infos": [{"native_token": {"denom": offer_denom}}, {"native_token": {"denom": ask_denom}}]}}}
-    try:
-        b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
-        url = f"{REST_ENDPOINT}/cosmwasm/wasm/v1/contract/{PAIR_CONTRACT}/smart/{b64}"
-        resp = requests.get(url, timeout=10)
-        resp.raise_for_status()
-        return resp.json()
-    except Exception as err:
-        return {"error": str(err)}
-
-
-def sign_and_broadcast_tx__(execute_msg: dict, gas: int = 350_000) -> dict:
-    """Signs and broadcasts an execute message."""
-    mnemonic = os.getenv('MNEMONIC')
-    if not mnemonic:
-        raise EnvironmentError('MNEMONIC environment variable is missing.')
-    wallet = LocalWallet(mnemonic)
-    cfg = NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT, fee_denomination=FEE_DENOM, gas_prices=0.025, gas_multiplier=1.2)
-    client = LedgerClient(cfg)
-    tx = (
-        Transaction()
-        .with_messages(execute_msg)
-        .with_sequence(client.get_sequence(wallet.address()))
-        .with_account_num(client.get_number(wallet.address()))
-        .with_chain_id(cfg.chain_id)
-        .with_gas(gas)
-        .with_fee(gas_price=cfg.gas_prices, denom=FEE_DENOM)
-    )
-    signed_tx = wallet.sign_transaction(tx)
-    tx_bytes = signed_tx.serialize()
-    result = client.broadcast_tx(tx_bytes)
-    return {'tx_hash': result.tx_hash if hasattr(result, 'tx_hash') else result, 'raw_log': getattr(result, 'raw_log', '')}
-
-
-class MsgValue(BaseModel):
-    sender: str
-    contract: str
-    msg: List[int]
-    funds: List[str] = []
-
-
-class ExecutePayload(BaseModel):
-    typeUrl: str
-    value: MsgValue
-    def ensure_msg_execute(cls, v):
-        if v != '/cosmwasm.wasm.v1.MsgExecuteContract':
-            raise ValueError('Only MsgExecuteContract is supported by this endpoint.')
-        return v
-
-
-def set_target(payload: ExecutePayload):
-    """Signs and broadcasts a MsgExecuteContract built on the frontend"""
-    try:
-        client = LedgerClient(cfg)
-        mnemonic = os.getenv('DEPLOYER_MNEMONIC')
-        if not mnemonic:
-            raise HTTPException(500, 'DEPLOYER_MNEMONIC environment variable not set.')
-        wallet = LocalWallet.from_mnemonic(mnemonic)
-        msg_execute = MsgExecuteContract(sender=Address(payload.value.sender), contract=Address(payload.value.contract), msg=bytes(payload.value.msg), funds=[])
-        tx = (
-            Transaction()
-            .with_messages(msg_execute)
-            .with_chain_id(CHAIN_ID)
-            .with_sender(wallet)
-            .with_fee(gas_limit=200_000, fee_amount=5000, fee_denom='untrn')
-            .with_memo('Update boost target')
-        )
-        signed_tx = tx.sign(wallet)
-        tx_response = client.broadcast_tx(signed_tx)
-        if tx_response.is_err():
-            raise HTTPException(500, f'Broadcast failed: {tx_response.tx_response.raw_log}')
-        return {'tx_hash': tx_response.tx_hash}
-    except HTTPException:
-        raise
-    except Exception as exc:
-        raise HTTPException(500, str(exc))
-
-
-def query_phase_points(address: str, phase_id: int):
-    """Return the user’s points for a given phase by querying the Points contract."""
-    query_msg = {"get_phase_points": {"address": address, "phase_id": phase_id}}
-    data = wasm_query('neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy', query_msg)
-    if 'points' not in data:
-        raise HTTPException(status_code=500, detail="Invalid contract response: 'points' missing")
-    return {"address": address, "phase_id": phase_id, "points": data['points']}
-
-
-AMBER_CONTROLLER_ADDRESSES = {
-    "mainnet": os.getenv("AMBER_CONTROLLER_MAINNET", "neutron1controllerplaceholderxxxxxxxxxxxx"),
-    "testnet": os.getenv("AMBER_CONTROLLER_TESTNET", "pion1controllerplaceholderxxxxxxxxxxxx")
-}
-
-def get_controller_address(env: str = "mainnet"):
-    """Return the controller/lens contract address used to query market data."""
-    address = AMBER_CONTROLLER_ADDRESSES.get(env)
-    if not address:
-        raise HTTPException(status_code=400, detail="Unsupported environment")
-    return {"env": env, "controller_address": address}
-
-
-def query_balance(address: str, denom: str = 'untrn'):
-    try:
-        balance = client.query_bank_balance(address, denom=denom)
-        return {'address': address, 'denom': denom, 'amount': int(balance)}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-def build_stake_and_mint_tx(sender_address: str, contract_address: str, amount: int = 250000000, denom: str = 'untrn', duration: str = '12_months'):
-    execute_msg = {'stake_and_mint_nft': {'amount': f'{amount}{denom}', 'duration': duration}}
-    funds = [{'denom': denom, 'amount': str(amount)}]
-    msg = MsgExecuteContract(sender=sender_address, contract=contract_address, msg=execute_msg, funds=funds)
-    tx = Transaction()
-    tx.add_message(msg)
-    tx.with_sender(sender_address)
-    return tx
-
-
-def sign_and_broadcast(tx, client: LedgerClient):
-    mnemonic = os.getenv('MNEMONIC')
-    if not mnemonic:
-        raise ValueError('MNEMONIC environment variable is not set.')
-    pk = PrivateKey.from_mnemonic(mnemonic)
-    signed_tx = tx.sign(pk)
-    resp = client.broadcast_transaction(signed_tx)
-    if resp.is_successful():
-        return {'tx_hash': resp.tx_hash}
-    else:
-        raise RuntimeError(f'Broadcast failed with code {resp.code}: {resp.raw_log}')
-
-
-def wait_for_tx_commit(tx_hash: str, client: LedgerClient, timeout: int = 120, poll: float = 2.0):
-    deadline = time.time() + timeout
-    while time.time() < deadline:
-        tx_info = client.query_tx(tx_hash)
-        if tx_info is not None:
-            return {'status': 'confirmed', 'height': tx_info.height, 'raw_log': tx_info.raw_log}
-        time.sleep(poll)
-    raise TimeoutError('Timed out waiting for transaction commitment.')
-
-
-def query_nft_tokens(client: LedgerClient, contract_address: str, owner_address: str):
-    query = {'tokens': {'owner': owner_address}}
-    try:
-        result = client.query_contract_smart(contract_address, query)
-        return result.get('tokens', [])
-    except Exception as e:
-        raise RuntimeError(f'Contract query failed: {e}')
-
-
-async def query_vesting_contract(address: str):
-    """Return the claimable rewards for a given address."""
-    try:
-        query_msg = {"claimable_rewards": {"address": address}}
-        query_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
-        url = f"{LCD}/cosmwasm/wasm/v1/contract/{VESTING_CONTRACT}/smart/{query_b64}"
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(url)
-            resp.raise_for_status()
-        data = resp.json()
-        amount = int(data.get("data", {}).get("amount", 0))
-        return {"claimable": amount}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-def validate_claimable_amount(amount: int):
-    """Raise an HTTP 400 if amount == 0."""
-    if int(amount) == 0:
-        raise HTTPException(status_code=400, detail="No claimable rewards for this address.")
-    return {"ok": True}
-
-
-def construct_execute_msg():
-    """Return the execute message required to start vesting."""
-    return {"start_standard_vesting": {}}
-
-
-def sign_and_broadcast_tx___(sender_addr: str, execute_msg: dict):
-    """Sign the MsgExecuteContract and broadcast it."""
-    mnemonic = os.getenv("MNEMONIC")
-    if not mnemonic:
-        raise HTTPException(status_code=500, detail="Backend signing key is not configured.")
-
-    try:
-        pk = PrivateKey.from_mnemonic(mnemonic)
-        if sender_addr != pk.address():
-            raise HTTPException(status_code=400, detail="Configured key does not match sender address.")
-        client = LedgerClient(cfg, wallet=pk)
-        msg = MsgExecuteContract(sender=sender_addr, contract_address=VESTING_CONTRACT, msg=execute_msg)
-        tx = client.tx.build_and_sign_tx(msgs=[msg])
-        tx_response = client.tx.broadcast_tx(tx)
-        if tx_response.is_err():
-            raise HTTPException(status_code=500, detail=f"Broadcast failed: {tx_response.raw_log}")
-        return {"tx_hash": tx_response.tx_hash}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-async def query_vesting_schedule(address: str):
-    """Return the latest vesting schedule for the provided address."""
-    query = {"vesting_schedule": {"address": address}}
-    query_b64 = base64.b64encode(json.dumps(query).encode()).decode()
-    url = f"{LCD}/cosmwasm/wasm/v1/contract/{VESTING_CONTRACT}/smart/{query_b64}"
-
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(url)
-            resp.raise_for_status()
-        return resp.json().get("data", {})
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-async def construct_and_sign(req):
-    """MOCK: Simulates constructing and signing a transaction."""
-    try:
-        print("--- MOCK: Simulating transaction construction and signing ---")
-        await asyncio.sleep(0.5)
-        mock_signed_tx_hex = "0a8a010a86010a1c2f636f736d6f732e62616e6b2e763162657461312e4d736753656e6412660a2d6e657574726f6e316d7433716d666d6768766a6c70776a6e7874656d3977756b6d6171757077756877617135306e750a2d6e657574726f6e317a6c6e6d6d6368736c6a65796775707773636578706d676e7776736c6b63687070747067781a060a04756e74726e12023130121a0a047575736463120c3530303030303030303030301a130a04756e74726e120b3135303030303030303030"
-        print("--- MOCK: Simulation complete. Returning mock signed tx hex. ---")
-        return {"signed_tx_hex": mock_signed_tx_hex}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"MOCK ERROR: {e}")
-
-
-async def broadcast_signed_tx():
-    """MOCK: Simulates broadcasting a signed transaction."""
-    try:
-        print("--- MOCK: Simulating broadcast of signed transaction ---")
-        await asyncio.sleep(0.8)
-        mock_tx_hash = "A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2"
-        mock_height = 9876543
-        print(f"--- MOCK: Broadcast successful. TxHash: {mock_tx_hash} ---")
-        return {"tx_hash": mock_tx_hash, "height": mock_height}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"MOCK ERROR: {e}")
-
-
-class SignDocResponse(BaseModel):
-    body_bytes: str
-    auth_info_bytes: str
-    account_number: int
+    query: Dict[str, Any]
+    node: NodeConfig
+
+@dataclass
+class WasmChecksum:
+    digest: bytes
+    hex: str
+
+@dataclass
+class ChainAccountInfo:
     chain_id: str
-
-
-def build_withdraw_tx(req):
-    try:
-        rpc = os.getenv('RPC_ENDPOINT', 'https://rpc-kralum.neutron-1.neutron.org')
-        client = LedgerClient(rpc)
-        account = client.query_account(req.delegator_address)
-        tx = Transaction()
-        for r in req.rewards:
-            tx.add_msg(MsgWithdrawDelegatorReward(delegator_address=req.delegator_address, validator_address=r.validator_address))
-        tx.set_fee(2000, 'untrn')
-        tx.set_gas(200000 * len(req.rewards))
-        tx.set_account_num(account.account_number)
-        tx.set_sequence(account.sequence)
-        tx.set_chain_id(client.chain_id)
-        sign_doc = tx.get_sign_doc()
-        return SignDocResponse(
-            body_bytes=base64.b64encode(sign_doc.body_bytes).decode(),
-            auth_info_bytes=base64.b64encode(sign_doc.auth_info_bytes).decode(),
-            account_number=account.account_number,
-            chain_id=client.chain_id,
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-SOLV_GATEWAY_URL = os.getenv('SOLV_GATEWAY_URL', 'https://api.solv.finance/solvbtc')
-
-async def generate_deposit_address(payload: dict):
-    """Obtain a unique solvBTC deposit address."""
-    evm_address = payload.get('evm_address')
-    if not evm_address:
-        raise HTTPException(status_code=400, detail='`evm_address` field is required.')
-    async with httpx.AsyncClient() as client:
-        try:
-            resp = await client.post(f'{SOLV_GATEWAY_URL}/deposit-address', json={'evm_address': evm_address})
-            resp.raise_for_status()
-            data = resp.json()
-            return {'deposit_address': data['deposit_address']}
-        except httpx.HTTPError as exc:
-            raise HTTPException(status_code=502, detail=f'SolvBTC gateway error: {exc}')
-
-
-def construct_and_sign_btc_tx(payload):
-    """Build & sign a Bitcoin transaction."""
-    try:
-        pk = PrivateKey(payload.wif)
-        outputs = [(payload.destination, Decimal('1'), 'btc')]
-        raw_tx_hex = pk.create_transaction(outputs, fee=payload.fee_sat_per_byte)
-        return {'raw_tx_hex': raw_tx_hex}
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-
-async def broadcast_btc_tx(payload: dict):
-    """Broadcast raw BTC TX and return the txid."""
-    raw_tx_hex = payload.get('raw_tx_hex')
-    if not raw_tx_hex:
-        raise HTTPException(status_code=400, detail='raw_tx_hex is required.')
-    try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.post('https://blockstream.info/api/tx', content=raw_tx_hex)
-            resp.raise_for_status()
-            txid = resp.text.strip()
-            return {'txid': txid}
-    except httpx.HTTPError as exc:
-        raise HTTPException(status_code=502, detail=f'Broadcast error: {exc}')
-
-
-def attest_and_mint(payload: dict):
-    btc_txid = payload.get('btc_txid')
-    btc_destination = payload.get('btc_destination')
-    evm_address = payload.get('evm_address')
-    if not all([btc_txid, btc_destination, evm_address]):
-        raise HTTPException(status_code=400, detail='btc_txid, btc_destination, and evm_address are required.')
-    try:
-        w3 = Web3(Web3.HTTPProvider(ETH_RPC_URL))
-        acct = w3.eth.account.from_key(BACKEND_PRIVATE_KEY)
-        contract = w3.eth.contract(address=Web3.to_checksum_address(MINT_CONTRACT_ADDRESS), abi=MINT_ABI)
-        tx = contract.functions.mint(btc_txid, btc_destination, evm_address).build_transaction({
-            'from': acct.address,
-            'nonce': w3.eth.get_transaction_count(acct.address),
-            'gas': 500000,
-            'gasPrice': w3.to_wei('30', 'gwei'),
-        })
-        signed_tx = acct.sign_transaction(tx)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
-        return {'eth_tx_hash': tx_hash.hex()}
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-
-async def bridge_to_neutron(payload: dict):
-    evm_tx_hash = payload.get('eth_tx_hash')
-    neutron_address = payload.get('neutron_address')
-    amount_wei = payload.get('amount_wei', '1000000000000000000')
-    if not all([evm_tx_hash, neutron_address]):
-        raise HTTPException(status_code=400, detail='eth_tx_hash and neutron_address are required.')
-    request_body = {
-        'source_chain': 'Ethereum',
-        'destination_chain': 'Neutron',
-        'asset': 'solvBTC',
-        'amount': amount_wei,
-        'destination_address': neutron_address,
-        'deposit_tx_hash': evm_tx_hash,
-    }
-    async with httpx.AsyncClient() as client:
-        try:
-            resp = await client.post(f'{AXELAR_GATEWAY_URL}/transfer', json=request_body)
-            resp.raise_for_status()
-            data = resp.json()
-            return {'axelar_tx_hash': data['tx_hash']}
-        except httpx.HTTPError as exc:
-            raise HTTPException(status_code=502, detail=f'Axelar error: {exc}')
-
-
-def query_balance_(address: str):
-    """Return solvBTC voucher balance on Neutron."""
-    try:
-        client = LedgerClient(cfg)
-        balance = client.query_bank_balance(address, denom=IBC_DENOM_SOLVBTC)
-        return {'address': address, 'solvbtc_balance': str(balance.amount)}
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-
-def _build_execute_msg(sender: str, amount: str) -> MsgExecuteContract:
-    return MsgExecuteContract(
-        sender=sender,
-        contract=BOOST_CONTRACT_ADDRESS,
-        msg=json.dumps({'lock': {'amount': amount, 'duration': '24_months'}}).encode(),
-        funds=[{'amount': amount, 'denom': 'untrn'}]
-    )
-
-
-def sign_and_broadcast_(payload):
-    """Signs & broadcasts the Boost lock transaction."""
-    sender = payload.get('sender')
-    amount = payload.get('amount', '500000000')
-    if not sender:
-        raise HTTPException(status_code=400, detail='sender field is required')
-    mnemonic = os.getenv('NEUTRON_MNEMONIC')
-    if not mnemonic:
-        raise HTTPException(status_code=500, detail='Server wallet not configured')
-    key = PrivateKey.from_mnemonic(mnemonic)
-    if key.address() != sender:
-        raise HTTPException(status_code=400, detail='Sender must match backend wallet address.')
-    client = LedgerClient(NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT))
-    tx = Transaction()
-    tx.add_message(_build_execute_msg(sender, amount))
-    tx.with_gas(300000)
-    tx.with_chain_id(CHAIN_ID)
-    try:
-        signed_tx = tx.build_and_sign(key)
-        tx_response = client.send_tx_block_mode(signed_tx)
-        return {'tx_hash': tx_response.tx_hash}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-def tx_status(tx_hash: str):
-    client = LedgerClient(NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT))
-    try:
-        tx_response = client.query_tx(tx_hash)
-        if not tx_response:
-            return {'status': 'PENDING'}
-        return {'status': 'COMMITTED', 'height': tx_response.height}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-def construct_cw20_approve_(body):
-    '''Return a sign-ready MsgExecuteContract JSON payload for CW20 approve.'''
-    try:
-        approve_msg = {'approve': {'spender': body.spender, 'amount': str(body.amount)}}
-        encoded_msg = base64.b64encode(json.dumps(approve_msg).encode()).decode()
-        return {'msg': {'type_url': '/cosmwasm.wasm.v1.MsgExecuteContract', 'value': {'sender': body.sender, 'contract': body.cw20_contract, 'msg': encoded_msg, 'funds': []}}}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-def broadcast_approve(body):
-    try:
-        wallet = PrivateKey.from_mnemonic(body.mnemonic)
-        sender = wallet.public_key.address()
-        tx = Transaction()
-        tx.add_message(body.msg)
-        client = LedgerClient(cfg)
-        tx.with_sequence(client.get_sequence(sender))
-        tx.with_account_number(client.get_number(sender))
-        tx.with_chain_id(cfg.chain_id)
-        tx.sign(wallet)
-        return client.broadcast_tx(tx)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-def construct_lend(body):
-    try:
-        inner_msg = {}
-        wrapped_send = {'send': {'contract': body.amber_pool, 'amount': str(body.amount), 'msg': base64.b64encode(json.dumps(inner_msg).encode()).decode()}}
-        encoded = base64.b64encode(json.dumps(wrapped_send).encode()).decode()
-        return {'msg': {'type_url': '/cosmwasm.wasm.v1.MsgExecuteContract', 'value': {'sender': body.sender, 'contract': body.cw20_contract, 'msg': encoded, 'funds': []}}}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-async def lock_status(address: str, lock_id: int) -> Dict:
-    """Return the lock information for <address, lock_id>."""
-    try:
-        query_msg = {"lock": {"address": address, "lock_id": lock_id}}
-        query_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()
-        url = f"{LCD}/wasm/v1/contract/{LOCK_CONTRACT_ADDR}/smart/{query_b64}"
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(url)
-        if resp.status_code != 200:
-            raise HTTPException(status_code=resp.status_code, detail=resp.text)
-        data = resp.json()
-        lock_info = data.get("data") or data
-        if not lock_info:
-            raise HTTPException(status_code=404, detail="Lock not found")
-        if not lock_info.get("unlockable", False):
-            return {"eligible": False, "reason": "Lock period not finished"}
-        return {"eligible": True, "lock_info": lock_info}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# async def open_position(req: OpenPositionRequest):
-#     try:
-#         client = LedgerClient(cfg)
-#         wallet = Wallet(req.mnemonic)
-#         tx = (
-#             Transaction()
-#             .with_messages(req.open_position_msg)
-#             .with_sequence(client.query_account_sequence(wallet.address()))
-#             .with_account_num(client.query_account_number(wallet.address()))
-#             .with_gas(req.gas_limit)
-#             .with_chain_id(cfg.chain_id)
-#         )
-#         signed_tx = wallet.sign(tx)
-#         tx_response = client.broadcast_tx_block(signed_tx)
-#         if tx_response.is_error:
-#             raise HTTPException(400, f'Broadcast failed: {tx_response.log}')
-#         return {"tx_hash": tx_response.tx_hash, "height": tx_response.height}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-
-
-async def get_vault(asset: str):
-    asset = asset.lower()
-    if asset not in SUPERVAULTS:
-        raise HTTPException(status_code=404, detail="Unsupported asset")
-    return SUPERVAULTS[asset]
-
-
-def build_deposit_tx(vault_addr: str, sender_addr: str, amount_micro: int = 3_000_000):
-    """Create an unsigned Transaction object with a CosmWasm execute msg."""
-    msg_inner = base64.b64encode(json.dumps({"deposit": {}}).encode()).decode()
-    exec_msg = {
-        "type": "wasm/MsgExecuteContract",
-        "value": {
-            "sender": sender_addr,
-            "contract": vault_addr,
-            "msg": msg_inner,
-            "funds": [{"denom": EBTC_DENOM, "amount": str(amount_micro)}]
-        }
-    }
-    tx = (
-        Transaction()
-        .with_messages(exec_msg)
-        .with_sequence(client.query_sequence(sender_addr))
-        .with_account_num(client.query_account_number(sender_addr))
-        .with_chain_id(NETWORK.chain_id)
-        .with_gas(300000)
-        .with_fee_denom(NETWORK.fee_denom)
-        .with_fee(7500)
-        .with_memo("eBTC → Supervault deposit")
-        .with_timeout_height(client.query_height() + 50)
-    )
-    return tx
-
-
-def cw20_balance(contract: str, addr: str) -> int:
-    """Query CW20 balance."""
-    sc = SmartContract(contract, client)
-    try:
-        resp = sc.query({"balance": {"address": addr}})
-        return int(resp.get('balance', '0'))
-    except Exception:
-        return 0
-
-
-async def validate_token_balances(address: str):
-    """Checks that the user holds ≥1 WBTC and ≥1 LBTC."""
-    try:
-        wbtc_bal = cw20_balance(WBTC_CONTRACT, address)
-        lbtc_bal = cw20_balance(LBTC_CONTRACT, address)
-        return BalanceStatus(has_wbtc=wbtc_bal >= MICRO_FACTOR, has_lbtc=lbtc_bal >= MICRO_FACTOR)
-    except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
-
-
-async def construct_tx_supervault_deposit(address: str):
-    """Creates an unsigned deposit Tx and returns the raw bytes (base64)."""
-    try:
-        deposit_msg = {"deposit": {}}
-        deposit_payload_b64 = base64.b64encode(json.dumps(deposit_msg).encode()).decode()
-        def build_cw20_send(token_contract: str):
-            return {
-                "typeUrl": "/cosmwasm.wasm.v1.MsgExecuteContract",
-                "value": {
-                    "sender": address,
-                    "contract": token_contract,
-                    "msg": base64.b64encode(json.dumps({"send": {"contract": SUPERVAULT_CONTRACT, "amount": str(MICRO_FACTOR), "msg": deposit_payload_b64}}).encode()).decode(),
-                    "funds": []
-                }
-            }
-        msgs = [build_cw20_send(WBTC_CONTRACT), build_cw20_send(LBTC_CONTRACT)]
-        tx = Transaction()
-        for m in msgs:
-            tx.add_message(m["value"])
-        tx.set_fee(5000, "untrn")
-        tx.set_gas(400000)
-        unsigned_tx = tx.get_unsigned()
-        return {"tx_bytes": base64.b64encode(unsigned_tx.SerializeToString()).decode()}
-    except Exception as err:
-        raise HTTPException(status_code=500, detail=str(err))
-
-
-async def get_supervault_share_balance(address: str):
-    """Return the amount of Supervault shares owned by `address`."""
-    try:
-        if not SUPER_VAULT_CONTRACT:
-            raise ValueError('SUPER_VAULT_CONTRACT env var not set')
-        client = LedgerClient(cfg)
-        query_msg = {'share': {'owner': address}}
-        result = client.query_contract_smart(SUPER_VAULT_CONTRACT, query_msg)
-        shares_raw = int(result.get('shares', '0'))
-        return {'shares': shares_raw}
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))
-
-
-async def supervault_positions(req):
-    """Query Supervault for user positions via WASM smart-contract call."""
-    try:
-        client = LedgerClient(cfg)
-        query_msg = {'positions_by_user': {'address': req.user_address}}
-        positions = client.query_contract(contract_address=req.contract_address, query=query_msg)
-        return {'positions': positions}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-class BalanceResponse(BaseModel):
-    maxbtc: int
-    unibtc: int
-    eligible: bool
-
-
-async def check_balance(address: str):
-    """Return each balance and whether both are ≥ 1."""
-    try:
-        payload = {'balance': {'address': address}}
-        maxbtc = int(client.wasm_contract_query(CW20_MAXBTC, payload)['balance'])
-        unibtc = int(client.wasm_contract_query(CW20_UNIBTC, payload)['balance'])
-        ok = maxbtc >= REQUIRED_AMOUNT and unibtc >= REQUIRED_AMOUNT
-        return BalanceResponse(maxbtc=maxbtc, unibtc=unibtc, eligible=ok)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Balance query failed: {e}')
-
-
-async def get_supervault_details():
-    try:
-        details = {
-            'supervault_address': os.getenv('MAXUNI_SUPERVAULT', 'neutron1supervaultxxxxxxxxxxxxxxxxxxxx'),
-            'assets': [
-                {'symbol': 'maxBTC', 'cw20': os.getenv('CW20_MAXBTC', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')},
-                {'symbol': 'uniBTC', 'cw20': os.getenv('CW20_UNIBTC', 'neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy')}
-            ]
-        }
-        return details
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-class BuildDepositRequest(BaseModel):
-    sender: str
-    amount_maxbtc: int = 1
-    amount_unibtc: int = 1
-
-
-class BuildDepositResponse(BaseModel):
-    tx_bytes: str
-    body: dict
-
-
-async def build_deposit(req: BuildDepositRequest):
-    try:
-        supervault = os.getenv('MAXUNI_SUPERVAULT', 'neutron1supervaultxxxxxxxxxxxxxxxxxxxx')
-        exec_msg = {
-            'deposit': {
-                'assets': [
-                    {'token': os.getenv('CW20_MAXBTC', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'), 'amount': str(req.amount_maxbtc)},
-                    {'token': os.getenv('CW20_UNIBTC', 'neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyy'), 'amount': str(req.amount_unibtc)}
-                ]
-            }
-        }
-        tx = Transaction()
-        tx.add_message(MsgExecuteContract(sender=req.sender, contract=supervault, msg=exec_msg, funds=[]))
-        unsigned_bytes = tx.get_tx_bytes(sign=False)
-        return BuildDepositResponse(tx_bytes=unsigned_bytes.hex(), body=tx.get_tx_json(sign=False))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f'Failed to build deposit tx: {e}')
-
-
-class BroadcastResponse(BaseModel):
-    tx_hash: str
-    height: int
-
-
-def submit_gov_proposal(proposal_file: str, from_key: str, chain_id: str = "neutron-1", node: str = "https://rpc-kralum.neutron.org:443", fees: str = "2000untrn", gas: str = "400000") -> str:
-    """Submits the param-change proposal and extracts the proposal_id."""
-    cmd = ["neutrond", "tx", "gov", "submit-proposal", "param-change", proposal_file, "--from", from_key, "--chain-id", chain_id, "--node", node, "--fees", fees, "--gas", gas, "-y", "--output", "json"]
-    try:
-        completed = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        tx_response = json.loads(completed.stdout)
-        proposal_id = None
-        for log in tx_response.get("logs", []):
-            for event in log.get("events", []):
-                if event.get("type") == "submit_proposal":
-                    for attr in event.get("attributes", []):
-                        if attr.get("key") == "proposal_id":
-                            proposal_id = attr.get("value")
-                            break
-        if not proposal_id:
-            raise RuntimeError("Proposal submitted but proposal_id not found in transaction logs.")
-        return proposal_id
-    except subprocess.CalledProcessError as err:
-        raise RuntimeError(f"Failed to submit proposal: {err.stderr}") from err
-
-
-router = APIRouter()
-LCD_ENDPOINT = os.getenv('COSMOS_LCD', 'https://rest.cosmos.directory/neutron-1')
-
-async def _fetch_raw_tx(tx_hash: str) -> dict:
-    """Internal helper to retrieve raw tx data from the LCD"""
-    if not re.fullmatch(r'^(0x)?[0-9a-fA-F]{64}$', tx_hash):
-        raise ValueError('Invalid transaction hash')
-    clean = tx_hash.lower().replace('0x', '')
-    url = f"{LCD_ENDPOINT}/cosmos/tx/v1beta1/txs/{clean}"
-    async with httpx.AsyncClient(timeout=10) as client:
-        resp = await client.get(url)
-        try:
-            resp.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            raise HTTPException(status_code=resp.status_code, detail=str(e))
-        return resp.json()
-
-
-async def get_raw_tx_endpoint(tx_hash: str):
-    """Public BFF route to obtain raw transaction JSON."""
-    try:
-        return await _fetch_raw_tx(tx_hash)
-    except ValueError as err:
-        raise HTTPException(status_code=400, detail=str(err))
-
-
-async def get_formatted_tx(tx_hash: str) -> Dict[str, Any]:
-    try:
-        raw = await _fetch_raw_tx(tx_hash)
-    except ValueError as err:
-        raise HTTPException(status_code=400, detail=str(err))
-
-    if 'tx_response' not in raw:
-        raise HTTPException(status_code=500, detail='Unexpected LCD response format')
-
-    r = raw['tx_response']
-    return {
-        'height': r.get('height'),
-        'hash': r.get('txhash'),
-        'codespace': r.get('codespace'),
-        'code': r.get('code'),
-        'gas_wanted': r.get('gas_wanted'),
-        'gas_used': r.get('gas_used'),
-        'timestamp': r.get('timestamp'),
-        'fees': r.get('tx', {}).get('auth_info', {}).get('fee', {}),
-        'messages': r.get('tx', {}).get('body', {}).get('messages', []),
-        'raw_log': r.get('raw_log')
-    }
-
-
-def get_web3():
-    rpc_url = os.getenv("RPC_URL", "http://localhost:8545")
-    try:
-        w3 = Web3(Web3.HTTPProvider(rpc_url))
-        if not w3.isConnected():
-            raise ConnectionError(f"Unable to connect to JSON-RPC at {rpc_url}")
-        return w3
-    except Exception as e:
-        raise RuntimeError(f"get_web3 error: {str(e)}")
-
-
-def eth_sign(from_address: str, message_hex: str) -> str:
-    rpc_url = os.getenv("RPC_URL", "http://localhost:8545")
-    payload = {"jsonrpc": "2.0", "id": 1, "method": "eth_sign", "params": [from_address, message_hex]}
-    try:
-        response = requests.post(rpc_url, json=payload, timeout=10)
-        response.raise_for_status()
-        data = response.json()
-        if 'error' in data:
-            raise RuntimeError(data['error'])
-        return data['result']
-    except Exception as e:
-        raise RuntimeError(f"eth_sign failed: {e}")
-
-
-def verify_signature(message: str, signature: str, expected_address: str, w3: Web3 | None = None) -> bool:
-    try:
-        if w3 is None:
-            w3 = Web3(HTTPProvider(os.getenv('RPC_URL', 'http://localhost:8545')))
-        msg = encode_defunct(text=message)
-        recovered = w3.eth.account.recover_message(msg, signature=signature)
-        return recovered.lower() == expected_address.lower()
-    except Exception as e:
-        raise RuntimeError(f"verify_signature error: {e}")
-
-
-app = FastAPI()
-
-@app.get('/api/wallet/address')
-async def get_sender_address(wallet_alias: str = 'lender'):
-    """Return the Bech32 address for a configured backend wallet."""
-    env_key = f"{wallet_alias.upper()}_ADDRESS"
-    address = os.getenv(env_key)
-    if not address:
-        raise HTTPException(status_code=404, detail=f'Wallet alias {wallet_alias} not configured')
-    return {"wallet": wallet_alias, "address": address}
-
-
-@app.get('/api/cw20/balance')
-async def check_token_balance(address: str, cw20_contract: str):
-    """Return the CW20 balance for a given address."""
-    query = {"balance": {"address": address}}
-    encoded_query = base64.b64encode(json.dumps(query).encode()).decode()
-    url = f"{REST_ENDPOINT}/cosmwasm/wasm/v1/contract/{cw20_contract}/smart/{encoded_query}"
-    try:
-        resp = requests.get(url, timeout=10)
-        resp.raise_for_status()
-        balance = int(resp.json().get('data', {}).get('balance', '0'))
-        return {"address": address, "cw20_contract": cw20_contract, "balance": balance}
-    except requests.RequestException as err:
-        raise HTTPException(status_code=500, detail=str(err))
-
-
-def ensure_output_directory(path: str) -> str:
-    """Ensure the directory used for validator configs & genesis exists."""
-    try:
-        abs_path = os.path.abspath(os.path.expanduser(path))
-        os.makedirs(abs_path, exist_ok=True)
-        return abs_path
-    except Exception as err:
-        raise RuntimeError(f"[ensure_output_directory] Failed for '{path}': {err}")
-
-
-def simd_testnet_init_files(output_dir: str, chain_id: str = "localnet-1", validators: int = 1, keyring_backend: str = "test") -> None:
-    """Bootstraps a local single- or multi-validator testnet."""
-    home_arg = str(Path(output_dir).expanduser())
-    cmd = ["simd", "testnet", "init-files", "--home", home_arg, "--chain-id", chain_id, "--v", str(validators), "--keyring-backend", keyring_backend]
-    try:
-        completed = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        print(completed.stdout)
-    except subprocess.CalledProcessError as err:
-        print(err.stderr)
-        raise RuntimeError("[simd_testnet_init_files] `simd` exited with non-zero code")
-
-
-def verify_generated_artifacts(output_dir: str, validators: int = 1) -> bool:
-    """Sanity-check that Step 2 produced the expected files."""
-    base = Path(output_dir).expanduser().resolve()
-    genesis = base / "genesis.json"
-    if not genesis.is_file():
-        raise FileNotFoundError(f"Missing {genesis}")
-    for idx in range(validators):
-        node_dir = base / f"node{idx}"
-        config_dir = node_dir / "config"
-        if not config_dir.is_dir():
-            raise FileNotFoundError(f"Missing config dir: {config_dir}")
-        node_key = config_dir / "node_key.json"
-        priv_val = config_dir / "priv_validator_key.json"
-        if not node_key.is_file():
-            raise FileNotFoundError(f"Missing node_key for validator #{idx}: {node_key}")
-        if not priv_val.is_file():
-            raise FileNotFoundError(f"Missing priv_validator_key for validator #{idx}: {priv_val}")
-    return True
-
-
-async def generate_key(key_name: str, keyring_backend: str = 'test'):
-    """Generate a new key pair using `simd`."""
-    cmd = ['simd', 'keys', 'add', key_name, '--keyring-backend', keyring_backend, '--output', 'json']
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        key_info = json.loads(result.stdout)
-        return {'message': 'Key generated successfully', 'data': key_info}
-    except subprocess.CalledProcessError as e:
-        raise HTTPException(status_code=500, detail=f'Key generation failed: {e.stderr.strip()}')
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail='Failed to parse simd output as JSON.')
-
-
-async def verify_key(key_name: str, keyring_backend: str = 'test'):
-    """Check whether a key exists in the requested keyring."""
-    cmd = ['simd', 'keys', 'show', key_name, '--keyring-backend', keyring_backend, '-a']
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        address = result.stdout.strip()
-        if not address:
-            raise HTTPException(status_code=404, detail=f'Key `{key_name}` seems empty.')
-        return {'key_name': key_name, 'address': address}
-    except subprocess.CalledProcessError:
-        raise HTTPException(status_code=404, detail=f'Key `{key_name}` not found in `{keyring_backend}` keyring.')
-
-
-def export_passphrase_env(passphrase: str, ttl: int = 60):
-    '''Temporarily exports KEYRING_PASSPHRASE as an environment variable.'''
-    if not passphrase:
-        raise ValueError('Passphrase cannot be empty.')
-    os.environ['KEYRING_PASSPHRASE'] = passphrase
-    print('KEYRING_PASSPHRASE exported. It will be cleared in', ttl, 'seconds.')
-    def _unset():
-        time.sleep(ttl)
-        os.environ.pop('KEYRING_PASSPHRASE', None)
-        print('KEYRING_PASSPHRASE cleared from environment.')
-    threading.Thread(target=_unset, daemon=True).start()
-
-
-def run_timeboxed_script(cmd: List[str]):
-    '''Executes a simd CLI transaction command while the passphrase is set.'''
-    if 'KEYRING_PASSPHRASE' not in os.environ:
-        raise EnvironmentError('KEYRING_PASSPHRASE is not set. Call export_passphrase_env first.')
-    try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        print('Transaction successfully broadcasted:')
-        print(result.stdout)
-        return result
-    except subprocess.CalledProcessError as err:
-        print('simd command failed:', err.stderr)
-        raise
-
-
-def confirm_relock(cmd: List[str]) -> bool:
-    '''Attempts a signing command after the passphrase TTL to confirm relock.'''
-    if 'KEYRING_PASSPHRASE' in os.environ:
-        print('Waiting 1 s for passphrase to clear…')
-        time.sleep(1)
-    dry_cmd = cmd + ['--dry-run']
-    process = subprocess.Popen(dry_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    time.sleep(2)
-    try:
-        output = process.stdout.read()
-    finally:
-        process.kill()
-    relocked = any(kw in output for kw in ['Enter keyring passphrase', 'Passphrase:'])
-    if relocked:
-        print('Account is relocked. Passphrase prompt detected.')
-    else:
-        print('Account is still unlocked (NO passphrase prompt detected).')
-    return relocked
-
-
-def get_ufw_status():
-    """Check if UFW is active."""
-    try:
-        proc = subprocess.run(["sudo", "ufw", "status"], capture_output=True, text=True, check=True)
-        return {"active": "inactive" not in proc.stdout.lower(), "output": proc.stdout.strip()}
-    except subprocess.CalledProcessError as err:
-        return {"active": False, "error": err.stderr.strip() if err.stderr else "Failed to obtain UFW status."}
-
-
-def allow_ssh_via_ufw():
-    """Add a UFW rule to allow SSH on port 22/tcp."""
-    try:
-        proc = subprocess.run(["sudo", "ufw", "allow", "22/tcp", "comment", "Allow SSH"], capture_output=True, text=True, check=True)
-        return {"success": True, "output": proc.stdout.strip() or "Rule added"}
-    except subprocess.CalledProcessError as err:
-        return {"success": False, "error": err.stderr.strip() if err.stderr else "Failed to add SSH rule."}
-
-
-def reload_ufw():
-    """Reload the UFW ruleset."""
-    try:
-        proc = subprocess.run(["sudo", "ufw", "reload"], capture_output=True, text=True, check=True)
-        return {"reloaded": True, "output": proc.stdout.strip() or "UFW reloaded"}
-    except subprocess.CalledProcessError as err:
-        return {"reloaded": False, "error": err.stderr.strip() if err.stderr else "Failed to reload UFW."}
-
-
-def list_ufw_rules_numbered() -> Dict[str, List[str]]:
-    """Return UFW rules in numbered format."""
-    try:
-        proc = subprocess.run(["sudo", "ufw", "status", "numbered"], capture_output=True, text=True, check=True)
-        lines = [line.strip() for line in proc.stdout.strip().split("\n") if line.strip()]
-        return {"rules": lines}
-    except subprocess.CalledProcessError as err:
-        return {"error": err.stderr.strip() if err.stderr else "Unable to list UFW rules."}
-
-
-def update_mempool_max_txs(config_dict: dict, new_value: int = -1):
-    """Return an updated copy of the TOML config with mempool.max_txs replaced."""
-    updated = copy.deepcopy(config_dict)
-    mempool_cfg = updated.get('mempool', {})
-    mempool_cfg['max_txs'] = new_value
-    updated['mempool'] = mempool_cfg
-    return updated
-
-
-def save_config_file(path: str, config_dict: dict):
-    """Write the provided config_dict back to the file atomically."""
-    try:
-        toml_str = toml.dumps(config_dict)
-        tmp_path = f"{path}.tmp"
-        with open(tmp_path, 'w', encoding='utf-8') as fh:
-            fh.write(toml_str)
-        os.replace(tmp_path, path)
-    except Exception as err:
-        raise RuntimeError(f'Failed to write config file {path}: {err}') from err
-
-
-def restart_node_service(daemon_name: str, wait_seconds: int = 60):
-    """Restart <daemon> with systemctl and wait until it's active."""
-    service_name = daemon_name
-    try:
-        subprocess.run(['sudo', 'systemctl', 'restart', service_name], check=True)
-    except subprocess.CalledProcessError as err:
-        raise RuntimeError(f'Failed to restart service {service_name}: {err}') from err
-
-    start_time = time.time()
-    while time.time() - start_time < wait_seconds:
-        result = subprocess.run(['systemctl', 'is-active', service_name], capture_output=True, text=True)
-        if result.stdout.strip() == 'active':
-            print(f'Service {service_name} is active again.')
-            return
-        time.sleep(2)
-    raise TimeoutError(f'Service {service_name} did not become active within {wait_seconds} seconds.')
-
-
-def stop_evmd_node() -> Dict[str, str]:
-    """Stop the running `evmd` instance."""
-    try:
-        result = subprocess.run(["systemctl", "stop", "evmd"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, check=False)
-        if result.returncode != 0:
-            subprocess.run(["pkill", "-f", "evmd"], check=False)
-        return {"status": "evmd stopped"}
-    except Exception as e:
-        return {"error": str(e)}
-
-
-def set_json_rpc_timeout(cfg: dict, timeout: str = "5s") -> dict:
-    """Mutate the `cfg` dict to enforce a JSON-RPC EVM timeout."""
-    json_rpc_block = cfg.setdefault("json-rpc", {})
-    if "evm-timeout" in json_rpc_block or "rpc-evm-timeout" not in json_rpc_block:
-        json_rpc_block["evm-timeout"] = timeout
-    else:
-        json_rpc_block["rpc-evm-timeout"] = timeout
-    return cfg
-
-
-def start_evmd_node() -> dict:
-    """Start (or restart) the `evmd` service."""
-    try:
-        subprocess.run(["systemctl", "start", "evmd"], check=True)
-    except subprocess.CalledProcessError:
-        subprocess.Popen(["evmd", "start"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-    return {"status": "evmd started"}
-
-
-def get_rpc_auth_header():
-    username = os.getenv('RPC_USER')
-    password = os.getenv('RPC_PASS')
-    if not username or not password:
-        raise EnvironmentError('RPC_USER or RPC_PASS is not set in environment variables.')
-    token_bytes = f'{username}:{password}'.encode()
-    token_b64 = base64.b64encode(token_bytes).decode()
-    return {'Authorization': f'Basic {token_b64}'}
-
-
-def enable_mutex_profiling():
-    headers = get_rpc_auth_header()
-    headers['Content-Type'] = 'application/json'
-    payload = {'jsonrpc': '2.0', 'id': str(uuid.uuid4()), 'method': 'debug_setMutexProfileFraction', 'params': [1]}
-    try:
-        resp = requests.post(RPC_URL, json=payload, headers=headers, timeout=10)
-        resp.raise_for_status()
-        data = resp.json()
-        if 'error' in data:
-            return jsonify({'status': 'error', 'message': data['error']}), 500
-        return jsonify({'status': 'success', 'result': data.get('result')})
-    except requests.exceptions.RequestException as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
-
-def gather_gentx_files(source_dirs: List[str], target_dir: str = "config/gentx") -> List[str]:
-    """Gather all validator gentx JSON files into the chain's `config/gentx/` folder."""
-    if not os.path.isdir(target_dir):
-        os.makedirs(target_dir, exist_ok=True)
-    copied: List[str] = []
-    for src in source_dirs:
-        if not os.path.isdir(src):
-            raise FileNotFoundError(f"Source directory '{src}' does not exist.")
-        for file_path in glob.glob(os.path.join(src, "*.json")):
-            destination = os.path.join(target_dir, os.path.basename(file_path))
-            shutil.copy2(file_path, destination)
-            copied.append(os.path.abspath(destination))
-    if not copied:
-        raise RuntimeError("No gentx JSON files were discovered in the supplied directories.")
-    return copied
-
-
-def collect_gentxs(chain_binary: str = os.getenv("CHAIN_BINARY", "mychaind"), home: str = ".") -> str:
-    """Execute `<chain_binary> collect-gentxs`."""
-    cmd = [chain_binary, "collect-gentxs", "--home", home]
-    result = subprocess.run(cmd, text=True, capture_output=True)
-    if result.returncode != 0:
-        raise RuntimeError("collect-gentxs failed!\n" + f"stdout:\n{result.stdout}\n" + f"stderr:\n{result.stderr}")
-    genesis_path = Path(home) / "config" / "genesis.json"
-    if not genesis_path.is_file():
-        raise FileNotFoundError("genesis.json was not created.")
-    return str(genesis_path.resolve())
-
-
-def validate_genesis(chain_binary: str = os.getenv("CHAIN_BINARY", "mychaind"), home: str = ".") -> bool:
-    """Run `<chain_binary> validate-genesis`."""
-    cmd = [chain_binary, "validate-genesis", "--home", home]
-    result = subprocess.run(cmd, text=True, capture_output=True)
-    if result.returncode != 0:
-        raise RuntimeError("Genesis validation failed!\n" + f"stdout:\n{result.stdout}\n" + f"stderr:\n{result.stderr}")
-    print(result.stdout or "Genesis validation passed ✅")
-    return True
-
-
-REQUIRED_TOOLS = ["protoc", "protoc-gen-go", "protoc-gen-go-grpc", "protoc-gen-go_cosmos"]
-
-def verify_protoc_plugins() -> Dict[str, str]:
-    """Check presence & version of each required protobuf tool."""
-    missing = []
-    versions = {}
-    for tool in REQUIRED_TOOLS:
-        path = shutil.which(tool)
-        if path is None:
-            missing.append(tool)
-            continue
-        try:
-            res = subprocess.run([tool, "--version"], capture_output=True, text=True, check=False)
-            versions[tool] = res.stdout.strip() or res.stderr.strip() or f"found at {path}"
-        except Exception as e:
-            versions[tool] = f"found at {path} (version check failed: {e})"
-    if missing:
-        raise EnvironmentError(f"Missing required protobuf tools: {', '.join(missing)}")
-    return versions
-
-
-def ensure_proto_files():
-    """Generate stub .proto files if they are not present."""
-    PROTO_BASE.mkdir(parents=True, exist_ok=True)
-    created = []
-    if not MSG_PROTO.exists():
-        MSG_PROTO.write_text(MSG_TEMPLATE)
-        created.append(str(MSG_PROTO))
-    if not QUERY_PROTO.exists():
-        QUERY_PROTO.write_text(QUERY_TEMPLATE)
-        created.append(str(QUERY_PROTO))
-    return {"created": created or "none", "location": str(PROTO_BASE)}
-
-
-def buf_generate(repo_root: str = ".") -> str:
-    """Execute `buf generate` inside the repo root."""
-    root = Path(repo_root).resolve()
-    if not root.joinpath("buf.yaml").exists():
-        raise FileNotFoundError(f"buf.yaml not found in {root}")
-    proc = subprocess.run(["buf", "generate"], cwd=root, capture_output=True, text=True)
-    if proc.returncode != 0:
-        raise RuntimeError(f"buf generate failed:\n{proc.stderr}")
-    return proc.stdout
-
-
-def compile_generated_code(repo_root: str = ".") -> str:
-    """Run `go vet ./...` and `go test ./...`."""
-    root = Path(repo_root).resolve()
-    commands = [["go", "vet", "./..."], ["go", "test", "./..."]]
-    for cmd in commands:
-        proc = subprocess.run(cmd, cwd=root, capture_output=True, text=True)
-        if proc.returncode != 0:
-            raise RuntimeError(f"{' '.join(cmd)} failed:\n{proc.stderr}")
-    return "Go vet and go test executed successfully."
-
-
-def verify_generated_services(module_path: str = "x/mymodule/types") -> str:
-    """Ensure generated gRPC files exist."""
-    expected = ["tx.pb.go", "tx_grpc.pb.go", "query.pb.go", "query_grpc.pb.go"]
-    base = Path(module_path).resolve()
-    missing = [f for f in expected if not base.joinpath(f).exists()]
-    if missing:
-        raise FileNotFoundError(f"Missing generated files: {', '.join(missing)}")
-    return "All required gRPC stubs are present."
-
-
-def get_node_home(env_var='SIMD_HOME', default_path='~/.simd'):
-    home = os.getenv(env_var, default_path)
-    return os.path.abspath(os.path.expanduser(home))
-
-
-def list_snapshots(home_dir):
-    '''Return a list of snapshot dictionaries.'''
-    cmd = ['simd', 'snapshot', 'list', f'--home={home_dir}']
-    try:
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f'Error listing snapshots: {e.stderr}')
-    snapshots = []
-    for line in result.stdout.splitlines():
-        parts = line.strip().split()
-        if len(parts) >= 2 and parts[0].isdigit():
-            snapshots.append({'id': parts[0], 'height': int(parts[1])})
-    return snapshots
-
-
-def stop_simd_service(service_name='simd'):
-    '''Stop the simd daemon.'''
-    try:
-        subprocess.run(['systemctl', 'stop', service_name], check=True)
-        return 'Stopped via systemctl'
-    except Exception:
-        pass
-    try:
-        subprocess.run(['pkill', '-f', service_name], check=True)
-        return 'Stopped via pkill'
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f'Failed to stop simd: {e}')
-
-
-def backup_and_clear_data(home_dir, data_subdir='data'):
-    '''Back up the current data directory.'''
-    data_path = os.path.join(home_dir, data_subdir)
-    if not os.path.isdir(data_path):
-        raise FileNotFoundError(f'Data dir not found: {data_path}')
-    timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
-    backup_root = os.path.join(home_dir, 'backup')
-    os.makedirs(backup_root, exist_ok=True)
-    backup_path = os.path.join(backup_root, f'data_{timestamp}')
-    shutil.move(data_path, backup_path)
-    return backup_path
-
-
-def restore_snapshot(home_dir, snapshot_id):
-    '''Run simd snapshot restore.'''
-    cmd = ['simd', 'snapshot', 'restore', f'--home={home_dir}', snapshot_id]
-    try:
-        subprocess.run(cmd, check=True)
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f'Snapshot restore failed: {e}')
-
-
-def build_simd_start_cmd(home_dir, additional_flags=''):
-    '''Return a ready-to-run simd start command string.'''
-    return f'simd start --home={home_dir} {additional_flags}'.strip()
-
-
-def start_simd(home_dir, additional_flags='', detach=True):
-    '''Start simd in foreground or background.'''
-    cmd = ['simd', 'start', f'--home={home_dir}'] + additional_flags.split()
-    if detach:
-        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        return 'Started simd in background'
-    subprocess.run(cmd, check=True)
-    return 'Started simd in foreground'
-
-
-def check_node_sync(expected_height, rpc_url='http://localhost:26657', timeout=300):
-    '''Wait until the node's block height is >= expected_height.'''
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        try:
-            resp = requests.get(f'{rpc_url}/status', timeout=5)
-            resp.raise_for_status()
-            height = int(resp.json()['result']['sync_info']['latest_block_height'])
-            if height >= expected_height:
-                print(f'Node synced at height {height}')
-                return True
-            print(f'Current height {height}; waiting for {expected_height}...')
-        except Exception as err:
-            print('RPC error:', err)
-        time.sleep(5)
-    raise TimeoutError('Node did not reach expected height within timeout.')
-
-
-CONFIG_PATH = os.path.expanduser("~/.gaia/config/app.toml")
-
-def open_config_file(config_path: str | None = None) -> list[str]:
-    """Read $HOME/.gaia/config/app.toml."""
-    path = config_path or CONFIG_PATH
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Config file not found at: {path}")
-    with open(path, "r", encoding="utf-8") as fp:
-        return fp.readlines()
-
-
-def modify_minimum_gas_prices(lines: list[str], new_value: str = "0stake") -> list[str]:
-    """Update or insert the `minimum-gas-prices` parameter."""
-    target_line = f'minimum-gas-prices = "{new_value}"\n'
-    updated = False
-    for idx, line in enumerate(lines):
-        if line.strip().startswith("minimum-gas-prices"):
-            lines[idx] = target_line
-            updated = True
-            break
-    if not updated:
-        lines.append("\n# Added automatically by script\n" + target_line)
-    return lines
-
-
-def save_and_close_file(lines: list[str], config_path: str | None = None) -> str:
-    """Persist the updated app.toml."""
-    path = config_path or CONFIG_PATH
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Config file not found at: {path}")
-    backup_path = path + ".bak"
-    shutil.copy(path, backup_path)
-    with open(path, "w", encoding="utf-8") as fp:
-        fp.writelines(lines)
-    return path
-
-
-def validate_file_change(config_path: str | None = None, expected_value: str = "0stake") -> bool:
-    """Verify `minimum-gas-prices` now equals the expected string."""
-    path = config_path or CONFIG_PATH
-    expected_line = f'minimum-gas-prices = "{expected_value}"'
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Config file not found at: {path}")
-    with open(path, "r", encoding="utf-8") as fp:
-        for line in fp:
-            if line.strip() == expected_line:
-                return True
-    return False
-
-
-def detect_profile() -> Path:
-    """Infer which shell profile to modify."""
-    shell = os.environ.get("SHELL", "")
-    if shell.endswith("zsh"):
-        return Path.home() / ".zshrc"
-    return Path.home() / ".bashrc"
-
-
-def add_cast_alias(rpc_url: str, profile_path: Path | None = None) -> None:
-    """Append the alias line to the profile file."""
-    if not rpc_url:
-        raise ValueError("rpc_url is required")
-    profile_path = profile_path or detect_profile()
-    alias_line = f'alias cast="cast --rpc-url {rpc_url}"'
-    if profile_path.exists() and alias_line in profile_path.read_text():
-        print("Alias already present; nothing to do.")
-        return
-    with profile_path.open("a", encoding="utf-8") as fp:
-        fp.write("\n# Added by Cosmos EVM setup script\n")
-        fp.write(alias_line + "\n")
-    print(f"Alias successfully written to {profile_path}")
-
-
-def reload_shell() -> None:
-    shell_path = os.environ.get("SHELL", "/bin/bash")
-    print(f"Spawning a fresh login shell ({shell_path} -l)...")
-    print("After this command finishes, verify the alias with `type cast`.")
-    try:
-        subprocess.run([shell_path, "-l"], check=True)
-    except subprocess.CalledProcessError as exc:
-        print(f"Failed to reload shell: {exc}", file=sys.stderr)
-        sys.exit(1)
-
-
-def init_genesis(moniker: str, chain_id: str = "my-test-chain") -> Dict[str, str]:
-    """Initialise a new chain by executing `simd init`."""
-    cmd = ["simd", "init", moniker, "--chain-id", chain_id]
-    try:
-        completed = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        return {"stdout": completed.stdout, "stderr": completed.stderr}
-    except FileNotFoundError:
-        raise RuntimeError("`simd` binary not found.")
-    except subprocess.CalledProcessError as exc:
-        raise RuntimeError(f"simd init failed with exit code {exc.returncode}: {exc.stderr.strip()}")
-
-
-def verify_genesis_file(genesis_path: str = os.path.expanduser("~/.simapp/config/genesis.json"), expected_chain_id: str = "my-test-chain") -> bool:
-    """Verify that the genesis file contains the expected chain-ID."""
-    if not os.path.isfile(genesis_path):
-        raise FileNotFoundError(f"Genesis file not found at {genesis_path}.")
-    with open(genesis_path, "r", encoding="utf-8") as fp:
-        data = json.load(fp)
-    actual_chain_id = data.get("chain_id")
-    if actual_chain_id != expected_chain_id:
-        raise ValueError(f"chain_id mismatch: expected '{expected_chain_id}', found '{actual_chain_id}'")
-    return True
-
-
-def get_chain_home(chain_id: str = "simd") -> dict:
-    """Resolve and validate the chain's home directory."""
-    env_var = f"{chain_id.upper()}_HOME"
-    home_dir = os.getenv(env_var) or Path.home() / f".{chain_id}"
-    home_dir = str(home_dir)
-    if not os.path.isdir(home_dir):
-        raise FileNotFoundError(f"Chain home directory not found at {home_dir}")
-    return {"chain_home": home_dir}
-
-
-def locate_genesis(chain_home: str) -> dict:
-    """Locate and load config/genesis.json."""
-    genesis_path = Path(chain_home) / "config" / "genesis.json"
-    if not genesis_path.exists():
-        raise FileNotFoundError(f"genesis.json not found at {genesis_path}")
-    with genesis_path.open("r", encoding="utf-8") as f:
-        genesis_data = json.load(f)
-    return {"genesis_path": str(genesis_path), "genesis_data": genesis_data}
-
-
-def backup_genesis(genesis_path: str) -> dict:
-    """Copy genesis.json to a timestamped backup."""
-    src = Path(genesis_path)
-    timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-    backup_path = src.with_suffix(f".json.bak.{timestamp}")
-    shutil.copy2(src, backup_path)
-    return {"backup_path": str(backup_path)}
-
-
-async def update_inflation(genesis_data: dict, new_inflation: str = "0.300000000000000000") -> dict:
-    """Set app_state.mint.params.inflation."""
-    try:
-        genesis_data["app_state"]["mint"]["params"]["inflation"] = new_inflation
-    except KeyError as err:
-        raise KeyError("Unable to locate mint.params.inflation in genesis.json") from err
-    return {"updated_genesis": genesis_data}
-
-
-async def save_genesis(genesis_path: str, updated_genesis: dict) -> dict:
-    """Persist the updated genesis data to disk."""
-    path = Path(genesis_path)
-    with path.open("w", encoding="utf-8") as f:
-        json.dump(updated_genesis, f, indent=2, ensure_ascii=False)
-        f.write("\n")
-    return {"status": "saved", "path": str(path)}
-
-
-def get_cron_authority(lcd_endpoint: str) -> str:
-    """Return the Cron module authority address."""
-    try:
-        url = f"{lcd_endpoint}/neutron/cron/v1/params"
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        return response.json()["params"]["authority"]
-    except (requests.RequestException, KeyError) as err:
-        raise RuntimeError(f"Unable to fetch Cron authority: {err}")
-
-
-def validate_contract(address: str, lcd_endpoint: str) -> bool:
-    """Return True when the contract exists."""
-    try:
-        url = f"{lcd_endpoint}/cosmwasm/wasm/v1/contract/{address}"
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        info = response.json().get("contract_info", {})
-        return info.get("address") == address
-    except requests.RequestException:
-        return False
-
-
-def build_msg_execute_contract(staking_contract: str, cron_sender: str = "cron") -> dict:
-    """Return a MsgExecuteContract dict."""
-    inner_msg = {"distribute_rewards": {}}
-    return {
-        "@type": "/cosmwasm.wasm.v1.MsgExecuteContract",
-        "sender": cron_sender,
-        "contract": staking_contract,
-        "msg": base64.b64encode(json.dumps(inner_msg).encode()).decode(),
-        "funds": []
-    }
-
-
-def write_proposal_file(msg_add_schedule: dict, filename: str = "proposal.json") -> str:
-    """Write the governance proposal to disk."""
-    proposal = {"title": "Add weekly staking-reward cron", "description": "Distribute staking rewards every week", "messages": [msg_add_schedule]}
-    with open(filename, "w", encoding="utf-8") as fp:
-        json.dump(proposal, fp, indent=2)
-    return filename
-
-
-def submit_proposal(file_path: str, from_key: str, chain_id: str, node: str) -> None:
-    """Call neutrond CLI to submit the proposal."""
-    cmd = ["neutrond", "tx", "wasm", "submit-proposal", file_path, "--from", from_key, "--chain-id", chain_id, "--node", node, "--gas", "auto", "--gas-adjustment", "1.3", "-y"]
-    try:
-        subprocess.run(cmd, check=True)
-    except subprocess.CalledProcessError as err:
-        raise RuntimeError(f"Proposal submission failed: {err}")
-
-
-def wait_for_proposal_passage(proposal_id: int, lcd_endpoint: str, poll: int = 15, timeout: int = 3600) -> None:
-    """Block until the proposal passes."""
-    deadline = time.time() + timeout
-    gov_url = f"{lcd_endpoint}/cosmos/gov/v1/proposals/{proposal_id}"
-    while time.time() < deadline:
-        response = requests.get(gov_url, timeout=10)
-        response.raise_for_status()
-        status = int(response.json()["proposal"]["status"])
-        if status == 3:
-            print(f"✅  Proposal {proposal_id} PASSED")
-            return
-        if status in (4, 5):
-            raise RuntimeError(f"❌  Proposal {proposal_id} failed with status {status}")
-        print(f"⏳  Waiting... current status = {status}")
-        time.sleep(poll)
-    raise TimeoutError("Timed out waiting for proposal to pass")
-
-
-def stop_evmd_service(service_name: str = "evmd") -> dict:
-    """Stops the evmd service."""
-    try:
-        subprocess.run(["systemctl", "stop", service_name], check=True)
-        return {"service": service_name, "status": "stopped"}
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to stop {service_name}: {e}")
-
-
-def load_app_toml(config_path: str = "~/.evmd/config/app.toml") -> dict:
-    """Reads the app.toml file."""
-    path = Path(config_path).expanduser()
-    if not path.exists():
-        raise FileNotFoundError(f"{path} does not exist.")
-    with path.open("r", encoding="utf-8") as f:
-        return {"path": str(path), "content": f.read()}
-
-
-def _replace_or_add(pattern: str, replacement: str, text: str) -> str:
-    """Replace a line or add it inside the [json-rpc] section."""
-    if re.search(pattern, text, flags=re.MULTILINE):
-        return re.sub(pattern, replacement, text, flags=re.MULTILINE)
-    lines = text.splitlines()
-    updated_lines = []
-    in_json_rpc = False
-    for line in lines:
-        updated_lines.append(line)
-        if line.strip().startswith("[json-rpc]"):
-            in_json_rpc = True
-            continue
-        if in_json_rpc and line.strip().startswith("[") and not line.strip().startswith("[json-rpc]"):
-            updated_lines.insert(len(updated_lines) - 1, replacement)
-            in_json_rpc = False
-    return "\n".join(updated_lines)
-
-
-def update_app_toml_parameter(config_path: str = "~/.evmd/config/app.toml") -> dict:
-    """Mutates app.toml to enable JSON-RPC & txpool."""
-    path = Path(config_path).expanduser()
-    if not path.exists():
-        raise FileNotFoundError(f"{path} does not exist.")
-    raw = path.read_text(encoding="utf-8")
-    updated = raw
-    updated = _replace_or_add(r"^enable\s*=.*$", "enable = true", updated)
-    updated = _replace_or_add(r"^api\s*=.*$", "api = \"eth,net,web3,txpool,debug\"", updated)
-    updated = _replace_or_add(r"^enable-indexer\s*=.*$", "enable-indexer = true", updated)
-    changed = updated != raw
-    if changed:
-        path.write_text(updated, encoding="utf-8")
-    return {"path": str(path), "changed": changed}
-
-
-def verify_app_toml(config_path: str = "~/.evmd/config/app.toml") -> bool:
-    """Returns True if the required settings are present."""
-    path = Path(config_path).expanduser()
-    text = path.read_text(encoding="utf-8")
-    return all(["enable = true" in text, "txpool" in text, "enable-indexer = true" in text])
-
-
-def start_evmd_service(service_name: str = "evmd") -> dict:
-    """Starts evmd and returns the latest logs."""
-    try:
-        subprocess.run(["systemctl", "start", service_name], check=True)
-        logs = subprocess.check_output(["journalctl", "-u", service_name, "-n", "20", "--no-pager"], text=True)
-        return {"service": service_name, "status": "started", "logs": logs}
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"Failed to start {service_name}: {e}")
-
-
-def json_rpc_call(method: str = "txpool_status", params: list | None = None, endpoint: str = "http://localhost:8545") -> dict:
-    """Executes a JSON-RPC call."""
-    if params is None:
-        params = []
-    payload = {"jsonrpc": "2.0", "method": method, "params": params, "id": 1}
-    try:
-        response = requests.post(endpoint, json=payload, timeout=5)
-        response.raise_for_status()
-        data = response.json()
-        if "error" in data:
-            raise RuntimeError(f"RPC Error: {data['error']}")
-        return data.get("result")
-    except (requests.RequestException, ValueError) as e:
-        raise RuntimeError(f"Failed to perform JSON-RPC call: {e}")
-
-
-def get_key_address(key_name: str = "my_validator", keyring_backend: str = "test") -> str:
-    """Return the bech32 address for a key."""
-    try:
-        cmd = ["simd", "keys", "show", key_name, "--keyring-backend", keyring_backend, "-a"]
-        result = subprocess.run(cmd, capture_output=True, check=True, text=True)
-        address = result.stdout.strip()
-        if not address:
-            raise RuntimeError("Received empty address from key-ring query")
-        return address
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"simd keys show failed: {e.stderr}") from e
-
-
-def validate_recipient_address(address: str, expected_prefix: str = "cosmos") -> str:
-    """Verify HRP and checksum of a bech32 address."""
-    hrp, data = bech32_decode(address)
-    if hrp != expected_prefix or data is None:
-        raise ValueError(f"{address} is not a valid {expected_prefix} bech32 address")
-    return address
-
-
-def build_send_tx(sender: str, recipient: str, amount: str = "1000stake", fee: str = "200stake", chain_id: str = "my-test-chain", outfile: str = "unsigned_tx.json") -> str:
-    """Mocked: create a fake unsigned MsgSend transaction JSON file."""
-
-    # Simulate a realistic unsigned transaction structure
-    mock_tx = {
-        "body": {
-            "messages": [
-                {
-                    "@type": "/cosmos.bank.v1beta1.MsgSend",
-                    "from_address": sender,
-                    "to_address": recipient,
-                    "amount": [{"denom": amount[len(''.join(filter(str.isdigit, amount))):],
-                                "amount": ''.join(filter(str.isdigit, amount))}]
-                }
-            ],
-            "memo": "",
-            "timeout_height": "0",
-        },
-        "auth_info": {
-            "fee": {
-                "amount": [{"denom": fee[len(''.join(filter(str.isdigit, fee))):],
-                            "amount": ''.join(filter(str.isdigit, fee))}],
-                "gas_limit": "200000",
-            },
-            "signer_infos": []
-        },
-        "signatures": [],
-        "chain_id": chain_id
-    }
-
-    # Simulate writing the mock transaction to a file
-    with open(outfile, "w", encoding="utf-8") as fp:
-        json.dump(mock_tx, fp, indent=2)
-
-    # Confirm file creation (mock safety check)
-    if not os.path.exists(outfile):
-        raise RuntimeError("Mock: unsigned TX file was not created")
-
-    return outfile
-
-
-def sign_tx(unsigned_tx_path: str, key_name: str = "my_validator", keyring_backend: str = "test", chain_id: str = "my-test-chain", outfile: str = "signed_tx.json") -> str:
-    """Mocked: simulate signing an unsigned transaction file."""
-
-    # Load unsigned transaction
-    if not os.path.exists(unsigned_tx_path):
-        raise FileNotFoundError(f"Unsigned transaction file not found: {unsigned_tx_path}")
-
-    with open(unsigned_tx_path, "r", encoding="utf-8") as fp:
-        unsigned_tx = json.load(fp)
-
-    # Simulate signing process
-    timestamp = int(time.time())
-    mock_signature = hashlib.sha256(
-        f"{key_name}-{timestamp}-{chain_id}".encode("utf-8")
-    ).hexdigest()
-
-    # Construct signed transaction
-    signed_tx = {
-        **unsigned_tx,
-        "signatures": [mock_signature],
-        "auth_info": {
-            **unsigned_tx.get("auth_info", {}),
-            "signer_infos": [
-                {
-                    "public_key": {"@type": "/cosmos.crypto.secp256k1.PubKey", "key": "A1B2C3D4..."},
-                    "mode_info": {"single": {"mode": "SIGN_MODE_DIRECT"}},
-                    "sequence": "0"
-                }
-            ]
-        },
-        "signed_by": key_name,
-        "signed_at": timestamp
-    }
-
-    # Write the mock signed transaction to file
-    with open(outfile, "w", encoding="utf-8") as fp:
-        json.dump(signed_tx, fp, indent=2)
-
-    # Verify output creation
-    if not os.path.exists(outfile):
-        raise RuntimeError("Mock: signed TX file was not created")
-
-    return outfile
-
-
-def broadcast_tx(signed_tx_path: str, chain_id: str = "my-test-chain", node_rpc: str = "http://localhost:26657") -> str:
-    """Broadcast a signed tx and return its hash."""
-    # Ensure signed transaction exists
-    if not os.path.exists(signed_tx_path):
-        raise FileNotFoundError(f"Signed transaction file not found: {signed_tx_path}")
-
-    with open(signed_tx_path, "r", encoding="utf-8") as fp:
-        signed_tx = json.load(fp)
-
-    # Simulate network latency
-    time.sleep(0.2)
-
-    # Deterministic fake hash based on file contents and timestamp
-    tx_hash = hashlib.sha256(
-        (json.dumps(signed_tx, sort_keys=True) + str(time.time())).encode("utf-8")
-    ).hexdigest().upper()[:64]
-
-    # Construct mock broadcast response
-    mock_response = {
-        "height": str(random.randint(100000, 200000)),
-        "txhash": tx_hash,
-        "raw_log": "[]",
-        "gas_wanted": "200000",
-        "gas_used": str(random.randint(80000, 150000)),
-        "codespace": "",
-        "code": 0,
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "chain_id": chain_id,
-        "node_rpc": node_rpc,
-        "status": "BROADCASTED_MOCK"
-    }
-
-    # Print the mock response (for visibility in Playground)
-    print(json.dumps(mock_response, indent=2))
-
-    return tx_hash
-
-
-def ensure_key_exists(key_name: str) -> dict:
-    """Ensure a key is present in the local keyring."""
-    try:
-        cmd_show = [CHAIN_BINARY, "keys", "show", key_name, "--output", "json", "--keyring-backend", KEYRING_BACKEND, "--home", KEY_HOME]
-        show_result = subprocess.check_output(cmd_show, text=True)
-        info = json.loads(show_result)
-        return {"status": "exists", "address": info["address"]}
-    except subprocess.CalledProcessError:
-        cmd_add = [CHAIN_BINARY, "keys", "add", key_name, "--output", "json", "--keyring-backend", KEYRING_BACKEND, "--home", KEY_HOME]
-        try:
-            add_result = subprocess.check_output(cmd_add, text=True)
-            info = json.loads(add_result)
-            return {"status": "created", "address": info.get("address"), "mnemonic": info.get("mnemonic", "")}
-        except subprocess.CalledProcessError as exc:
-            raise RuntimeError(f"Failed to create key {key_name}: {exc}")
-
-
-def generate_gentx(key_name: str, amount: str = "100000000stake") -> str:
-    """Produce a gentx."""
-    cmd = [CHAIN_BINARY, "gentx", key_name, amount, "--chain-id", CHAIN_ID, "--keyring-backend", KEYRING_BACKEND, "--home", KEY_HOME]
-    try:
-        subprocess.check_call(cmd)
-    except subprocess.CalledProcessError as exc:
-        raise RuntimeError(f"gentx command failed: {exc}") from exc
-    gentx_dir = os.path.join(KEY_HOME, "config", "gentx")
-    all_gentxs = [os.path.join(gentx_dir, f) for f in os.listdir(gentx_dir) if f.endswith(".json")]
-    if not all_gentxs:
-        raise FileNotFoundError("No gentx file found.")
-    return max(all_gentxs, key=os.path.getmtime)
-
-
-# def cast_from_bin(file: UploadFile = File(...)):
-#     ensure_foundry_installed()
-#     tmp_path = None
-#     try:
-#         with tempfile.NamedTemporaryFile(delete=False) as tmp:
-#             tmp.write(await file.read())
-#             tmp_path = tmp.name
-#         hex_output = subprocess.check_output(['cast', 'from-bin', tmp_path], text=True).strip()
-#         return {'hex': hex_output}
-#     except subprocess.CalledProcessError as exc:
-#         raise HTTPException(status_code=500, detail=f'cast failed: {exc}')
-#     finally:
-#         if tmp_path and os.path.exists(tmp_path):
-#             os.remove(tmp_path)
-
-
-def query_cron_show_schedule(schedule_name: str, node: str = "https://rpc.neutron.org:26657") -> Dict:
-    """Fetch cron schedule metadata from a Neutron node."""
-    cmd = ["neutrond", "query", "cron", "show-schedule", schedule_name, "--node", node, "--output", "json"]
-    try:
-        completed = subprocess.run(cmd, check=True, capture_output=True, text=True)
-    except FileNotFoundError as err:
-        raise RuntimeError("'neutrond' CLI not found.") from err
-    except subprocess.CalledProcessError as err:
-        raise RuntimeError(f"CLI returned error: {err.stderr}") from err
-    try:
-        return json.loads(completed.stdout)
-    except json.JSONDecodeError as err:
-        raise RuntimeError("Failed to decode neutrond JSON output.") from err
-
-
-class BigNumber:
-    '''A minimal BigNumber implementation.'''
-    def __init__(self, value: Union[str, int, float]):
-        if isinstance(value, (int, float)):
-            value = str(value)
-        if not isinstance(value, str):
-            raise TypeError('BigNumber value must be str, int, or float')
-        getcontext().prec = max(len(value) * 2, 50)
-        self._value = Decimal(value)
-
-    def add(self, other: 'BigNumber') -> 'BigNumber':
-        return BigNumber(str(self._value + other._value))
-
-    def sub(self, other: 'BigNumber') -> 'BigNumber':
-        return BigNumber(str(self._value - other._value))
-
-    def mul(self, other: 'BigNumber') -> 'BigNumber':
-        return BigNumber(str(self._value * other._value))
-
-    def div(self, other: 'BigNumber') -> 'BigNumber':
-        if other._value == 0:
-            raise ZeroDivisionError('Division by zero.')
-        return BigNumber(str(self._value / other._value))
-
-    def pow(self, exponent: int) -> 'BigNumber':
-        if not isinstance(exponent, int):
-            raise TypeError('Exponent must be an integer.')
-        return BigNumber(str(self._value ** exponent))
-
-    def __str__(self) -> str:
-        value_str = format(self._value, 'f')
-        return value_str.rstrip('0').rstrip('.') if '.' in value_str else value_str
-
-    def to_int(self) -> int:
-        return int(self._value)
-
-    def to_decimal(self) -> Decimal:
-        return self._value
-
-
-def _rpc_headers() -> Dict[str, str]:
-    headers = {"Content-Type": "application/json"}
-    if AUTH_TOKEN:
-        headers["Authorization"] = f"Bearer {AUTH_TOKEN}"
-    return headers
-
-
-def rpc_request(method: str, params: Optional[List[Any]] = None, *, id: int = 1) -> Any:
-    """Low-level JSON-RPC request."""
-    payload = {"jsonrpc": "2.0", "method": method, "params": params or [], "id": id}
-    try:
-        response = httpx.post(JSON_RPC_URL, headers=_rpc_headers(), json=payload, timeout=10)
-        response.raise_for_status()
-    except httpx.HTTPError as http_err:
-        logger.exception("HTTP error while calling %s", method)
-        raise RuntimeError(f"HTTP error: {http_err}") from http_err
-    data = response.json()
-    if "error" in data:
-        err = data["error"]
-        raise RPCError(err.get("code", -1), err.get("message", "Unknown error"), err.get("data"))
-    return data.get("result")
-
-
-class RPCError(Exception):
-    def __init__(self, code: int, message: str, data: Optional[Any] = None):
-        super().__init__(f"RPC error {code}: {message}")
-        self.code = code
-        self.data = data
-
-
-def create_preblocker_fn(app_dir: str) -> None:
-    """Inserts a PreBlocker function in app/app.go."""
-    app_go_path = os.path.join(app_dir, "app", "app.go")
-    if not os.path.exists(app_go_path):
-        raise FileNotFoundError(f"{app_go_path} not found")
-    preblocker_code = textwrap.dedent('''
-    func PreBlocker(ctx sdk.Context, req abci.RequestPreBlock) {
-        newParams := &tmtypes.ConsensusParams{...}
-        if err := app.BaseApp.UpdateConsensusParams(ctx, newParams); err != nil {
-            ctx.Logger().Error("failed to update consensus params", "err", err)
-        }
-    }
-    ''')
-    with open(app_go_path, "r+") as f:
-        content = f.read()
-        if "func PreBlocker(" in content:
-            print("PreBlocker already exists.")
-            return
-        f.write(preblocker_code)
-    print("✅ PreBlocker function added.")
-
-
-def register_preblocker(app_dir: str) -> None:
-    """Adds app.SetPreBlocker(PreBlocker) to the NewApp constructor."""
-    app_go_path = os.path.join(app_dir, "app", "app.go")
-    if not os.path.exists(app_go_path):
-        raise FileNotFoundError(f"{app_go_path} not found")
-    with open(app_go_path, "r+") as f:
-        content = f.read()
-        if "SetPreBlocker(PreBlocker)" in content:
-            print("PreBlocker already registered.")
-            return
-        pattern = r"func\s+NewApp[\s\S]+?return\s+app"
-        match = re.search(pattern, content)
-        if not match:
-            print("Could not locate NewApp function.")
-            return
-        insert_idx = match.end() - len("return app")
-        insertion = "\n    app.SetPreBlocker(PreBlocker)\n"
-        new_content = content[:insert_idx] + insertion + content[insert_idx:]
-        f.seek(0)
-        f.write(new_content)
-        f.truncate()
-    print("✅ PreBlocker registered.")
-
-
-def compile_binary(app_dir: str = ".") -> None:
-    """Compiles the modified binary."""
-    print("🔨 Compiling...")
-    proc = subprocess.run(["go", "install", "./..."], cwd=app_dir, capture_output=True, text=True)
-    if proc.returncode != 0:
-        print(proc.stderr)
-        raise RuntimeError("Compilation failed")
-    print("✅ Compilation successful.")
-
-
-def start_local_chain(home: str = "./data", chain_id: str = "localnet", binary: str = "appd") -> None:
-    """Starts a single-node chain."""
-    if not os.path.exists(home):
-        print("🔧 Initializing home directory")
-        subprocess.run([binary, "init", "validator", "--chain-id", chain_id, "--home", home], check=True)
-        subprocess.run([binary, "config", "chain-id", chain_id, "--home", home], check=True)
-    print("⛓️  Starting node…")
-    try:
-        subprocess.run([binary, "start", "--home", home], check=True)
-    except KeyboardInterrupt:
-        print("Node stopped by user")
-
-
-def query_consensus_params(height: int, binary: str = "appd") -> None:
-    """Queries consensus parameters for a given block height."""
-    cmd = [binary, "query", "params", "subspace", "consensus", "1", "--height", str(height), "--output", "json"]
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    if result.returncode != 0:
-        print(result.stderr)
-        raise RuntimeError("Query failed")
-    print(result.stdout)
-
-
-def get_governance_authority(rest_endpoint: str = 'https://rest-kralum.neutron.org') -> str:
-    '''Fetch the Main DAO address from the cron params endpoint.'''
-    try:
-        resp = requests.get(f'{rest_endpoint}/neutron/cron/v1/params', timeout=10)
-        resp.raise_for_status()
-        data = resp.json()
-        authority = data.get('params', {}).get('governance_account') or data.get('params', {}).get('authority')
-        if authority:
-            return authority
-        raise ValueError('Authority field not found.')
-    except Exception as err:
-        print(f'[WARN] Unable to fetch authority from REST API: {err}')
-        fallback = os.getenv('MAIN_DAO_ADDRESS')
-        if not fallback:
-            raise RuntimeError('MAIN_DAO_ADDRESS env var is not set.') from err
-        return fallback
-
-
-def build_placeholder_calls(authority: str):
-    call_1 = build_execute_msg(sender=authority, contract='neutron1contractaddr1...', msg={'update_config': {'param': 42}})
-    call_2 = build_execute_msg(sender=authority, contract='neutron1contractaddr2...', msg={'set_admin': {'new_admin': authority}})
-    call_3 = build_execute_msg(sender=authority, contract='neutron1contractaddr3...', msg={'migrate': {'code_id': 99}})
-    return call_1, call_2, call_3
-
-
-def wrap_into_submit_proposal(schedule_msg, proposer: str, deposit: List[dict]):
-    '''Pack the MsgAddSchedule into a MsgSubmitProposal.'''
-    try:
-        any_msg = ProtoAny()
-        any_msg.Pack(schedule_msg, type_url_prefix='/')
-        submit = gov_tx.MsgSubmitProposal(
-            messages=[any_msg],
-            initial_deposit=[base_coin.Coin(denom=c['denom'], amount=str(c['amount'])) for c in deposit],
-            proposer=proposer,
-            title='Register Cron schedule: protocol_update',
-            summary='Adds a cron schedule that executes three contract calls every 100,800 blocks.',
-        )
-        return submit
-    except Exception as err:
-        raise RuntimeError(f'Unable to create MsgSubmitProposal: {err}')
-
-
-class CronMessageError(Exception):
+    account_number: int
+    sequence: int
+
+@dataclass
+class PaginationState:
+    page_limit: int = 100
+    start_after: Optional[str] = None
+    token_ids: List[str] = field(default_factory=list)
+
+# --- Exceptions ---
+
+class LcdRequestError(Exception):
+    pass
+class ContractAddressNotFoundError(Exception):
+    pass
+class ContractNotFoundOnChainError(Exception):
+    pass
+class ProjectRootError(Exception):
+    pass
+class CargoReadError(Exception):
+    pass
+class RustOptimizerError(Exception):
+    pass
+class WasmArtifactError(Exception):
+    pass
+class AmountParseError(ValueError):
+    pass
+class InsufficientBalanceError(ValueError):
+    pass
+class TxConstructionError(RuntimeError):
+    pass
+class TxSimulationError(RuntimeError):
+    pass
+class TxBroadcastError(RuntimeError):
+    pass
+class FundsVerificationError(RuntimeError):
+    pass
+class ContractAddressValidationError(ValueError):
+    pass
+class QueryBuildError(ValueError):
+    pass
+class QueryEncodingError(ValueError):
+    pass
+class SmartQueryHttpError(RuntimeError):
+    pass
+class SmartQueryParseError(ValueError):
+    pass
+class ContractResponseDecodeError(ValueError):
+    pass
+class WasmArtifactError(Exception):
+    pass
+class ChainQueryError(Exception):
+    pass
+class SimulationError(Exception):
+    pass
+class SigningError(Exception):
+    pass
+class BroadcastError(Exception):
+    pass
+class CodeIdNotFoundError(Exception):
+    pass
+class CodeHashMismatchError(Exception):
+    pass
+class WorkspaceNotFoundError(Exception):
+    pass
+class WorkspaceMemberError(Exception):
+    pass
+class OptimizerError(Exception):
+    pass
+class ArtifactVerificationError(Exception):
+    pass
+class WasmArtifactError(Exception):
+    pass
+class JunodTxTestError(Exception):
+    pass
+class LCDQueryError(Exception):
+    pass
+class InvalidJunoAddressError(ValueError):
+    pass
+class NftNotFoundError(Exception):
+    pass
+class ValidationError(Exception):
     pass
 
 
-def construct_msg_remove_schedule(schedule_name: str, authority: str) -> dict:
-    """Return a MsgRemoveSchedule ready for inclusion in a proposal."""
-    return {
-        "@type": "/neutron.cron.MsgRemoveSchedule",
-        "authority": authority,
-        "name": schedule_name,
-    }
+# --- Utility Helpers (Internal to the Minimal Backend) ---
 
+def _load_toml(path: Path) -> dict:
+    '''Load a TOML file using tomllib or fallback.'''
+    if not path.is_file():
+        raise FileNotFoundError(f'TOML file not found: {path}')
 
-def create_json_proposal_file(msgs: list, title: str, description: str, deposit: str, outfile: str = "proposal.json") -> str:
-    """Writes a Neutron governance proposal JSON to disk."""
-    proposal = {"title": title, "description": description, "deposit": deposit, "messages": msgs}
-    with open(outfile, "w", encoding="utf-8") as fp:
-        json.dump(proposal, fp, indent=2)
-    return outfile
+    data = path.read_bytes()
+    if tomllib is None:
+        import toml # type: ignore
+        return toml.loads(data.decode('utf-8'))
+    return tomllib.loads(data.decode('utf-8'))
 
-
-def vote_and_wait_for_passage(rpc_endpoint: str, proposal_id: int, voter_priv_hex: str, chain_id: str, poll: int = 15):
-    """Casts a YES vote, then waits until the proposal passes."""
-    key = PrivateKey.from_hex(voter_priv_hex)
-    cfg = NetworkConfig(chain_id=chain_id, url=rpc_endpoint, fee_denomination="untrn", fee_minimum_gas_price=0.025)
-    client = LedgerClient(cfg)
-    client.gov_vote(proposal_id, key.address(), 1)
-    print(f"YES vote submitted from {key.address()} on proposal {proposal_id}")
-    while True:
-        status = client.gov_proposal(proposal_id)["status"]
-        print("Current status:", status)
-        if status == "PROPOSAL_STATUS_PASSED":
-            print("🎉 Proposal PASSED")
-            return True
-        if status in ("PROPOSAL_STATUS_REJECTED", "PROPOSAL_STATUS_FAILED"):
-            raise RuntimeError(f"Proposal ended with status {status}")
-        time.sleep(poll)
-
-
-def confirm_execution_stage(rest_endpoint: str, schedule_name: str) -> bool:
-    """Returns True if the cron job now runs at BEGIN_BLOCKER."""
-    schedule = query_cron_schedule(rest_endpoint, schedule_name)
-    return schedule.get("execution_stage") == "BEGIN_BLOCKER"
-
-
-def get_dao_authority_address(node_url: str = REST_ENDPOINT) -> str:
-    """Returns the authority address defined in the Cron module params."""
-    url = f"{node_url}/cosmos/params/v1beta1/params?subspace=cron"
-    try:
-        resp = requests.get(url, timeout=10)
-        resp.raise_for_status()
-        data = resp.json()
-        for param in data.get("param", []):
-            if param.get("key") == "Authority":
-                return param.get("value")
-        raise RuntimeError("'Authority' field not found in cron params response")
-    except requests.RequestException as err:
-        raise RuntimeError(f"Unable to query cron params: {err}")
-
-
-def graceful_shutdown(pid: Optional[int] = None, *, use_systemctl: bool = False, service_name: Optional[str] = None) -> None:
-    """Send a graceful shutdown signal."""
-    if use_systemctl:
-        if not service_name:
-            raise ValueError("'service_name' is required")
-        try:
-            result = subprocess.run(["systemctl", "stop", service_name], check=True, capture_output=True, text=True)
-            print(result.stdout.strip())
-        except subprocess.CalledProcessError as err:
-            raise RuntimeError(f"Failed to stop service: {err.stderr.strip()}") from err
+def _resolve_workspace_root(workspace_root: Optional[str] = None) -> Path:
+    '''Resolve the workspace root directory, using detect_workspace_root if needed.'''
+    if workspace_root:
+        root = Path(workspace_root).expanduser().resolve()
     else:
-        if pid is None:
-            raise ValueError("'pid' is required")
-        try:
-            os.kill(pid, signal.SIGINT)
-            print(f"Sent SIGINT to PID {pid}")
-        except ProcessLookupError:
-            raise RuntimeError(f"Process with PID {pid} does not exist.")
-        except PermissionError:
-            raise RuntimeError(f"Permission denied to signal PID {pid}.")
+        info = detect_workspace_root()
+        root = Path(info['workspace_root']).resolve()
 
+    if not root.is_dir():
+        raise FileNotFoundError(f'Workspace root directory does not exist: {root}')
+    return root
 
-def wait_for_exit(pid: int, *, log_path: Optional[str] = None, timeout: int = 120, poll_interval: float = 1.0) -> None:
-    """Wait for a process to exit."""
-    start_time = time.time()
-    while True:
-        if not os.path.exists(f"/proc/{pid}"):
-            print(f"PID {pid} has exited.")
-            break
-        if time.time() - start_time > timeout:
-            raise TimeoutError(f"Process {pid} did not exit within {timeout}s.")
-        time.sleep(poll_interval)
-
-
-def verify_profile_file(profile_path: str = "cpu.prof") -> int:
-    """Validate the profiler output file."""
-    file_path = Path(profile_path)
-    if not file_path.exists():
-        raise FileNotFoundError(f"Profile file not found: {profile_path}")
-    size = file_path.stat().st_size
-    if size == 0:
-        raise ValueError(f"Profile file is empty: {profile_path}")
-    print(f"Profile file '{profile_path}' verified with size {size} bytes.")
-    return size
-
-
-def _strip_0x(hex_str: str) -> str:
-    return hex_str[2:] if hex_str.startswith("0x") else hex_str
-
-
-def _hex_to_bytes(hex_str: str, expected_len: int) -> bytes:
-    hex_str = _strip_0x(hex_str)
-    if len(hex_str) != expected_len:
-        raise ValueError(f"Expected {expected_len} hex chars, got {len(hex_str)}.")
-    return bytes.fromhex(hex_str)
-
-
-# def compute_create2_address(req: Create2Request):
-#     try:
-#         deployer_bytes = _hex_to_bytes(req.deployer, 40)
-#         salt_bytes = _hex_to_bytes(req.salt, 64)
-#         init_code_hash_bytes = _hex_to_bytes(req.init_code_hash, 64)
-#     except ValueError as err:
-#         raise HTTPException(status_code=400, detail=str(err))
-#
-#     data = b"\xff" + deployer_bytes + salt_bytes + init_code_hash_bytes
-#     derived = keccak(data)[12:]
-#     return {"create2_address": to_checksum_address("0x" + derived.hex())}
-
-
-# def fetch_receipt(tx_hash: str) -> dict | None:
-#     """Low-level helper that wraps the JSON-RPC request."""
-#     payload = {"jsonrpc": "2.0", "method": "eth_getTransactionReceipt", "params": [tx_hash], "id": 1}
-#     try:
-#         async with httpx.AsyncClient() as client:
-#             resp = await client.post(RPC_ENDPOINT, json=payload, timeout=10)
-#             resp.raise_for_status()
-#     except httpx.RequestError as e:
-#         raise HTTPException(status_code=502, detail=f"RPC connection error: {str(e)}")
-#     except httpx.HTTPStatusError as e:
-#         raise HTTPException(status_code=e.response.status_code, detail=f"RPC returned {e.response.status_code}")
-#     body = resp.json()
-#     if body.get("error"):
-#         raise HTTPException(status_code=500, detail=body["error"])
-#     return body.get("result")
-
-
-def _human_readable_status(status_hex: str) -> str:
-    """Convert 0x0 / 0x1 to Failed / Success."""
+def _is_valid_wasm(path: Path) -> bool:
+    '''Basic WASM validation check.'''
+    if not path.is_file():
+        return False
+    if path.stat().st_size == 0:
+        return False
     try:
-        return "Success" if int(status_hex, 16) == 1 else "Failed"
-    except ValueError:
-        return "Unknown"
+        with path.open('rb') as f:
+            magic = f.read(4)
+        return magic == b'\0asm'
+    except Exception:
+        return False
 
+def _parse_gas_price_entry(entry: str):
+    """Splits an entry like "0.0025ujuno" into (Decimal('0.0025'), 'ujuno')."""
+    entry = entry.strip()
+    if not entry:
+        raise ValueError('Empty gas price entry.')
+    i = 0
+    while i < len(entry) and (entry[i].isdigit() or entry[i] == '.'):
+        i += 1
+    if i == 0:
+        raise ValueError(f'Gas price entry has no numeric prefix: {entry}')
+    amount_str = entry[:i]
+    denom_str = entry[i:]
+    return Decimal(amount_str), denom_str
 
-def decode_receipt(receipt: dict) -> dict:
-    """Transform the RPC receipt into a cleaner JSON structure."""
-    if receipt is None:
-        raise HTTPException(status_code=400, detail="Empty receipt supplied")
-    return {
-        "transactionHash": receipt.get("transactionHash"),
-        "blockNumber": int(receipt.get("blockNumber", "0x0"), 16),
-        "status": _human_readable_status(receipt.get("status", "0x0")),
-        "gasUsed": int(receipt.get("gasUsed", "0x0"), 16),
-        "contractAddress": receipt.get("contractAddress"),
-        "logsCount": len(receipt.get("logs", [])),
-        "logs": receipt.get("logs", []),
-    }
+def _get_fernet() -> Fernet:
+    key = os.environ.get("WALLET_ENCRYPTION_KEY")
+    if not key:
+        raise RuntimeError("WALLET_ENCRYPTION_KEY environment variable must be set to a Fernet key.")
+    return Fernet(key.encode("utf-8"))
 
+def _extract_network_field(data: Any) -> str:
+    '''Internal helper to robustly extract the network or chain-id field from junod status JSON.'''
+    if not isinstance(data, dict):
+        return ''
+    candidate_paths = [('node_info', 'network'), ('NodeInfo', 'network'), ('result', 'node_info', 'network'), ('Result', 'node_info', 'network')]
+    for path in candidate_paths:
+        cursor: Any = data
+        for key in path:
+            if isinstance(cursor, dict) and key in cursor:
+                cursor = cursor[key]
+            else:
+                cursor = None
+                break
+        if isinstance(cursor, str) and cursor:
+            return cursor
+    return ''
 
-def list_gpg_keys() -> List[str]:
-    """Return a list of available GPG key IDs."""
+def _contract_smart_query(address: str, query_msg: Dict[str, Any]) -> Dict[str, Any]:
+    query_bytes = json.dumps(query_msg, separators=(",", ":")).encode("utf-8")
+    query_b64 = base64.b64encode(query_bytes).decode("utf-8")
+    url = f"{LCD_BASE_URL}/cosmwasm/wasm/v1/contract/{address}/smart/{query_b64}"
+
+    with requests.Client(timeout=10.0) as client:
+        resp = client.get(url)
+
+    if resp.status_code != 200:
+        raise RuntimeError(f"Smart query failed with status {resp.status_code}: {resp.text}")
+
+    body = resp.json()
+    data_b64 = body.get("data")
+    if not data_b64:
+        raise RuntimeError(f"Malformed smart query response: {body}")
+
     try:
-        completed = subprocess.run(["gpg", "--list-keys", "--with-colons"], capture_output=True, text=True, check=True)
-    except FileNotFoundError:
-        raise RuntimeError("`gpg` command is missing.")
+        decoded = base64.b64decode(data_b64)
+        return json.loads(decoded.decode("utf-8"))
+    except Exception as exc:
+        raise RuntimeError(f"Failed to decode smart query response: {exc}") from exc
+
+def get_current_count(contract_address: str) -> int:
+    result = _contract_smart_query(contract_address, {"get_count": {}})
+    if "count" not in result:
+        raise RuntimeError(f"'count' field missing in contract response: {result}")
+    return int(result["count"])
+
+def decimal_to_str(value: Decimal) -> str:
+    s = format(value, 'f')
+    if '.' in s:
+        s = s.rstrip('0').rstrip('.')
+    return s
+
+# --- Imported Functions ---
+
+# [cite_start]Compile a CosmWasm contract for ARM64 using the rust-optimizer-arm64 Docker image [cite: 1]
+def verify_docker_installed() -> Dict[str, str]:
+    try:
+        completed = subprocess.run(['docker', 'version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    except FileNotFoundError as exc:
+        raise RuntimeError('Docker is not installed or not available in PATH.') from exc
     except subprocess.CalledProcessError as exc:
-        raise RuntimeError(f"Failed to list GPG keys: {exc.stderr.strip()}")
-    return [row.split(":")[4] for row in completed.stdout.splitlines() if row.startswith("pub") and len(row.split(":")) > 4]
-
-
-def init_pass_store(key_id: str) -> None:
-    """Initialise the `pass` password store."""
+        raise RuntimeError('Docker is installed but the daemon may not be running or is misconfigured.') from exc
+    return {'status': 'ok', 'message': 'Docker is installed and responding.', 'stdout': completed.stdout}
+def verify_contract_builds_locally(project_root: str) -> Dict[str, Any]:
+    root = Path(project_root).expanduser().resolve()
+    cargo_toml = root / 'Cargo.toml'
+    if not cargo_toml.is_file():
+        raise FileNotFoundError(f'No Cargo.toml found in {root}; ensure project_root is the contract root directory.')
     try:
-        subprocess.run(["pass", "init", key_id], capture_output=True, text=True, check=True)
-    except FileNotFoundError:
-        raise RuntimeError("`pass` CLI not found.")
+        completed = subprocess.run(['cargo', 'check'], cwd=str(root), check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    except FileNotFoundError as exc:
+        raise RuntimeError('Cargo is not installed or not available in PATH.') from exc
     except subprocess.CalledProcessError as exc:
-        raise RuntimeError(f"`pass init` failed: {exc.stderr.strip()}")
-
-
-def verify_pass_store() -> List[str]:
-    """Return list of entries in the password store."""
+        raise RuntimeError('cargo check failed. Fix the compilation errors before running the optimizer.') from exc
+    return {'status': 'ok', 'message': 'cargo check completed successfully.', 'stdout': completed.stdout}
+def run_rust_optimizer_arm64(project_root: str, tag: str = 'latest') -> Dict[str, Any]:
+    root = Path(project_root).expanduser().resolve()
+    if not (root / 'Cargo.toml').is_file():
+        raise FileNotFoundError(f'No Cargo.toml found in {root}; ensure project_root is the contract root directory.')
+    cache_volume = f'{root.name}_cache'
+    image = f'cosmwasm/rust-optimizer-arm64:{tag}'
+    cmd = ['docker', 'run', '--rm', '-v', f'{root}:/code', '--mount', f'type=volume,source={cache_volume},target=/code/target', image]
     try:
-        completed = subprocess.run(["pass", "ls"], capture_output=True, text=True, check=True)
-    except FileNotFoundError:
-        raise RuntimeError("`pass` CLI not found.")
+        completed = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    except FileNotFoundError as exc:
+        raise RuntimeError('Docker is not installed or not available in PATH. Install Docker and try again.') from exc
     except subprocess.CalledProcessError as exc:
-        raise RuntimeError(f"`pass ls` failed: {exc.stderr.strip()}")
-    return [line.strip() for line in completed.stdout.splitlines() if line.strip()]
+        raise RuntimeError('rust-optimizer Docker run failed.') from exc
+    return {'status': 'ok', 'message': f'Optimization completed using image {image}.', 'stdout': completed.stdout}
+def collect_optimized_wasm_artifacts(project_root: str) -> List[str]:
+    root = Path(project_root).expanduser().resolve()
+    artifacts_dir = root / 'artifacts'
+    if not artifacts_dir.is_dir():
+        raise FileNotFoundError(f'Artifacts directory not found at {artifacts_dir}. Have you run the rust-optimizer?')
+    wasm_files = sorted(str(p) for p in artifacts_dir.glob('*.wasm'))
+    if not wasm_files:
+        raise RuntimeError(f'No .wasm files found in {artifacts_dir}. Ensure the optimizer completed successfully.')
+    return wasm_files
 
-
-def _sha256(file_path: str) -> str:
-    h = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
-            h.update(chunk)
-    return h.hexdigest()
-
-
-def compare_checksums(original: str, backup: str) -> bool:
-    """Return True when both files share an identical SHA-256 digest."""
-    orig_hash = _sha256(original)
-    backup_hash = _sha256(backup)
-    print(f"Original SHA-256: {orig_hash}\nBackup   SHA-256: {backup_hash}")
-    return orig_hash == backup_hash
-
-
-def secure_offsite_copy(local_path: str, remote_user: str, remote_host: str, remote_dir: str) -> None:
-    """SCP the backup to an off-site server."""
-    remote_target = f"{remote_user}@{remote_host}:{remote_dir}/{os.path.basename(local_path)}"
+# [cite_start]Compile the clock_example CosmWasm contract and upload clock_example.wasm to the Juno testnet (chain-id uni-6). [cite: 1, 2, 3]
+def compile_clock_example(contract_root: str = '.') -> str:
+    root_path = Path(contract_root).resolve()
+    if not root_path.exists():
+        raise FileNotFoundError(f'Contract root directory not found: {root_path}')
+    artifacts_dir = root_path / 'artifacts'
+    artifacts_dir.mkdir(exist_ok=True)
+    cmd = ['docker', 'run', '--rm', '-v', f'{root_path}:/code', '--mount', 'type=volume,source=clock_example_cache,target=/code/target', 'cosmwasm/rust-optimizer:0.12.11']
     try:
-        subprocess.run(["scp", "-p", local_path, remote_target], check=True, text=True)
-        print(f"Successfully copied to {remote_target}")
-    except subprocess.CalledProcessError as err:
-        raise RuntimeError(f"Secure copy failed: {err}")
-
-
-def start_cosmos_service(service_name: str = "cosmosd") -> None:
-    """Restart the Cosmos validator systemd unit."""
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
+    except FileNotFoundError as exc:
+        raise RuntimeError('Docker is not installed or not found in PATH.') from exc
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(f'cosmwasm/rust-optimizer failed: {exc.stderr}') from exc
+    wasm_path = artifacts_dir / 'clock_example.wasm'
+    if not wasm_path.exists():
+        raise FileNotFoundError(f'Expected artifact not found at {wasm_path}')
+    return str(wasm_path)
+def load_wasm_artifact_bytes(wasm_path: str) -> bytes:
+    path = Path(wasm_path)
+    if not path.is_file():
+        raise FileNotFoundError(f'WASM artifact not found at {path}')
+    size = path.stat().st_size
+    if size <= 0:
+        raise ValueError(f'WASM artifact at {path} is empty.')
+    with path.open('rb') as f:
+        data = f.read()
+    if not data:
+        raise ValueError('Failed to read WASM artifact or file is empty.')
+    return data
+def fetch_minimum_gas_price(base_url: str = LCD_BASE_URL) -> Tuple[Decimal, str]:
+    url = f'{base_url}/cosmos/base/node/v1beta1/config'
     try:
-        subprocess.run(["sudo", "systemctl", "start", service_name], check=True, text=True)
-        print(f"Successfully started {service_name}.")
-    except subprocess.CalledProcessError as err:
-        raise RuntimeError(f"Failed to start {service_name}: {err}")
-
-
-def construct_msg_vote_yes(voter: str, proposal_id: int) -> MsgVote:
-    """Returns a MsgVote protobuf message (YES)."""
-    if not voter:
-        raise ValueError('Voter address must be provided')
-    if proposal_id <= 0:
-        raise ValueError('Proposal ID must be a positive integer')
-    msg = MsgVote()
-    msg.proposal_id = proposal_id
-    msg.voter = voter
-    msg.option = VoteOption.VOTE_OPTION_YES
-    return msg
-
-
-# def getMajor(ver):
-#   const match = ver.match(/v?(\d+)\./);
-#   return match ? parseInt(match[1], 10) : 0;
-#
-#
-# def init(projectName = 'hardhat-project'):
-#   const projectPath = path.resolve(process.cwd(), projectName);
-#   if (!fs.existsSync(projectPath)) {
-#     fs.mkdirSync(projectPath, { recursive: true });
-#     console.log(`📁 Created directory: ${projectPath}`);
-#   } else {
-#     console.log(`📂 Using existing directory: ${projectPath}`);
-#   }
-#   process.chdir(projectPath);
-#   console.log('⚙️  Initializing npm project...');
-#   execSync('npm init -y', { stdio: 'inherit' });
-#   console.log('✅ package.json generated.');
-#
-#
-# def install():
-#   console.log('⬇️  Installing Hardhat and toolbox...');
-#   try {
-#     execSync('npm install --save-dev hardhat @nomicfoundation/hardhat-toolbox', { stdio: 'inherit' });
-#     console.log('✅ Dependencies installed.');
-#   } catch (err) {
-#     console.error('❌ Failed to install dependencies:', err.message);
-#     process.exit(1);
-#   }
-#
-#
-# def initHardhat():
-#   console.log('🚀 Running Hardhat initializer...');
-#   try {
-#     execSync('npx hardhat', { stdio: 'inherit' });
-#     console.log('✅ Hardhat project initialized.');
-#   } catch (err) {
-#     console.error('❌ Hardhat initialization failed:', err.message);
-#     process.exit(1);
-#   }
-
-
-def _list_snapshots(home: str) -> str:
-    """Helper that executes snapshot listing commands."""
-    commands = [["simd", "snapshot", "list", f"--home={home}"], ["ls", "-lh", f"{home}/data/snapshots"]]
-    for cmd in commands:
-        try:
-            result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-            if result.stdout.strip():
-                return result.stdout
-        except (FileNotFoundError, subprocess.CalledProcessError):
-            continue
-    raise RuntimeError("Unable to list snapshots.")
-
-
-SNAPSHOT_REGEX = re.compile(r"height[=:](?P<height>\d+)\s+format[=:](?P<format>\d+)\s+hash[=:]?\s*(?P<hash>[A-Fa-f0-9]+)", re.IGNORECASE)
-
-def _parse_snapshot_output(raw_output: str) -> List[Dict]:
-    """Convert CLI output into structured objects."""
-    snapshots = []
-    for line in raw_output.splitlines():
-        match = SNAPSHOT_REGEX.search(line)
-        if match:
-            snapshots.append({"height": int(match.group("height")), "format": match.group("format"), "hash": match.group("hash")})
-    if not snapshots:
-        raise ValueError("No snapshots found in provided output.")
-    return snapshots
-
-
-# def getVersion(cmd):
-#   try {
-#     return execSync(`${cmd} --version`).toString().trim();
-#   } catch (err) {
-#     throw new Error(`${cmd} is not installed or not in PATH.`);
-#   }
-#
-#
-# def main():
-#   try {
-#     const nodeVersion = getVersion('node');
-#     const npmVersion = getVersion('npm');
-#     const [major] = nodeVersion.replace(/^v/, '').split('.').map(Number);
-#     if (isNaN(major) || major < 16) {
-#       throw new Error(`Node.js >=16 is required. Detected ${nodeVersion}.`);
-#     }
-#     console.log(`✅ Environment OK. Node: ${nodeVersion}, npm: ${npmVersion}`);
-#   } catch (error) {
-#     console.error(`❌ Environment check failed: ${error.message}`);
-#     process.exit(1);
-#   }
-#
-#
-# def initProject(dir = process.cwd()):
-#   try {
-#     console.log(`Initializing npm project in ${dir}...`);
-#     execSync('npm init -y', { stdio: 'inherit', cwd: dir });
-#     console.log('✅ package.json created.');
-#   } catch (error) {
-#     console.error('❌ Failed to initialize npm project:', error.message);
-#     process.exit(1);
-#   }
-#
-#
-# def installHardhat():
-#   try {
-#     console.log('Installing Hardhat as a dev dependency...');
-#     execSync('npm install --save-dev hardhat', { stdio: 'inherit' });
-#     console.log('✅ Hardhat installed.');
-#   } catch (error) {
-#     console.error('❌ Failed to install Hardhat:', error.message);
-#     process.exit(1);
-#   }
-#
-#
-# def createHardhatProject():
-#   try {
-#     console.log('Scaffolding a new Hardhat TypeScript project...');
-#     execSync('npm init hardhat -- --template typescript --force', { stdio: 'inherit' });
-#     console.log('✅ Hardhat project scaffolded.');
-#   } catch (error) {
-#     console.error('❌ Failed to scaffold Hardhat project:', error.message);
-#     process.exit(1);
-#   }
-#
-#
-# def installDeps():
-#   try {
-#     console.log('Installing Ethers.js and Hardhat plugins...');
-#     execSync('npm install --save-dev @nomicfoundation/hardhat-ethers ethers', { stdio: 'inherit' });
-#     console.log('✅ Dependencies installed.');
-#   } catch (error) {
-#     console.error('❌ Failed to install dependencies:', error.message);
-#     process.exit(1);
-#   }
-#
-#
-# def compile():
-#   try {
-#     console.log('Compiling Hardhat project...');
-#     execSync('npx hardhat compile', { stdio: 'inherit' });
-#     console.log('✅ Compilation successful.');
-#   } catch (error) {
-#     console.error('❌ Compilation failed:', error.message);
-#     process.exit(1);
-#   }
-
-
-def _check_simd_binary():
-    '''Verify that the `simd` binary exists and is executable.'''
-    simd_path = shutil.which("simd")
-    if simd_path is None:
-        raise FileNotFoundError("`simd` binary not found.")
-    try:
-        result = subprocess.run([simd_path, "version"], capture_output=True, text=True, check=True, timeout=10)
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-        raise RuntimeError(f"`simd` not executable: {exc}")
-    return {"simd_path": simd_path, "version": result.stdout.strip()}
-
-
-def _construct_start_command(home_dir: str) -> str:
-    '''Return a safe string for starting simd.'''
-    if not home_dir:
-        raise ValueError('home_dir is required')
-    expanded_home = os.path.expanduser(home_dir)
-    if not os.path.isdir(expanded_home):
-        raise FileNotFoundError(f'Home directory does not exist: {expanded_home}')
-    quoted_home = shlex.quote(expanded_home)
-    return f'simd start --mempool.max-txs=-1 --home={quoted_home}'
-
-
-_process_holder = {'proc': None}
-
-def _start_simd_process(command: str):
-    if _process_holder['proc'] is not None:
-        raise RuntimeError('A simd process is already running.')
-    args = shlex.split(command)
-    proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
-    _process_holder['proc'] = proc
-    return {'pid': proc.pid}
-
-
-async def _log_streamer():
-    proc = _process_holder.get('proc')
-    if proc is None or proc.stdout is None:
-        yield 'data: simd process not running\n\n'
-        return
-    while True:
-        line = proc.stdout.readline()
-        if line:
-            yield f'data: {line.rstrip()}\n\n'
-        await asyncio.sleep(0.05)
-        if proc.poll() is not None:
-            break
-    yield 'data: **simd process ended**\n\n'
-
-
-def _cli_status():
-    res = subprocess.run(['simd', 'status'], capture_output=True, text=True, check=True)
-    return res.stdout
-
-
-# def _rpc_status(rpc_url: str):
-#     r = requests.get(f'{rpc_url.rstrip('/')}/status')
-#     r.raise_for_status()
-#     return r.json()
-
-
-def search_circuit_docs(query: str) -> dict:
-    """Return search results from the Cosmos docs search API."""
-    try:
-        url = f"{COSMOS_DOCS_SEARCH_URL}?q={urllib.parse.quote_plus(query)}"
         resp = requests.get(url, timeout=10)
         resp.raise_for_status()
-        return resp.json()
-    except requests.exceptions.RequestException as exc:
-        return {"error": str(exc), "results": []}
-
-
-def compile_application():
-    """Rebuild the chain binary."""
+    except requests.RequestException as exc:
+        raise RuntimeError(f'Failed to fetch node config from {url}: {exc}') from exc
+    data = resp.json()
+    mgp = data.get('minimum_gas_price')
+    if not mgp:
+        raise ValueError('minimum_gas_price not present in node config response.')
+    match = re.match(r'^([0-9.]+)([a-zA-Z/]+)$', mgp)
+    if not match:
+        raise ValueError(f'Unexpected minimum_gas_price format: {mgp}')
+    amount_str, denom = match.groups()
     try:
-        subprocess.run(["make", "install"], check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        print("✅  Binary compiled.")
-    except subprocess.CalledProcessError as exc:
-        print("❌  Compilation failed:\n", exc.stdout.decode())
-        sys.exit(1)
-
-
-def monitor_logs():
+        amount = Decimal(amount_str)
+    except Exception as exc:
+        raise ValueError(f'Invalid gas price amount {amount_str!r}: {exc}') from exc
+    return amount, denom
+def fetch_sender_account_state(address: str, base_url: str = LCD_BASE_URL, fee_denom: str = 'ujunox', required_balance: Optional[Decimal] = None) -> Dict[str, Any]:
+    account_url = f'{base_url}/cosmos/auth/v1beta1/accounts/{address}'
+    balances_url = f'{base_url}/cosmos/bank/v1beta1/spendable_balances/{address}'
     try:
-        with open(LOG_PATH, "r") as fh:
-            matches = [line.strip() for line in fh if PATTERN.search(line)]
-        if matches:
-            print("🎉  Found %d PrepareProposal invocations:" % len(matches))
-            for ln in matches:
-                print("   ", ln)
-        else:
-            print("⚠️   No PrepareProposal logs detected.")
+        acc_resp = requests.get(account_url, timeout=10)
+        acc_resp.raise_for_status()
+    except requests.RequestException as exc:
+        raise RuntimeError(f'Failed to fetch account data: {exc}') from exc
+    acc_data = acc_resp.json()
+    account_any = acc_data.get('account')
+    if not account_any or 'value' not in account_any:
+        raise ValueError('Account response missing account.value field.')
+    try:
+        raw = base64.b64decode(account_any['value'])
+        base_account = BaseAccountProto.FromString(raw)
+    except Exception as exc:
+        raise RuntimeError(f'Failed to decode BaseAccount protobuf: {exc}') from exc
+    account_number = int(base_account.account_number)
+    sequence = int(base_account.sequence)
+    try:
+        bal_resp = requests.get(balances_url, timeout=10)
+        bal_resp.raise_for_status()
+    except requests.RequestException as exc:
+        raise RuntimeError(f'Failed to fetch spendable balances: {exc}') from exc
+    bal_data = bal_resp.json()
+    balances = bal_data.get('balances', [])
+    spendable = Decimal(0)
+    for coin in balances:
+        if coin.get('denom') == fee_denom:
+            spendable = Decimal(coin.get('amount', '0'))
+            break
+    if required_balance is not None and spendable < required_balance:
+        raise ValueError(f'Insufficient balance: have {spendable} {fee_denom}, required at least {required_balance}.')
+    return {'account_number': account_number, 'sequence': sequence, 'balances': balances, 'fee_denom': fee_denom, 'spendable_for_fee': str(spendable)}
+def construct_msg_store_code_tx_for_simulation(sender: str, wasm_bytes: bytes, gas_price_amount: Decimal, gas_price_denom: str, initial_gas_limit: int = 2_000_000, chain_id: str = 'uni-6') -> Dict[str, Any]:
+    msg = MsgStoreCodeProto(sender=sender, wasm_byte_code=wasm_bytes)
+    msg_any = AnyProto()
+    msg_any.Pack(msg)
+    tx_body = TxBodyProto(messages=[msg_any], memo='', timeout_height=0)
+    fee_amount = int((gas_price_amount * Decimal(initial_gas_limit)).to_integral_value(rounding=ROUND_UP))
+    fee = FeeProto(amount=[CoinProto(denom=gas_price_denom, amount=str(fee_amount))], gas_limit=initial_gas_limit)
+    auth_info = AuthInfoProto(signer_infos=[], fee=fee)
+    tx = TxProto(body=tx_body, auth_info=auth_info, signatures=[])
+    tx_bytes = tx.SerializeToString()
+    return {'tx_bytes': tx_bytes, 'tx_body': tx_body, 'auth_info': auth_info, 'initial_gas_limit': initial_gas_limit, 'fee_amount': fee_amount, 'gas_price_amount': str(gas_price_amount), 'gas_price_denom': gas_price_denom, 'chain_id': chain_id}
+def simulate_store_code_tx(tx_bytes: bytes, base_url: str = LCD_BASE_URL) -> Dict[str, Any]:
+    url = f'{base_url}/cosmos/tx/v1beta1/simulate'
+    payload = {'tx_bytes': base64.b64encode(tx_bytes).decode('ascii')}
+    try:
+        resp = requests.post(url, json=payload, timeout=20)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        raise RuntimeError(f'Simulation request failed: {exc}') from exc
+    data = resp.json()
+    gas_info = data.get('gas_info') or {}
+    gas_used_str = gas_info.get('gas_used')
+    if gas_used_str is None:
+        raise ValueError(f'Simulation response missing gas_info.gas_used: {data}')
+    try:
+        gas_used = int(gas_used_str)
+    except ValueError as exc:
+        raise ValueError(f'Invalid gas_used value {gas_used_str!r}: {exc}') from exc
+    safety_factor = 1.3
+    adjusted_gas_limit = int(gas_used * safety_factor)
+    return {'raw_response': data, 'gas_used': gas_used, 'adjusted_gas_limit': adjusted_gas_limit}
+def sign_store_code_tx(sender: str, wasm_bytes: bytes, gas_price_amount: Decimal, gas_price_denom: str, gas_limit: int, account_number: int, sequence: int, chain_id: str, privkey_hex: str) -> Dict[str, Any]:
+    msg = MsgStoreCodeProto(sender=sender, wasm_byte_code=wasm_bytes)
+    msg_any = AnyProto()
+    msg_any.Pack(msg)
+    tx_body = TxBodyProto(messages=[msg_any], memo='', timeout_height=0)
+    fee_amount = int((gas_price_amount * Decimal(gas_limit)).to_integral_value(rounding=ROUND_UP))
+    fee = FeeProto(amount=[CoinProto(denom=gas_price_denom, amount=str(fee_amount))], gas_limit=gas_limit)
+    try:
+        privkey_bytes = bytes.fromhex(privkey_hex)
+    except ValueError as exc:
+        raise ValueError('Private key must be a 64-character hex string.') from exc
+    if len(privkey_bytes) != 32:
+        raise ValueError('Private key must be 32 bytes (64 hex characters).')
+    sk = SigningKey.from_string(privkey_bytes, curve=SECP256k1)
+    vk = sk.get_verifying_key()
+    try:
+        pubkey_bytes = vk.to_string('compressed')
+    except TypeError as exc:
+        raise RuntimeError('ecdsa library is too old; upgrade to a version that supports compressed keys.') from exc
+    pk_msg = Secp256k1PubKeyProto(key=pubkey_bytes)
+    pk_any = AnyProto()
+    pk_any.Pack(pk_msg)
+    pk_any.type_url = '/cosmos.crypto.secp256k1.PubKey'
+    mode_info = SignerInfoProto(mode_info=SignerInfoProto.ModeInfo(single=SignerInfoProto.ModeInfo.Single(mode=SignModeProto.SIGN_MODE_DIRECT)))
+    signer_info = SignerInfoProto(public_key=pk_any, mode_info=mode_info.mode_info, sequence=sequence)
+    auth_info = AuthInfoProto(signer_infos=[signer_info], fee=fee)
+    sign_doc = SignDocProto(body_bytes=tx_body.SerializeToString(), auth_info_bytes=auth_info.SerializeToString(), chain_id=chain_id, account_number=account_number)
+    sign_bytes = sign_doc.SerializeToString()
+    signature = sk.sign_deterministic(sign_bytes, hashfunc=hashlib.sha256)
+    tx = TxProto(body=tx_body, auth_info=auth_info, signatures=[signature])
+    tx_bytes = tx.SerializeToString()
+    return {'tx': tx, 'tx_bytes': tx_bytes, 'fee_amount': fee_amount}
+def broadcast_store_code_tx(tx_bytes: bytes, base_url: str = LCD_BASE_URL) -> Dict[str, Any]:
+    url = f'{base_url}/cosmos/tx/v1beta1/txs'
+    payload = {'tx_bytes': base64.b64encode(tx_bytes).decode('ascii'), 'mode': 'BROADCAST_MODE_BLOCK'}
+    try:
+        resp = requests.post(url, json=payload, timeout=60)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        raise RuntimeError(f'Broadcast failed: {exc}') from exc
+    data = resp.json()
+    tx_response = data.get('tx_response') or {}
+    if not tx_response:
+        raise ValueError(f'Broadcast response missing tx_response field: {data}')
+    code = tx_response.get('code', 0)
+    if code != 0:
+        raw_log = tx_response.get('raw_log')
+        raise RuntimeError(f'Transaction failed with code {code}: {raw_log}')
+    return tx_response
+def extract_code_id_from_logs(tx_response: Dict[str, Any]) -> str:
+    logs = tx_response.get('logs', [])
+    for log in logs:
+        events = log.get('events', [])
+        for event in events:
+            attributes = event.get('attributes', [])
+            for attr in attributes:
+                key = attr.get('key')
+                value = attr.get('value')
+                if key in ('code_id', 'codeID'):
+                    return str(value)
+    raise ValueError(f'code_id not found in transaction logs: {logs}')
+def verify_code_uploaded_on_chain(code_id: str, expected_creator: str, base_url: str = LCD_BASE_URL) -> Dict[str, Any]:
+    url = f'{base_url}/cosmwasm/wasm/v1/code/{code_id}'
+    try:
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        raise RuntimeError(f'Failed to query code_id {code_id}: {exc}') from exc
+    data = resp.json()
+    code_info = data.get('code_info')
+    if not code_info:
+        raise ValueError(f'No code_info returned for code_id {code_id}: {data}')
+    creator = code_info.get('creator')
+    if creator != expected_creator:
+        raise ValueError(f'Code creator mismatch for code_id {code_id}: expected {expected_creator}, got {creator}')
+    code_id_in_payload = code_info.get('code_id')
+    if str(code_id_in_payload) != str(code_id):
+        raise ValueError(f'code_id mismatch in response: path={code_id}, payload={code_id_in_payload}')
+    return {'code_info': code_info, 'verified': True}
+
+# [cite_start]Send 1,000,000 ujuno to a specified contract address on Juno by constructing, simulating, signing, and broadcasting a bank send transaction via the LCD broadcast endpoint. [cite: 4, 5, 6]
+async def get_sender_wallet(env_var: str = 'JUNO_SENDER_PRIVATE_KEY') -> dict:
+    DENOM = 'ujuno'
+    CHAIN_ID = 'juno-1'
+    try:
+        hex_key = os.environ.get(env_var)
+        if not hex_key:
+            raise RuntimeError(f'Private key environment variable {env_var} is not set.')
+        hex_key = hex_key.strip().lower().replace('0x', '')
+        if len(hex_key) != 64:
+            raise ValueError('Private key must be 32 bytes (64 hex characters).')
+        priv_bytes = bytes.fromhex(hex_key)
+        sk = SigningKey.from_string(priv_bytes, curve=SECP256k1)
+        vk = sk.get_verifying_key()
+        compressed_pub = vk.to_string('compressed')
+        sha = hashlib.sha256(compressed_pub).digest()
+        ripemd = RIPEMD160.new()
+        ripemd.update(sha)
+        ripemd_digest = ripemd.digest()
+        five_bit_r = convertbits(list(ripemd_digest), 8, 5, True)
+        bech32_addr = bech32_encode('juno', five_bit_r)
+        return {'address': bech32_addr, 'private_key_hex': priv_bytes.hex(), 'public_key_bytes': compressed_pub}
+    except Exception as e:
+        raise RuntimeError(f'Failed to load or derive sender wallet: {e}') from e
+async def validate_contract_address(contract_address: str, check_on_chain: bool = True) -> bool:
+    try:
+        hrp, data = bech32_decode(contract_address)
+        if data is None or hrp != 'juno':
+            raise ValueError('Invalid bech32 address or wrong prefix (expected "juno").')
+    except Exception as e:
+        raise ValueError(f'Invalid contract address format: {e}') from e
+    if not check_on_chain:
+        return True
+    url = f'{LCD_BASE_URL}/cosmos/auth/v1beta1/accounts/{contract_address}'
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(url)
+            if resp.status_code == 404:
+                raise ValueError('Address not found on-chain (404 from auth module).')
+            resp.raise_for_status()
+            data = resp.json()
+    except httpx.HTTPError as e:
+        raise RuntimeError(f'HTTP error while validating contract address: {e}') from e
+    if 'account' not in data:
+        raise RuntimeError('LCD response does not contain an "account" field; cannot confirm account.')
+    return True
+async def check_sender_balance(sender_address: str, required_amount: int = 1_000_000, fee_buffer: int = 200_000) -> dict:
+    DENOM = 'ujuno'
+    url = f'{LCD_BASE_URL}/cosmos/bank/v1beta1/balances/{sender_address}/by_denom'
+    params = {'denom': DENOM}
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(url, params=params)
+            resp.raise_for_status()
+            data = resp.json()
+    except httpx.HTTPError as e:
+        raise RuntimeError(f'HTTP error while querying sender balance: {e}') from e
+    balance_str = data.get('balance', {}).get('amount')
+    if balance_str is None:
+        raise RuntimeError('LCD response missing balance.amount for ujuno.')
+    try:
+        balance = int(balance_str)
+    except ValueError:
+        raise RuntimeError(f'Invalid balance amount returned: {balance_str}')
+    needed = required_amount + fee_buffer
+    if balance < needed:
+        raise ValueError(f'Insufficient ujuno balance. Have {balance}, but need at least {needed} (1,000,000 for send + buffer).')
+    return {'balance': balance, 'required_total': needed}
+def construct_msg_send(from_address: str, to_address: str, amount: int = 1_000_000) -> AnyProto:
+    DENOM = 'ujuno'
+    if amount <= 0:
+        raise ValueError('Amount must be a positive integer of ujuno.')
+    msg = MsgSendProto(from_address=from_address, to_address=to_address, amount=[CoinMsgProto(denom=DENOM, amount=str(amount))])
+    any_msg = AnyProto()
+    any_msg.Pack(msg)
+    any_msg.type_url = '/cosmos.bank.v1beta1.MsgSend'
+    return any_msg
+def build_unsigned_tx(msg_any, memo: str = '', initial_gas_limit: int = 200_000) -> TxMsgProto:
+    if initial_gas_limit <= 0:
+        raise ValueError('initial_gas_limit must be positive.')
+    tx_body = TxBodyMsgProto(messages=[msg_any], memo=memo)
+    fee = FeeMsgProto(amount=[], gas_limit=initial_gas_limit, payer='', granter='')
+    auth_info = AuthInfoMsgProto(signer_infos=[], fee=fee)
+    tx = TxMsgProto(body=tx_body, auth_info=auth_info, signatures=[])
+    return tx
+async def simulate_tx_for_gas(tx: TxMsgProto, gas_adjustment: float = 1.2) -> int:
+    if gas_adjustment <= 0:
+        raise ValueError('gas_adjustment must be positive.')
+    tx_bytes = tx.SerializeToString()
+    payload = {'tx_bytes': base64.b64encode(tx_bytes).decode('utf-8')}
+    url = f'{LCD_BASE_URL}/cosmos/tx/v1beta1/simulate'
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            resp = await client.post(url, json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+    except httpx.HTTPError as e:
+        raise RuntimeError(f'HTTP error during gas simulation: {e}') from e
+    gas_used_str = data.get('gas_info', {}).get('gas_used')
+    if gas_used_str is None:
+        raise RuntimeError('Simulation response missing gas_info.gas_used.')
+    try:
+        gas_used = int(gas_used_str)
+    except ValueError:
+        raise RuntimeError(f'Invalid gas_used value returned from simulate: {gas_used_str}')
+    gas_limit = math.ceil(gas_used * gas_adjustment)
+    tx.auth_info.fee.gas_limit = gas_limit
+    return gas_limit
+async def apply_min_gas_price_fee(tx: TxMsgProto, denom: str = 'ujuno') -> str:
+    url = f'{LCD_BASE_URL}/cosmos/base/node/v1beta1/config'
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+            data = resp.json()
+    except httpx.HTTPError as e:
+        raise RuntimeError(f'HTTP error while fetching minimum_gas_price: {e}') from e
+    min_gas_price_str = data.get('minimum_gas_price')
+    if not min_gas_price_str:
+        raise RuntimeError('minimum_gas_price is empty or missing in node config.')
+    selected_price = None
+    for part in min_gas_price_str.split(','):
+        amount_dec, denom_str = _parse_gas_price_entry(part)
+        if denom_str == denom:
+            selected_price = amount_dec
+            break
+    if selected_price is None:
+        raise RuntimeError(f'No gas price entry for denom {denom} found in "{min_gas_price_str}".')
+    gas_limit = tx.auth_info.fee.gas_limit
+    if gas_limit <= 0:
+        raise RuntimeError('tx.auth_info.fee.gas_limit must be set before computing fees.')
+    fee_amount = (selected_price * Decimal(gas_limit)).quantize(Decimal('1'), rounding=ROUND_UP)
+    tx.auth_info.fee.amount[:] = [CoinMsgProto(denom=denom, amount=str(fee_amount))]
+    return str(fee_amount)
+async def fetch_account_number_and_sequence(address: str) -> dict:
+    url = f'{LCD_BASE_URL}/cosmos/auth/v1beta1/accounts/{address}'
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+            data = resp.json()
+    except httpx.HTTPError as e:
+        raise RuntimeError(f'HTTP error while fetching account data: {e}') from e
+    account_any = data.get('account')
+    if not account_any or 'value' not in account_any:
+        raise RuntimeError('LCD response missing account.value; cannot decode account.')
+    raw = base64.b64decode(account_any['value'])
+    any_msg = AnyProto()
+    any_msg.ParseFromString(raw)
+    base_account = None
+    if any_msg.type_url.endswith('BaseAccount'):
+        base_account = BaseAccountMsgProto()
+        any_msg.Unpack(base_account)
+    elif any_msg.type_url.endswith('ContinuousVestingAccount'):
+        from cosmospy_protobuf.cosmos.vesting.v1beta1.vesting_pb2 import ContinuousVestingAccount as ContinuousVestingAccountMsgProto
+        vesting = ContinuousVestingAccountMsgProto()
+        any_msg.Unpack(vesting)
+        base_account = vesting.base_account
+    elif any_msg.type_url.endswith('DelayedVestingAccount'):
+        from cosmospy_protobuf.cosmos.vesting.v1beta1.vesting_pb2 import DelayedVestingAccount as DelayedVestingAccountMsgProto
+        vesting = DelayedVestingAccountMsgProto()
+        any_msg.Unpack(vesting)
+        base_account = vesting.base_account
+    else:
+        raise RuntimeError(f'Unsupported account type_url: {any_msg.type_url}')
+    return {'account_number': int(base_account.account_number), 'sequence': int(base_account.sequence)}
+def sign_tx_with_sender_key(tx: TxMsgProto, private_key_hex: str, account_number: int, sequence: int, chain_id: str = 'juno-1') -> TxMsgProto:
+    if not private_key_hex:
+        raise ValueError('private_key_hex must be provided.')
+    priv_hex = private_key_hex.lower().replace('0x', '').strip()
+    if len(priv_hex) != 64:
+        raise ValueError('private_key_hex must be 32 bytes (64 hex characters).')
+    priv_bytes = bytes.fromhex(priv_hex)
+    sk = SigningKey.from_string(priv_bytes, curve=SECP256k1)
+    vk = sk.get_verifying_key()
+    compressed_pub = vk.to_string('compressed')
+    pk = Secp256k1PubKeyMsgProto(key=compressed_pub)
+    pk_any = AnyProto()
+    pk_any.Pack(pk)
+    pk_any.type_url = '/cosmos.crypto.secp256k1.PubKey'
+    mode_info = TxMsgProto.ModeInfo(single=TxMsgProto.ModeInfo.Single(mode=SignModeMsgProto.SIGN_MODE_DIRECT))
+    signer_info = SignerInfoMsgProto(public_key=pk_any, mode_info=mode_info, sequence=sequence)
+    tx.auth_info.signer_infos[:] = [signer_info]
+    sign_doc = SignDocMsgProto(body_bytes=tx.body.SerializeToString(), auth_info_bytes=tx.auth_info.SerializeToString(), chain_id=chain_id, account_number=account_number)
+    sign_doc_bytes = sign_doc.SerializeToString()
+    sign_bytes = hashlib.sha256(sign_doc_bytes).digest()
+    signature = sk.sign_deterministic(sign_bytes, hashfunc=hashlib.sha256, sigencode=ecdsa_util.sigencode_string)
+    tx.signatures[:] = [signature]
+    return tx
+def encode_tx_to_bytes(tx: TxMsgProto) -> str:
+    if not tx.signatures:
+        raise RuntimeError('Tx has no signatures; call sign_tx_with_sender_key() first.')
+    tx_bytes = tx.SerializeToString()
+    return base64.b64encode(tx_bytes).decode('utf-8')
+async def broadcast_tx_via_lcd(tx_bytes_b64: str, mode: str = 'BROADCAST_MODE_SYNC') -> dict:
+    valid_modes = {'BROADCAST_MODE_SYNC', 'BROADCAST_MODE_BLOCK', 'BROADCAST_MODE_ASYNC', 'BROADCAST_MODE_UNSPECIFIED'}
+    if mode not in valid_modes:
+        raise ValueError(f'Invalid broadcast mode: {mode}')
+    url = f'{LCD_BASE_URL}/cosmos/tx/v1beta1/txs'
+    payload = {'tx_bytes': tx_bytes_b64, 'mode': mode}
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(url, json=payload)
+            resp.raise_for_status()
+            data = resp.json()
+    except httpx.HTTPError as e:
+        raise RuntimeError(f'HTTP error while broadcasting transaction: {e}') from e
+    tx_response = data.get('tx_response')
+    if tx_response is None:
+        raise RuntimeError('LCD broadcast response missing "tx_response" field.')
+    return tx_response
+def verify_broadcast_result(tx_response: dict) -> dict:
+    if tx_response is None:
+        raise ValueError('tx_response is None; cannot verify broadcast result.')
+    if 'code' not in tx_response:
+        raise RuntimeError('tx_response missing "code" field.')
+    code = tx_response['code']
+    raw_log = tx_response.get('raw_log', '')
+    if code != 0:
+        raise RuntimeError(f'Transaction failed with code {code}: {raw_log}')
+    return {'txhash': tx_response.get('txhash'), 'height': tx_response.get('height'), 'raw_log': raw_log}
+
+# [cite_start]Connect a SigningCosmWasmClient to RPC https://rpc.juno.strange.love and execute increment on the contract [cite: 7]
+def prepare_backend_signer() -> LocalWallet:
+    mnemonic = os.getenv("JUNO_MNEMONIC")
+    if not mnemonic:
+        raise RuntimeError("JUNO_MNEMONIC environment variable is not set.")
+    try:
+        wallet = LocalWallet.from_mnemonic(mnemonic, prefix="juno")
+    except Exception as exc:
+        raise RuntimeError(f"Failed to initialize LocalWallet: {exc}") from exc
+    return wallet
+def init_signing_cosmwasm_client(wallet: LocalWallet) -> LedgerClient:
+    RPC_ENDPOINT = "https://rpc.juno.strange.love"
+    CHAIN_ID = "juno-1"
+    FEE_DENOM = "ujuno"
+    try:
+        network_cfg = NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT, fee_minimum_gas_price=0.025, fee_denomination=FEE_DENOM, staking_denomination=FEE_DENOM)
+        client = LedgerClient(network_cfg)
+    except Exception as exc:
+        raise RuntimeError(f"Failed to initialize Juno LedgerClient: {exc}") from exc
+    return client
+def resolve_contract_address() -> str:
+    addr = os.getenv("CONTRACT_ADDRESS")
+    if not addr:
+        raise RuntimeError("CONTRACT_ADDRESS environment variable is not set. Set it to the deployed counter contract address.")
+    if not addr.startswith("juno1"):
+        raise ValueError(f"CONTRACT_ADDRESS does not look like a Juno address: {addr}")
+    return addr
+def execute_increment_msg_over_rpc(client: LedgerClient, wallet: LocalWallet, contract_address: str, memo: Optional[str] = None) -> Dict[str, Any]:
+    msg = {"increment": {}}
+    try:
+        result = client.execute_contract(wallet, contract_address, msg, funds=[], memo=memo or "", gas_limit=200_000)
+    except Exception as exc:
+        raise RuntimeError(f"Failed to execute increment on contract: {exc}") from exc
+    txhash = getattr(result, "txhash", None) or getattr(result, "tx_hash", None)
+    if txhash is None and isinstance(result, dict):
+        txhash = result.get("txhash") or result.get("tx_hash")
+    if not txhash:
+        raise RuntimeError(f"Could not determine transaction hash from result: {result}")
+    return {"txhash": txhash, "raw_result": result}
+def confirm_tx_via_lcd(txhash: str, max_attempts: int = 12, poll_interval: float = 2.0) -> Dict[str, Any]:
+    LCD_BASE_URL = "https://lcd-archive.junonetwork.io"
+    url = f"{LCD_BASE_URL}/cosmos/tx/v1beta1/txs/{txhash}"
+    with requests.Client(timeout=10.0) as client:
+        for attempt in range(max_attempts):
+            try:
+                resp = client.get(url)
+            except requests.RequestException as exc:
+                raise RuntimeError(f"Error querying LCD for tx {txhash}: {exc}") from exc
+            if resp.status_code == 404:
+                time.sleep(poll_interval)
+                continue
+            if resp.status_code != 200:
+                raise RuntimeError(f"Unexpected status while fetching tx {txhash}: {resp.status_code} {resp.text}")
+            body = resp.json()
+            tx_response = body.get("tx_response")
+            if not tx_response:
+                raise RuntimeError(f"Malformed LCD response for tx {txhash}: {body}")
+            code = int(tx_response.get("code", 0))
+            if code != 0:
+                raise RuntimeError(f"Transaction {txhash} failed with code={code}, raw_log={tx_response.get('raw_log')}")
+            return tx_response
+    raise RuntimeError(f"Transaction {txhash} not found in LCD after {max_attempts} attempts.")
+def verify_incremented_count(contract_address: str, before: Optional[int]) -> Dict[str, Any]:
+    after = get_current_count(contract_address)
+    verified = before is not None and after == before + 1
+    return {"before": before, "after": after, "verified": verified}
+
+# [cite_start]Automatically extract the contract address from instantiate txhash [cite: 8]
+async def lcd_get_tx_by_hash(tx_hash: str) -> Dict[str, Any]:
+    if not tx_hash:
+        raise ValueError("tx_hash is required")
+    url = f"{LCD_BASE_URL}/cosmos/tx/v1beta1/txs/{tx_hash}"
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            response = await client.get(url)
+        except httpx.RequestError as exc:
+            raise LcdRequestError(f"Error while requesting {url}: {exc}") from exc
+    if response.status_code != 200:
+        raise LcdRequestError(f"LCD returned non-200 status {response.status_code}: {response.text}")
+    data = response.json()
+    tx_response = data.get("tx_response")
+    if tx_response is None:
+        raise LcdRequestError("LCD response missing 'tx_response' field")
+    return tx_response
+def parse_tx_logs_for_contract_address(tx_response: Dict[str, Any]) -> str:
+    logs: List[Dict[str, Any]] = tx_response.get("logs", [])
+    if not logs:
+        raise ContractAddressNotFoundError("CONTRACT_ADDRESS_NOT_FOUND_IN_TX_LOGS")
+    target_keys = {"_contract_address", "contract_address"}
+    instantiate_event_types = {"instantiate", "wasm", "instantiate_contract"}
+    for log in logs:
+        for event in log.get("events", []):
+            if event.get("type") in instantiate_event_types:
+                for attr in event.get("attributes", []):
+                    key = attr.get("key")
+                    if key in target_keys:
+                        value = attr.get("value")
+                        if value:
+                            return value
+    for log in logs:
+        for event in log.get("events", []):
+            for attr in event.get("attributes", []):
+                key = attr.get("key")
+                if key in target_keys:
+                    value = attr.get("value")
+                    if value:
+                        return value
+    raise ContractAddressNotFoundError("CONTRACT_ADDRESS_NOT_FOUND_IN_TX_LOGS")
+async def validate_contract_via_lcd(contract_address: str) -> Dict[str, Any]:
+    if not contract_address:
+        raise ValueError("contract_address is required")
+    url = f"{LCD_BASE_URL}/cosmwasm/wasm/v1/contract/{contract_address}"
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            response = await client.get(url)
+        except httpx.RequestError as exc:
+            raise LcdRequestError(f"Error while requesting {url}: {exc}") from exc
+    if response.status_code != 200:
+        raise ContractNotFoundOnChainError("CONTRACT_NOT_FOUND_ON_CHAIN")
+    data = response.json()
+    contract_info = data.get("contract_info")
+    if not isinstance(contract_info, dict):
+        raise ContractNotFoundOnChainError("CONTRACT_NOT_FOUND_ON_CHAIN")
+    if not contract_info.get("code_id") or not contract_info.get("creator"):
+        raise ContractNotFoundOnChainError("CONTRACT_NOT_FOUND_ON_CHAIN")
+    return data
+def _build_error_payload(code: str, details: Optional[str] = None) -> Dict[str, Any]:
+    ERROR_MESSAGES = {"CONTRACT_ADDRESS_NOT_FOUND_IN_TX_LOGS": "No CosmWasm contract address was found in the transaction logs.", "CONTRACT_NOT_FOUND_ON_CHAIN": "The extracted address is not a valid CosmWasm contract on-chain.", "LCD_REQUEST_FAILED": "Failed to query the Juno LCD.", "UNEXPECTED_ERROR": "An unexpected error occurred while resolving the contract address."}
+    return {"ok": False, "error": {"code": code, "message": ERROR_MESSAGES.get(code, "Unexpected error."), "details": details}}
+
+# Add cw-orch as an optional dependency in a CosmWasm contract's Cargo.toml
+def load_cargo_toml(project_root: str = '.') -> Dict[str, Any]:
+    path = Path(project_root).resolve() / 'Cargo.toml'
+    if not path.is_file():
+        raise FileNotFoundError(f'Cargo.toml not found at {path}')
+    try:
+        with path.open('r', encoding='utf-8') as fp:
+            import toml # type: ignore
+            data = toml.load(fp)
+    except Exception as exc:
+        raise RuntimeError(f'Failed to parse {path}: {exc}') from exc
+    return data
+def save_cargo_toml(data: Dict[str, Any], project_root: str = '.') -> None:
+    path = Path(project_root).resolve() / 'Cargo.toml'
+    try:
+        with path.open('w', encoding='utf-8') as fp:
+            import toml # type: ignore
+            toml.dump(data, fp)
+    except Exception as exc:
+        raise RuntimeError(f'Failed to write {path}: {exc}') from exc
+def add_cw_orch_optional_dependency(project_root: str = '.', version: str = '0.18.0') -> None:
+    cargo = load_cargo_toml(project_root)
+    dependencies = cargo.setdefault('dependencies', {})
+    existing = dependencies.get('cw-orch')
+    desired = {'version': version, 'optional': True}
+    if existing is None:
+        dependencies['cw-orch'] = desired
+    elif isinstance(existing, str):
+        desired['version'] = version or existing
+        dependencies['cw-orch'] = desired
+    elif isinstance(existing, dict):
+        existing.update(desired)
+    else:
+        raise TypeError('Unexpected type for cw-orch dependency in Cargo.toml')
+    save_cargo_toml(cargo, project_root)
+def configure_cw_orch_feature(project_root: str = '.') -> None:
+    cargo = load_cargo_toml(project_root)
+    features = cargo.setdefault('features', {})
+    default_feature = features.get('default')
+    if default_feature is None:
+        features['default'] = []
+    elif not isinstance(default_feature, list):
+        raise TypeError('The default feature in Cargo.toml must be a list')
+    cw_orch_feature = features.get('cw-orch')
+    if cw_orch_feature is None:
+        features['cw-orch'] = ['dep:cw-orch']
+    elif isinstance(cw_orch_feature, list):
+        if 'dep:cw-orch' not in cw_orch_feature:
+            cw_orch_feature.append('dep:cw-orch')
+    else:
+        raise TypeError('The cw-orch feature in Cargo.toml must be a list')
+    save_cargo_toml(cargo, project_root)
+def verify_cargo_with_cw_orch(project_root: str = '.', cargo_subcommand: str = 'check') -> Dict[str, Any]:
+    root = Path(project_root).resolve()
+    if not root.is_dir():
+        raise FileNotFoundError(f'Project root directory not found: {root}')
+    cmd = ['cargo', cargo_subcommand, '--features', 'cw-orch']
+    try:
+        proc = subprocess.run(cmd, cwd=str(root), capture_output=True, text=True, check=False)
+    except FileNotFoundError as exc:
+        raise FileNotFoundError('cargo executable not found. Is Rust installed and on PATH?') from exc
+    result: Dict[str, Any] = {'returncode': proc.returncode, 'stdout': proc.stdout, 'stderr': proc.stderr, 'command': ' '.join(cmd), 'cwd': str(root)}
+    if proc.returncode != 0:
+        raise RuntimeError(f'Command failed with exit code {proc.returncode}. Stderr: {proc.stderr}')
+    return result
+
+# [cite_start]Get current count from contract CONTRACT_ADDRESS [cite: 9]
+def resolve_contract_address(explicit_address: Optional[str] = None, env_var_name: str = 'CONTRACT_ADDRESS') -> str:
+    if explicit_address:
+        contract_address = explicit_address
+    else:
+        contract_address = os.getenv(env_var_name)
+    if not contract_address:
+        raise ValueError(f'No contract address provided and environment variable {env_var_name} is not set.')
+    if not contract_address.startswith('juno1'):
+        raise ValueError(f'Resolved contract address {contract_address} does not look like a Juno bech32 address.')
+    return contract_address
+def build_get_count_query_payload() -> str:
+    query_obj = {'get_count': {}}
+    try:
+        json_bytes = json.dumps(query_obj, separators=(',', ':'), ensure_ascii=False).encode('utf-8')
+    except (TypeError, ValueError) as e:
+        raise ValueError(f'Failed to serialize get_count query JSON: {e}') from e
+    encoded = base64.b64encode(json_bytes).decode('ascii')
+    return encoded
+def lcd_query_wasm_smart(contract_address: str, query_data_b64: str, timeout: float = 10.0) -> Dict[str, Any]:
+    if not contract_address:
+        raise ValueError('contract_address is required')
+    if not query_data_b64:
+        raise ValueError('query_data_b64 is required')
+    query_data_escaped = quote(query_data_b64, safe='')
+    url = f'{LCD_BASE_URL}/cosmwasm/wasm/v1/contract/{contract_address}/smart/{query_data_escaped}'
+    try:
+        response = requests.get(url, timeout=timeout)
+    except requests.RequestException as e:
+        raise RuntimeError(f'Failed to reach LCD endpoint {url}: {e}') from e
+    if response.status_code != 200:
+        raise RuntimeError(f'LCD query failed with status {response.status_code}: {response.text}')
+    try:
+        data = response.json()
+    except ValueError as e:
+        raise RuntimeError(f'LCD response is not valid JSON: {e}. Raw body: {response.text}') from e
+    if 'data' not in data:
+        raise KeyError(f"LCD JSON response is missing required 'data' field: {data}")
+    return data
+def decode_and_extract_count(lcd_response: Dict[str, Any]) -> int:
+    if 'data' not in lcd_response:
+        raise KeyError("lcd_response does not contain required 'data' field")
+    data_b64 = lcd_response['data']
+    if not isinstance(data_b64, str):
+        raise TypeError(f"lcd_response['data'] must be a base64-encoded string, got {type(data_b64)}")
+    try:
+        raw_bytes = base64.b64decode(data_b64)
+    except (base64.binascii.Error, ValueError) as e:
+        raise ValueError(f"Failed to base64-decode lcd_response['data']: {e}") from e
+    try:
+        payload = json.loads(raw_bytes.decode('utf-8'))
+    except (UnicodeDecodeError, json.JSONDecodeError) as e:
+        raise ValueError(f'Decoded contract response is not valid UTF-8 JSON: {e}. Raw bytes: {raw_bytes!r}') from e
+    if 'count' not in payload:
+        raise KeyError(f"Contract query result does not contain 'count' field: {payload}")
+    count_value = payload['count']
+    try:
+        return int(count_value)
+    except (TypeError, ValueError) as e:
+        raise ValueError(f"Contract 'count' field is not an integer: {count_value!r}") from e
+
+# [cite_start]Query detailed CW721 nft_info for token ID 8 from a given NFT contract on Juno using a CosmWasm smart query. [cite: 10]
+def validate_contract_and_token(contract_address: str, token_id: Union[str, int]) -> Tuple[str, str]:
+    JUNO_ADDRESS_REGEX = re.compile(r'^juno1[0-9a-z]{38}$')
+    if not isinstance(contract_address, str) or not JUNO_ADDRESS_REGEX.match(contract_address):
+        raise ValidationError(f'Invalid Juno contract address: {contract_address!r}')
+    if isinstance(token_id, int):
+        if token_id < 0:
+            raise ValidationError('token_id must be non-negative.')
+        token_id_str = str(token_id)
+    elif isinstance(token_id, str):
+        token_id_str = token_id.strip()
+        if not token_id_str:
+            raise ValidationError('token_id string cannot be empty.')
+    else:
+        raise ValidationError('token_id must be either a string or an integer.')
+    return contract_address, token_id_str
+def build_nft_info_query_json(token_id: str) -> Dict:
+    if not isinstance(token_id, str) or not token_id:
+        raise ValueError('token_id must be a non-empty string.')
+    query = {'nft_info': {'token_id': token_id}}
+    return query
+def encode_query_to_base64(query: Dict) -> str:
+    try:
+        json_bytes = json.dumps(query, separators=(',', ':'), ensure_ascii=False).encode('utf-8')
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f'Failed to serialize query to JSON: {exc}') from exc
+    encoded = base64.b64encode(json_bytes).decode('ascii')
+    return encoded
+def lcd_smart_query_nft_info(contract_address: str, query_data_b64: str, timeout: float = 10.0) -> Dict[str, Any]:
+    class ContractQueryError(Exception):
+        pass
+    if not isinstance(query_data_b64, str) or not query_data_b64:
+        raise ValueError('query_data_b64 must be a non-empty base64 string.')
+    encoded_query_data = quote(query_data_b64, safe='')
+    url = f'{LCD_BASE_URL}/cosmwasm/wasm/v1/contract/{contract_address}/smart/{encoded_query_data}'
+    try:
+        response = requests.get(url, timeout=timeout)
+    except requests.RequestException as exc:
+        raise ContractQueryError(f'Network error while querying contract: {exc}') from exc
+    if response.status_code != 200:
+        try:
+            err_json = response.json()
+            message = err_json.get('message') or str(err_json)
+        except ValueError:
+            message = response.text
+        raise ContractQueryError(f'LCD returned HTTP {response.status_code} for smart query: {message}')
+    try:
+        lcd_json = response.json()
+    except ValueError as exc:
+        raise ContractQueryError(f'Failed to parse LCD JSON response: {exc}') from exc
+    if 'data' not in lcd_json:
+        raise ContractQueryError(f'LCD response did not contain expected \'data\' field: {lcd_json}')
+    return lcd_json
+def decode_response_data(lcd_response: Dict[str, Any]) -> Dict[str, Any]:
+    class ResponseDecodeError(Exception):
+        pass
+    if 'data' not in lcd_response:
+        raise ResponseDecodeError('LCD response does not contain \'data\' field.')
+    data_field = lcd_response['data']
+    if not isinstance(data_field, str):
+        raise ResponseDecodeError(f'Expected \'data\' to be a base64 string, got {type(data_field)} instead.')
+    try:
+        raw_bytes = base64.b64decode(data_field)
+    except (ValueError, TypeError) as exc:
+        raise ResponseDecodeError(f'Failed to base64-decode LCD data field: {exc}') from exc
+    try:
+        decoded_json = json.loads(raw_bytes.decode('utf-8'))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ResponseDecodeError(f'Failed to decode JSON from contract data: {exc}') from exc
+    return decoded_json
+def return_nft_metadata(contract_address: str, token_id: Union[str, int]) -> Dict[str, Any]:
+    class ContractQueryError(Exception):
+        pass
+    normalized_address, token_id_str = validate_contract_and_token(contract_address, token_id)
+    query_json = build_nft_info_query_json(token_id_str)
+    query_b64 = encode_query_to_base64(query_json)
+    try:
+        lcd_response = lcd_smart_query_nft_info(normalized_address, query_b64)
+    except ContractQueryError as exc:
+        msg = str(exc).lower()
+        if 'not found' in msg or 'no token' in msg or ('token_id' in msg and 'does not exist' in msg):
+            raise NftNotFoundError(f'NFT with token_id {token_id_str} does not exist.') from exc
+        raise
+    nft_info = decode_response_data(lcd_response)
+    return nft_info
+
+# [cite_start]Execute reset on contract CONTRACT_ADDRESS setting count to 0 [cite: 11, 12]
+def get_sender_address() -> str:
+    address = os.getenv('JUNO_SENDER_ADDRESS')
+    if not address:
+        raise RuntimeError('Environment variable JUNO_SENDER_ADDRESS is not set.')
+    if not address.startswith('juno1'):
+        raise ValueError(f'JUNO_SENDER_ADDRESS must start with prefix juno1. Got: {address}')
+    return address
+def get_account_info(sender_address: str):
+    url = f'{LCD_BASE_URL}/cosmos/auth/v1beta1/accounts/{sender_address}'
+    try:
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        raise RuntimeError(f'Error querying account info: {e}') from e
+    data = resp.json()
+    account_any = data.get('account')
+    if not account_any:
+        raise RuntimeError(f'No account field in LCD response for {sender_address}')
+    value_b64 = account_any.get('value')
+    if not value_b64:
+        raise RuntimeError('LCD account response missing protobuf-encoded BaseAccount value.')
+    try:
+        raw = base64.b64decode(value_b64)
+    except (base64.binascii.Error, TypeError) as e:
+        raise RuntimeError(f'Failed to base64-decode account value: {e}') from e
+    base_account = BaseAccountProto()
+    base_account.ParseFromString(raw)
+    if not base_account.address:
+        raise RuntimeError('Decoded BaseAccount has empty address.')
+    if base_account.address != sender_address:
+        raise RuntimeError(f'Address mismatch: requested {sender_address}, got {base_account.address} from LCD.')
+    if not base_account.pub_key.type_url:
+        raise RuntimeError('Account has no public key set on-chain (likely never used). Cannot construct SignerInfo without a pub_key.')
+    return {'account_number': int(base_account.account_number), 'sequence': int(base_account.sequence), 'pub_key': base_account.pub_key}
+def check_spendable_balance(sender_address: str, required_amount: int, denom: str = 'ujuno') -> int:
+    url = f'{LCD_BASE_URL}/cosmos/bank/v1beta1/spendable_balances/{sender_address}'
+    params = {'pagination.limit': '1000'}
+    try:
+        resp = requests.get(url, params=params, timeout=10)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        raise RuntimeError(f'Error querying spendable balances: {e}') from e
+    data = resp.json()
+    balances = data.get('balances', [])
+    balance_amount = 0
+    for coin in balances:
+        if coin.get('denom') == denom:
+            try:
+                balance_amount = int(coin.get('amount', '0'))
+            except ValueError:
+                bad = coin.get('amount')
+                raise RuntimeError(f'Invalid amount for {denom} in LCD response: {bad}')
+            break
+    if balance_amount == 0:
+        raise RuntimeError(f'No spendable balance found for denom {denom} on address {sender_address}.')
+    if balance_amount < required_amount:
+        raise RuntimeError(f'Insufficient {denom} balance. Required: {required_amount}, available: {balance_amount}.')
+    return balance_amount
+def construct_msg_execute_reset(sender_address: str, contract_address: str) -> AnyProto:
+    execute_payload = {'reset': {'count': 0}}
+    msg = MsgExecuteContractProto(sender=sender_address, contract=contract_address, msg=json.dumps(execute_payload).encode('utf-8'), funds=[])
+    any_msg = AnyProto()
+    any_msg.Pack(msg, type_url_prefix='/')
+    if any_msg.type_url != '/cosmwasm.wasm.v1.MsgExecuteContract':
+        raise RuntimeError(f'Unexpected type_url for MsgExecuteContract: {any_msg.type_url}')
+    return any_msg
+def build_unsigned_tx(execute_msg_any: AnyProto, sequence: int, pub_key_any: AnyProto, gas_limit: int = 200000, fee_amount: int = 50000, fee_denom: str = 'ujuno', memo: str = '') -> TxProto:
+    if gas_limit <= 0:
+        raise ValueError('gas_limit must be positive.')
+    if fee_amount < 0:
+        raise ValueError('fee_amount cannot be negative.')
+    tx_body = TxBodyProto(messages=[execute_msg_any], memo=memo)
+    fee = FeeProto(amount=[CoinProto(denom=fee_denom, amount=str(fee_amount))], gas_limit=gas_limit)
+    mode_info = TxProto.ModeInfo(single=TxProto.ModeInfo.Single(mode=SignModeProto.SIGN_MODE_DIRECT))
+    signer_info = SignerInfoProto(public_key=pub_key_any, mode_info=mode_info, sequence=sequence)
+    auth_info = AuthInfoProto(signer_infos=[signer_info], fee=fee)
+    tx = TxProto(body=tx_body, auth_info=auth_info, signatures=[])
+    return tx
+def simulate_tx_and_update_fee(tx: TxProto, gas_price: Decimal = Decimal('0.025'), gas_adjustment: float = 1.2, fee_denom: str = 'ujuno') -> dict:
+    if gas_adjustment <= 0:
+        raise ValueError('gas_adjustment must be positive.')
+    tx_bytes = tx.SerializeToString()
+    tx_bytes_b64 = base64.b64encode(tx_bytes).decode('utf-8')
+    url = f'{LCD_BASE_URL}/cosmos/tx/v1beta1/simulate'
+    payload = {'tx_bytes': tx_bytes_b64}
+    try:
+        resp = requests.post(url, json=payload, timeout=15)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        raise RuntimeError(f'Error simulating transaction: {e}') from e
+    sim = resp.json()
+    gas_info = sim.get('gas_info') or {}
+    gas_used_str = gas_info.get('gas_used')
+    if gas_used_str is None:
+        raise RuntimeError(f'Simulation response missing gas_used: {sim}')
+    try:
+        gas_used = int(gas_used_str)
+    except ValueError:
+        raise RuntimeError(f'Invalid gas_used in simulation response: {gas_used_str}')
+    gas_limit_decimal = Decimal(gas_used) * Decimal(str(gas_adjustment))
+    gas_limit = int(gas_limit_decimal.quantize(Decimal('1'), rounding=ROUND_UP))
+    fee_amount_decimal = Decimal(gas_limit) * gas_price
+    fee_amount = int(fee_amount_decimal.quantize(Decimal('1'), rounding=ROUND_UP))
+    tx.auth_info.fee.gas_limit = gas_limit
+    tx.auth_info.fee.amount[:] = [CoinProto(denom=fee_denom, amount=str(fee_amount))]
+    return {'gas_used': gas_used, 'gas_limit': gas_limit, 'fee_amount': fee_amount, 'fee_denom': fee_denom}
+def sign_tx(tx: TxProto, account_number: int, chain_id: str = 'juno-1', private_key_hex: str = None) -> dict:
+    if private_key_hex is None:
+        private_key_hex = os.getenv('JUNO_PRIVATE_KEY_HEX')
+    if not private_key_hex:
+        raise RuntimeError('Missing private key. Set JUNO_PRIVATE_KEY_HEX or pass private_key_hex explicitly.')
+    try:
+        privkey_bytes = bytes.fromhex(private_key_hex)
+    except ValueError as e:
+        raise RuntimeError('JUNO_PRIVATE_KEY_HEX must be a valid hex string.') from e
+    privkey = PrivateKey(privkey_bytes)
+    body_bytes = tx.body.SerializeToString()
+    auth_info_bytes = tx.auth_info.SerializeToString()
+    sign_doc = SignDocProto(body_bytes=body_bytes, auth_info_bytes=auth_info_bytes, chain_id=chain_id, account_number=account_number)
+    sign_bytes = sign_doc.SerializeToString()
+    signature = privkey.sign(sign_bytes)
+    tx.signatures[:] = [signature]
+    raw_tx_bytes = tx.SerializeToString()
+    tx_bytes_b64 = base64.b64encode(raw_tx_bytes).decode('utf-8')
+    return {'tx': tx, 'raw_tx_bytes': raw_tx_bytes, 'tx_bytes_b64': tx_bytes_b64}
+def broadcast_tx(tx_bytes_b64: str, mode: str = 'BROADCAST_MODE_SYNC') -> dict:
+    url = f'{LCD_BASE_URL}/cosmos/tx/v1beta1/txs'
+    payload = {'tx_bytes': tx_bytes_b64, 'mode': mode}
+    try:
+        resp = requests.post(url, json=payload, timeout=30)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        raise RuntimeError(f'Error broadcasting transaction: {e}') from e
+    data = resp.json()
+    tx_response = data.get('tx_response')
+    if not tx_response:
+        raise RuntimeError(f'LCD broadcast response missing tx_response: {data}')
+    code = int(tx_response.get('code', 0))
+    if code != 0:
+        raw_log = tx_response.get('raw_log')
+        raise RuntimeError(f'Transaction failed with code {code}: {raw_log}')
+    return tx_response
+def verify_reset_effect(contract_address: str, expected_count: int = 0) -> int:
+    query_msg = {'get_count': {}}
+    query_b64 = base64.b64encode(json.dumps(query_msg).encode('utf-8')).decode('utf-8')
+    url = f'{LCD_BASE_URL}/cosmwasm/wasm/v1/contract/{contract_address}/smart/{query_b64}'
+    try:
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+    except requests.RequestException as e:
+        raise RuntimeError(f'Error querying contract state: {e}') from e
+    data = resp.json()
+    data_b64 = data.get('data')
+    if data_b64 is None:
+        raise RuntimeError(f'Unexpected smart query response (missing data field): {data}')
+    try:
+        raw = base64.b64decode(data_b64)
+        decoded = json.loads(raw.decode('utf-8'))
+    except Exception as e:
+        raise RuntimeError(f'Failed to decode smart query response payload: {e}') from e
+    count = decoded.get('count')
+    if count != expected_count:
+        raise RuntimeError(f'Contract count mismatch. Expected {expected_count}, got {count}.')
+    return count
+
+# [cite_start]Execute increment on contract address CONTRACT_ADDRESS with 10ujuno [cite: 13, 14]
+def lcd_verify_contract_exists(contract_address: str) -> dict:
+    if not contract_address:
+        raise ValueError('contract_address must be a non-empty Bech32 address.')
+    url = f'{LCD_BASE_URL}/cosmwasm/wasm/v1/contract/{contract_address}'
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as exc:
+        raise RuntimeError(f'Failed to query contract info from LCD: {exc}') from exc
+    data = response.json()
+    if 'contract_info' not in data:
+        raise ValueError(f'LCD response does not contain contract_info for {contract_address}: {data}')
+    return data
+def bff_prepare_execute_msg_increment() -> Tuple[Dict[str, Any], bytes]:
+    msg = {'increment': {}}
+    try:
+        json_str = json.dumps(msg, separators=(',', ':'), sort_keys=True)
+        msg_bytes = json_str.encode('utf-8')
+    except (TypeError, ValueError) as exc:
+        raise RuntimeError(f'Failed to encode execute message as JSON: {exc}') from exc
+    return msg, msg_bytes
+def bff_get_chain_and_account_info(address: str) -> Dict[str, Any]:
+    if not address:
+        raise ValueError('address must be a non-empty Bech32 string.')
+    node_info_url = f'{LCD_BASE_URL}/cosmos/base/tendermint/v1beta1/node_info'
+    try:
+        node_resp = requests.get(node_info_url, timeout=10)
+        node_resp.raise_for_status()
+    except requests.RequestException as exc:
+        raise RuntimeError(f'Failed to query node_info from LCD: {exc}') from exc
+    node_data = node_resp.json()
+    default_node_info = node_data.get('default_node_info') or {}
+    chain_id = default_node_info.get('network')
+    if not chain_id:
+        raise RuntimeError(f'Could not determine chain_id from node_info response: {node_data}')
+    acct_url = f'{LCD_BASE_URL}/cosmos/auth/v1beta1/accounts/{address}'
+    try:
+        acct_resp = requests.get(acct_url, timeout=10)
+        acct_resp.raise_for_status()
+    except requests.RequestException as exc:
+        raise RuntimeError(f'Failed to query account data from LCD: {exc}') from exc
+    acct_data = acct_resp.json()
+    account = acct_data.get('account')
+    if not account:
+        raise RuntimeError(f'No account data found for address {address}: {acct_data}')
+    account_number_str = account.get('account_number')
+    sequence_str = account.get('sequence')
+    if account_number_str is None or sequence_str is None:
+        raise RuntimeError(f'Account number or sequence missing in LCD response for {address}: {account}')
+    try:
+        account_number = int(account_number_str)
+        sequence = int(sequence_str)
+    except ValueError as exc:
+        raise RuntimeError(f'Failed to parse account_number/sequence as integers: {account_number_str}/{sequence_str}') from exc
+    return {'chain_id': chain_id, 'account_number': account_number, 'sequence': sequence, 'raw_account': account}
+def lcd_check_spendable_balance_for_ujuno(address: str, required_ujuno: int) -> Dict[str, Any]:
+    if not address:
+        raise ValueError('address must be a non-empty Bech32 string.')
+    if required_ujuno <= 0:
+        raise ValueError('required_ujuno must be a positive integer representing ujuno.')
+    url = f'{LCD_BASE_URL}/cosmos/bank/v1beta1/balances/{address}/by_denom'
+    params = {'denom': 'ujuno'}
+    try:
+        resp = requests.get(url, params=params, timeout=10)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        raise RuntimeError(f'Failed to query ujuno balance from LCD: {exc}') from exc
+    data = resp.json()
+    balance_obj = data.get('balance') or {}
+    amount_str = balance_obj.get('amount', '0')
+    try:
+        available = int(amount_str)
+    except ValueError as exc:
+        raise RuntimeError(f'LCD returned non-integer balance amount: {amount_str}') from exc
+    if available < required_ujuno:
+        raise RuntimeError(f'Insufficient ujuno balance. Required {required_ujuno}, available {available}.')
+    return {'available_ujuno': available, 'required_ujuno': required_ujuno}
+def bff_construct_execute_contract_tx(sender: str, contract_address: str, msg_bytes: bytes, funds_ujuno: int = 10, initial_gas_limit: int = 200000, gas_price_ujuno: Decimal = Decimal('0.025')) -> TxRawProto:
+    if not sender or not contract_address:
+        raise ValueError('sender and contract_address must be non-empty strings.')
+    if initial_gas_limit <= 0:
+        raise ValueError('initial_gas_limit must be positive.')
+    exec_msg = MsgExecuteContractProto(sender=sender, contract=contract_address, msg=msg_bytes, funds=[CosmosCoinProto(denom='ujuno', amount=str(funds_ujuno))])
+    any_msg = AnyProto(type_url='/cosmwasm.wasm.v1.MsgExecuteContract', value=exec_msg.SerializeToString())
+    tx_body = TxBodyProto(messages=[any_msg], memo='', timeout_height=0)
+    body_bytes = tx_body.SerializeToString()
+    fee_amount = (Decimal(initial_gas_limit) * gas_price_ujuno).to_integral_value(rounding=ROUND_UP)
+    fee = FeeProto(amount=[CosmosCoinProto(denom='ujuno', amount=str(fee_amount))], gas_limit=initial_gas_limit, payer='', granter='')
+    auth_info = AuthInfoProto(signer_infos=[], fee=fee)
+    auth_info_bytes = auth_info.SerializeToString()
+    tx_raw = TxRawProto(body_bytes=body_bytes, auth_info_bytes=auth_info_bytes, signatures=[])
+    return tx_raw
+def lcd_simulate_tx(tx_raw: TxRawProto, gas_adjustment: float = 1.3, gas_price_ujuno: Decimal = Decimal('0.025')) -> Dict[str, Any]:
+    if gas_adjustment <= 0:
+        raise ValueError('gas_adjustment must be positive.')
+    tx_bytes = tx_raw.SerializeToString()
+    payload = {'tx_bytes': base64.b64encode(tx_bytes).decode('ascii')}
+    url = f'{LCD_BASE_URL}/cosmos/tx/v1beta1/simulate'
+    try:
+        resp = requests.post(url, json=payload, timeout=20)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        raise RuntimeError(f'Failed to simulate transaction via LCD: {exc}') from exc
+    sim_result = resp.json()
+    gas_info = sim_result.get('gas_info') or {}
+    gas_used_str = gas_info.get('gas_used')
+    if gas_used_str is None:
+        raise RuntimeError(f'LCD simulation response missing gas_used: {sim_result}')
+    try:
+        gas_used = int(gas_used_str)
+    except ValueError as exc:
+        raise RuntimeError(f'Invalid gas_used value: {gas_used_str}') from exc
+    recommended_gas_limit = int(gas_used * gas_adjustment)
+    fee_amount = (Decimal(recommended_gas_limit) * gas_price_ujuno).to_integral_value(rounding=ROUND_UP)
+    return {'gas_used': gas_used, 'recommended_gas_limit': recommended_gas_limit, 'recommended_fee_ujuno': int(fee_amount), 'raw_response': sim_result}
+def bff_sign_execute_tx(unsigned_tx: TxRawProto, chain_id: str, account_number: int, sequence: int, fee_amount_ujuno: int, gas_limit: int, private_key_hex: str) -> bytes:
+    if fee_amount_ujuno < 0:
+        raise ValueError('fee_amount_ujuno must be non-negative.')
+    if gas_limit <= 0:
+        raise ValueError('gas_limit must be positive.')
+    if not chain_id:
+        raise ValueError('chain_id must be a non-empty string.')
+    try:
+        privkey = PrivateKey(bytes.fromhex(private_key_hex))
+    except Exception as exc:
+        raise RuntimeError('Failed to load private key from hex.') from exc
+    pubkey = Secp256k1PubKeyProto(key=privkey.public_key.bytes)
+    any_pubkey = AnyProto(type_url='/cosmos.crypto.secp256k1.PubKey', value=pubkey.SerializeToString())
+    mode_info = TxProto.ModeInfo(single=TxProto.ModeInfo.Single(mode=SignModeProto.SIGN_MODE_DIRECT))
+    signer_info = SignerInfoProto(public_key=any_pubkey, mode_info=mode_info, sequence=sequence)
+    fee = FeeProto(amount=[CosmosCoinProto(denom='ujuno', amount=str(fee_amount_ujuno))], gas_limit=gas_limit, payer='', granter='')
+    auth_info = AuthInfoProto(signer_infos=[signer_info], fee=fee)
+    auth_info_bytes = auth_info.SerializeToString()
+    sign_doc = SignDocProto(body_bytes=unsigned_tx.body_bytes, auth_info_bytes=auth_info_bytes, chain_id=chain_id, account_number=account_number)
+    sign_doc_bytes = sign_doc.SerializeToString()
+    signature = privkey.sign(sign_doc_bytes)
+    signed_tx = TxRawProto(body_bytes=unsigned_tx.body_bytes, auth_info_bytes=auth_info_bytes, signatures=[signature])
+    return signed_tx.SerializeToString()
+def lcd_broadcast_tx(tx_bytes: bytes, mode: str = 'BROADCAST_MODE_BLOCK') -> Dict[str, Any]:
+    if not tx_bytes:
+        raise ValueError('tx_bytes must not be empty.')
+    payload = {'tx_bytes': base64.b64encode(tx_bytes).decode('ascii'), 'mode': mode}
+    url = f'{LCD_BASE_URL}/cosmos/tx/v1beta1/txs'
+    try:
+        resp = requests.post(url, json=payload, timeout=30)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        raise RuntimeError(f'Failed to broadcast transaction via LCD: {exc}') from exc
+    data = resp.json()
+    tx_response = data.get('tx_response')
+    if tx_response is None:
+        raise RuntimeError(f'LCD broadcast response missing tx_response: {data}')
+    return tx_response
+def lcd_verify_execute_effect(contract_address: str, tx_response: Dict[str, Any]) -> Dict[str, Any]:
+    if tx_response is None:
+        raise ValueError('tx_response must not be None.')
+    code = int(tx_response.get('code', 0))
+    if code != 0:
+        raise RuntimeError(f'Execute transaction failed with code {code}: {tx_response.get("raw_log")}')
+    wasm_events = []
+    for log in tx_response.get('logs', []):
+        for event in log.get('events', []):
+            if event.get('type') == 'wasm':
+                wasm_events.append(event)
+    if not wasm_events:
+        raise RuntimeError('No wasm events found in tx_response logs; execute may not have run as expected.')
+    return {'success': True, 'txhash': tx_response.get('txhash'), 'height': tx_response.get('height'), 'wasm_events': wasm_events}
+
+# [cite_start]Query the smart (contract-state smart) view of a CosmWasm contract on Juno, using junod CLI and/or the LCD endpoint. [cite: 15]
+def collect_query_parameters(payload: Dict[str, Any]) -> SmartQueryParameters:
+    if not isinstance(payload, dict):
+        raise ValueError('payload must be a dict')
+    contract_address = payload.get('contract_address')
+    if not isinstance(contract_address, str) or not contract_address:
+        raise ValueError('contract_address (bech32) is required and must be a non-empty string')
+    raw_query = payload.get('query')
+    if raw_query is None:
+        raise ValueError('query is required (e.g. {config: {}})')
+    if isinstance(raw_query, str):
+        try:
+            query_obj = json.loads(raw_query)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f'query string must be valid JSON: {exc}') from exc
+    elif isinstance(raw_query, dict):
+        query_obj = raw_query
+    else:
+        raise ValueError('query must be either a dict or a JSON string')
+    lcd_url = payload.get('lcd_url') or os.getenv('JUNO_LCD_URL') or LCD_BASE_URL
+    rpc_url = payload.get('rpc_url') or os.getenv('JUNO_RPC_URL')
+    chain_id = payload.get('chain_id') or os.getenv('JUNO_CHAIN_ID')
+    keyring_backend = payload.get('keyring_backend') or os.getenv('JUNO_KEYRING_BACKEND')
+    node_cfg = NodeConfig(lcd_url=lcd_url, rpc_url=rpc_url, chain_id=chain_id, keyring_backend=keyring_backend)
+    return SmartQueryParameters(contract_address=contract_address, query=query_obj, node=node_cfg)
+def encode_smart_query_for_lcd(query: Dict[str, Any]) -> str:
+    if not isinstance(query, dict):
+        raise ValueError('query must be a dict representing the JSON payload')
+    try:
+        json_str = json.dumps(query, separators=(',', ':'), ensure_ascii=False)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f'query could not be serialized to JSON: {exc}') from exc
+    json_bytes = json_str.encode('utf-8')
+    b64 = base64.b64encode(json_bytes).decode('ascii')
+    return b64
+def http_get_contract_smart_state(contract_address: str, query_data_b64: str, lcd_url: str = LCD_BASE_URL, timeout: float = 10.0) -> Dict[str, Any]:
+    if not contract_address or not isinstance(contract_address, str):
+        raise ValueError('contract_address must be a non-empty string')
+    if not query_data_b64 or not isinstance(query_data_b64, str):
+        raise ValueError('query_data_b64 must be a non-empty base64 string')
+    base = lcd_url.rstrip('/')
+    encoded_addr = quote(contract_address, safe='')
+    encoded_query = quote(query_data_b64, safe='')
+    url = f'{base}/cosmwasm/wasm/v1/contract/{encoded_addr}/smart/{encoded_query}'
+    try:
+        resp = requests.get(url, timeout=timeout)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        raise requests.RequestException(f'Failed GET {url}: {exc}') from exc
+    try:
+        body = resp.json()
+    except ValueError as exc:
+        raise ValueError(f'LCD response was not valid JSON: {exc}; raw={resp.text!r}') from exc
+    if 'data' not in body:
+        raise ValueError(f'Unexpected LCD response; missing data field: {body}')
+    return body
+def decode_lcd_smart_query_response(lcd_response: Dict[str, Any]) -> Union[Any, bytes]:
+    if not isinstance(lcd_response, dict):
+        raise ValueError('lcd_response must be a dict')
+    if 'data' not in lcd_response:
+        raise KeyError('lcd_response is missing required data field')
+    b64_data = lcd_response['data']
+    if not isinstance(b64_data, str):
+        raise ValueError('data field must be a base64 string')
+    try:
+        raw_bytes = base64.b64decode(b64_data)
+    except (ValueError, TypeError) as exc:
+        raise ValueError(f'Failed to base64-decode LCD data field: {exc}') from exc
+    try:
+        text = raw_bytes.decode('utf-8')
+        return json.loads(text)
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return raw_bytes
+def execute_junod_cli_smart_query(contract_address: str, query: Dict[str, Any], rpc_endpoint: Optional[str], chain_id: Optional[str], junod_binary: str = 'junod') -> Dict[str, Any]:
+    if not contract_address or not isinstance(contract_address, str):
+        raise ValueError('contract_address must be a non-empty string')
+    if not isinstance(query, dict):
+        raise ValueError('query must be a dict representing the JSON payload')
+    if not rpc_endpoint or not chain_id:
+        raise ValueError('rpc_endpoint and chain_id are required to run junod CLI queries')
+    try:
+        query_str = json.dumps(query, separators=(',', ':'), ensure_ascii=False)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f'query could not be serialized to JSON: {exc}') from exc
+    cmd = [junod_binary, 'query', 'wasm', 'contract-state', 'smart', contract_address, query_str, '--node', rpc_endpoint, '--chain-id', chain_id, '--output', 'json']
+    try:
+        completed = subprocess.run(cmd, check=False, capture_output=True, text=True)
+    except FileNotFoundError as exc:
+        raise RuntimeError(f'junod binary not found: {junod_binary}') from exc
+    except Exception as exc:
+        raise RuntimeError(f'Failed to execute junod CLI: {exc}') from exc
+    if completed.returncode != 0:
+        stderr = completed.stderr.strip()
+        stdout = completed.stdout.strip()
+        stdout_display = stdout or '<empty>'
+        stderr_display = stderr or '<empty>'
+        raise RuntimeError(f'junod query failed with exit code {completed.returncode}. STDOUT: {stdout_display} STDERR: {stderr_display}')
+    try:
+        cli_output = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f'Failed to parse junod JSON output: {exc}; raw={completed.stdout!r}') from exc
+    return cli_output
+def compare_cli_and_lcd_results(lcd_decoded_result: Any, lcd_raw_response: Dict[str, Any], cli_response: Dict[str, Any]) -> Dict[str, Any]:
+    if not isinstance(cli_response, dict):
+        raise ValueError('cli_response must be a dict')
+    if 'data' not in cli_response:
+        raise ValueError(f'CLI response is missing data field: {cli_response}')
+    data_field = cli_response['data']
+    if not isinstance(data_field, str):
+        raise ValueError('data field of CLI response must be a base64 string')
+    try:
+        cli_bytes = base64.b64decode(data_field)
+    except (ValueError, TypeError) as exc:
+        raise ValueError(f'Failed to base64-decode CLI data field: {exc}') from exc
+    try:
+        cli_text = cli_bytes.decode('utf-8')
+        cli_decoded = json.loads(cli_text)
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        cli_decoded = cli_bytes
+    if lcd_decoded_result != cli_decoded:
+        raise ValueError('LCD and junod CLI smart query results differ. Decoded LCD result: {lcd_decoded_result!r} Decoded CLI result: {cli_decoded!r}')
+    return {'match': True, 'lcd': lcd_decoded_result, 'cli': cli_decoded}
+
+# [cite_start]Compile the current CosmWasm smart contract using rust-optimizer [cite: 16]
+def detect_contract_project_root(start_dir: Optional[str] = None) -> Path:
+    start_path = Path(start_dir).resolve() if start_dir else Path.cwd().resolve()
+    current = start_path
+    for candidate in [current] + list(current.parents):
+        cargo_toml = candidate / 'Cargo.toml'
+        if cargo_toml.is_file():
+            cargo_data = _load_toml(cargo_toml)
+            if 'workspace' in cargo_data:
+                raise ProjectRootError('Found Cargo.toml but it defines a [workspace]. This helper expects to run inside a single-contract project.')
+            if 'package' not in cargo_data:
+                raise ProjectRootError('Cargo.toml does not contain a [package] section.')
+            return candidate
+    raise ProjectRootError(f'Could not locate a suitable Cargo.toml when walking up from {start_path}.')
+def read_contract_name_from_cargo(project_root: str) -> Tuple[str, Path]:
+    root = Path(project_root).resolve()
+    cargo_toml = root / 'Cargo.toml'
+    if not cargo_toml.is_file():
+        raise CargoReadError(f'Cargo.toml not found at {cargo_toml}')
+    try:
+        cargo_data = _load_toml(cargo_toml)
+        package_table = cargo_data['package']
+        contract_name = package_table['name']
+    except KeyError as exc:
+        raise CargoReadError(f'Cargo.toml at {cargo_toml} is missing the [package] name field.') from exc
+    artifacts_dir = root / 'artifacts'
+    artifact_path = artifacts_dir / f'{contract_name}.wasm'
+    return contract_name, artifact_path
+def run_rust_optimizer(project_root: str, use_docker: bool = True, docker_image: str = 'cosmwasm/rust-optimizer:0.14.0', timeout_seconds: Optional[int] = None) -> Dict[str, Any]:
+    root = Path(project_root).resolve()
+    if not (root / 'Cargo.toml').is_file():
+        raise RustOptimizerError(f'No Cargo.toml found under {root}. Is this a valid CosmWasm contract project?')
+    if use_docker:
+        target_dir = root / 'target'
+        cmd = ['docker', 'run', '--rm', '-v', f'{root}:/code', '-v', f'{target_dir}:/target', '-v', 'rust-optimizer-cache:/usr/local/cargo/registry', docker_image]
+        working_dir = root
+    else:
+        cmd = ['cargo', 'wasm', '--locked', '--release']
+        working_dir = root
+    try:
+        completed = subprocess.run(cmd, cwd=working_dir, check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=timeout_seconds)
+    except FileNotFoundError as exc:
+        raise RustOptimizerError(f'Failed to execute {cmd[0]!r}. Ensure it is installed and available on PATH.') from exc
+    except subprocess.TimeoutExpired as exc:
+        raise RustOptimizerError(f'rust-optimizer command timed out after {timeout_seconds} seconds.') from exc
+    if completed.returncode != 0:
+        raise RustOptimizerError(f'rust-optimizer command failed with non-zero exit code {completed.returncode}.\n\nSTDOUT:\n{completed.stdout}\n\nSTDERR:\n{completed.stderr}')
+    return {'stdout': completed.stdout, 'stderr': completed.stderr, 'returncode': completed.returncode, 'command': cmd}
+def verify_wasm_artifact(artifact_path: str, optimizer_stdout: Optional[str] = None, optimizer_stderr: Optional[str] = None, run_wasm_validator: bool = True, wasm_validator_cmd: Optional[list] = None) -> Dict[str, Any]:
+    path = Path(artifact_path).resolve()
+    if not path.is_file():
+        msg = f'WASM artifact not found at {path}.'
+        if optimizer_stdout or optimizer_stderr: msg += '\n\nOptimizer STDOUT:\n' + (optimizer_stdout or '') + '\n\nOptimizer STDERR:\n' + (optimizer_stderr or '')
+        raise WasmArtifactError(msg)
+    size = path.stat().st_size
+    if size == 0:
+        msg = f'WASM artifact at {path} is empty (0 bytes).'
+        if optimizer_stdout or optimizer_stderr: msg += '\n\nOptimizer STDOUT:\n' + (optimizer_stdout or '') + '\n\nOptimizer STDERR:\n' + (optimizer_stderr or '')
+        raise WasmArtifactError(msg)
+    with path.open('rb') as f:
+        magic = f.read(4)
+    if magic != b'\x00asm':
+        msg = f'File at {path} does not appear to be a valid WebAssembly module. Expected magic bytes 0x00 0x61 0x73 0x6d, got {magic!r}. '
+        if optimizer_stdout or optimizer_stderr: msg += '\n\nOptimizer STDOUT:\n' + (optimizer_stdout or '') + '\n\nOptimizer STDERR:\n' + (optimizer_stderr or '')
+        raise WasmArtifactError(msg)
+    validator_output: Dict[str, Any] = {}
+    return {'artifact_path': str(path), 'size_bytes': size, 'magic_bytes': list(magic), 'validator': validator_output}
+
+# [cite_start]Execute a CosmWasm contract while attaching tokens, equivalent to using the `--amount` flag in `junod tx wasm execute`. [cite: 17, 18]
+def parse_and_validate_amounts(coin_str: str, allowed_denoms: Optional[List[str]] = None) -> List[Dict[str, str]]:
+    COIN_RE = re.compile(r'^([0-9]+)([a-zA-Z0-9/]+)$')
+    if not coin_str:
+        raise AmountParseError('Coin string must not be empty.')
+    if allowed_denoms is None:
+        allowed_denoms = ['ujuno', 'ujunox']
+    coins: List[Dict[str, str]] = []
+    for part in coin_str.split(','):
+        token = part.strip()
+        if not token: continue
+        m = COIN_RE.match(token)
+        if not m: raise AmountParseError(f'Invalid coin segment {token}. Expected format like 100000ujuno.')
+        amount_str, denom = m.groups()
+        if not amount_str.isdigit(): raise AmountParseError(f'Amount {amount_str} in segment {token} is not a valid integer.')
+        if amount_str == '0': raise AmountParseError('Amounts must be strictly positive.')
+        if len(amount_str) > 1 and amount_str.startswith('0'): raise AmountParseError(f'Amount {amount_str} must not contain leading zeros.')
+        if denom not in allowed_denoms: raise AmountParseError(f'Denom {denom} is not in the list of allowed Juno denoms: {allowed_denoms}.')
+        coins.append({'denom': denom, 'amount': amount_str})
+    if not coins:
+        raise AmountParseError('No valid coin segments were found in input.')
+    return coins
+async def check_spendable_balances_for_sender(sender_address: str, required_funds: List[Dict[str, str]], expected_fee_per_denom: Optional[Dict[str, int]] = None, lcd_url: str = LCD_BASE_URL) -> Dict[str, Dict[str, int]]:
+    if expected_fee_per_denom is None:
+        expected_fee_per_denom = {}
+    url = f'{lcd_url}/cosmos/bank/v1beta1/spendable_balances/{sender_address}'
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            resp = await client.get(url)
+            resp.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise RuntimeError(f'Error querying spendable balances from LCD: {exc}') from exc
+    data = resp.json()
+    spendable_map: Dict[str, int] = {}
+    for coin in data.get('balances', []):
+        denom = coin.get('denom')
+        amount_str = coin.get('amount', '0')
+        if denom is None: continue
+        try:
+            spendable_map[denom] = int(amount_str)
+        except ValueError:
+            raise RuntimeError(f'LCD returned a non-integer amount {amount_str} for denom {denom}.')
+    for coin in required_funds:
+        denom = coin['denom']
+        raw_amount = coin['amount']
+        try:
+            required_amount = int(raw_amount)
+        except ValueError:
+            raise ValueError(f'Required amount {raw_amount} for denom {denom} is not a valid integer.')
+        fee_buffer = int(expected_fee_per_denom.get(denom, 0))
+        total_required = required_amount + fee_buffer
+        available = spendable_map.get(denom, 0)
+        if available < total_required:
+            raise InsufficientBalanceError(f'Insufficient spendable balance for denom {denom}. Required including fees: {total_required}, available: {available}.')
+    return {'spendable_balances': spendable_map}
+def build_execute_contract_msg_with_funds(sender: str, contract: str, execute_msg: Dict, funds: List[Dict[str, str]]) -> MsgExecuteContractProto:
+    if not isinstance(execute_msg, dict):
+        raise ExecuteMsgBuildError('execute_msg must be a JSON-serializable dict.')
+    if not funds:
+        raise ExecuteMsgBuildError('funds must be a non-empty list when attaching tokens.')
+    try:
+        msg_bytes = json.dumps(execute_msg, separators=(',', ':'), ensure_ascii=False).encode('utf-8')
+    except (TypeError, ValueError) as exc:
+        raise ExecuteMsgBuildError(f'Failed to JSON-encode execute_msg: {exc}') from exc
+    proto_funds = []
+    for coin in funds:
+        denom = coin['denom']
+        amount = coin['amount']
+        if not denom or not amount:
+            raise ExecuteMsgBuildError(f'Invalid fund entry: {coin}.')
+        proto_funds.append(CosmosCoinProto(denom=denom, amount=str(amount)))
+    msg = MsgExecuteContractProto(sender=sender, contract=contract, msg=msg_bytes, funds=proto_funds)
+    return msg
+async def _get_minimum_gas_price(lcd_url: str = LCD_BASE_URL) -> Tuple[Decimal, str]:
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        resp = await client.get(f'{lcd_url}/cosmos/base/node/v1beta1/config')
+        resp.raise_for_status()
+    cfg = resp.json()
+    mgp = cfg.get('minimum_gas_price')
+    if not mgp: raise TxConstructionError('LCD /config did not return minimum_gas_price.')
+    i = 0
+    while i < len(mgp) and (mgp[i].isdigit() or mgp[i] == '.'): i += 1
+    amount_str = mgp[:i]
+    denom = mgp[i:]
+    if not amount_str or not denom: raise TxConstructionError(f'Could not parse minimum_gas_price value {mgp}.')
+    return Decimal(amount_str), denom
+async def construct_execute_tx(msg: MsgExecuteContractProto, public_key_bytes: bytes, sequence: int, gas_limit: int = 200_000, gas_adjustment: float = 1.0, lcd_url: str = LCD_BASE_URL) -> Tuple[TxProto, int, CosmosCoinProto]:
+    if gas_limit <= 0: raise TxConstructionError('gas_limit must be positive.')
+    effective_gas_limit = int(gas_limit * gas_adjustment)
+    try:
+        gas_price_amount, gas_price_denom = await _get_minimum_gas_price(lcd_url)
+    except httpx.HTTPError as exc:
+        raise TxConstructionError(f'Failed to fetch minimum_gas_price from LCD: {exc}') from exc
+    fee_decimal = (gas_price_amount * Decimal(effective_gas_limit)).to_integral_value(rounding=ROUND_UP)
+    fee_amount = int(fee_decimal)
+    fee_coin = CosmosCoinProto(denom=gas_price_denom, amount=str(fee_amount))
+    msg_any = AnyProto(type_url='/cosmwasm.wasm.v1.MsgExecuteContract', value=msg.SerializeToString())
+    tx_body = TxBodyProto(messages=[msg_any], memo='', timeout_height=0)
+    pubkey = Secp256k1PubKeyProto(key=public_key_bytes)
+    pubkey_any = AnyProto(type_url='/cosmos.crypto.secp256k1.PubKey', value=pubkey.SerializeToString())
+    mode_info = TxProto.ModeInfo(single=TxProto.ModeInfo.Single(mode=SignModeProto.SIGN_MODE_DIRECT))
+    signer_info = SignerInfoProto(public_key=pubkey_any, mode_info=mode_info, sequence=sequence)
+    auth_info = AuthInfoProto(signer_infos=[signer_info], fee=FeeProto(amount=[fee_coin], gas_limit=effective_gas_limit, payer='', granter=''))
+    unsigned_tx = TxProto(body=tx_body, auth_info=auth_info, signatures=[])
+    return unsigned_tx, effective_gas_limit, fee_coin
+async def simulate_execute_tx(unsigned_tx: TxProto, gas_adjustment: float = 1.2, lcd_url: str = LCD_BASE_URL) -> Tuple[int, int]:
+    if gas_adjustment <= 0: raise ValueError('gas_adjustment must be positive.')
+    tx_bytes = unsigned_tx.SerializeToString()
+    payload = {'tx_bytes': base64.b64encode(tx_bytes).decode('utf-8')}
+    async with httpx.AsyncClient(timeout=20.0) as client:
+        try:
+            resp = await client.post(f'{lcd_url}/cosmos/tx/v1beta1/simulate', json=payload)
+            resp.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise TxSimulationError(f'Error calling /cosmos/tx/v1beta1/simulate: {exc}') from exc
+    data = resp.json()
+    gas_info = data.get('gas_info') or {}
+    gas_used_str = gas_info.get('gas_used')
+    if gas_used_str is None: raise TxSimulationError(f'Simulation response missing field gas_used: {data}')
+    try:
+        gas_used = int(gas_used_str)
+    except ValueError:
+        raise TxSimulationError(f'Simulation returned non-integer gas_used {gas_used_str}.')
+    adjusted_gas_limit = int(gas_used * gas_adjustment)
+    return gas_used, adjusted_gas_limit
+async def sign_and_broadcast_execute_tx(unsigned_tx: TxProto, privkey_hex: str, account_number: int, sequence: int, chain_id: str, lcd_url: str = LCD_BASE_URL) -> Tuple[str, dict]:
+    key_hex = privkey_hex.lower().replace('0x', '')
+    if len(key_hex) != 64: raise ValueError('Private key must be 32 bytes (64 hex characters).')
+    try:
+        privkey = PrivateKey(bytes.fromhex(key_hex))
+    except ValueError as exc:
+        raise ValueError(f'Invalid private key hex: {exc}') from exc
+    wallet = LocalWallet(privkey)
+    signed_tx: TxProto = wallet.sign_tx(unsigned_tx, account_number=account_number, sequence=sequence, chain_id=chain_id)
+    tx_bytes = signed_tx.SerializeToString()
+    payload = {'tx_bytes': base64.b64encode(tx_bytes).decode('utf-8'), 'mode': 'BROADCAST_MODE_BLOCK'}
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            resp = await client.post(f'{lcd_url}/cosmos/tx/v1beta1/txs', json=payload)
+            resp.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise TxBroadcastError(f'Error broadcasting transaction: {exc}') from exc
+    data = resp.json()
+    tx_response = data.get('tx_response') or {}
+    txhash = tx_response.get('txhash')
+    if not txhash: raise TxBroadcastError(f'LCD did not return txhash. Full response: {data}')
+    code = tx_response.get('code', 0)
+    if code != 0:
+        raw_log = tx_response.get('raw_log', '')
+        raise TxBroadcastError(f'Transaction failed with code {code}. txhash={txhash}, raw_log={raw_log}')
+    return txhash, tx_response
+async def _get_balance_by_denom(address: str, denom: str, lcd_url: str = LCD_BASE_URL) -> int:
+    url = f'{lcd_url}/cosmos/bank/v1beta1/balances/{address}/by_denom'
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        resp = await client.get(url, params={'denom': denom})
+        resp.raise_for_status()
+    data = resp.json()
+    balance = data.get('balance') or {}
+    amount_str = balance.get('amount', '0')
+    try:
+        return int(amount_str)
+    except ValueError:
+        raise RuntimeError(f'LCD returned non-integer balance {amount_str} for {address} denom {denom}.')
+async def verify_funds_transferred_to_contract(contract_address: str, sender_address: str, attached_funds: List[Dict[str, str]], before_contract_balances: Optional[Dict[str, int]] = None, before_sender_balances: Optional[Dict[str, int]] = None, lcd_url: str = LCD_BASE_URL) -> Dict[str, Dict[str, int]]:
+    after_contract: Dict[str, int] = {}
+    after_sender: Dict[str, int] = {}
+    for coin in attached_funds:
+        denom = coin['denom']
+        after_contract[denom] = await _get_balance_by_denom(contract_address, denom, lcd_url)
+        after_sender[denom] = await _get_balance_by_denom(sender_address, denom, lcd_url)
+    contract_deltas: Dict[str, int] = {}
+    sender_deltas: Dict[str, int] = {}
+    for coin in attached_funds:
+        denom = coin['denom']
+        sent_amount = int(coin['amount'])
+        if before_contract_balances is not None:
+            before_c = int(before_contract_balances.get(denom, 0))
+            delta_c = after_contract[denom] - before_c
+            contract_deltas[denom] = delta_c
+            if delta_c < sent_amount:
+                raise FundsVerificationError(f'Contract balance for {denom} increased by {delta_c}, expected at least {sent_amount}.')
+        if before_sender_balances is not None:
+            before_s = int(before_sender_balances.get(denom, 0))
+            delta_s = after_sender[denom] - before_s
+            sender_deltas[denom] = delta_s
+            if delta_s > -sent_amount:
+                raise FundsVerificationError(f'Sender balance for {denom} decreased by {-delta_s}, expected at least {sent_amount}.')
+    return {'after_contract_balances': after_contract, 'after_sender_balances': after_sender, 'contract_deltas': contract_deltas, 'sender_deltas': sender_deltas}
+
+# [cite_start]Configure the junod CLI to use node NODE_URL and chain-id uni-6 [cite: 19]
+def check_junod_installed() -> Dict[str, str]:
+    try:
+        result = subprocess.run(['junod', 'version', '--long'], check=True, capture_output=True, text=True)
     except FileNotFoundError:
-        print("node.log not found.")
-        sys.exit(1)
+        raise RuntimeError('The junod binary was not found on the host system.')
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(f'junod version --long failed with exit code {exc.returncode}: {exc.stderr.strip()}')
+    return {'installed': True, 'output': result.stdout.strip()}
+def set_junod_node(node_url: str) -> Dict[str, str]:
+    if not node_url or not isinstance(node_url, str):
+        raise ValueError('node_url must be a non-empty string')
+    try:
+        result = subprocess.run(['junod', 'config', 'node', node_url], check=True, capture_output=True, text=True)
+    except FileNotFoundError:
+        raise RuntimeError('The junod binary was not found. Run check_junod_installed() first and ensure junod is on the PATH.')
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(f'junod config node {node_url} failed with exit code {exc.returncode}: {exc.stderr.strip()}')
+    return {'node_url': node_url, 'stdout': result.stdout.strip()}
+def set_junod_chain_id(chain_id: str = 'uni-6') -> Dict[str, str]:
+    if not chain_id or not isinstance(chain_id, str):
+        raise ValueError('chain_id must be a non-empty string')
+    try:
+        result = subprocess.run(['junod', 'config', 'chain-id', chain_id], check=True, capture_output=True, text=True)
+    except FileNotFoundError:
+        raise RuntimeError('The junod binary was not found. Run check_junod_installed() first and ensure junod is on the PATH.')
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(f'junod config chain-id {chain_id} failed with exit code {exc.returncode}: {exc.stderr.strip()}')
+    return {'chain_id': chain_id, 'stdout': result.stdout.strip()}
+def set_junod_output_json() -> Dict[str, str]:
+    try:
+        result = subprocess.run(['junod', 'config', 'output', 'json'], check=True, capture_output=True, text=True)
+    except FileNotFoundError:
+        raise RuntimeError('The junod binary was not found. Run check_junod_installed() first and ensure junod is on the PATH.')
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(f'junod config output json failed with exit code {exc.returncode}: {exc.stderr.strip()}')
+    return {'output_format': 'json', 'stdout': result.stdout.strip()}
+def test_junod_connectivity(node_url: str, expected_chain_id: str = 'uni-6') -> Dict[str, Any]:
+    if not node_url or not isinstance(node_url, str):
+        raise ValueError('node_url must be a non-empty string')
+    try:
+        result = subprocess.run(['junod', 'status', '--node', node_url], check=True, capture_output=True, text=True)
+    except FileNotFoundError:
+        raise RuntimeError('The junod binary was not found. Run check_junod_installed() first and ensure junod is on the PATH.')
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError(f'junod status --node {node_url} failed with exit code {exc.returncode}: {exc.stderr.strip()}')
+    raw = result.stdout.strip()
+    try:
+        status_json = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f'Failed to decode junod status output as json: {exc}. Raw output was: {raw}')
+    network = _extract_network_field(status_json)
+    if not network:
+        raise RuntimeError('Could not locate node_info.network or equivalent field in junod status output.')
+    if network != expected_chain_id:
+        raise RuntimeError(f'Connected node reports chain-id {network}, but expected {expected_chain_id}.')
+    return {'ok': True, 'node_url': node_url, 'reported_chain_id': network, 'raw_status': status_json}
+
+# [cite_start]Look up a Juno transaction by hash and extract the CosmWasm code_id from its events. [cite: 20]
+def validate_tx_hash(tx_hash: str) -> str:
+    if not isinstance(tx_hash, str):
+        raise TxValidationError("Transaction hash must be a string.")
+    normalized = tx_hash.strip()
+    if not re.fullmatch(r"[0-9a-fA-F]{64}", normalized):
+        raise TxValidationError("Invalid transaction hash format. Expected a 64-character hex string.")
+    return normalized.lower()
+def fetch_tx_by_hash(tx_hash: str) -> Dict[str, Any]:
+    normalized_hash = validate_tx_hash(tx_hash)
+    url = f"{LCD_BASE_URL}/cosmos/tx/v1beta1/txs/{normalized_hash}"
+    try:
+        response = requests.get(url, timeout=10)
+    except requests.RequestException as exc:
+        raise LcdRequestError(f"Failed to reach LCD endpoint: {exc}") from exc
+    try:
+        payload = response.json()
+    except ValueError as exc:
+        raise LcdRequestError(f"LCD returned non-JSON response with status {response.status_code}.") from exc
+    return {"status_code": response.status_code, "data": payload}
+def check_tx_found_and_success(status_code: int, payload: Dict[str, Any]) -> Dict[str, Any]:
+    class TxQueryError(RuntimeError): pass
+    if status_code != 200:
+        message = payload.get("message") if isinstance(payload, dict) else None
+        raise TxQueryError(f"LCD query failed with HTTP status {status_code}. Message: {message or payload}")
+    tx_response = payload.get("tx_response") if isinstance(payload, dict) else None
+    if tx_response is None:
+        raise TxQueryError("LCD response missing 'tx_response' field.")
+    code = tx_response.get("code")
+    raw_log = tx_response.get("raw_log", "")
+    if code is None:
+        raise TxQueryError("'tx_response.code' is missing in LCD response.")
+    if code != 0:
+        raise TxQueryError(f"Transaction execution failed with code {code}. raw_log: {raw_log}")
+    return tx_response
+def extract_code_id_from_events(tx_response: Dict[str, Any]) -> List[Dict[str, Any]]:
+    candidates: List[Dict[str, Any]] = []
+    logs = tx_response.get("logs") or []
+    if not isinstance(logs, list): return candidates
+    for log_index, log in enumerate(logs):
+        events = log.get("events") or []
+        if not isinstance(events, list): continue
+        for event_index, event in enumerate(events):
+            event_type = event.get("type")
+            if event_type not in ("store_code", "instantiate"): continue
+            attributes = event.get("attributes") or []
+            if not isinstance(attributes, list): continue
+            for attribute_index, attr in enumerate(attributes):
+                key = attr.get("key")
+                if key != "code_id": continue
+                value = attr.get("value")
+                if value is None: continue
+                candidates.append({"code_id": str(value), "event_type": event_type, "log_index": log_index, "event_index": event_index, "attribute_index": attribute_index})
+    return candidates
+def fallback_parse_raw_log_for_code_id(tx_response: Dict[str, Any]) -> Optional[str]:
+    raw_log = tx_response.get("raw_log", "")
+    if not raw_log or not isinstance(raw_log, str): return None
+    pattern = re.compile(r"code_id[\"']?\s*[:=]\s*\"?(\d+)\"?", re.IGNORECASE)
+    match = pattern.search(raw_log)
+    if not match: return None
+    return match.group(1)
+def return_code_id(event_candidates: List[Dict[str, Any]], fallback_code_id: Optional[str]) -> Dict[str, Any]:
+    unique_ids = list({c["code_id"] for c in event_candidates})
+    if unique_ids:
+        if len(unique_ids) == 1:
+            return {"code_id": unique_ids[0], "source": "events"}
+        else:
+            return {"code_ids": unique_ids, "source": "events", "details": event_candidates}
+    if fallback_code_id:
+        return {"code_id": fallback_code_id, "source": "raw_log"}
+    class CodeIdNotFoundError(RuntimeError): pass
+    raise CodeIdNotFoundError("This transaction does not include a CosmWasm store_code or instantiate event exposing a code_id.")
+
+# [cite_start]Compile all workspace contracts with workspace-optimizer [cite: 21]
+def detect_workspace_root(start_dir: Optional[str] = None) -> dict:
+    if start_dir is None:
+        current = Path.cwd().resolve()
+    else:
+        current = Path(start_dir).expanduser().resolve()
+    for directory in [current] + list(current.parents):
+        cargo_toml = directory / 'Cargo.toml'
+        if not cargo_toml.is_file(): continue
+        try: data = _load_toml(cargo_toml)
+        except Exception as exc: raise RuntimeError(f'Failed to parse {cargo_toml}: {exc}') from exc
+        if 'workspace' in data: return {'workspace_root': str(directory)}
+    raise WorkspaceNotFoundError(f'No Cargo workspace root found starting from {current}')
+def list_workspace_members(workspace_root: Optional[str] = None) -> dict:
+    root = _resolve_workspace_root(workspace_root)
+    cargo_toml = root / 'Cargo.toml'
+    try: data = _load_toml(cargo_toml)
+    except Exception as exc: raise RuntimeError(f'Failed to parse root Cargo.toml at {cargo_toml}: {exc}') from exc
+    workspace = data.get('workspace')
+    if not isinstance(workspace, dict): raise WorkspaceMemberError('Root Cargo.toml does not contain a valid [workspace] table.')
+    member_patterns = workspace.get('members', [])
+    if not isinstance(member_patterns, list) or not member_patterns: raise WorkspaceMemberError('Workspace has no members defined under [workspace].')
+    valid_members: List[Dict[str, str]] = []
+    invalid_members: List[Dict[str, str]] = []
+    for pattern in member_patterns:
+        if not isinstance(pattern, str):
+            invalid_members.append({'pattern': repr(pattern), 'reason': 'Workspace member pattern is not a string.'})
+            continue
+        matches = list(root.glob(pattern))
+        if not matches:
+            invalid_members.append({'pattern': pattern, 'reason': 'Workspace member pattern did not match any paths.'})
+            continue
+        for member_dir in matches:
+            if not member_dir.is_dir():
+                invalid_members.append({'path': str(member_dir), 'reason': 'Matched workspace member is not a directory.'})
+                continue
+            member_cargo = member_dir / 'Cargo.toml'
+            if not member_cargo.is_file():
+                invalid_members.append({'path': str(member_dir), 'reason': 'Workspace member is missing Cargo.toml.'})
+                continue
+            try: member_data = _load_toml(member_cargo)
+            except Exception as exc:
+                invalid_members.append({'path': str(member_dir), 'reason': f'Failed to parse Cargo.toml: {exc}'})
+                continue
+            pkg = member_data.get('package', {})
+            name = pkg.get('name', member_dir.name)
+            lib_cfg = member_data.get('lib')
+            is_valid_contract = False
+            failure_reason = ''
+            if isinstance(lib_cfg, dict):
+                crate_type = lib_cfg.get('crate-type') or lib_cfg.get('crate_type')
+                if isinstance(crate_type, list) and 'cdylib' in crate_type: is_valid_contract = True
+                else: failure_reason = 'lib.crate-type must contain cdylib for CosmWasm.'
+            else: failure_reason = 'Missing [lib] section in contract Cargo.toml.'
+            if is_valid_contract: valid_members.append({'name': name, 'path': str(member_dir)})
+            else: invalid_members.append({'name': name, 'path': str(member_dir), 'reason': failure_reason or 'Invalid CosmWasm contract configuration.'})
+    return {'workspace_root': str(root), 'valid_members': valid_members, 'invalid_members': invalid_members}
+def run_workspace_optimizer(workspace_root: Optional[str] = None, optimizer_image: str = 'cosmwasm/workspace-optimizer:0.13.0', timeout: int = 1800) -> dict:
+    root = _resolve_workspace_root(workspace_root)
+    try:
+        docker_check = subprocess.run(['docker', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False)
+    except FileNotFoundError as exc: raise OptimizerError('Docker is not installed or not available in PATH.') from exc
+    except Exception as exc: raise OptimizerError(f'Failed to run docker --version: {exc}') from exc
+    if docker_check.returncode != 0: raise OptimizerError(f'Docker is not available: {docker_check.stderr.strip()}')
+    cmd = ['docker', 'run', '--rm', '-v', f'{str(root)}:/code', '--mount', f'type=volume,source={root.name}_cache,target=/code/target', '--mount', 'type=volume,source=registry_cache,target=/usr/local/cargo/registry', optimizer_image]
+    try:
+        completed = subprocess.run(cmd, cwd=str(root), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=timeout, check=False)
+    except subprocess.TimeoutExpired as exc: raise OptimizerError(f'workspace-optimizer timed out after {timeout} seconds.') from exc
+    except Exception as exc: raise OptimizerError(f'workspace-optimizer failed to start: {exc}') from exc
+    if completed.returncode != 0: raise OptimizerError(f'workspace-optimizer failed with exit code {completed.returncode}: {completed.stderr.strip()}')
+    return {'workspace_root': str(root), 'optimizer_image': optimizer_image, 'stdout': completed.stdout, 'stderr': completed.stderr, 'return_code': completed.returncode}
+def collect_and_verify_wasm_outputs(workspace_root: Optional[str] = None, members: Optional[List[Dict[str, Any]]] = None, artifacts_dir_name: str = 'artifacts') -> dict:
+    root = _resolve_workspace_root(workspace_root)
+    artifacts_dir = root / artifacts_dir_name
+    if not artifacts_dir.is_dir(): raise ArtifactVerificationError(f'Artifacts directory does not exist: {artifacts_dir}')
+    if members is None: members = list_workspace_members(str(root)).get('valid_members', [])
+    verified: List[Dict[str, Any]] = []
+    failed: List[Dict[str, Any]] = []
+    for member in members:
+        name = member.get('name')
+        if not name: failed.append({'member': member, 'reason': 'Missing contract name in member metadata.'}); continue
+        artifact_path = artifacts_dir / f'{name}.wasm'
+        if not artifact_path.is_file(): failed.append({'member': member, 'artifact_path': str(artifact_path), 'reason': 'Wasm artifact file is missing.'}); continue
+        if not _is_valid_wasm(artifact_path): failed.append({'member': member, 'artifact_path': str(artifact_path), 'reason': 'Wasm artifact failed basic validation (magic header or size).'}); continue
+        verified.append({'member': member, 'artifact_path': str(artifact_path), 'size_bytes': artifact_path.stat().st_size})
+    return {'workspace_root': str(root), 'artifacts_dir': str(artifacts_dir), 'verified_contracts': verified, 'failed_contracts': failed}
+
+# [cite_start]Query a CosmWasm smart contract on Juno via REST using a base64-encoded smart query. [cite: 22]
+def validate_contract_address_format(contract_address: str) -> str:
+    pattern = re.compile(r'^juno1[0-9a-z]{38}$')
+    if contract_address is None: raise ContractAddressValidationError('Contract address is required.')
+    contract_address = contract_address.strip()
+    if not contract_address: raise ContractAddressValidationError('Contract address cannot be empty or whitespace.')
+    if not pattern.fullmatch(contract_address): raise ContractAddressValidationError('Invalid Juno contract address format. Expected a bech32 address starting with prefix juno1.')
+    return contract_address
+def build_query_json_string(query: Union[str, dict]) -> str:
+    try:
+        if isinstance(query, str): parsed = json.loads(query)
+        elif isinstance(query, dict): parsed = query
+        else: raise QueryBuildError('Query must be a dict or JSON string.')
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise QueryBuildError(f'Invalid query JSON: {exc}') from exc
+    return json.dumps(parsed, separators=(',', ':'), ensure_ascii=False)
+def encode_query_to_base64(json_query: str) -> str:
+    if not isinstance(json_query, str) or not json_query: raise QueryEncodingError('JSON query must be a non-empty string.')
+    try:
+        query_bytes = json_query.encode('utf-8')
+        b64_bytes = base64.b64encode(query_bytes)
+        b64_str = b64_bytes.decode('ascii')
+        return urllib.parse.quote(b64_str, safe='')
+    except Exception as exc:
+        raise QueryEncodingError(f'Failed to encode query to base64: {exc}') from exc
+async def http_get_lcd_smart_query(contract_address: str, encoded_query: str) -> dict:
+    if not contract_address or not encoded_query: raise SmartQueryHttpError('Both contract_address and encoded_query are required.')
+    url = f'{LCD_BASE_URL}/cosmwasm/wasm/v1/contract/{contract_address}/smart/{encoded_query}'
+    headers = {'Accept': 'application/json'}
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(url, headers=headers)
+    except httpx.RequestError as exc:
+        raise SmartQueryHttpError(f'Network error while querying LCD: {exc}') from exc
+    if response.status_code != 200:
+        body_text = response.text
+        raise SmartQueryHttpError(f'LCD smart query failed with status {response.status_code}: {body_text}')
+    try: return response.json()
+    except ValueError as exc: raise SmartQueryHttpError(f'Failed to parse LCD JSON response: {exc}') from exc
+def parse_lcd_smart_query_response(response_json: Dict[str, Any]) -> str:
+    if response_json is None: raise SmartQueryParseError('LCD response JSON is required.')
+    if not isinstance(response_json, dict): raise SmartQueryParseError('LCD response JSON must be a dict.')
+    if 'data' not in response_json: raise SmartQueryParseError('LCD smart query response missing required field data.')
+    data_field = response_json['data']
+    if not isinstance(data_field, str) or not data_field: raise SmartQueryParseError('LCD smart query data field must be a non-empty base64 string.')
+    return data_field
+def decode_contract_response_data(data_b64: str) -> Any:
+    if not isinstance(data_b64, str) or not data_b64: raise ContractResponseDecodeError('data_b64 must be a non-empty base64 string.')
+    try: raw_bytes = base64.b64decode(data_b64)
+    except Exception as exc: raise ContractResponseDecodeError(f'Failed to base64-decode contract data: {exc}') from exc
+    try: text = raw_bytes.decode('utf-8')
+    except UnicodeDecodeError as exc: raise ContractResponseDecodeError(f'Contract data is not valid UTF-8: {exc}') from exc
+    try: return json.loads(text)
+    except json.JSONDecodeError as exc: raise ContractResponseDecodeError(f'Contract data is not valid JSON: {exc}') from exc
+
+# [cite_start]Upload the compiled CosmWasm wasm file artifacts/CONTRACT_NAME.wasm to the Juno chain [cite: 23, 24]
+def read_and_validate_wasm_artifact(contract_name: str, artifacts_dir: str = "artifacts") -> bytes:
+    WASM_MAGIC = b"\x00asm"
+    wasm_path = Path(artifacts_dir) / f"{contract_name}.wasm"
+    if not wasm_path.exists() or not wasm_path.is_file(): raise WasmArtifactError(f"Wasm artifact not found at {wasm_path!s}")
+    try: wasm_bytes = wasm_path.read_bytes()
+    except OSError as exc: raise WasmArtifactError(f"Failed to read wasm artifact: {exc}") from exc
+    if not wasm_bytes: raise WasmArtifactError(f"Wasm artifact {wasm_path!s} is empty")
+    if wasm_bytes[:4] != WASM_MAGIC: raise WasmArtifactError(f"Invalid wasm artifact {wasm_path!s}: missing magic bytes 0x00 0x61 0x73 0x6d")
+    return wasm_bytes
+def compute_wasm_checksum(wasm_bytes: bytes) -> WasmChecksum:
+    if not isinstance(wasm_bytes, (bytes, bytearray)) or not wasm_bytes: raise ValueError("wasm_bytes must be non-empty bytes")
+    sha = hashlib.sha256()
+    sha.update(wasm_bytes)
+    digest = sha.digest()
+    hex_digest = sha.hexdigest()
+    return WasmChecksum(digest=digest, hex=hex_digest)
+async def get_chain_and_account_info(address: str, lcd_url: str = LCD_BASE_URL) -> ChainAccountInfo:
+    async with httpx.AsyncClient(timeout=10) as client:
+        try:
+            node_resp = await client.get(f"{lcd_url}/cosmos/base/tendermint/v1beta1/node_info")
+            node_resp.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise ChainQueryError(f"Failed to fetch node_info: {exc}") from exc
+        node_data = node_resp.json()
+        try:
+            chain_id = node_data["default_node_info"]["network"]
+        except (KeyError, TypeError) as exc:
+            raise ChainQueryError(f"Unexpected node_info format: {node_data}") from exc
+        try:
+            acct_resp = await client.get(f"{lcd_url}/cosmos/auth/v1beta1/accounts/{address}")
+            acct_resp.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise ChainQueryError(f"Failed to fetch account info: {exc}") from exc
+        acct_data = acct_resp.json()
+        try:
+            any_account = acct_data["account"]
+            value_b64 = any_account["value"]
+        except (KeyError, TypeError) as exc:
+            raise ChainQueryError(f"Unexpected account response format: {acct_data}") from exc
+        try:
+            raw_bytes = base64.b64decode(value_b64)
+            base_account = BaseAccountProto()
+            base_account.ParseFromString(raw_bytes)
+        except Exception as exc:
+            raise ChainQueryError(f"Failed to decode BaseAccount from Any.value: {exc}") from exc
+        return ChainAccountInfo(chain_id=chain_id, account_number=int(base_account.account_number), sequence=int(base_account.sequence))
+def construct_store_code_tx(sender_address: str, wasm_bytes: bytes, gas_limit: int = 2_000_000, fee_amount: str = "500000", fee_denom: str = "ujuno", memo: str = "store wasm code") -> Tuple[TxProto, str]:
+    if not wasm_bytes: raise ValueError("wasm_bytes must be non-empty")
+    msg = MsgStoreCodeProto(sender=sender_address, wasm_byte_code=wasm_bytes)
+    msg_any = AnyProto(type_url="/cosmwasm.wasm.v1.MsgStoreCode", value=msg.SerializeToString())
+    tx_body = TxBodyProto(messages=[msg_any], memo=memo)
+    fee_coin = CoinProto(denom=fee_denom, amount=fee_amount)
+    fee = FeeProto(amount=[fee_coin], gas_limit=gas_limit)
+    auth_info = AuthInfoProto(fee=fee)
+    tx = TxProto(body=tx_body, auth_info=auth_info, signatures=[])
+    tx_bytes = tx.SerializeToString()
+    tx_bytes_b64 = base64.b64encode(tx_bytes).decode()
+    return tx, tx_bytes_b64
+async def simulate_and_update_fee(tx: TxProto, lcd_url: str = LCD_BASE_URL, gas_adjustment: float = 1.3, gas_price_ujuno: Decimal = Decimal("0.075"), fee_denom: str = "ujuno") -> Tuple[TxProto, int, int]:
+    tx_bytes = tx.SerializeToString()
+    tx_b64 = base64.b64encode(tx_bytes).decode()
+    payload = {"tx_bytes": tx_b64}
+    async with httpx.AsyncClient(timeout=15) as client:
+        try:
+            resp = await client.post(f"{lcd_url}/cosmos/tx/v1beta1/simulate", json=payload)
+            resp.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise SimulationError(f"Simulation HTTP error: {exc}") from exc
+    data = resp.json()
+    try:
+        gas_used_str = data["gas_info"]["gas_used"]
+        gas_used = int(gas_used_str)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise SimulationError(f"Unexpected simulate response: {data}") from exc
+    gas_limit = math.ceil(gas_used * gas_adjustment)
+    fee_amount_int = int((Decimal(gas_limit) * gas_price_ujuno).to_integral_value(rounding=ROUND_UP))
+    fee_coin = CoinProto(denom=fee_denom, amount=str(fee_amount_int))
+    if not tx.auth_info.fee: tx.auth_info.fee.CopyFrom(FeeProto())
+    tx.auth_info.fee.gas_limit = gas_limit
+    tx.auth_info.fee.amount.clear()
+    tx.auth_info.fee.amount.append(fee_coin)
+    return tx, gas_used, gas_limit
+def sign_store_code_tx_upload(tx: TxProto, chain_id: str, account_number: int, sequence: int, private_key_hex: str) -> str:
+    try:
+        priv_key_bytes = bytes.fromhex(private_key_hex)
+        priv_key = PrivateKey(priv_key_bytes)
+        pubkey_bytes = priv_key.public_key.bytes
+    except Exception as exc: raise SigningError(f"Invalid private key: {exc}") from exc
+    proto_pubkey = Secp256k1PubKeyProto(key=pubkey_bytes)
+    pubkey_any = AnyProto(type_url="/cosmos.crypto.secp256k1.PubKey", value=proto_pubkey.SerializeToString())
+    mode_info = TxProto.ModeInfo(single=TxProto.ModeInfo.Single(mode=SignModeProto.SIGN_MODE_DIRECT))
+    signer_info = SignerInfoProto(public_key=pubkey_any, mode_info=mode_info, sequence=int(sequence))
+    if not tx.auth_info: tx.auth_info.CopyFrom(AuthInfoProto())
+    tx.auth_info.signer_infos.clear()
+    tx.auth_info.signer_infos.append(signer_info)
+    sign_doc = SignDocProto(body_bytes=tx.body.SerializeToString(), auth_info_bytes=tx.auth_info.SerializeToString(), chain_id=chain_id, account_number=int(account_number))
+    sign_doc_bytes = sign_doc.SerializeToString()
+    try: signature = priv_key.sign(sign_doc_bytes)
+    except Exception as exc: raise SigningError(f"Failed to sign SignDoc: {exc}") from exc
+    tx.signatures.clear()
+    tx.signatures.append(signature)
+    tx_bytes = tx.SerializeToString()
+    return base64.b64encode(tx_bytes).decode()
+async def broadcast_signed_tx(signed_tx_base64: str, lcd_url: str = LCD_BASE_URL, mode: str = "BROADCAST_MODE_BLOCK") -> dict:
+    payload = {"tx_bytes": signed_tx_base64, "mode": mode}
+    async with httpx.AsyncClient(timeout=30) as client:
+        try:
+            resp = await client.post(f"{lcd_url}/cosmos/tx/v1beta1/txs", json=payload)
+            resp.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise BroadcastError(f"Broadcast HTTP error: {exc}") from exc
+    data = resp.json()
+    try:
+        tx_response = data["tx_response"]
+        _ = tx_response["txhash"]
+        _ = tx_response["code"]
+    except (KeyError, TypeError) as exc:
+        raise BroadcastError(f"Unexpected broadcast response format: {data}") from exc
+    return tx_response
+async def fetch_tx_and_extract_code_id(txhash: str, lcd_url: str = LCD_BASE_URL) -> str:
+    async with httpx.AsyncClient(timeout=15) as client:
+        resp = await client.get(f"{lcd_url}/cosmos/tx/v1beta1/txs/{txhash}")
+        resp.raise_for_status()
+    data = resp.json()
+    tx_response = data.get("tx_response", {})
+    logs = tx_response.get("logs", [])
+    for log in logs:
+        for event in log.get("events", []):
+            ev_type = event.get("type", "")
+            if ev_type not in ("store_code", "wasm"): continue
+            for attr in event.get("attributes", []):
+                if attr.get("key") == "code_id":
+                    code_id = attr.get("value")
+                    if code_id: return code_id
+    raise CodeIdNotFoundError(f"No code_id attribute found in tx events for txhash={txhash}. Response: {tx_response}")
+async def verify_uploaded_code_hash(code_id: str, local_checksum_bytes: bytes, lcd_url: str = LCD_BASE_URL) -> bool:
+    if not local_checksum_bytes: raise ValueError("local_checksum_bytes must be non-empty")
+    async with httpx.AsyncClient(timeout=15) as client:
+        resp = await client.get(f"{lcd_url}/cosmwasm/wasm/v1/code/{code_id}")
+        resp.raise_for_status()
+    data = resp.json()
+    try:
+        code_info = data["code_info"]
+        data_hash_b64 = code_info["data_hash"]
+    except (KeyError, TypeError) as exc:
+        raise CodeHashMismatchError(f"Unexpected code info response: {data}") from exc
+    try:
+        onchain_hash = base64.b64decode(data_hash_b64)
+    except Exception as exc:
+        raise CodeHashMismatchError(f"Failed to decode on-chain data_hash: {exc}") from exc
+    if onchain_hash != local_checksum_bytes:
+        raise CodeHashMismatchError(f"On-chain data_hash ({onchain_hash.hex()}) does not match local checksum ({local_checksum_bytes.hex()})")
+    return True
+
+# [cite_start]Enable cw-orch integration by adding an 'interface' feature flag in Cargo.toml for a CosmWasm contract. [cite: 25]
+def load_cargo_toml_orch(path: str = 'Cargo.toml'):
+    cargo_path = Path(path)
+    if not cargo_path.is_file(): raise FileNotFoundError(f'Cargo.toml not found at: {cargo_path}')
+    try: content = cargo_path.read_text(encoding='utf-8')
+    except OSError as exc: raise RuntimeError(f'Failed to read {cargo_path}: {exc}') from exc
+    try: doc = parse(content)
+    except Exception as exc: raise ValueError(f'Failed to parse {cargo_path} as TOML: {exc}') from exc
+    return doc
+def ensure_cw_orch_dependency(doc, version: str):
+    if not isinstance(doc, MutableMapping): raise TypeError('Expected a TOML document mapping for doc')
+    if 'dependencies' not in doc or doc['dependencies'] is None: doc['dependencies'] = table()
+    deps = doc['dependencies']
+    if not isinstance(deps, MutableMapping): raise TypeError('The [dependencies] section is not a table')
+    if 'cw-orch' not in deps: deps['cw-orch'] = {'version': version, 'optional': True}
+    return doc
+def ensure_features_table_exists(doc):
+    if not isinstance(doc, MutableMapping): raise TypeError('Expected a TOML document mapping for doc')
+    if 'features' not in doc or doc['features'] is None: doc['features'] = table()
+    else:
+        features = doc['features']
+        if not isinstance(features, MutableMapping): raise TypeError('The [features] section exists but is not a table')
+    return doc
+def add_interface_feature_flag(doc):
+    if not isinstance(doc, MutableMapping): raise TypeError('Expected a TOML document mapping for doc')
+    if 'features' not in doc or doc['features'] is None: raise KeyError('No [features] table found; call ensure_features_table_exists first')
+    features = doc['features']
+    if not isinstance(features, MutableMapping): raise TypeError('The [features] section is not a table')
+    if 'interface' not in features or features['interface'] is None:
+        vals = array()
+        vals.append('dep:cw-orch')
+        features['interface'] = vals
+    else:
+        vals = features['interface']
+        if not isinstance(vals, MutableSequence): raise TypeError('features.interface must be an array of feature flags')
+        existing = [str(v) for v in vals]
+        if 'dep:cw-orch' not in existing: vals.append('dep:cw-orch')
+    return doc
+def ensure_default_includes_interface(doc):
+    if not isinstance(doc, MutableMapping): raise TypeError('Expected a TOML document mapping for doc')
+    if 'features' not in doc or doc['features'] is None: raise KeyError('No [features] table found; call ensure_features_table_exists first')
+    features = doc['features']
+    if not isinstance(features, MutableMapping): raise TypeError('The [features] section is not a table')
+    if 'default' not in features or features['default'] is None:
+        vals = array()
+        vals.append('interface')
+        features['default'] = vals
+    else:
+        vals = features['default']
+        if not isinstance(vals, MutableSequence): raise TypeError('features.default must be an array of feature flags')
+        existing = [str(v) for v in vals]
+        if 'interface' not in existing: vals.append('interface')
+    return doc
+def write_cargo_toml(doc, path: str = 'Cargo.toml'):
+    cargo_path = Path(path)
+    try:
+        content = dumps(doc)
+        cargo_path.write_text(content, encoding='utf-8')
+    except OSError as exc: raise RuntimeError(f'Failed to write {cargo_path}: {exc}') from exc
+    return str(cargo_path)
+def cargo_check_with_interface_feature(project_root: str = '.'):
+    root = Path(project_root)
+    if not root.is_dir(): raise NotADirectoryError(f'Not a directory: {root}')
+    cmd = ['cargo', 'check', '--features', 'interface']
+    try:
+        result = subprocess.run(cmd, cwd=str(root), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False)
+    except FileNotFoundError as exc: raise RuntimeError('cargo executable not found; ensure Rust is installed and on PATH') from exc
+    except Exception as exc: raise RuntimeError(f'Failed to run cargo check: {exc}') from exc
+    if result.returncode != 0: raise RuntimeError(f'cargo check --features interface failed with exit code {result.returncode}. STDOUT: {result.stdout} STDERR: {result.stderr}')
+    return {'returncode': result.returncode, 'stdout': result.stdout, 'stderr': result.stderr}
+
+# [cite_start]Query the CW721 all_tokens list from a given NFT contract on Juno using CosmWasm smart queries. [cite: 26, 27]
+def validate_contract_address(contract_address: str) -> str:
+    if not isinstance(contract_address, str) or not contract_address: raise InvalidContractAddress("Contract address must be a non-empty string.")
+    hrp, data = bech32_decode(contract_address)
+    if hrp != JUNO_HRP or data is None: raise InvalidContractAddress(f"Invalid Juno bech32 address: {contract_address}")
+    return contract_address
+def initialize_pagination_state(page_limit: int = 100) -> PaginationState:
+    if not isinstance(page_limit, int) or page_limit <= 0: raise ValueError("page_limit must be a positive integer.")
+    return PaginationState(page_limit=page_limit)
+def build_all_tokens_query_json(page_limit: int, start_after: Optional[str] = None) -> Dict[str, Any]:
+    if not isinstance(page_limit, int) or page_limit <= 0: raise ValueError("page_limit must be a positive integer.")
+    all_tokens: Dict[str, Any] = {"limit": page_limit}
+    if start_after: all_tokens["start_after"] = start_after
+    return {"all_tokens": all_tokens}
+def encode_query_to_base64(query: Dict[str, Any]) -> str:
+    try: json_bytes = json.dumps(query, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    except (TypeError, ValueError) as e: raise ValueError(f"Failed to serialize query to JSON: {e}") from e
+    encoded = base64.urlsafe_b64encode(json_bytes).decode("ascii")
+    return encoded
+async def lcd_smart_query_all_tokens(contract_address: str, query_data_b64: str, timeout: float = 10.0) -> Dict[str, Any]:
+    url = f"{LCD_BASE_URL}/cosmwasm/wasm/v1/contract/{contract_address}/smart/{query_data_b64}"
+    try:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            response = await client.get(url)
+        response.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        raise RuntimeError(f"LCD smart query failed with status {e.response.status_code}: {e.response.text}") from e
+    except httpx.RequestError as e:
+        raise RuntimeError(f"Network error while calling LCD: {e}") from e
+    try: data = response.json()
+    except ValueError as e: raise RuntimeError(f"Failed to parse LCD response as JSON: {e}") from e
+    if "data" not in data: raise RuntimeError(f"LCD response missing 'data' field: {data}")
+    return data
+def decode_all_tokens_response(lcd_response: Dict[str, Any]) -> List[str]:
+    if "data" not in lcd_response: raise KeyError("LCD response dict does not contain 'data' field.")
+    b64_data = lcd_response["data"]
+    if not isinstance(b64_data, str): raise TypeError("'data' field must be a base64-encoded string.")
+    try:
+        try: raw_bytes = base64.b64decode(b64_data)
+        except Exception: raw_bytes = base64.urlsafe_b64decode(b64_data)
+    except Exception as e: raise ValueError(f"Failed to base64-decode response 'data': {e}") from e
+    try: decoded_json = json.loads(raw_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as e: raise ValueError(f"Failed to decode response JSON: {e}") from e
+    if not isinstance(decoded_json, dict): raise TypeError(f"Decoded response JSON is not an object: {decoded_json}")
+    tokens = decoded_json.get("tokens")
+    if tokens is None: raise KeyError(f"Decoded response does not contain 'tokens' field: {decoded_json}")
+    if not isinstance(tokens, list) or not all(isinstance(t, str) for t in tokens): raise TypeError(f"'tokens' must be a list of strings, got: {tokens}")
+    return tokens
+async def fetch_all_cw721_token_ids(contract_address: str, page_limit: int = 100) -> List[str]:
+    validate_contract_address(contract_address)
+    state = initialize_pagination_state(page_limit=page_limit)
+    while True:
+        query_json = build_all_tokens_query_json(page_limit=state.page_limit, start_after=state.start_after)
+        query_b64 = encode_query_to_base64(query_json)
+        lcd_response = await lcd_smart_query_all_tokens(contract_address=contract_address, query_data_b64=query_b64)
+        page_tokens = decode_all_tokens_response(lcd_response)
+        if not page_tokens: break
+        state.token_ids.extend(page_tokens)
+        if len(page_tokens) < state.page_limit: break
+        state.start_after = page_tokens[-1]
+    return state.token_ids
+
+# [cite_start]Claim JUNOX test tokens from the Juno faucet for a given address and verify receipt on-chain [cite: 28]
+def validate_juno_address_faucet(address: str, expected_prefix: str = "juno") -> Dict[str, str]:
+    result = {"is_valid": "false", "error": ""}
+    if not isinstance(address, str) or not address: result["error"] = "Address must be a non-empty string."; return result
+    if len(address) < 10 or len(address) > 90: result["error"] = "Address length is not within the expected range."; return result
+    try: hrp, data = bech32_decode(address)
+    except Exception as e: result["error"] = f"Invalid bech32 encoding: {e}"; return result
+    if hrp is None or data is None: result["error"] = "Invalid bech32 address or checksum."; return result
+    if hrp != expected_prefix: result["error"] = f"Invalid address prefix: expected '{expected_prefix}', got '{hrp}'."; return result
+    if len(data) == 0: result["error"] = "Bech32 data part is empty; address is malformed."; return result
+    result["is_valid"] = "true"; result["error"] = ""; return result
+async def query_junox_balance_before_faucet(address: str, denom: str = "ujunox", lcd_base: str = LCD_BASE_URL) -> Dict:
+    if not address: raise ValueError("Address is required to query balance.")
+    url = f"{lcd_base}/cosmos/bank/v1beta1/balances/{address}/by_denom"
+    params = {"denom": denom}
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(url, params=params)
+    except httpx.RequestError as e: raise RuntimeError(f"Error querying Juno LCD: {e}") from e
+    if resp.status_code != 200: raise RuntimeError(f"LCD returned HTTP {resp.status_code} when querying balance: {resp.text}")
+    data = resp.json()
+    balance = data.get("balance")
+    if balance is None: amount_str = "0"; resp_denom = denom
+    else: amount_str = balance.get("amount", "0"); resp_denom = balance.get("denom", denom)
+    if resp_denom != denom: raise RuntimeError(f"Unexpected denom in LCD response: {resp_denom} (expected {denom})")
+    try: amount_int = int(amount_str)
+    except ValueError as e: raise RuntimeError(f"Invalid amount format in LCD response: {amount_str}") from e
+    return {"address": address, "denom": denom, "amount": amount_int}
+async def poll_faucet_tx_until_final(tx_hash: str, lcd_base: str = LCD_BASE_URL, timeout_seconds: float = 60.0, poll_interval_seconds: float = 2.0) -> Dict[str, Any]:
+    if not tx_hash: raise ValueError("tx_hash is required to poll transaction status.")
+    url = f"{lcd_base}/cosmos/tx/v1beta1/txs/{tx_hash}"
+    end_time = asyncio.get_event_loop().time() + timeout_seconds
+    last_response: Any = None
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        while True:
+            try: resp = await client.get(url)
+            except httpx.RequestError as e: last_response = {"error": f"Request error: {e}"}
+            else:
+                if resp.status_code == 200:
+                    data = resp.json(); last_response = data; tx_resp = data.get("tx_response")
+                    if tx_resp is not None:
+                        try: code = int(tx_resp.get("code", 0))
+                        except (TypeError, ValueError): code = 0
+                        if code == 0: return {"status": "success", "response": data}
+                        else: return {"status": "failed", "response": data}
+                else: last_response = {"http_status": resp.status_code, "body": resp.text}
+            if asyncio.get_event_loop().time() >= end_time: return {"status": "timeout", "response": last_response}
+            await asyncio.sleep(poll_interval_seconds)
+async def _query_junox_balance(address: str, denom: str = "ujunox", lcd_base: str = LCD_BASE_URL) -> int:
+    url = f"{lcd_base}/cosmos/bank/v1beta1/balances/{address}/by_denom"; params = {"denom": denom}
+    async with httpx.AsyncClient(timeout=10.0) as client: resp = await client.get(url, params=params)
+    if resp.status_code != 200: raise RuntimeError(f"LCD returned HTTP {resp.status_code} when querying balance: {resp.text}")
+    data = resp.json(); balance = data.get("balance")
+    if balance is None: amount_str = "0"; resp_denom = denom
+    else: amount_str = balance.get("amount", "0"); resp_denom = balance.get("denom", denom)
+    if resp_denom != denom: raise RuntimeError(f"Unexpected denom in LCD response: {resp_denom} (expected {denom})")
+    try: return int(amount_str)
+    except ValueError as e: raise RuntimeError(f"Invalid amount format in LCD response: {amount_str}") from e
+async def compare_junox_balance_after_faucet(address: str, pre_faucet_amount: int, denom: str = "ujunox", lcd_base: str = LCD_BASE_URL) -> Dict:
+    if pre_faucet_amount is None: raise ValueError("pre_faucet_amount must be provided (from step 2).")
+    post_amount = await _query_junox_balance(address, denom=denom, lcd_base=lcd_base)
+    delta = post_amount - int(pre_faucet_amount)
+    return {"address": address, "denom": denom, "pre_amount": int(pre_faucet_amount), "post_amount": post_amount, "delta": delta}
+
+# [cite_start]Store the returned code id in shell variable CODE_ID [cite: 29]
+def retrieve_last_tx_output(raw_output: str) -> dict:
+    if not raw_output or not raw_output.strip(): raise ValueError('raw_output is empty; provide the JSON string from the last transaction.')
+    try: tx_output = json.loads(raw_output)
+    except json.JSONDecodeError as exc: raise ValueError(f'Failed to parse transaction JSON output: {exc}') from exc
+    if not isinstance(tx_output, dict): raise ValueError('Parsed transaction output is not a JSON object (dict).')
+    return tx_output
+def parse_code_id_from_output(tx_output: dict) -> str:
+    if not isinstance(tx_output, dict): raise ValueError('tx_output must be a dictionary.')
+    code_id = None
+    if 'code_id' in tx_output: code_id = tx_output['code_id']
+    if not code_id:
+        tx_response = tx_output.get('tx_response') or tx_output.get('result') or {}
+        logs = tx_response.get('logs') or []
+        for log in logs:
+            events = log.get('events') or []
+            for event in events:
+                if event.get('type') == 'store_code':
+                    for attr in event.get('attributes') or []:
+                        key = attr.get('key')
+                        if key in ('code_id', 'codeID'):
+                            code_id = attr.get('value'); break
+                if code_id: break
+            if code_id: break
+    if code_id is None: raise ValueError('Could not find code_id in transaction output; ensure this is a wasm store transaction JSON.')
+    code_id_str = str(code_id).strip()
+    if not code_id_str.isdigit(): raise ValueError(f'Extracted code_id {code_id_str} is not purely numeric.')
+    return code_id_str
+def export_shell_variable_CODE_ID(code_id: str) -> str:
+    if not code_id or not str(code_id).strip().isdigit(): raise ValueError('code_id must be a non-empty numeric string.')
+    sanitized = str(code_id).strip()
+    return f'export CODE_ID={sanitized}'
+
+# [cite_start]Create a new Juno wallet named "MyWalletName" by generating a mnemonic and deriving a Juno-compatible address. [cite: 30]
+def select_juno_chain_key_params() -> Dict[str, Any]:
+    return {"chain_id": "juno-1", "bip44_coin_type": 118, "derivation_path": "m/44'/118'/0'/0/0", "bech32_prefix": "juno"}
+def generate_bip39_mnemonic(words: int = 24) -> str:
+    if words not in (12, 24): raise ValueError("words must be either 12 or 24.")
+    words_num = Bip39WordsNum.WORDS_NUM_12 if words == 12 else Bip39WordsNum.WORDS_NUM_24
+    try: mnemonic = Bip39MnemonicGenerator().FromWordsNumber(words_num)
+    except Exception as exc: raise RuntimeError("Failed to generate mnemonic using BIP-39 generator.") from exc
+    return str(mnemonic)
+def derive_hd_key_from_mnemonic(mnemonic: str, derivation_path: str = "m/44'/118'/0'/0/0") -> bytes:
+    if not isinstance(mnemonic, str) or not mnemonic.strip(): raise ValueError("mnemonic must be a non-empty string.")
+    if not isinstance(derivation_path, str) or not derivation_path.startswith("m/"): raise ValueError("derivation_path must be a BIP-32 style string starting with 'm/'.")
+    try: seed_bytes = Bip39SeedGenerator(mnemonic).Generate()
+    except Exception as exc: raise ValueError("Failed to convert mnemonic to seed; is the mnemonic valid BIP-39?") from exc
+    try:
+        root = Bip32Slip10Secp256k1.FromSeed(seed_bytes)
+        derived = root.DerivePath(derivation_path)
+        private_key_bytes = derived.PrivateKey().Raw().ToBytes()
+    except Exception as exc: raise RuntimeError(f"Failed to derive private key for path {derivation_path}.") from exc
+    if len(private_key_bytes) != 32: raise RuntimeError("Derived private key is not 32 bytes; derivation may be incorrect.")
+    return private_key_bytes
+def derive_public_key_and_address(private_key: bytes, bech32_prefix: str = "juno") -> Dict[str, Any]:
+    if not isinstance(private_key, (bytes, bytearray)): raise TypeError("private_key must be bytes.")
+    if len(private_key) != 32: raise ValueError("private_key must be exactly 32 bytes for secp256k1.")
+    try:
+        sk = SigningKey.from_string(bytes(private_key), curve=SECP256k1)
+        try: public_key_bytes = sk.get_verifying_key().to_string("compressed")
+        except TypeError:
+            vk = sk.get_verifying_key(); uncompressed = vk.to_string(); x_bytes, y_bytes = uncompressed[:32], uncompressed[32:]; prefix = b"\x02" if (y_bytes[-1] % 2 == 0) else b"\x03"; public_key_bytes = prefix + x_bytes
+    except Exception as exc: raise RuntimeError("Failed to derive public key from private key.") from exc
+    sha256_digest = hashlib.sha256(public_key_bytes).digest()
+    ripemd160 = RIPEMD160.new()
+    ripemd160.update(sha256_digest)
+    pubkey_hash = ripemd160.digest()
+    data5 = convertbits(pubkey_hash, 8, 5, True)
+    if data5 is None: raise RuntimeError("Failed to convert pubkey hash to 5-bit words for bech32 encoding.")
+    address = bech32_encode(bech32_prefix, data5)
+    if address is None: raise RuntimeError("bech32_encode returned None; invalid data or prefix.")
+    return {"public_key_bytes": public_key_bytes, "public_key_hex": public_key_bytes.hex(), "address": address}
+def persist_wallet_metadata(wallet_name: str, address: str, public_key_hex: str, private_key: bytes) -> Dict[str, Any]:
+    WALLET_STORE_PATH = os.environ.get("WALLET_STORE_PATH", "wallet_store.json")
+    if not wallet_name: raise ValueError("wallet_name is required.")
+    if not address: raise ValueError("address is required.")
+    if not isinstance(private_key, (bytes, bytearray)) or len(private_key) != 32: raise ValueError("private_key must be a 32-byte value.")
+    fernet = _get_fernet()
+    encrypted_private_key = fernet.encrypt(bytes(private_key)).decode("utf-8")
+    record: Dict[str, Any] = {"wallet_name": wallet_name, "address": address, "public_key_hex": public_key_hex, "encrypted_private_key": encrypted_private_key}
+    try:
+        if os.path.exists(WALLET_STORE_PATH):
+            with open(WALLET_STORE_PATH, "r", encoding="utf-8") as f: store = json.load(f)
+        else: store = {}
+    except (OSError, json.JSONDecodeError) as exc: raise RuntimeError(f"Failed to load wallet store from {WALLET_STORE_PATH}.") from exc
+    if address in store: raise RuntimeError(f"A wallet with address {address} already exists in the keyring.")
+    store[address] = record
+    try:
+        with open(WALLET_STORE_PATH, "w", encoding="utf-8") as f: json.dump(store, f, indent=2)
+    except OSError as exc: raise RuntimeError(f"Failed to persist wallet metadata to {WALLET_STORE_PATH}.") from exc
+    return record
+def optional_verify_address_on_chain(expected_network: str = "juno-1") -> Dict[str, Any]:
+    url = f"{LCD_BASE_URL}/cosmos/base/tendermint/v1beta1/node_info"
+    try:
+        response = requests.get(url, timeout=10.0)
+        response.raise_for_status()
+    except httpx.HTTPError as exc: raise RuntimeError(f"Failed to reach Juno LCD at {url}: {exc}") from exc
+    try: data = response.json()
+    except ValueError as exc: raise RuntimeError("LCD node_info response was not valid JSON.") from exc
+    default_info = data.get("default_node_info", {}) or {}
+    network = default_info.get("network")
+    matches_expected = expected_network is None or network == expected_network
+    return {"raw": data, "network": network, "matches_expected": matches_expected}
+
+# [cite_start]Set TXFLAGS environment variable with gas settings [cite: 31]
+def get_minimum_gas_price():
+    url = f'{LCD_BASE_URL}/cosmos/base/node/v1beta1/config'
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as exc: raise LCDQueryError(f'Failed to query node config: {exc}') from exc
+    data = response.json()
+    minimum_gas_price = data.get('minimum_gas_price')
+    if not minimum_gas_price: raise LCDQueryError('minimum_gas_price field missing in LCD response')
+    first_entry = minimum_gas_price.split(',')[0].strip()
+    split_index = 0
+    while split_index < len(first_entry) and (first_entry[split_index].isdigit() or first_entry[split_index] == '.'): split_index += 1
+    if split_index == 0 or split_index == len(first_entry): raise LCDQueryError(f'Unexpected minimum_gas_price format: {first_entry!r}')
+    amount = first_entry[:split_index]; denom = first_entry[split_index:]
+    return {'raw': minimum_gas_price, 'amount': amount, 'denom': denom}
+def get_chain_id():
+    node_info_url = f'{LCD_BASE_URL}/cosmos/base/tendermint/v1beta1/node_info'
+    try:
+        response = requests.get(node_info_url, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as exc: raise LCDQueryError(f'Failed to query node_info: {exc}') from exc
+    data = response.json()
+    default_node_info = data.get('default_node_info') or {}
+    chain_id = default_node_info.get('network')
+    if chain_id: return chain_id
+    latest_block_url = f'{LCD_BASE_URL}/cosmos/base/tendermint/v1beta1/blocks/latest'
+    try:
+        response = requests.get(latest_block_url, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as exc: raise LCDQueryError(f'Failed to query latest block for chain-id fallback: {exc}') from exc
+    block_data = response.json()
+    header = (block_data.get('block') or {}).get('header') or {}
+    chain_id = header.get('chain_id')
+    if not chain_id: raise LCDQueryError('Could not determine chain-id from LCD responses')
+    return chain_id
+def build_txflags_string(minimum_gas_price: str, chain_id: str, gas_adjustment: float = 1.3, rpc_endpoint: str = 'https://rpc.junonetwork.io') -> str:
+    if not minimum_gas_price or not chain_id: raise ValueError('minimum_gas_price and chain_id must be non-empty')
+    if gas_adjustment <= 0: raise ValueError('gas_adjustment must be positive')
+    flags = (f'--gas=auto --gas-adjustment={gas_adjustment} --gas-prices={minimum_gas_price} --chain-id={chain_id} --node={rpc_endpoint}')
+    return flags
+def set_txflags_env(txflags: str) -> None:
+    if not txflags or not txflags.strip(): raise ValueError('txflags must be a non-empty string')
+    os.environ['TXFLAGS'] = txflags
+def test_junod_tx_with_txflags(from_identifier: str, amount: str = '1', denom: str = 'ujuno', simulate_only: bool = True, home: Optional[str] = None) -> Dict[str, Any]:
+    import shlex
+    txflags = os.environ.get('TXFLAGS')
+    if not txflags: raise JunodTxTestError('TXFLAGS environment variable is not set. Call set_txflags_env(...) first.')
+    base_cmd = (f'junod tx bank send {from_identifier} {from_identifier} {amount}{denom} --from {from_identifier} --yes')
+    if simulate_only: base_cmd += ' --dry-run'
+    if home: base_cmd += f' --home {home}'
+    full_cmd = f'{base_cmd} {txflags}'
+    try:
+        completed = subprocess.run(shlex.split(full_cmd), capture_output=True, text=True, check=False)
+    except OSError as exc: raise JunodTxTestError(f'Failed to execute junod command: {exc}') from exc
+    result: Dict[str, Any] = {'command': full_cmd, 'stdout': completed.stdout, 'stderr': completed.stderr, 'returncode': completed.returncode}
+    if completed.returncode != 0: raise JunodTxTestError(f'junod tx command failed with code {completed.returncode}: {completed.stderr or completed.stdout}')
+    return result
+
+# [cite_start]Check the balance of a given wallet address on Juno [cite: 32]
+def validate_juno_address(address: str) -> str:
+    if not isinstance(address, str): raise InvalidJunoAddressError('Address must be a string.')
+    address = address.strip()
+    if not address: raise InvalidJunoAddressError('Address must not be empty.')
+    if not address.startswith('juno1'): raise InvalidJunoAddressError('Address must start with prefix juno1.')
+    hrp, data = bech32_decode(address)
+    if hrp != 'juno' or data is None: raise InvalidJunoAddressError('Invalid Juno bech32 address: bad checksum or wrong prefix.')
+    return address
+async def fetch_all_balances_balance(address: str) -> List[Dict[str, Any]]:
+    url = f'{LCD_BASE_URL}/cosmos/bank/v1beta1/balances/{address}'
+    balances: List[Dict[str, Any]] = []; next_key: str | None = None
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        while True:
+            params: Dict[str, Any] = {};
+            if next_key: params['pagination.key'] = next_key
+            try:
+                response = await client.get(url, params=params); response.raise_for_status()
+            except httpx.HTTPError as exc: raise RuntimeError(f'Error querying Juno LCD balances: {exc}') from exc
+            data = response.json() or {}; balances.extend(data.get('balances', []))
+            pagination = data.get('pagination') or {}; next_key = pagination.get('next_key')
+            if not next_key: break
+    return balances
+async def fetch_spendable_balances_balance(address: str) -> List[Dict[str, Any]]:
+    url = f'{LCD_BASE_URL}/cosmos/bank/v1beta1/spendable_balances/{address}'
+    balances: List[Dict[str, Any]] = []; next_key: str | None = None
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        while True:
+            params: Dict[str, Any] = {};
+            if next_key: params['pagination.key'] = next_key
+            try:
+                response = await client.get(url, params=params); response.raise_for_status()
+            except httpx.HTTPError as exc: raise RuntimeError(f'Error querying Juno LCD spendable balances: {exc}') from exc
+            data = response.json() or {}; balances.extend(data.get('balances', []))
+            pagination = data.get('pagination') or {}; next_key = pagination.get('next_key')
+            if not next_key: break
+    return balances
+async def fetch_denoms_metadata() -> List[Dict[str, Any]]:
+    url = f'{LCD_BASE_URL}/cosmos/bank/v1beta1/denoms_metadata'
+    metadatas: List[Dict[str, Any]] = []; next_key: str | None = None
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        while True:
+            params: Dict[str, Any] = {};
+            if next_key: params['pagination.key'] = next_key
+            try:
+                response = await client.get(url, params=params); response.raise_for_status()
+            except httpx.HTTPError as exc: raise RuntimeError(f'Error querying Juno LCD denoms metadata: {exc}') from exc
+            data = response.json() or {}; metadatas.extend(data.get('metadatas', []))
+            pagination = data.get('pagination') or {}; next_key = pagination.get('next_key')
+            if not next_key: break
+    return metadatas
+def format_balances(all_balances: List[Dict[str, Any]], spendable_balances: Optional[List[Dict[str, Any]]], metadata_index: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
+    spendable_map: Dict[str, str] = {}
+    if spendable_balances:
+        for coin in spendable_balances:
+            denom = coin.get('denom'); amount = coin.get('amount')
+            if denom is not None and amount is not None: spendable_map[denom] = amount
+    result: List[Dict[str, Any]] = []
+    for coin in all_balances:
+        denom = coin.get('denom'); amount_str = coin.get('amount')
+        if denom is None or amount_str is None: continue
+        meta = metadata_index.get(denom); display_denom = denom; exponent = 0
+        if meta:
+            display_denom = meta.get('display') or denom
+            for unit in meta.get('denom_units', []):
+                if unit.get('denom') == display_denom:
+                    try: exponent = int(unit.get('exponent', 0))
+                    except (TypeError, ValueError): exponent = 0
+                    break
+        try: base_amount = Decimal(amount_str)
+        except (InvalidOperation, TypeError): base_amount = Decimal(0)
+        if exponent > 0: factor = Decimal(10) ** exponent; display_amount = base_amount / factor
+        else: display_amount = base_amount
+        spendable_amount_str = spendable_map.get(denom); spendable_entry: Optional[Dict[str, Any]] = None
+        if spendable_amount_str is not None:
+            try: spendable_base = Decimal(spendable_amount_str)
+            except (InvalidOperation, TypeError): spendable_base = Decimal(0)
+            if exponent > 0: factor = Decimal(10) ** exponent; spendable_display = spendable_base / factor
+            else: spendable_display = spendable_base
+            spendable_entry = {'amount': spendable_amount_str, 'display_amount': decimal_to_str(spendable_display)}
+        result.append({'base_denom': denom, 'display_denom': display_denom, 'exponent': exponent, 'total': {'amount': amount_str, 'display_amount': decimal_to_str(display_amount)}, 'spendable': spendable_entry})
+    result.sort(key=lambda entry: entry['base_denom'])
+    return result

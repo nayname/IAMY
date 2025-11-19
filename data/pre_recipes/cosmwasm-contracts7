@@ -1,41 +1,43 @@
 [
     {
-        "intent": "Query a CosmWasm contract\u2019s smart state with junod CLI",
+        "intent": "Query the smart (contract-state smart) view of a CosmWasm contract on Juno, using junod CLI and/or the LCD endpoint.",
         "workflow": [
             {
                 "step": 1,
-                "tool": "obtain_contract_address",
-                "description": "Prompt the user to supply the deployed CosmWasm contract address on the Juno network."
+                "tool": "collect_query_parameters",
+                "description": "Obtain the target CosmWasm contract address (bech32), the JSON query message (e.g. {\"config\":{}}), and optional node settings (RPC/LCD URL, chain-id, keyring backend) from the caller or configuration."
             },
             {
                 "step": 2,
-                "tool": "collect_query_msg",
-                "description": "Ask the user for the smart-query message in JSON form (e.g. {\"config\":{}})."
+                "tool": "encode_smart_query_for_lcd",
+                "description": "Serialize the JSON query to a minified string and base64-encode it to produce query_data suitable for the LCD path parameter /cosmwasm/wasm/v1/contract/{address}/smart/{query_data}."
             },
             {
                 "step": 3,
-                "tool": "validate_json",
-                "description": "Ensure the provided query message is valid, minified JSON."
+                "tool": "http_get_contract_smart_state",
+                "description": "Perform an HTTP GET to the Juno LCD endpoint using the base URL https://lcd-archive.junonetwork.io and the path /cosmwasm/wasm/v1/contract/{address}/smart/{query_data}, substituting the contract address and the base64-encoded query_data from previous steps. Capture the JSON response."
             },
             {
                 "step": 4,
-                "tool": "base64_encode",
-                "description": "Base-64 encode the validated JSON because `junod query wasm contract-state smart` expects the query in base-64."
+                "tool": "decode_lcd_smart_query_response",
+                "description": "From the LCD response, read the \"data\" field (base64-encoded), decode it to bytes, and interpret the result as UTF-8 JSON (or the contract\u2019s documented format). This is the smart query result to return to the caller."
             },
             {
                 "step": 5,
-                "tool": "junod_query_wasm_contract_state_smart",
-                "description": "Run: `junod query wasm contract-state smart <contract-address> <base64-query> --output json --node <rpc-endpoint>` to retrieve the contract\u2019s smart-state response."
+                "tool": "execute_junod_cli_smart_query",
+                "description": "For environments where junod CLI is available, optionally run: junod query wasm contract-state smart <contract_address> '<json_query>' --node <rpc_endpoint> --chain-id <chain_id> --output json. Capture stdout and parse it as JSON. Use this either as the primary method or as a cross-check against the LCD result."
             },
             {
                 "step": 6,
-                "tool": "format_response",
-                "description": "Parse and present the returned JSON to the user in a readable format."
+                "tool": "compare_cli_and_lcd_results",
+                "description": "If both LCD and junod CLI were used, compare the decoded LCD result with the parsed CLI result; ensure they are equivalent or compatible. If they diverge, surface an error or warning including both raw outputs for debugging."
             }
         ],
         "outcome_checks": [
-            "The CLI command exits successfully (exit code 0).",
-            "The response JSON is non-empty and contains the expected fields for the queried message."
+            "The LCD GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{address}/smart/{query_data} returns HTTP 200 and a JSON body containing a non-empty \"data\" field.",
+            "The \"data\" field from the LCD response decodes from base64 into valid UTF-8 JSON (or the contract\u2019s expected response format) without errors.",
+            "If junod CLI is used, the command junod query wasm contract-state smart <contract_address> '<json_query>' exits with status code 0 and prints valid JSON to stdout.",
+            "If both LCD and CLI are used, the decoded LCD result and parsed junod CLI result match (or are semantically equivalent) for the given query."
         ]
     }
 ]

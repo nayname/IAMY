@@ -1,80 +1,40 @@
 {
-    "tools": [
-        {
-            "step": 1,
-            "label": "frontend",
-            "introduction": "Fetches the user\u2019s Neutron address from the connected Keplr wallet so it can fund the upcoming Supervault deposit.",
-            "function": "getUserWalletAddress()",
-            "usage": "const userAddress = await getUserWalletAddress();"
-        },
-        {
-            "step": 2,
-            "label": "backend",
-            "introduction": "Checks that the chosen wallet holds at least 0.2 WBTC and 12 000 USDC by querying on-chain CW20 balances.",
-            "function": "validate_balances(address)",
-            "usage": "await validate_balances(userAddress)"
-        },
-        {
-            "step": 3,
-            "label": "backend",
-            "introduction": "Returns the canonical contract address for the WBTC/USDC Supervault.",
-            "function": "supervault_address()",
-            "usage": "vault_addr = supervault_address()[\"address\"]"
-        },
-        {
-            "step": 4,
-            "label": "backend",
-            "introduction": "Builds an unsigned transaction that deposits exactly 0.2 WBTC and 12 000 USDC into the identified Supervault.",
-            "function": "construct_supervault_deposit_tx(req)",
-            "usage": "tx_pkg = construct_supervault_deposit_tx({\"address\": userAddress, \"wbtc_amount\": 20000000, \"usdc_amount\": 12000000000})"
-        },
-        {
-            "step": 5,
-            "label": "backend",
-            "introduction": "Signs (mock) and broadcasts the base-64 encoded Supervault deposit transaction, returning the resulting tx-hash.",
-            "function": "sign_and_broadcast_tx_(req)",
-            "usage": "tx_hash = await sign_and_broadcast_tx_({\"tx_base64\": tx_pkg[\"tx_base64\"]})"
-        }
-    ],
-    "frontend": [
-        "const userAddress = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Determine which wallet will fund the additional deposit."
-    ],
-    "backend": [
-        "await validate_balances(userAddress)#step: 2 Tool: validate_token_balances Desciption: Ensure the wallet has at least 0.2 WBTC and 12 000 USDC available.",
-        "vault_addr = supervault_address()[\"address\"]#step: 3 Tool: get_supervault_contract_address Desciption: Look up the contract address for the WBTC/USDC Supervault.",
-        "tx_pkg = construct_supervault_deposit_tx({\"address\": userAddress, \"wbtc_amount\": 20000000, \"usdc_amount\": 12000000000})#step: 4 Tool: construct_tx_supervault_deposit Desciption: Create the deposit message specifying 0.2 WBTC and 12 000 USDC as the amounts.",
-        "tx_hash = await sign_and_broadcast_tx_({\"tx_base64\": tx_pkg[\"tx_base64\"]})#step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the deposit transaction."
-    ],
-    "intent": "Increase the user\u2019s deposit in the WBTC/USDC Supervault by 0.2 WBTC and 12 000 USDC",
+    "label": "execute",
     "workflow": [
         {
             "step": 1,
-            "tool": "get_user_wallet_address",
-            "description": "Determine which wallet will fund the additional deposit."
+            "label": "frontend",
+            "introduction": "Connects to the user\u2019s Keplr wallet and returns the funding address that will be used for the deposit.",
+            "code": "/* src/utils/wallet.js */\nexport const getUserWalletAddress = async () => {\n  const chainId = 'neutron-1';\n\n  // 1. Ensure Keplr is injected in the browser\n  if (!window.keplr) {\n    throw new Error('Keplr wallet not found. Please install the Keplr browser extension.');\n  }\n\n  // 2. Ask Keplr to enable the Neutron chain\n  await window.keplr.enable(chainId);\n\n  // 3. Retrieve the OfflineSigner and account list\n  const signer = window.getOfflineSigner(chainId);\n  const accounts = await signer.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No accounts detected for the selected chain.');\n  }\n\n  // 4. Return the first account address (default behaviour for Keplr)\n  return accounts[0].address;\n};",
+            "usage": "const address = await getUserWalletAddress();"
         },
         {
             "step": 2,
-            "tool": "validate_token_balances",
-            "description": "Ensure the wallet has at least 0.2 WBTC and 12 000 USDC available."
+            "label": "backend",
+            "introduction": "Validates that the given address holds at least 0.2 WBTC and 12 000 USDC (raw CW-20 balances). Returns HTTP 400 if the requirement is not met.",
+            "code": "# backend/validate_balances.py\n# FastAPI route that ensures the user owns enough WBTC & USDC for the deposit.\n\nimport os\nimport base64\nimport json\nfrom fastapi import APIRouter, HTTPException\nimport httpx\n\nrouter = APIRouter()\n\nNODE_LCD = os.getenv('NEUTRON_LCD', 'https://rest.cosmos.directory/neutron')\nWBTC_CONTRACT = os.getenv('WBTC_CONTRACT', 'neutron1wbtcxxxxxxxxxxxxxxxxxxxxxxx')\nUSDC_CONTRACT = os.getenv('USDC_CONTRACT', 'neutron1usdcxxxxxxxxxxxxxxxxxxxxxxx')\n\nMIN_WBTC = 0.2       # WBTC (human-readable)\nWBTC_DECIMALS = 8    # WBTC has 8 decimals\nMIN_USDC = 12_000    # USDC (human-readable)\nUSDC_DECIMALS = 6    # USDC has 6 decimals\n\ndef _b64(query: dict) -> str:\n    \"\"\"Base64-encode a JSON query for /smart/ LCD endpoints.\"\"\"\n    return base64.b64encode(json.dumps(query).encode()).decode()\n\nasync def _cw20_balance(contract: str, addr: str) -> int:\n    url = f\"{NODE_LCD}/cosmwasm/wasm/v1/contract/{contract}/smart/{_b64({'balance': {'address': addr}})}\"\n    async with httpx.AsyncClient(timeout=10) as client:\n        r = await client.get(url)\n        r.raise_for_status()\n        return int(r.json()['data']['balance'])\n\n@router.get('/api/validate_balances')\nasync def validate_balances(address: str):\n    required_wbtc = int(MIN_WBTC * 10 ** WBTC_DECIMALS)\n    required_usdc = int(MIN_USDC * 10 ** USDC_DECIMALS)\n\n    wbtc_balance = await _cw20_balance(WBTC_CONTRACT, address)\n    usdc_balance = await _cw20_balance(USDC_CONTRACT, address)\n\n    if wbtc_balance < required_wbtc or usdc_balance < required_usdc:\n        raise HTTPException(\n            status_code=400,\n            detail={\n                'wbtc_balance': wbtc_balance,\n                'usdc_balance': usdc_balance,\n                'message': 'Insufficient token balances for deposit.'\n            }\n        )\n\n    return {\n        'status': 'ok',\n        'wbtc_raw': wbtc_balance,\n        'usdc_raw': usdc_balance\n    }",
+            "usage": "await fetch(`/api/validate_balances?address=${address}`)\n  .then(r => r.json())\n  .then(console.log);"
         },
         {
             "step": 3,
-            "tool": "get_supervault_contract_address",
-            "description": "Look up the contract address for the WBTC/USDC Supervault."
+            "label": "backend",
+            "introduction": "Returns the canonical contract address of the WBTC/USDC Supervault. Useful for keeping addresses in a single source of truth.",
+            "code": "# backend/supervault_address.py\nimport os\nfrom fastapi import APIRouter\n\nrouter = APIRouter()\n\nSUPERVAULT_CONTRACT = os.getenv(\n    'SUPERVAULT_WBTC_USDC',\n    'neutron1supervaultxxxxxxxxxxxxxxxxxxxxxxxxx'  # \u2190 replace with the live address\n)\n\n@router.get('/api/supervault_address')\nasync def supervault_address():\n    \"\"\"Return the current WBTC/USDC Supervault address.\"\"\"\n    return {'address': SUPERVAULT_CONTRACT}",
+            "usage": "const vault = await fetch('/api/supervault_address').then(r => r.json());"
         },
         {
             "step": 4,
-            "tool": "construct_tx_supervault_deposit",
-            "description": "Create the deposit message specifying 0.2 WBTC and 12 000 USDC as the amounts."
+            "label": "backend",
+            "introduction": "Constructs the JSON execute message required by the Supervault\u2019s `deposit` entry-point for 0.2 WBTC and 12 000 USDC.",
+            "code": "# backend/construct_deposit_msg.py\nimport os\nimport json\nfrom decimal import Decimal\nfrom fastapi import APIRouter\nfrom pydantic import BaseModel, Field\n\nWBTC_CONTRACT = os.getenv('WBTC_CONTRACT', 'neutron1wbtcxxxxxxxxxxxxxxxxxxxxxxx')\nUSDC_CONTRACT = os.getenv('USDC_CONTRACT', 'neutron1usdcxxxxxxxxxxxxxxxxxxxxxxx')\nSUPERVAULT_CONTRACT = os.getenv('SUPERVAULT_WBTC_USDC', 'neutron1supervaultxxxxxxxxxxxxxxxxxxxxxxxxx')\n\nWBTC_DECIMALS = 8\nUSDC_DECIMALS = 6\n\nclass DepositMsgResponse(BaseModel):\n    msg: dict = Field(..., description='JSON execute message for MsgExecuteContract')\n\nrouter = APIRouter()\n\n@router.get('/api/construct_deposit_msg', response_model=DepositMsgResponse)\nasync def construct_deposit_msg():\n    wbtc_raw = int(Decimal('0.2') * 10 ** WBTC_DECIMALS)      # 0.2 WBTC \u2192 20 000 000 raw\n    usdc_raw = int(Decimal('12000') * 10 ** USDC_DECIMALS)    # 12 000 USDC \u2192 12 000 000 000 raw\n\n    msg = {\n        'deposit': {\n            'assets': [\n                {\n                    'info': {'token': {'contract_addr': WBTC_CONTRACT}},\n                    'amount': str(wbtc_raw)\n                },\n                {\n                    'info': {'token': {'contract_addr': USDC_CONTRACT}},\n                    'amount': str(usdc_raw)\n                }\n            ]\n        }\n    }\n\n    return {'msg': msg}",
+            "usage": "const depositMsg = await fetch('/api/construct_deposit_msg').then(r => r.json());"
         },
         {
             "step": 5,
-            "tool": "sign_and_broadcast_tx",
-            "description": "Sign and broadcast the deposit transaction."
+            "label": "backend",
+            "introduction": "Signs the deposit transaction with a backend-stored mnemonic (\u26a0\ufe0f demo-only) and broadcasts it to the Neutron network.",
+            "code": "# backend/sign_and_broadcast.py\nimport os\nimport json\nfrom fastapi import APIRouter, HTTPException\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import PrivateKey\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.aerial.contract import MsgExecuteContract\n\nWBTC_CONTRACT = os.getenv('WBTC_CONTRACT', 'neutron1wbtcxxxxxxxxxxxxxxxxxxxxxxx')\nUSDC_CONTRACT = os.getenv('USDC_CONTRACT', 'neutron1usdcxxxxxxxxxxxxxxxxxxxxxxx')\nSUPERVAULT_CONTRACT = os.getenv('SUPERVAULT_WBTC_USDC', 'neutron1supervaultxxxxxxxxxxxxxxxxxxxxxxxxx')\n\nCHAIN_ID = os.getenv('NEUTRON_CHAIN_ID', 'neutron-1')\nRPC_ENDPOINT = os.getenv('NEUTRON_RPC', 'https://rpc.cosmos.directory/neutron')\nMNEMONIC = os.getenv('FUNDER_MNEMONIC')  # Never commit real mnemonics to Git!\n\nrouter = APIRouter()\n\ndef _build_deposit_msg(sender: str) -> MsgExecuteContract:\n    \"\"\"Create a MsgExecuteContract for the deposit.\"\"\"\n    deposit_msg = {\n        'deposit': {\n            'assets': [\n                {\n                    'info': {'token': {'contract_addr': WBTC_CONTRACT}},\n                    'amount': str(int(0.2 * 10 ** 8))\n                },\n                {\n                    'info': {'token': {'contract_addr': USDC_CONTRACT}},\n                    'amount': str(int(12000 * 10 ** 6))\n                }\n            ]\n        }\n    }\n    return MsgExecuteContract(\n        sender=sender,\n        contract=SUPERVAULT_CONTRACT,\n        msg=json.dumps(deposit_msg).encode(),\n        funds=[]\n    )\n\n@router.post('/api/sign_and_broadcast')\nasync def sign_and_broadcast_tx():\n    \"\"\"\n    WARNING: Exposes a signing flow on the backend. Use only for server-controlled\n    treasury accounts \u2013 never end-user keys.\n    \"\"\"\n    if not MNEMONIC:\n        raise HTTPException(status_code=500, detail='FUNDER_MNEMONIC env var not set.')\n\n    # 1. Instantiate the private key\n    key = PrivateKey.from_mnemonic(MNEMONIC)\n    sender_addr = str(key.to_address())\n\n    # 2. Build the transaction\n    network = NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT)\n    ledger = LedgerClient(network)\n    account = ledger.query_account(sender_addr)\n\n    tx = (\n        Transaction()\n        .with_chain_id(CHAIN_ID)\n        .with_account_num(account.account_number)\n        .with_sequence(account.sequence)\n        .with_gas(400_000)\n        .with_fee_limit('60000untrn')\n    )\n    tx.add_message(_build_deposit_msg(sender_addr))\n\n    # 3. Sign and broadcast\n    tx_signed = tx.sign(key)\n    tx_hash = ledger.broadcast_tx(tx_signed)\n\n    return {'tx_hash': tx_hash.hex()}",
+            "usage": "await fetch('/api/sign_and_broadcast', { method: 'POST' })\n  .then(r => r.json())\n  .then(({ tx_hash }) => console.log('Broadcasted \u2013 hash:', tx_hash));"
         }
-    ],
-    "outcome_checks": [
-        "A `Deposit` event from the Supervault contract shows the correct asset amounts.",
-        "The user\u2019s Supervault share balance increased proportionally while wallet balances decreased by 0.2 WBTC and 12 000 USDC."
     ]
 }

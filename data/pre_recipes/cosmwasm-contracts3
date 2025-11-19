@@ -1,137 +1,172 @@
 [
     {
-        "intent": "Check the balance of a wallet address on the Juno network",
+        "intent": "Check the balance of a given wallet address on Juno",
         "workflow": [
             {
                 "step": 1,
-                "tool": "validate_address_format",
-                "description": "Ensure the supplied ADDRESS is a valid Bech32 Juno address (prefix `juno1`)."
+                "tool": "validate_juno_address_format",
+                "description": "Validate that ADDRESS is a well-formed Juno bech32 address (correct prefix and checksum); abort with a clear error if invalid."
             },
             {
                 "step": 2,
-                "tool": "junod_query_bank_balances",
-                "description": "Run `junod query bank balances ADDRESS --node <RPC_NODE>` to retrieve all balances for the account."
+                "tool": "backend_query_all_balances",
+                "description": "From the BFF backend, perform an HTTP GET to the Juno LCD: GET https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/balances/{address} replacing {address} with ADDRESS, to retrieve all token balances."
             },
             {
                 "step": 3,
-                "tool": "parse_cli_output",
-                "description": "Parse the JSON output returned by `junod` to list each denomination and its corresponding amount."
-            }
-        ],
-        "outcome_checks": [
-            "CLI returns HTTP exit code 0 and valid JSON.",
-            "The JSON contains a non-empty `balances` array (or explicitly shows zero balances)."
-        ]
-    },
-    {
-        "intent": "Configure junod CLI with a specific RPC node and chain-id (uni-6)",
-        "workflow": [
-            {
-                "step": 1,
-                "tool": "check_rpc_reachability",
-                "description": "Ping `NODE_URL` (e.g., `curl NODE_URL/status`) to verify the endpoint is online."
-            },
-            {
-                "step": 2,
-                "tool": "junod_config_node",
-                "description": "Execute `junod config node NODE_URL` to set the default RPC endpoint."
-            },
-            {
-                "step": 3,
-                "tool": "junod_config_chain_id",
-                "description": "Execute `junod config chain-id uni-6` to target the Juno testnet."
+                "tool": "backend_query_spendable_balances",
+                "description": "Optionally, perform GET https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/spendable_balances/{address} for ADDRESS to distinguish spendable from vested/locked balances."
             },
             {
                 "step": 4,
-                "tool": "junod_config_view",
-                "description": "Run `junod config` (or `junod config get node` / `get chain-id`) to confirm the new values."
+                "tool": "backend_query_denoms_metadata",
+                "description": "Optionally call GET https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/denoms_metadata to fetch metadata (base, display, exponent) for each denom so balances can be converted from base units to display units."
+            },
+            {
+                "step": 5,
+                "tool": "format_and_return_balances",
+                "description": "Combine the raw balances with any available denom metadata to compute human-readable amounts (using exponent for each denom) and return a structured list grouped by denom."
             }
         ],
         "outcome_checks": [
-            "`junod config` shows `node = NODE_URL` and `chain-id = \"uni-6\"`.",
-            "`junod status --node NODE_URL` returns sync info without error."
+            "The LCD calls return HTTP 200 responses with a balances array (possibly empty) for ADDRESS.",
+            "If denom metadata was fetched, displayed amounts equal raw amount divided by 10^exponent for each denom.",
+            "No address format or network errors occur while querying the LCD."
         ]
     },
     {
-        "intent": "Compile a CosmWasm contract for ARM64 using the rust-optimizer-arm64 image",
+        "intent": "Configure the junod CLI to use node NODE_URL and chain-id uni-6",
         "workflow": [
             {
                 "step": 1,
-                "tool": "docker_pull_image",
-                "description": "Pull the optimizer: `docker pull cosmwasm/rust-optimizer-arm64:latest`."
+                "tool": "shell_check_junod_installed",
+                "description": "Run `junod version --long` on the host system to ensure the junod binary is installed and accessible; abort with an explicit instruction if the command is not found."
             },
             {
                 "step": 2,
-                "tool": "docker_run_rust_optimizer",
-                "description": "From the contract root, run `docker run --rm -v $(pwd):/code:Z cosmwasm/rust-optimizer-arm64:latest` to build optimized `.wasm` files into `artifacts/`."
+                "tool": "shell_set_junod_node",
+                "description": "Execute `junod config node NODE_URL`, replacing NODE_URL with the provided RPC/LCD endpoint (for example, http://localhost:26657 or a remote RPC URL)."
             },
             {
                 "step": 3,
-                "tool": "verify_artifacts",
-                "description": "Check `artifacts/` for the produced `.wasm` and corresponding checksum files."
-            }
-        ],
-        "outcome_checks": [
-            "At least one `.wasm` file exists in `artifacts/` with non-zero size.",
-            "`file artifacts/*.wasm` identifies the binary as `WebAssembly (wasm) binary module version 0x1`."
-        ]
-    },
-    {
-        "intent": "Claim JUNOX test tokens from the uni-6 faucet for a given address",
-        "workflow": [
-            {
-                "step": 1,
-                "tool": "validate_address_format",
-                "description": "Confirm ADDRESS is a valid Bech32 Juno address."
-            },
-            {
-                "step": 2,
-                "tool": "http_post_faucet_request",
-                "description": "Request tokens: `curl -X POST \"https://faucet.uni.junonetwork.io/credit?address=ADDRESS\"`."
-            },
-            {
-                "step": 3,
-                "tool": "parse_faucet_response",
-                "description": "Capture the faucet response and extract any `txHash` or success indicator."
+                "tool": "shell_set_junod_chain_id",
+                "description": "Execute `junod config chain-id uni-6` to set the chain-id for subsequent junod commands."
             },
             {
                 "step": 4,
-                "tool": "junod_query_bank_balances",
-                "description": "After a short delay, verify funds with `junod query bank balances ADDRESS --node NODE_URL`."
+                "tool": "shell_optional_output_format",
+                "description": "Optionally run `junod config output json` to ensure future command output is machine-readable."
+            },
+            {
+                "step": 5,
+                "tool": "shell_test_junod_connectivity",
+                "description": "Run `junod status --node NODE_URL` and parse the JSON output to confirm that the CLI can reach NODE_URL and that the reported node_info.network (or chain_id equivalent) matches \"uni-6\"."
             }
         ],
         "outcome_checks": [
-            "Faucet returns HTTP 200 and a transaction hash or success flag.",
-            "Balance query shows a positive JUNOX (e.g., `ujunox`) amount credited to the address."
+            "`junod version --long` runs successfully and prints version information.",
+            "`junod status --node NODE_URL` returns without error and its network/chain_id field equals \"uni-6\".",
+            "Subsequent junod queries (e.g., `junod query bank total`) succeed without node/chain-id configuration errors."
         ]
     },
     {
-        "intent": "Add cw-orch as an optional dependency in Cargo.toml",
+        "intent": "Compile a CosmWasm contract for ARM64 using the rust-optimizer-arm64 Docker image",
         "workflow": [
             {
                 "step": 1,
-                "tool": "open_file",
-                "description": "Open the project\u2019s `Cargo.toml` manifest for editing."
+                "tool": "shell_verify_docker_installed",
+                "description": "On the build machine (ARM64 host or Apple Silicon), run `docker version` to confirm Docker is installed and running; if not, instruct the user to install Docker first."
             },
             {
                 "step": 2,
-                "tool": "insert_optional_dependency",
-                "description": "Under `[target.'cfg(not(target_arch = \"wasm32\"))'.dependencies]` (or `[dev-dependencies]`), add `cw-orch = { version = \"*\", optional = true }`."
+                "tool": "shell_verify_contract_builds_locally",
+                "description": "From the smart contract project root (where Cargo.toml resides), run `cargo check` to ensure the Rust project compiles before running the optimizer."
             },
             {
                 "step": 3,
-                "tool": "save_file",
-                "description": "Save changes to `Cargo.toml`."
+                "tool": "shell_run_rust_optimizer_arm64",
+                "description": "From the contract root directory, execute the rust-optimizer ARM64 Docker image (using an appropriate tag, e.g. latest or a pinned version): `docker run --rm -v \"$(pwd)\":/code --mount type=volume,source=\"$(basename \"$(pwd)\")_cache\",target=/code/target cosmwasm/rust-optimizer-arm64:TAG`, replacing TAG with the desired image tag."
             },
             {
                 "step": 4,
-                "tool": "cargo_check",
-                "description": "Run `cargo check` to ensure the dependency graph resolves successfully."
+                "tool": "shell_collect_artifacts",
+                "description": "After the optimizer completes, inspect the ./artifacts directory created in the project root and list the generated optimized .wasm files (e.g. `ls artifacts/*.wasm`)."
             }
         ],
         "outcome_checks": [
-            "`cargo check` completes with exit code 0.",
-            "`Cargo.toml` now contains the `cw-orch` entry with `optional = true`."
+            "The Docker rust-optimizer-arm64 container exits with status code 0 and no build errors in the logs.",
+            "At least one optimized .wasm file exists in the artifacts directory, typically named after the contract (for example, artifacts/contract_name.wasm).",
+            "The generated .wasm file passes basic validation (e.g., can be uploaded to a local Juno node or checked with `wasm-objdump` without errors)."
+        ]
+    },
+    {
+        "intent": "Claim JUNOX test tokens from the Juno faucet for a given address and verify receipt on-chain",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_juno_address_format",
+                "description": "Validate that ADDRESS is a proper Juno bech32 account address; reject if the prefix or checksum is invalid."
+            },
+            {
+                "step": 2,
+                "tool": "backend_query_balance_before_faucet",
+                "description": "From the backend, query the current balance for the expected JUNOX denom for ADDRESS using the network-appropriate LCD. For example, perform GET {LCD_BASE}/cosmos/bank/v1beta1/balances/{address}/by_denom?denom=ujunox (or the correct testnet denom), and record the pre-faucet amount (default LCD_BASE is https://lcd-archive.junonetwork.io)."
+            },
+            {
+                "step": 3,
+                "tool": "frontend_open_faucet_ui",
+                "description": "Trigger a frontend action to open the official Juno uni-6 faucet web UI as documented by the Juno team (URL is environment-specific and configured outside this recipe)."
+            },
+            {
+                "step": 4,
+                "tool": "frontend_request_faucet_tokens",
+                "description": "In the faucet UI, have the user input ADDRESS, select JUNOX (or the default token), and submit the faucet request, handling any visible errors such as rate limiting or daily limits."
+            },
+            {
+                "step": 5,
+                "tool": "backend_optional_poll_txhash",
+                "description": "If the faucet service returns a transaction hash, have the backend poll GET {LCD_BASE}/cosmos/tx/v1beta1/txs/{hash} until the tx_response.code is 0 (success) or a timeout is reached."
+            },
+            {
+                "step": 6,
+                "tool": "backend_query_balance_after_faucet",
+                "description": "After the faucet indicates success (or after a suitable delay), query the JUNOX balance for ADDRESS again via GET {LCD_BASE}/cosmos/bank/v1beta1/balances/{address}/by_denom?denom=ujunox (or appropriate denom) and compare with the pre-faucet amount."
+            }
+        ],
+        "outcome_checks": [
+            "The faucet UI confirms that the request for JUNOX to ADDRESS was accepted (no rate-limit or error messages).",
+            "If a transaction hash was provided, GET /cosmos/tx/v1beta1/txs/{hash} returns tx_response.code = 0, indicating the faucet transfer succeeded.",
+            "The post-faucet JUNOX balance for ADDRESS is greater than or equal to the pre-faucet balance by at least the advertised faucet amount."
+        ]
+    },
+    {
+        "intent": "Add cw-orch as an optional dependency in a CosmWasm contract's Cargo.toml",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "open_cargo_toml",
+                "description": "Open the project's Cargo.toml file at the root of the CosmWasm contract workspace."
+            },
+            {
+                "step": 2,
+                "tool": "add_cw_orch_optional_dependency",
+                "description": "Under the [dependencies] section, add cw-orch as an optional dependency, using an explicit version placeholder or a chosen version, for example: `cw-orch = { version = \"X.Y.Z\", optional = true }`."
+            },
+            {
+                "step": 3,
+                "tool": "configure_feature_gate_for_cw_orch",
+                "description": "In the [features] section of Cargo.toml, ensure there is a feature that enables cw-orch, for example:\n`[features]`\n`default = []`\n`cw-orch = [\"dep:cw-orch\"]`."
+            },
+            {
+                "step": 4,
+                "tool": "shell_verify_cargo_build_with_feature",
+                "description": "From the project root, run `cargo check --features cw-orch` (or `cargo test --features cw-orch`) to confirm that the project builds successfully with cw-orch enabled."
+            }
+        ],
+        "outcome_checks": [
+            "Cargo.toml contains a cw-orch entry in [dependencies] with `optional = true`.",
+            "Cargo.toml defines a feature (for example, `cw-orch`) that correctly references the cw-orch dependency (for example, via `\"dep:cw-orch\"`).",
+            "`cargo check --features cw-orch` completes without dependency resolution or compilation errors."
         ]
     }
 ]

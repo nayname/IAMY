@@ -1,80 +1,47 @@
 {
-    "tools": [
-        {
-            "step": 1,
-            "label": "frontend",
-            "introduction": "Fetches and returns the connected wallet\u2019s bech32 address so we know which account owns the Supervault shares.",
-            "function": "getUserWalletAddress()",
-            "usage": "const userAddress = await getUserWalletAddress();"
-        },
-        {
-            "step": 2,
-            "label": "backend",
-            "introduction": "Queries the Supervault smart-contract and returns the total number of shares held by the provided address.",
-            "function": "get_supervault_share_balance(address)",
-            "usage": "const { shares } = await get_supervault_share_balance(userAddress);"
-        },
-        {
-            "step": 3,
-            "label": "frontend",
-            "introduction": "Calculates 10 % of the user\u2019s share balance to determine the exact amount to withdraw.",
-            "function": "calculateSharesToWithdraw(totalShares)",
-            "usage": "const sharesToWithdraw = calculateSharesToWithdraw(shares);"
-        },
-        {
-            "step": 4,
-            "label": "backend",
-            "introduction": "Builds a MsgExecuteContract message that instructs the Supervault to withdraw the computed share amount.",
-            "function": "construct_wasm_execute_msg(sender, contract_address, shares_to_redeem)",
-            "usage": "const execMsg = construct_wasm_execute_msg(userAddress, SUPER_VAULT_CONTRACT, sharesToWithdraw);"
-        },
-        {
-            "step": 5,
-            "label": "frontend",
-            "introduction": "Signs the previously-built withdraw transaction with Keplr and broadcasts it to the Neutron network.",
-            "function": "signAndBroadcastWithdrawTx({ address, signPayload })",
-            "usage": "const txHash = await signAndBroadcastWithdrawTx({ address: userAddress, signPayload });"
-        }
-    ],
-    "frontend": [
-        "const userAddress = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Identify the wallet holding the vault shares.",
-        "const sharesToWithdraw = calculateSharesToWithdraw(shares);//step: 3 Tool: calculate_shares_to_withdraw Desciption: Compute 10 % of the retrieved share balance to determine shares_to_withdraw.",
-        "const txHash = await signAndBroadcastWithdrawTx({ address: userAddress, signPayload });//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the withdrawal transaction."
-    ],
-    "backend": [
-        "const { shares } = await get_supervault_share_balance(userAddress);#step: 2 Tool: query_supervault_share_balance Desciption: Retrieve the total number of shares the user currently owns in the maxBTC/solvBTC Supervault.",
-        "const execMsg = construct_wasm_execute_msg(userAddress, SUPER_VAULT_CONTRACT, sharesToWithdraw);#step: 4 Tool: construct_tx_supervault_withdraw Desciption: Create the withdraw transaction using shares_to_withdraw as the parameter."
-    ],
-    "intent": "Withdraw 10 % of the user\u2019s shares from the maxBTC/solvBTC Supervault",
+    "label": "execute",
     "workflow": [
         {
             "step": 1,
-            "tool": "get_user_wallet_address",
-            "description": "Identify the wallet holding the vault shares."
+            "label": "frontend",
+            "introduction": "Connects to Keplr, ensures the chain is enabled, and returns the user\u2019s Neutron address together with an OfflineSigner for later use.",
+            "code": "export const getUserWalletAddress = async () => {\n  const chainId = 'neutron-1';\n\n  // 1. Make sure Keplr exists in the browser\n  if (typeof window === 'undefined' || !window.keplr) {\n    throw new Error('Keplr wallet is not installed.');\n  }\n\n  // 2. Ask the user to approve access to Neutron in Keplr\n  await window.keplr.enable(chainId);\n\n  // 3. Obtain the signer & accounts\n  const offlineSigner = window.getOfflineSigner(chainId);\n  const accounts = await offlineSigner.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No account found in Keplr.');\n  }\n\n  // 4. Return both address and signer for downstream steps\n  return {\n    address: accounts[0].address,\n    offlineSigner,\n  };\n};",
+            "usage": "const { address } = await getUserWalletAddress();"
         },
         {
             "step": 2,
-            "tool": "query_supervault_share_balance",
-            "description": "Retrieve the total number of shares the user currently owns in the maxBTC/solvBTC Supervault."
+            "label": "backend",
+            "introduction": "Creates a FastAPI route that queries the Supervault smart-contract and returns how many shares the user owns.",
+            "code": "from fastapi import APIRouter, HTTPException\nimport os\nfrom cosmpy.aerial.client import LedgerClient\nfrom cosmpy.aerial.utils import NETWORKS\n\nrouter = APIRouter()\n\nSUPER_VAULT_CONTRACT = os.getenv('SUPER_VAULT_CONTRACT')  # e.g. 'neutron1abc...'\nCHAIN_ID = os.getenv('CHAIN_ID', 'neutron-1')\n\n@router.get('/supervault/share-balance')\nasync def get_supervault_share_balance(address: str):\n    \"\"\"Return the amount of Supervault shares owned by `address`.\"\"\"\n    try:\n        if not SUPER_VAULT_CONTRACT:\n            raise ValueError('SUPER_VAULT_CONTRACT env var not set')\n\n        # Connect to public Neutron endpoints\n        client = LedgerClient(NETWORKS[CHAIN_ID])\n\n        # Contract-specific query (may differ in your implementation)\n        query_msg = {\n            'share': {\n                'owner': address,\n            }\n        }\n\n        result = client.query_contract_smart(SUPER_VAULT_CONTRACT, query_msg)\n        shares_raw = int(result.get('shares', '0'))\n        return {'shares': shares_raw}\n\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "GET /api/supervault/share-balance?address=<walletAddress>  \u2192  { \"shares\": 123456 }"
         },
         {
             "step": 3,
-            "tool": "calculate_shares_to_withdraw",
-            "description": "Compute 10 % of the retrieved share balance to determine shares_to_withdraw."
+            "label": "frontend",
+            "introduction": "Calculates exactly 10 % of the user\u2019s share balance so we know how many shares to withdraw.",
+            "code": "export const calculateSharesToWithdraw = (totalShares) => {\n  const numericShares = Number(totalShares);\n  if (!Number.isFinite(numericShares) || numericShares <= 0) {\n    throw new Error('Invalid share balance.');\n  }\n\n  // Use Math.floor to avoid fractional shares (contracts expect integers)\n  const sharesToWithdraw = Math.floor(numericShares * 0.10);\n  if (sharesToWithdraw === 0) {\n    throw new Error('Calculated shares_to_withdraw equals zero.');\n  }\n\n  return sharesToWithdraw;\n};",
+            "usage": "const sharesToWithdraw = calculateSharesToWithdraw(balanceFromApi);"
         },
         {
             "step": 4,
-            "tool": "construct_tx_supervault_withdraw",
-            "description": "Create the withdraw transaction using shares_to_withdraw as the parameter."
+            "label": "backend",
+            "introduction": "Builds an unsigned MsgExecuteContract (withdraw) transaction and returns its body/auth-info in base64 so the frontend can sign it with Keplr.",
+            "code": "import os, base64\nfrom fastapi import APIRouter, HTTPException\nfrom pydantic import BaseModel\nfrom cosmpy.aerial.client import LedgerClient, NETWORKS\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.aerial.contract import MsgExecuteContract\n\nrouter = APIRouter()\nCHAIN_ID = os.getenv('CHAIN_ID', 'neutron-1')\nSUPER_VAULT_CONTRACT = os.getenv('SUPER_VAULT_CONTRACT')\n\nclass PrepareWithdrawRequest(BaseModel):\n    address: str\n    shares_to_withdraw: int\n\nclass PrepareWithdrawResponse(BaseModel):\n    body_bytes: str\n    auth_info_bytes: str\n    account_number: int\n    chain_id: str\n\n@router.post('/supervault/prepare-withdraw', response_model=PrepareWithdrawResponse)\nasync def prepare_withdraw(req: PrepareWithdrawRequest):\n    \"\"\"Returns components required for a DIRECT-SIGN transaction.\"\"\"\n    try:\n        if not SUPER_VAULT_CONTRACT:\n            raise ValueError('SUPER_VAULT_CONTRACT env var not set')\n\n        ledger = LedgerClient(NETWORKS[CHAIN_ID])\n        acct = ledger.query_account(req.address)\n\n        # Contract-level execute message\n        execute_msg = {\n            'withdraw': {\n                'shares': str(req.shares_to_withdraw)\n            }\n        }\n\n        msg = MsgExecuteContract(\n            sender=req.address,\n            contract_address=SUPER_VAULT_CONTRACT,\n            msg=execute_msg,\n            funds=[],\n        )\n\n        tx = (\n            Transaction()\n            .with_messages(msg)\n            .with_sequence(acct.sequence)\n            .with_account_number(acct.account_number)\n            .with_chain_id(CHAIN_ID)\n            .with_gas(300000)\n            .with_fee('2000untrn')  # Adjust fee & gas to your needs\n        )\n\n        body_bytes, auth_info_bytes, _ = tx.to_sign_doc()\n\n        return PrepareWithdrawResponse(\n            body_bytes=base64.b64encode(body_bytes).decode(),\n            auth_info_bytes=base64.b64encode(auth_info_bytes).decode(),\n            account_number=acct.account_number,\n            chain_id=CHAIN_ID,\n        )\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "POST /api/supervault/prepare-withdraw { address, shares_to_withdraw }  \u2192  { body_bytes, auth_info_bytes, account_number, chain_id }"
         },
         {
             "step": 5,
-            "tool": "sign_and_broadcast_tx",
-            "description": "Sign and broadcast the withdrawal transaction."
+            "label": "frontend",
+            "introduction": "Uses Keplr\u2019s `signDirect` to sign the prepared transaction and then asks the backend to broadcast it.",
+            "code": "export const signAndBroadcastWithdrawTx = async ({ address, signPayload }) => {\n  const { body_bytes, auth_info_bytes, account_number, chain_id } = signPayload;\n\n  // Helper to convert base64 \u2192 Uint8Array\n  const toUint8Array = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));\n\n  const signDoc = {\n    bodyBytes: toUint8Array(body_bytes),\n    authInfoBytes: toUint8Array(auth_info_bytes),\n    chainId: chain_id,\n    accountNumber: account_number,\n  };\n\n  // 1. Ask Keplr to sign the Tx\n  const { signature } = await window.keplr.signDirect(chain_id, address, signDoc);\n\n  // 2. Hand the signature back to the backend so it can assemble & broadcast\n  const res = await fetch('/api/supervault/broadcast-withdraw', {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({\n      body_bytes: body_bytes,\n      auth_info_bytes: auth_info_bytes,\n      signature: signature.signature, // already base64\n    }),\n  });\n\n  const data = await res.json();\n  if (!res.ok) {\n    throw new Error(data.detail || 'Broadcast failed');\n  }\n\n  return data.txhash;\n};",
+            "usage": "const txhash = await signAndBroadcastWithdrawTx({ address, signPayload });"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Final backend route that assembles `TxRaw` from body/auth/signature and submits it to the Neutron network.",
+            "code": "import base64, os\nfrom fastapi import APIRouter, HTTPException\nfrom pydantic import BaseModel\nfrom cosmpy.protos.cosmos.tx.v1beta1.tx_pb2 import TxRaw\nfrom cosmpy.aerial.client import LedgerClient, NETWORKS\n\nrouter = APIRouter()\nCHAIN_ID = os.getenv('CHAIN_ID', 'neutron-1')\n\nclass BroadcastWithdrawRequest(BaseModel):\n    body_bytes: str\n    auth_info_bytes: str\n    signature: str\n\n@router.post('/supervault/broadcast-withdraw')\nasync def broadcast_withdraw(req: BroadcastWithdrawRequest):\n    \"\"\"Takes the signed tx fragments, creates TxRaw, broadcasts, and returns the tx-hash.\"\"\"\n    try:\n        body_bytes = base64.b64decode(req.body_bytes)\n        auth_info_bytes = base64.b64decode(req.auth_info_bytes)\n        signature = base64.b64decode(req.signature)\n\n        tx_raw = TxRaw(\n            body_bytes=body_bytes,\n            auth_info_bytes=auth_info_bytes,\n            signatures=[signature],\n        )\n\n        ledger = LedgerClient(NETWORKS[CHAIN_ID])\n        result = ledger.broadcast_tx(tx_raw.SerializeToString())\n\n        if result.code != 0:\n            raise ValueError(f'Tx failed with code {result.code}: {result.raw_log}')\n\n        return {'txhash': result.txhash}\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=str(exc))",
+            "usage": "Internal call from Step 5. On success returns JSON \u2192 { \"txhash\": \"<hash>\" }"
         }
-    ],
-    "outcome_checks": [
-        "A `Withdraw` event from the Supervault contract confirms the shares redeemed and the corresponding maxBTC/solvBTC tokens returned.",
-        "The user\u2019s vault share balance is reduced by ~10 %, and the wallet balance for maxBTC and solvBTC increases accordingly."
     ]
 }

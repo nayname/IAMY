@@ -1,79 +1,40 @@
 {
-    "tools": [
-        {
-            "step": 1,
-            "label": "frontend",
-            "introduction": "Fetches the connected wallet\u2019s bech32 address from the user\u2019s browser extension.",
-            "function": "getUserWalletAddress()",
-            "usage": "const userAddress = await getUserWalletAddress();"
-        },
-        {
-            "step": 2,
-            "label": "frontend",
-            "introduction": "Queries the vault registry and returns the specific vault contract address associated with the user.",
-            "function": "getVaultContractAddress(userAddress)",
-            "usage": "const vaultAddress = await getVaultContractAddress(userAddress);"
-        },
-        {
-            "step": 3,
-            "label": "frontend",
-            "introduction": "Builds the CosmWasm execute payload `{ opt_in_airdrops: { partner_id } }` required by the vault contract.",
-            "function": "buildOptInAirdropsMsg(partnerId)",
-            "usage": "const execMsg = buildOptInAirdropsMsg(); // defaults to partner_id=\"all\""
-        },
-        {
-            "step": 4,
-            "label": "frontend",
-            "introduction": "Signs the execute message with the user\u2019s OfflineSigner and submits the signed transaction through the backend relayer.",
-            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo)",
-            "usage": "const txHash = await signAndBroadcast(signer, userAddress, [execMsg], \"auto\");"
-        },
-        {
-            "step": 5,
-            "label": "frontend",
-            "introduction": "Performs a smart-contract query to confirm that the airdrop opt-in flag is now true for the user.",
-            "function": "queryAirdropStatus(contractAddress, userAddress, lcdEndpoint)",
-            "usage": "const result = await queryAirdropStatus(vaultAddress, userAddress);"
-        }
-    ],
-    "frontend": [
-        "const userAddress = await getUserWalletAddress();//step: 1 Tool: get_user_address Desciption: Identify the wallet address that controls the vault deposit.",
-        "const vaultAddress = await getVaultContractAddress(userAddress);//step: 2 Tool: get_contract_address Desciption: Retrieve the specific vault contract address involved.",
-        "const execMsg = buildOptInAirdropsMsg(); // defaults to partner_id=\"all\"//step: 3 Tool: construct_execute_msg Desciption: Build an execute message `{ opt_in_airdrops: { partner_id: \"all\" } }` (or protocol-specific field) for the vault contract.",
-        "const txHash = await signAndBroadcast(signer, userAddress, [execMsg], \"auto\");//step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the execute message with the user\u2019s key and broadcast it.",
-        "const result = await queryAirdropStatus(vaultAddress, userAddress);//step: 5 Tool: query_contract_state Desciption: After confirmation, query `{ airdrop_status: { address: <USER_ADDR> } }` to verify opt-in flag is true."
-    ],
-    "backend": [],
-    "intent": "Opt in to partner airdrops for my vault deposits",
+    "label": "execute",
     "workflow": [
         {
             "step": 1,
-            "tool": "get_user_address",
-            "description": "Identify the wallet address that controls the vault deposit."
+            "label": "frontend",
+            "introduction": "Step 1 connects the user\u2019s Keplr wallet (Neutron main-net) and returns the active account address.",
+            "code": "export const getUserAddress = async () => {\n  // Neutron main-net chain-id\n  const chainId = 'neutron-1';\n\n  // 1. Make sure Keplr is injected\n  if (!window.keplr) {\n    throw new Error('Keplr wallet not found. Please install or enable it.');\n  }\n\n  // 2. Request wallet access for the given chain\n  await window.keplr.enable(chainId);\n\n  // 3. Retrieve the signer and the first account\n  const signer = window.getOfflineSigner(chainId);\n  const accounts = await signer.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No accounts were returned by the wallet.');\n  }\n\n  // 4. Return the Bech32 address\n  return accounts[0].address;\n};",
+            "usage": "const userAddress = await getUserAddress();"
         },
         {
             "step": 2,
-            "tool": "get_contract_address",
-            "description": "Retrieve the specific vault contract address involved."
+            "label": "frontend",
+            "introduction": "Step 2 returns (or fetches) the vault contract address. In most apps this is a static constant or environment variable.",
+            "code": "export const getVaultContractAddress = () => {\n  // In production you might fetch this from an API or .env file.\n  // Hard-coded here for demo purposes.\n  return 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';\n};",
+            "usage": "const contractAddress = getVaultContractAddress();"
         },
         {
             "step": 3,
-            "tool": "construct_execute_msg",
-            "description": "Build an execute message `{ opt_in_airdrops: { partner_id: \"all\" } }` (or protocol-specific field) for the vault contract."
+            "label": "frontend",
+            "introduction": "Step 3 builds the execute message `{ opt_in_airdrops: { partner_id: 'all' } }` which will be sent to the vault contract.",
+            "code": "export const buildOptInAirdropsMsg = (partnerId = 'all') => {\n  return {\n    opt_in_airdrops: {\n      partner_id: partnerId\n    }\n  };\n};",
+            "usage": "const executeMsg = buildOptInAirdropsMsg('all');"
         },
         {
             "step": 4,
-            "tool": "sign_and_broadcast_tx",
-            "description": "Sign the execute message with the user\u2019s key and broadcast it."
+            "label": "backend",
+            "introduction": "Step 4 exposes a FastAPI endpoint that signs and broadcasts the execute message using cosmpy. A user-supplied mnemonic is expected strictly for educational/demo use; do NOT keep real mnemonics on a backend in production.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import LocalWallet\nfrom cosmpy.aerial.tx import Transaction\nimport os\n\napp = FastAPI()\n\n# --- Chain / network configuration ---\nNETWORK = NetworkConfig(\n    chain_id=\"neutron-1\",\n    url=\"https://rpc-kralum.neutron-1.neutron.org:443\",  # Public RPC endpoint\n    fee_minimum_gas_price=0.03,\n    fee_denomination=\"untrn\",\n)\n\n# --- Pydantic request model ---\nclass ExecuteRequest(BaseModel):\n    mnemonic: str                # \u26a0\ufe0f  For demo only; never store on server in prod\n    contract_address: str        # Vault contract address\n    partner_id: str = \"all\"      # Field for the execute msg\n    gas_limit: int = 200_000     # Optional user-tuneable gas limit\n    fee_denom: str = \"untrn\"     # Fee denom, default untrn\n\n@app.post(\"/api/execute/opt_in_airdrops\")\nasync def execute_opt_in_airdrops(req: ExecuteRequest):\n    \"\"\"Signs and broadcasts `{ opt_in_airdrops: { partner_id } }`\"\"\"\n    try:\n        # Create a wallet from the provided mnemonic\n        wallet = LocalWallet.from_mnemonic(req.mnemonic)\n        sender_addr = wallet.address()\n\n        # Create the execute message\n        wasm_msg = {\n            \"opt_in_airdrops\": {\n                \"partner_id\": req.partner_id\n            }\n        }\n\n        # Build transaction\n        tx = Transaction()\n        tx.add_execute_contract(\n            sender_addr,\n            req.contract_address,\n            wasm_msg,\n            gas_limit=req.gas_limit,\n        )\n        tx.with_chain_id(NETWORK.chain_id)\n        tx.with_fee(req.fee_denom)\n\n        # Sign\n        signed_tx = tx.sign(wallet)\n\n        # Broadcast\n        client = LedgerClient(NETWORK)\n        resp = client.broadcast_tx(signed_tx)\n\n        if resp.is_error():\n            raise HTTPException(status_code=400, detail=f\"Broadcast failed: {resp.raw_log}\")\n\n        return {\"txhash\": resp.tx_hash}\n\n    except Exception as e:\n        # Surface any unexpected error\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "await fetch('/api/execute/opt_in_airdrops', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({\n    mnemonic: '<USER_MNEMONIC>',\n    contract_address: contractAddress,\n    partner_id: 'all'\n  })\n});"
         },
         {
             "step": 5,
-            "tool": "query_contract_state",
-            "description": "After confirmation, query `{ airdrop_status: { address: <USER_ADDR> } }` to verify opt-in flag is true."
+            "label": "frontend",
+            "introduction": "Step 5 queries the vault contract to confirm that the user address is now opted-in. This uses Neutron\u2019s public LCD so no external JS libraries are required.",
+            "code": "export const queryAirdropStatus = async (\n  contractAddress,\n  userAddress,\n  lcdEndpoint = 'https://rest-kralum.neutron-1.neutron.org'\n) => {\n  // Build the query `{ airdrop_status: { address: <USER_ADDR> } }`\n  const query = {\n    airdrop_status: {\n      address: userAddress,\n    },\n  };\n\n  // The LCD expects the query message to be base64-encoded\n  const base64Query = btoa(JSON.stringify(query));\n\n  const url = `${lcdEndpoint}/cosmwasm/wasm/v1/contract/${contractAddress}/smart/${base64Query}`;\n\n  const response = await fetch(url);\n  if (!response.ok) {\n    throw new Error(`LCD query failed with status ${response.status}`);\n  }\n\n  const result = await response.json();\n  return result.data; // `data` holds the smart-query response\n};",
+            "usage": "const status = await queryAirdropStatus(contractAddress, userAddress);\nconsole.log('Airdrop opt-in status:', status);"
         }
-    ],
-    "outcome_checks": [
-        "The execute transaction returns code 0.",
-        "`airdrop_status` query shows `is_opted_in = true` for the user address."
     ]
 }

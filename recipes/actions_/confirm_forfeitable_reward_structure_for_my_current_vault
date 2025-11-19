@@ -1,66 +1,33 @@
 {
-    "tools": [
+    "label": "query_contract",
+    "workflow": [
         {
             "step": 1,
             "label": "frontend",
-            "introduction": "Fetches the vault contract address associated with the supplied user address from the registry service.",
-            "function": "getVaultContractAddress(userAddress, registryBaseUrl?)",
+            "introduction": "Step 1 defines a small helper that discovers the user-specific vault contract address by calling a public indexer service. Adjust the `registryBaseUrl` to match your own API if it differs.",
+            "code": "export const getVaultContractAddress = async (userAddress, registryBaseUrl = \"https://indexer.neutron.org\") => {\n  // Example endpoint:  GET {registryBaseUrl}/api/v1/vaults/{userAddress}\n  try {\n    const res = await fetch(`${registryBaseUrl}/api/v1/vaults/${userAddress}`);\n\n    if (!res.ok) {\n      throw new Error(`Failed to fetch vault address: ${res.status} ${res.statusText}`);\n    }\n\n    const { vault_address } = await res.json();\n\n    if (!vault_address) {\n      throw new Error(\"Vault address not found in response.\");\n    }\n\n    return vault_address;\n  } catch (err) {\n    console.error(\"[getVaultContractAddress]\", err);\n    throw err;\n  }\n};",
             "usage": "const vaultAddress = await getVaultContractAddress(userAddress);"
         },
         {
             "step": 2,
             "label": "frontend",
-            "introduction": "Queries the vault contract with { config: {} } to retrieve its full configuration, including reward policies.",
-            "function": "queryVaultConfig(vaultAddress, lcdUrl?)",
+            "introduction": "Step 2 queries the vault\u2019s on-chain `config` by performing a direct REST LCD smart-query. No CosmJS dependency is required; the query payload is base64-encoded and sent over HTTPS.",
+            "code": "export const queryVaultConfig = async (vaultAddress, lcdUrl = \"https://rest.neutron-1.neutron.org\") => {\n  /**\n   * Helper to base64-encode the JSON query in both browser and Node environments.\n   */\n  const base64Encode = (obj) => {\n    const jsonStr = JSON.stringify(obj);\n    if (typeof window !== \"undefined\" && window.btoa) {\n      return window.btoa(jsonStr);\n    }\n    return Buffer.from(jsonStr).toString(\"base64\");\n  };\n\n  try {\n    const queryMsg = { config: {} };        // \u2190 { \"config\": {} }\n    const encoded = base64Encode(queryMsg); // base64\n\n    const endpoint = `${lcdUrl}/cosmwasm/wasm/v1/contract/${vaultAddress}/smart/${encoded}`;\n    const res = await fetch(endpoint);\n\n    if (!res.ok) {\n      throw new Error(`Contract query failed: ${res.status} ${res.statusText}`);\n    }\n\n    // Depending on LCD version the JSON key can be `data` or `result`.\n    const json = await res.json();\n    const config = json.data ?? json.result ?? json;\n\n    return config; // returns the full config object\n  } catch (err) {\n    console.error(\"[queryVaultConfig]\", err);\n    throw err;\n  }\n};",
             "usage": "const config = await queryVaultConfig(vaultAddress);"
         },
         {
             "step": 3,
             "label": "frontend",
-            "introduction": "Parses the configuration JSON to isolate forfeitable reward or early-exit penalty settings.",
-            "function": "parseRewardPolicy(config)",
+            "introduction": "Step 3 parses the raw `config` object and isolates reward-related fields like `forfeitable_rewards` and `early_exit_penalty` for easy downstream consumption.",
+            "code": "export const parseRewardPolicy = (config) => {\n  if (!config || typeof config !== \"object\") {\n    throw new Error(\"Invalid or empty config object supplied.\");\n  }\n\n  const forfeitableRewards = config.forfeitable_rewards ?? null;\n  const earlyExitPenalty = config.early_exit_penalty ?? null;\n\n  return {\n    forfeitableRewards,\n    earlyExitPenalty,\n    // Convenience flag\n    isForfeitable: Boolean(forfeitableRewards) || Boolean(earlyExitPenalty)\n  };\n};",
             "usage": "const policy = parseRewardPolicy(config);"
         },
         {
             "step": 4,
             "label": "frontend",
-            "introduction": "Displays the parsed reward-forfeiture information to the user in the UI or console.",
-            "function": "displayRewardPolicy(policy, targetElementId?)",
-            "usage": "displayRewardPolicy(policy);"
+            "introduction": "Step 4 presents a minimal renderer that displays the parsed policy in the UI. It first tries to locate a DOM element by `targetElementId`; if none is found it falls back to `console.log`.",
+            "code": "export const displayRewardPolicy = (policy, targetElementId = \"reward-policy\") => {\n  try {\n    const el = document.getElementById(targetElementId);\n\n    // Fallback if no DOM target is available\n    const output = (msg) => {\n      if (el) {\n        el.innerHTML = msg;\n      } else {\n        console.log(msg);\n      }\n    };\n\n    if (!policy || !policy.isForfeitable) {\n      output(\"No early withdrawal penalties. All rewards are fully claimable.\");\n      return;\n    }\n\n    let html = \"<h4>Early Withdrawal Policy</h4>\";\n\n    if (policy.earlyExitPenalty && typeof policy.earlyExitPenalty === \"object\") {\n      html += \"<ul>\";\n      for (const [period, penalty] of Object.entries(policy.earlyExitPenalty)) {\n        html += `<li>Within ${period}: ${penalty}% penalty</li>`;\n      }\n      html += \"</ul>\";\n    } else if (policy.forfeitableRewards !== null) {\n      html += `<p>${policy.forfeitableRewards}% of accumulated rewards are forfeited on early exit.</p>`;\n    }\n\n    output(html);\n  } catch (err) {\n    console.error(\"[displayRewardPolicy]\", err);\n  }\n};",
+            "usage": "displayRewardPolicy(policy, \"policy-container\");"
         }
-    ],
-    "frontend": [
-        "const vaultAddress = await getVaultContractAddress(userAddress);//step: 1 Tool: get_contract_address Desciption: Determine the vault contract address associated with the user\u2019s deposit.",
-        "const config = await queryVaultConfig(vaultAddress);//step: 2 Tool: query_contract_state Desciption: Invoke `{ config: {} }` (or similar) on the vault contract to retrieve reward policy settings.",
-        "const policy = parseRewardPolicy(config);//step: 3 Tool: parse_reward_policy Desciption: Read the `forfeitable_rewards` or `early_exit_penalty` field from the config JSON.",
-        "displayRewardPolicy(policy);//step: 4 Tool: display_result Desciption: Show the user whether rewards are forfeited on early withdrawal and, if applicable, the penalty schedule."
-    ],
-    "backend": [],
-    "intent": "Confirm forfeitable reward structure for my current vault",
-    "workflow": [
-        {
-            "step": 1,
-            "tool": "get_contract_address",
-            "description": "Determine the vault contract address associated with the user\u2019s deposit."
-        },
-        {
-            "step": 2,
-            "tool": "query_contract_state",
-            "description": "Invoke `{ config: {} }` (or similar) on the vault contract to retrieve reward policy settings."
-        },
-        {
-            "step": 3,
-            "tool": "parse_reward_policy",
-            "description": "Read the `forfeitable_rewards` or `early_exit_penalty` field from the config JSON."
-        },
-        {
-            "step": 4,
-            "tool": "display_result",
-            "description": "Show the user whether rewards are forfeited on early withdrawal and, if applicable, the penalty schedule."
-        }
-    ],
-    "outcome_checks": [
-        "The config query returns without error and includes a recognizable reward policy field.",
-        "Displayed information matches the raw values returned by the contract (no parsing errors)."
     ]
 }

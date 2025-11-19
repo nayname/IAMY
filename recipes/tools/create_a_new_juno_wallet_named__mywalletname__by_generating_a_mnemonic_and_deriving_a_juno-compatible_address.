@@ -1,0 +1,107 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Returns the standard BIP-44 derivation path, coin type 118 and bech32 prefix \u201cjuno\u201d that all subsequent key-derivation steps will use.",
+            "function": "select_juno_chain_key_params()",
+            "usage": "params = select_juno_chain_key_params()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Generates a fresh 24-word BIP-39 mnemonic using a cryptographically secure RNG (nothing is logged).",
+            "function": "generate_bip39_mnemonic(words=24)",
+            "usage": "mnemonic = generate_bip39_mnemonic(24)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Derives the 32-byte secp256k1 private key from the mnemonic along the path m/44'/118'/0'/0/0.",
+            "function": "derive_hd_key_from_mnemonic(mnemonic, derivation_path=\"m/44'/118'/0'/0/0\")",
+            "usage": "private_key = derive_hd_key_from_mnemonic(mnemonic, params[\"derivation_path\"])"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Creates the compressed public key and computes the bech32 Juno address from the private key.",
+            "function": "derive_public_key_and_address(private_key, bech32_prefix=\"juno\")",
+            "usage": "key_info = derive_public_key_and_address(private_key, params[\"bech32_prefix\"])"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Stores the wallet record \u201cMyWalletName\u201d in the encrypted backend keyring together with its address and public key.",
+            "function": "persist_wallet_metadata(wallet_name, address, public_key_hex, private_key)",
+            "usage": "persist_wallet_metadata(\"MyWalletName\", key_info[\"address\"], key_info[\"public_key_hex\"], private_key)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Optionally pings the Juno LCD node_info endpoint to confirm network connectivity and chain-id.",
+            "function": "optional_verify_address_on_chain(expected_network=\"juno-1\")",
+            "usage": "network_check = optional_verify_address_on_chain()"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Orchestrates the entire flow and returns the wallet name, newly created address and mnemonic to the caller.",
+            "function": "create_juno_wallet(wallet_name=\"MyWalletName\", words=24, verify_network=False)",
+            "usage": "wallet_details = create_juno_wallet(wallet_name=\"MyWalletName\", words=24, verify_network=True)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "params = select_juno_chain_key_params()#step: 1 Tool: select_chain_key_params Desciption: Set chain-specific key parameters for Juno: use BIP-44 coin type 118 (Cosmos), a standard derivation path like m/44'/118'/0'/0/0, and bech32 prefix \"juno\" for addresses.",
+        "mnemonic = generate_bip39_mnemonic(24)#step: 2 Tool: generate_bip39_mnemonic Desciption: In a secure backend environment, generate a new BIP-39 mnemonic (12 or 24 words) using a cryptographically secure random number generator. Display or return this mnemonic only to the end user and never log it in plaintext.",
+        "private_key = derive_hd_key_from_mnemonic(mnemonic, params[\"derivation_path\"])#step: 3 Tool: derive_hd_key_from_mnemonic Desciption: Convert the mnemonic to a seed using the BIP-39 standard, then derive the hierarchical deterministic (HD) private key using the chosen path (e.g., m/44'/118'/0'/0/0) with BIP-32/BIP-44 logic.",
+        "key_info = derive_public_key_and_address(private_key, params[\"bech32_prefix\"])#step: 4 Tool: derive_public_key_and_address Desciption: Derive the secp256k1 public key from the private key. Then compute the Juno address by taking the public key, applying the standard Cosmos address derivation (SHA-256 then RIPEMD-160), and encoding the result as a bech32 string with prefix \"juno\".",
+        "persist_wallet_metadata(\"MyWalletName\", key_info[\"address\"], key_info[\"public_key_hex\"], private_key)#step: 5 Tool: persist_wallet_metadata Desciption: Create a wallet record labeled \"MyWalletName\" in the backend key management system or keyring. Store the Juno address and public key, and securely store the private key (for example, encrypted at rest). Do not store the mnemonic in plaintext unless explicitly required and protected.",
+        "network_check = optional_verify_address_on_chain()#step: 6 Tool: optional_verify_address_on_chain Desciption: Optionally, verify basic network information via GET \"https://lcd-archive.junonetwork.io/cosmos/base/tendermint/v1beta1/node_info\" to confirm you are connected to a Juno network. The new address will not appear in on-chain account queries until it receives its first funds, which is expected.",
+        "wallet_details = create_juno_wallet(wallet_name=\"MyWalletName\", words=24, verify_network=True)#step: 7 Tool: return_wallet_details Desciption: Return to the caller the wallet name (\"MyWalletName\"), the new Juno address, and the mnemonic (only once, over a secure channel). Advise the user to back up the mnemonic offline, as it is required for recovery."
+    ],
+    "intent": "Create a new Juno wallet named \"MyWalletName\" by generating a mnemonic and deriving a Juno-compatible address.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "select_chain_key_params",
+            "description": "Set chain-specific key parameters for Juno: use BIP-44 coin type 118 (Cosmos), a standard derivation path like m/44'/118'/0'/0/0, and bech32 prefix \"juno\" for addresses."
+        },
+        {
+            "step": 2,
+            "tool": "generate_bip39_mnemonic",
+            "description": "In a secure backend environment, generate a new BIP-39 mnemonic (12 or 24 words) using a cryptographically secure random number generator. Display or return this mnemonic only to the end user and never log it in plaintext."
+        },
+        {
+            "step": 3,
+            "tool": "derive_hd_key_from_mnemonic",
+            "description": "Convert the mnemonic to a seed using the BIP-39 standard, then derive the hierarchical deterministic (HD) private key using the chosen path (e.g., m/44'/118'/0'/0/0) with BIP-32/BIP-44 logic."
+        },
+        {
+            "step": 4,
+            "tool": "derive_public_key_and_address",
+            "description": "Derive the secp256k1 public key from the private key. Then compute the Juno address by taking the public key, applying the standard Cosmos address derivation (SHA-256 then RIPEMD-160), and encoding the result as a bech32 string with prefix \"juno\"."
+        },
+        {
+            "step": 5,
+            "tool": "persist_wallet_metadata",
+            "description": "Create a wallet record labeled \"MyWalletName\" in the backend key management system or keyring. Store the Juno address and public key, and securely store the private key (for example, encrypted at rest). Do not store the mnemonic in plaintext unless explicitly required and protected."
+        },
+        {
+            "step": 6,
+            "tool": "optional_verify_address_on_chain",
+            "description": "Optionally, verify basic network information via GET \"https://lcd-archive.junonetwork.io/cosmos/base/tendermint/v1beta1/node_info\" to confirm you are connected to a Juno network. The new address will not appear in on-chain account queries until it receives its first funds, which is expected."
+        },
+        {
+            "step": 7,
+            "tool": "return_wallet_details",
+            "description": "Return to the caller the wallet name (\"MyWalletName\"), the new Juno address, and the mnemonic (only once, over a secure channel). Advise the user to back up the mnemonic offline, as it is required for recovery."
+        }
+    ],
+    "outcome_checks": [
+        "The generated mnemonic is valid under the BIP-39 wordlist and checksum rules.",
+        "The derived address correctly decodes as a bech32 string with prefix \"juno\" and passes library-level validation.",
+        "The wallet record labeled \"MyWalletName\" is stored in the backend keyring or KMS and can be used to sign Juno transactions.",
+        "The mnemonic is only exposed to the user once and is not logged or transmitted to untrusted systems."
+    ]
+}

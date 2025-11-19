@@ -1,31 +1,58 @@
 [
     {
-        "intent": "Upload the compiled wasm file artifacts/CONTRACT_NAME.wasm to the Juno chain",
+        "intent": "Upload the compiled CosmWasm wasm file artifacts/CONTRACT_NAME.wasm to the Juno chain",
         "workflow": [
             {
                 "step": 1,
-                "tool": "verify_local_wasm_artifact",
-                "description": "Confirm that artifacts/CONTRACT_NAME.wasm exists and was produced by a trusted optimizer build."
+                "tool": "bff_fs_read_and_validate_wasm_artifact",
+                "description": "From the backend, read the file at artifacts/CONTRACT_NAME.wasm, ensure it exists, is non-empty, and is a valid wasm binary (e.g. magic bytes 0x00 0x61 0x73 0x6d). Fail fast if the file is missing or invalid."
             },
             {
                 "step": 2,
-                "tool": "junod_tx_wasm_store",
-                "description": "Run `junod tx wasm store artifacts/CONTRACT_NAME.wasm --from <key> --chain-id <chain-id> --gas auto --gas-adjustment 1.3 -y` to submit the code to chain."
+                "tool": "bff_compute_wasm_checksum",
+                "description": "Compute a SHA-256 (or the chain-expected hash) of artifacts/CONTRACT_NAME.wasm and keep it in memory so it can later be compared against code_info.data_hash returned by the chain."
             },
             {
                 "step": 3,
-                "tool": "wait_for_tx_commit",
-                "description": "Poll the Tx hash until it is included in a block."
+                "tool": "bff_get_chain_and_account_info",
+                "description": "Given the user\u2019s Juno wallet address, query the LCD to fetch chain and account info: (a) GET https://lcd-archive.junonetwork.io/cosmos/base/tendermint/v1beta1/node_info to read the `network` (chain-id), (b) GET https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/{address} to obtain the account number and sequence. Cache these for tx construction."
             },
             {
                 "step": 4,
-                "tool": "junod_query_wasm_list_code",
-                "description": "Fetch the on-chain code list to retrieve and display the new code ID."
+                "tool": "bff_construct_store_code_tx",
+                "description": "Construct a protobuf transaction that includes a single CosmWasm 'store code' message. Set tx.body.messages[0].type_url to the CosmWasm store-code message type for Juno (e.g. \"/cosmwasm.wasm.v1.MsgStoreCode\") and tx.body.messages[0].value to the serialized message containing: sender (the wallet bech32 address) and wasm_byte_code (the raw bytes of artifacts/CONTRACT_NAME.wasm). Set memo/timeout_height as needed and create an auth_info with placeholder gas_limit and a reasonable fee."
+            },
+            {
+                "step": 5,
+                "tool": "lcd_simulate_tx",
+                "description": "Simulate the unsigned store-code transaction to estimate gas. Serialize the tx to base64-encoded tx_bytes and POST it to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate with {\"tx_bytes\":\"...\"}. Read gas_info.gas_used from the response and update auth_info.fee.gas_limit to a safety margin (e.g. gas_used * 1.3) and set a suitable fee amount for the Juno fee denom."
+            },
+            {
+                "step": 6,
+                "tool": "bff_sign_store_code_tx",
+                "description": "Re-serialize the tx with the updated gas_limit and fee, and sign it using the backend wallet/key management. Populate tx.auth_info.signer_infos and tx.signatures using the account number, sequence, chain-id, and private key."
+            },
+            {
+                "step": 7,
+                "tool": "lcd_broadcast_tx",
+                "description": "Broadcast the signed transaction to Juno by POSTing to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs with {\"tx_bytes\":\"...\",\"mode\":\"BROADCAST_MODE_BLOCK\"}. Capture the returned tx_response.txhash and code."
+            },
+            {
+                "step": 8,
+                "tool": "lcd_fetch_tx_and_extract_code_id",
+                "description": "If tx_response.code == 0, confirm inclusion and parse the emitted events for the stored code id. If necessary, GET https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs/{txhash} and scan tx_response.logs[].events for the CosmWasm store-code event, extracting the code_id attribute. Persist this code_id for later instantiation."
+            },
+            {
+                "step": 9,
+                "tool": "lcd_verify_uploaded_code_hash",
+                "description": "Call GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/code/{code_id}. From the returned code_info.data_hash, decode the base64 hash and verify it matches the locally computed checksum of artifacts/CONTRACT_NAME.wasm to ensure the uploaded code matches the artifact."
             }
         ],
         "outcome_checks": [
-            "Transaction returns code 0 (success).",
-            "New code ID appears in `junod query wasm list-code` with the correct checksum."
+            "The broadcast response at /cosmos/tx/v1beta1/txs shows tx_response.code == 0 and a valid txhash.",
+            "The transaction logs contain a CosmWasm store-code event with a non-empty code_id.",
+            "GET /cosmwasm/wasm/v1/code/{code_id} returns code_info where creator matches the sender address.",
+            "code_info.data_hash (after decoding) matches the hash of artifacts/CONTRACT_NAME.wasm computed in the backend."
         ]
     },
     {
@@ -33,42 +60,90 @@
         "workflow": [
             {
                 "step": 1,
-                "tool": "docker_run_rust_optimizer",
-                "description": "Execute `docker run --rm -v $(pwd):/code --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/rust-optimizer:0.12.11` from the project root."
+                "tool": "bff_detect_contract_project_root",
+                "description": "From the backend, determine the current contract project root (directory containing Cargo.toml for the single contract). Validate that it is not a multi-contract workspace for this action."
             },
             {
                 "step": 2,
-                "tool": "verify_artifacts_directory",
-                "description": "Confirm the ./artifacts directory now holds <crate_name>.wasm and contracts.txt."
-            }
-        ],
-        "outcome_checks": [
-            "artifacts/<crate_name>.wasm exists and is non-zero in size.",
-            "contracts.txt lists the correct SHA256 checksum for the new wasm."
-        ]
-    },
-    {
-        "intent": "Instantiate the contract with code id 13 and init message {\"count\":0}",
-        "workflow": [
-            {
-                "step": 1,
-                "tool": "prepare_instantiate_msg",
-                "description": "Create/validate the JSON init message: `{\"count\":0}`."
-            },
-            {
-                "step": 2,
-                "tool": "junod_tx_wasm_instantiate",
-                "description": "Run `junod tx wasm instantiate 13 '{\"count\":0}' --label \"counter-v1\" --from <key> --chain-id <chain-id> --gas auto --gas-adjustment 1.3 --admin <admin_addr> -y`."
+                "tool": "bff_read_contract_name_from_cargo",
+                "description": "Parse Cargo.toml in the project root and read the [package] name to infer the output contract name (CONTRACT_NAME). This will determine the expected artifact path artifacts/CONTRACT_NAME.wasm."
             },
             {
                 "step": 3,
-                "tool": "wait_for_tx_commit",
-                "description": "Await block inclusion and extract the new contract address from logs."
+                "tool": "bff_run_rust_optimizer",
+                "description": "Execute the CosmWasm rust-optimizer build in the backend, e.g. by running the official rust-optimizer Docker image or native script. Mount the project root and run the optimizer so that it produces a stripped and optimized wasm file under artifacts/CONTRACT_NAME.wasm."
+            },
+            {
+                "step": 4,
+                "tool": "bff_verify_wasm_artifact",
+                "description": "After the optimizer finishes, confirm that artifacts/CONTRACT_NAME.wasm exists, is non-empty, and is a valid wasm module (check magic bytes and optionally run a wasm validation tool). Surface any optimizer stderr/stdout in case of failure."
             }
         ],
         "outcome_checks": [
-            "Tx succeeds with code 0.",
-            "`junod query wasm contract-state smart <contract_addr> '{\"get_count\":{}}'` returns `{ \"count\": 0 }`."
+            "The rust-optimizer process exits with a zero status code and no build errors.",
+            "An optimized wasm file exists at artifacts/CONTRACT_NAME.wasm with a non-zero size.",
+            "Basic wasm validation of artifacts/CONTRACT_NAME.wasm succeeds, indicating a valid CosmWasm binary ready for upload."
+        ]
+    },
+    {
+        "intent": "Instantiate the CosmWasm contract with code id 13 and init message {\"count\":0}",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "bff_normalize_and_validate_init_msg",
+                "description": "Normalize the init JSON {\"count\":0} into canonical form (no trailing commas, correct types), then serialize it to UTF-8 JSON bytes to use as the contract init msg in the instantiate transaction."
+            },
+            {
+                "step": 2,
+                "tool": "lcd_check_code_id_exists",
+                "description": "Verify that code id 13 is present on Juno by calling GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/code/13 and ensuring a valid code_info is returned. If the endpoint returns an error, abort with a clear message that code id 13 does not exist."
+            },
+            {
+                "step": 3,
+                "tool": "bff_get_chain_and_account_info",
+                "description": "Using the delegator\u2019s Juno address, query: (a) GET https://lcd-archive.junonetwork.io/cosmos/base/tendermint/v1beta1/node_info to get the chain-id, and (b) GET https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/{address} to get account number and sequence needed for signing."
+            },
+            {
+                "step": 4,
+                "tool": "lcd_check_spendable_balances",
+                "description": "Ensure the sender has enough tokens for fees (and any funds sent on instantiate, if used) by calling GET https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/spendable_balances/{address} and verifying that the chosen fee denom balance is sufficient."
+            },
+            {
+                "step": 5,
+                "tool": "bff_construct_instantiate_contract_tx",
+                "description": "Construct a transaction containing one CosmWasm instantiate-contract message. Set tx.body.messages[0].type_url to the instantiate message type (e.g. \"/cosmwasm.wasm.v1.MsgInstantiateContract\") and value to the serialized message with fields: sender (user address), admin (either same address or empty, according to requirements), code_id = 13, label (e.g. \"counter-13\"), msg = the UTF-8 JSON bytes for {\"count\":0}, and funds = [] unless specific funds are required. Add auth_info with provisional gas_limit and fee."
+            },
+            {
+                "step": 6,
+                "tool": "lcd_simulate_tx",
+                "description": "Simulate the instantiate transaction to estimate gas. Serialize to tx_bytes (base64) and POST to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate. Read gas_info.gas_used, then update auth_info.fee.gas_limit to gas_used with a safety margin and adjust auth_info.fee.amount accordingly."
+            },
+            {
+                "step": 7,
+                "tool": "bff_sign_instantiate_tx",
+                "description": "Sign the updated transaction using the backend signer with the correct chain-id, account number, and sequence, producing a final tx_bytes ready to broadcast."
+            },
+            {
+                "step": 8,
+                "tool": "lcd_broadcast_tx",
+                "description": "Broadcast the signed instantiate transaction to Juno by POSTing to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs with {\"tx_bytes\":\"...\",\"mode\":\"BROADCAST_MODE_BLOCK\"}. Capture txhash, height, and tx_response.code."
+            },
+            {
+                "step": 9,
+                "tool": "lcd_parse_instantiate_events",
+                "description": "If tx_response.code == 0, either use the broadcast response or call GET https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs/{txhash} and scan tx_response.logs[].events for the CosmWasm instantiate/wasm event to extract the newly created contract address from its attributes. Persist this contract address for later use."
+            },
+            {
+                "step": 10,
+                "tool": "lcd_verify_contract_info",
+                "description": "Call GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{contract_address} to ensure that the contract exists on-chain and that contract_info.code_id == \"13\" (or the string representation of 13) and creator matches the sender address."
+            }
+        ],
+        "outcome_checks": [
+            "The instantiate transaction broadcast via /cosmos/tx/v1beta1/txs returns tx_response.code == 0 and a valid txhash.",
+            "Transaction logs contain an instantiate/wasm event with a non-empty contract address attribute.",
+            "GET /cosmwasm/wasm/v1/contract/{contract_address} returns contract_info where code_id == \"13\" and creator is the expected sender.",
+            "If the contract exposes a query to read the count, an optional smart query to /cosmwasm/wasm/v1/contract/{contract_address}/smart/{query_data} (with base64-encoded JSON like {\"get_count\":{}}) returns count == 0."
         ]
     },
     {
@@ -76,29 +151,55 @@
         "workflow": [
             {
                 "step": 1,
-                "tool": "construct_execute_msg",
-                "description": "Prepare the execute JSON: `{\"increment\":{}}`."
+                "tool": "lcd_verify_contract_exists",
+                "description": "Confirm that CONTRACT_ADDRESS is a valid CosmWasm contract on Juno by calling GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/CONTRACT_ADDRESS and ensuring contract_info is returned without error."
             },
             {
                 "step": 2,
-                "tool": "junod_tx_wasm_execute",
-                "description": "Run `junod tx wasm execute CONTRACT_ADDRESS '{\"increment\":{}}' --amount 10ujuno --from <key> --chain-id <chain-id> --gas auto --gas-adjustment 1.3 -y`."
+                "tool": "bff_prepare_execute_msg_increment",
+                "description": "Construct the execute JSON message for incrementing the counter, typically {\"increment\":{}}. Normalize it and serialize it to UTF-8 JSON bytes to be used as the msg field in the execute transaction."
             },
             {
                 "step": 3,
-                "tool": "wait_for_tx_commit",
-                "description": "Monitor the transaction until it is finalized."
+                "tool": "bff_get_chain_and_account_info",
+                "description": "Using the sender\u2019s Juno address, fetch account details as in other flows: GET https://lcd-archive.junonetwork.io/cosmos/base/tendermint/v1beta1/node_info for chain-id and GET https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/{address} for account number and sequence."
             },
             {
                 "step": 4,
-                "tool": "junod_query_wasm_contract_state",
-                "description": "Query the contract: `junod query wasm contract-state smart CONTRACT_ADDRESS '{\"get_count\":{}}'` to verify the new count."
+                "tool": "lcd_check_spendable_balance_for_ujuno",
+                "description": "Verify the sender has at least 10ujuno plus estimated fees by calling GET https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/balances/{address}/by_denom?denom=ujuno and ensuring the returned balance.amount is greater than or equal to 10 plus the expected fee amount."
+            },
+            {
+                "step": 5,
+                "tool": "bff_construct_execute_contract_tx",
+                "description": "Build a transaction containing a single CosmWasm execute-contract message. Set tx.body.messages[0].type_url to the execute message type (e.g. \"/cosmwasm.wasm.v1.MsgExecuteContract\") and set value to the serialized message with: sender (user address), contract = CONTRACT_ADDRESS, msg = JSON bytes for {\"increment\":{}}, and funds = [{\"denom\":\"ujuno\",\"amount\":\"10\"}]. Configure auth_info with provisional gas_limit and fee in ujuno."
+            },
+            {
+                "step": 6,
+                "tool": "lcd_simulate_tx",
+                "description": "Simulate the execute transaction by POSTing tx_bytes to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate. Use gas_info.gas_used to tune auth_info.fee.gas_limit (e.g. gas_used * 1.3) and recompute fee.amount."
+            },
+            {
+                "step": 7,
+                "tool": "bff_sign_execute_tx",
+                "description": "Sign the execute transaction using the backend signer with the sender\u2019s key, filling in signer_infos and signatures based on the latest account number and sequence."
+            },
+            {
+                "step": 8,
+                "tool": "lcd_broadcast_tx",
+                "description": "Broadcast the signed transaction via POST https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs with {\"tx_bytes\":\"...\",\"mode\":\"BROADCAST_MODE_BLOCK\"}. Capture txhash, height, and tx_response.code and logs."
+            },
+            {
+                "step": 9,
+                "tool": "lcd_verify_execute_effect",
+                "description": "Confirm that tx_response.code == 0 and that the logs include a wasm event indicating an increment or state change. Optionally, if the contract exposes a counter query, call /cosmwasm/wasm/v1/contract/CONTRACT_ADDRESS/smart/{query_data} before and after the execute to ensure that the counter increased by 1, using a query like {\"get_count\":{}} encoded as base64 for query_data."
             }
         ],
         "outcome_checks": [
-            "Tx success code 0 and 10ujuno shown in the transaction logs as transferred.",
-            "Returned count value is original +1.",
-            "Contract\u2019s on-chain balance increased by 10ujuno."
+            "GET /cosmwasm/wasm/v1/contract/CONTRACT_ADDRESS returns valid contract_info, confirming the target contract exists.",
+            "The execute transaction broadcast via /cosmos/tx/v1beta1/txs completes with tx_response.code == 0 and no error in raw_log.",
+            "Transaction logs include a wasm-related event for CONTRACT_ADDRESS consistent with an increment action and transfer of 10ujuno as funds, if applicable.",
+            "If a counter query is available, a smart query shows the counter value increased relative to the pre-execution value."
         ]
     },
     {
@@ -106,18 +207,29 @@
         "workflow": [
             {
                 "step": 1,
-                "tool": "docker_run_workspace_optimizer",
-                "description": "Execute `docker run --rm -it -v $(pwd):/code --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/workspace-optimizer:0.12.11` at the repository root."
+                "tool": "bff_detect_workspace_root",
+                "description": "From the backend, locate the Cargo workspace root (directory containing a Cargo.toml with a [workspace] section) so that all member contracts can be built together."
             },
             {
                 "step": 2,
-                "tool": "verify_workspace_artifacts",
-                "description": "Check that ./artifacts now contains a .wasm file for each contract in the Cargo workspace."
+                "tool": "bff_list_workspace_members",
+                "description": "Parse the workspace Cargo.toml to list all member contract packages that should be compiled. Validate that each member has its own Cargo.toml and is a valid CosmWasm contract (contains appropriate crate-type settings)."
+            },
+            {
+                "step": 3,
+                "tool": "bff_run_workspace_optimizer",
+                "description": "Run the CosmWasm workspace-optimizer in the backend (e.g. using the official workspace-optimizer Docker image or equivalent tooling). Mount the workspace root and build all member contracts, producing optimized artifacts typically under artifacts/CONTRACT_NAME.wasm for each member."
+            },
+            {
+                "step": 4,
+                "tool": "bff_collect_and_verify_wasm_outputs",
+                "description": "For each workspace member, confirm that a corresponding wasm artifact exists in the artifacts/ directory (e.g. artifacts/MEMBER_NAME.wasm), is non-empty, and passes basic wasm validation. Aggregate the list of successfully built contract artifacts and surface any failed ones."
             }
         ],
         "outcome_checks": [
-            "No build errors reported by workspace-optimizer.",
-            "A .wasm artifact is produced for every Cargo.toml member and each file size is > 0 bytes."
+            "The workspace-optimizer process completes with a zero exit code and without compilation errors.",
+            "Each workspace member contract has a corresponding optimized wasm artifact in the artifacts/ directory with non-zero size.",
+            "Optional wasm validation checks pass for all produced artifacts, confirming they are valid CosmWasm binaries ready for upload to Juno."
         ]
     }
 ]

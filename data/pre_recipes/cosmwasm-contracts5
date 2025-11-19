@@ -1,142 +1,181 @@
 [
     {
-        "intent": "Query a CosmWasm contract\u2019s smart state with custom payload {\"abcde\":{}} to explore/confirm schema",
+        "intent": "Query contract smart state with payload {\"abcde\": {}} to discover schema",
         "workflow": [
             {
                 "step": 1,
-                "tool": "request_contract_address",
-                "description": "Prompt the user for (or look up) the target contract\u2019s address."
+                "tool": "resolve_contract_address",
+                "description": "Obtain the target CosmWasm contract address (e.g., from user input, environment variable CONTRACT_ADDRESS, or a previous instantiate response)."
             },
             {
                 "step": 2,
-                "tool": "construct_custom_query_payload",
-                "description": "Create the JSON payload {\"abcde\":{}} exactly as a single-line string."
+                "tool": "build_smart_query_payload",
+                "description": "Construct the JSON payload {\"abcde\": {}} and base64-encode it to produce the query_data string required by the CosmWasm smart query endpoint."
             },
             {
                 "step": 3,
-                "tool": "cli_wasm_query_smart",
-                "description": "Run: wasmd query wasm contract-state smart <CONTRACT_ADDRESS> '{\"abcde\":{}}' --node <RPC> --output json"
+                "tool": "lcd_query_wasm_smart",
+                "description": "Send an HTTP GET request to https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{contract_address}/smart/{query_data}, replacing {contract_address} and {query_data} with the resolved address and encoded payload."
             },
             {
                 "step": 4,
-                "tool": "pretty_print_response",
-                "description": "Format the returned JSON so the user can inspect any keys (schema discovery)."
+                "tool": "decode_and_analyze_contract_response",
+                "description": "Read the 'data' field from the LCD response, base64-decode it into raw bytes, interpret those bytes as UTF-8 JSON, and inspect the resulting object structure to infer aspects of the contract's query schema (field names, nested objects, etc.)."
             }
         ],
         "outcome_checks": [
-            "Command exits with code 0 (no CLI error).",
-            "Returned JSON is valid and not empty (schema or error message present)."
+            "The LCD call to /cosmwasm/wasm/v1/contract/{address}/smart/{query_data} returns HTTP 200 with a non-empty 'data' field.",
+            "The base64-decoded 'data' is valid JSON.",
+            "The decoded JSON reveals keys and structures that can be used to infer the contract's query schema."
         ]
     },
     {
-        "intent": "Execute a reset on the contract at CONTRACT_ADDRESS, setting count to 0",
+        "intent": "Execute reset on contract CONTRACT_ADDRESS setting count to 0",
         "workflow": [
             {
                 "step": 1,
-                "tool": "get_signer_address",
-                "description": "Identify the wallet that has permission to execute the contract."
+                "tool": "get_sender_address",
+                "description": "Determine the bech32 address that will sign and pay fees for the transaction (e.g., from a connected wallet or backend configuration)."
             },
             {
                 "step": 2,
-                "tool": "construct_execute_msg_reset",
-                "description": "Create message JSON: '{\"reset\":{\"count\":0}}'."
+                "tool": "lcd_get_account_info",
+                "description": "Query https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/{sender_address} to obtain the account_number and sequence needed for transaction signing."
             },
             {
                 "step": 3,
-                "tool": "sign_broadcast_wasm_execute_tx",
-                "description": "CLI: wasmd tx wasm execute <CONTRACT_ADDRESS> '{\"reset\":{\"count\":0}}' --from <SIGNER> --gas auto --fees <AMOUNT><DENOM> --node <RPC> --broadcast-mode block"
+                "tool": "lcd_check_spendable_balance",
+                "description": "Query https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/spendable_balances/{sender_address} to confirm the sender has sufficient JUNO (or appropriate fee denom) to cover gas and fees."
             },
             {
                 "step": 4,
-                "tool": "await_tx_confirmation",
-                "description": "Wait until the transaction is included in a block and capture the tx hash."
+                "tool": "construct_msg_execute_reset",
+                "description": "Create a CosmWasm MsgExecuteContract message with fields: sender = sender_address, contract = CONTRACT_ADDRESS, msg = {\"reset\": {\"count\": 0}}, funds = []. Serialize this message using the correct protobuf type_url for MsgExecuteContract."
+            },
+            {
+                "step": 5,
+                "tool": "build_unsigned_tx",
+                "description": "Wrap the MsgExecuteContract in a Tx body (including optional memo), set an initial gas_limit and fee amount in auth_info.fee, and prepare an unsigned transaction with appropriate signer_infos (public key, sequence, sign mode)."
+            },
+            {
+                "step": 6,
+                "tool": "simulate_tx_via_lcd",
+                "description": "POST the unsigned transaction (tx or tx_bytes) to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate to estimate gas usage, then update the transaction's gas_limit and fee based on the returned gas_info.gas_used."
+            },
+            {
+                "step": 7,
+                "tool": "sign_tx",
+                "description": "On the backend, sign the adjusted transaction with the sender's private key, producing raw tx_bytes ready for broadcast."
+            },
+            {
+                "step": 8,
+                "tool": "broadcast_tx_via_lcd",
+                "description": "Broadcast the signed transaction by POSTing tx_bytes and mode=BROADCAST_MODE_BLOCK (or SYNC) to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs, capturing the returned tx_response including txhash and code."
+            },
+            {
+                "step": 9,
+                "tool": "verify_reset_effect",
+                "description": "After the transaction is included in a block, query the contract's current count using the \"Get current count from contract\" workflow and confirm that the on-chain count is now 0."
             }
         ],
         "outcome_checks": [
-            "Transaction height and hash are returned without error.",
-            "Subsequent query of the count returns 0."
+            "The broadcast endpoint /cosmos/tx/v1beta1/txs returns tx_response.code == 0 and a valid txhash.",
+            "A subsequent query of the contract's current count returns exactly 0."
         ]
     },
     {
-        "intent": "Get the current count value from the contract at CONTRACT_ADDRESS",
+        "intent": "Get current count from contract CONTRACT_ADDRESS",
         "workflow": [
             {
                 "step": 1,
-                "tool": "request_contract_address",
-                "description": "Obtain the contract address to be queried."
+                "tool": "resolve_contract_address",
+                "description": "Obtain the target counter contract's bech32 address (e.g., from environment variable CONTRACT_ADDRESS or from a previous instantiate response)."
             },
             {
                 "step": 2,
-                "tool": "construct_get_count_query",
-                "description": "Prepare JSON payload '{\"get_count\":{}}'."
+                "tool": "build_get_count_query_payload",
+                "description": "Construct the contract-specific JSON query to fetch the count (for a standard counter contract, {\"get_count\": {}}), then base64-encode this JSON to form query_data."
             },
             {
                 "step": 3,
-                "tool": "cli_wasm_query_smart",
-                "description": "Execute: wasmd query wasm contract-state smart <CONTRACT_ADDRESS> '{\"get_count\":{}}' --node <RPC> --output json"
+                "tool": "lcd_query_wasm_smart",
+                "description": "Send an HTTP GET request to https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{contract_address}/smart/{query_data}, filling in the contract address and encoded payload."
+            },
+            {
+                "step": 4,
+                "tool": "decode_and_extract_count",
+                "description": "Base64-decode the 'data' field from the LCD response, parse it as JSON, and read the 'count' field from the resulting object as an integer."
             }
         ],
         "outcome_checks": [
-            "Returned JSON includes a numeric \"count\" field.",
-            "No error strings like \"unknown variant\" appear."
+            "The smart query endpoint returns HTTP 200 and includes a 'data' field.",
+            "The decoded JSON contains a 'count' field.",
+            "The 'count' value is numeric and can be used in subsequent logic (e.g., comparisons before and after increment/reset)."
         ]
     },
     {
-        "intent": "Store the returned code ID from a wasm store transaction into a shell variable CODE_ID",
+        "intent": "Store the returned code id in shell variable CODE_ID",
         "workflow": [
             {
                 "step": 1,
-                "tool": "upload_contract_code",
-                "description": "Run: wasmd tx wasm store <PATH_TO_WASM> --from <SIGNER> --gas auto --fees <AMOUNT><DENOM> --node <RPC> --broadcast-mode block --output json > tx.json"
+                "tool": "retrieve_last_tx_output",
+                "description": "Access the JSON output from the last contract code upload or related command (for example, the response from a wasm store transaction that includes a code_id field or emits it in logs)."
             },
             {
                 "step": 2,
-                "tool": "extract_code_id_from_tx_response",
-                "description": "Parse tx.json with: CODE_ID=$(jq -r '.logs[0].events[] | select(.type==\"store_code\") | .attributes[-1].value' tx.json)"
+                "tool": "parse_code_id_from_output",
+                "description": "Parse the captured JSON (using a shell tool like jq or backend JSON parser) to extract the numeric code_id value from the appropriate field or log event."
             },
             {
                 "step": 3,
                 "tool": "export_shell_variable_CODE_ID",
-                "description": "Export the variable so subsequent shell commands can reference it: export CODE_ID"
+                "description": "In the shell environment, assign the extracted code_id to an environment variable named CODE_ID so that subsequent commands can reference it (e.g., CODE_ID=<extracted value>)."
             }
         ],
         "outcome_checks": [
-            "echo $CODE_ID prints a non-empty numeric value.",
-            "CODE_ID matches the code_id reported by wasmd query wasm list-code --node <RPC>."
+            "The parsed code_id is non-empty and numeric.",
+            "Echoing $CODE_ID in the shell prints the same value as found in the original transaction output.",
+            "Subsequent commands that rely on CODE_ID (such as contract instantiation or queries that use CODE_ID-derived addresses) behave as expected."
         ]
     },
     {
-        "intent": "Connect a SigningCosmWasmClient to RPC https://rpc.juno.strange.love and execute an increment on the contract",
+        "intent": "Connect a SigningCosmWasmClient to RPC https://rpc.juno.strange.love and execute increment on the contract",
         "workflow": [
             {
                 "step": 1,
-                "tool": "initialize_signing_wallet",
-                "description": "Create or load a wallet (e.g., from mnemonic) using @cosmjs/proto-signing's DirectSecp256k1HdWallet."
+                "tool": "prepare_backend_signer",
+                "description": "On the backend, load or configure an offline signer for the user's Juno account (e.g., from mnemonic, keyring, or remote signer) that can be used by SigningCosmWasmClient to sign transactions."
             },
             {
                 "step": 2,
-                "tool": "connect_signing_cosmwasm_client",
-                "description": "Use SigningCosmWasmClient.connectWithSigner('https://rpc.juno.strange.love', signer) to get a client instance."
+                "tool": "init_signing_cosmwasm_client",
+                "description": "Initialize a SigningCosmWasmClient (or equivalent backend client) connected to the RPC endpoint https://rpc.juno.strange.love using the prepared signer."
             },
             {
                 "step": 3,
-                "tool": "construct_increment_execute_msg",
-                "description": "Prepare JavaScript object: { increment: {} }."
+                "tool": "resolve_contract_address",
+                "description": "Determine the target counter contract address (e.g., from environment variable CONTRACT_ADDRESS or a stored instantiate result)."
             },
             {
                 "step": 4,
-                "tool": "execute_contract_via_client",
-                "description": "client.execute(senderAddress, contractAddress, { increment: {} }, 'auto', '') and await the result."
+                "tool": "execute_increment_msg_over_rpc",
+                "description": "Using the initialized SigningCosmWasmClient, execute the contract by sending msg {\"increment\": {}} with an appropriate fee and optional memo, returning a transaction hash or detailed result from the RPC call."
             },
             {
                 "step": 5,
-                "tool": "verify_execution_events",
-                "description": "Check the returned logs for an event with type \"wasm\" and attribute action=\"increment\"."
+                "tool": "confirm_tx_via_lcd",
+                "description": "With the returned txhash, query https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs/{txhash} to confirm the transaction was included in a block and that tx_response.code == 0."
+            },
+            {
+                "step": 6,
+                "tool": "verify_incremented_count",
+                "description": "Use the \"Get current count from contract CONTRACT_ADDRESS\" workflow both before and after the increment (or compare to a previously stored value) to verify that the count increased by 1."
             }
         ],
         "outcome_checks": [
-            "Execution result has height and transactionHash defined.",
-            "Subsequent get_count query shows the count increased by 1."
+            "The SigningCosmWasmClient successfully connects to https://rpc.juno.strange.love and can fetch chain information without error.",
+            "The LCD tx lookup at /cosmos/tx/v1beta1/txs/{txhash} returns tx_response.code == 0 for the increment transaction.",
+            "The contract's count queried after execution is exactly one greater than its value before the increment."
         ]
     }
 ]

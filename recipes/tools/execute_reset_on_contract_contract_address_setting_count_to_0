@@ -1,0 +1,131 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Fetches the backend-configured Juno bech32 address that will pay fees and sign the transaction.",
+            "function": "get_sender_address()",
+            "usage": "sender_address = get_sender_address()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the Juno LCD for the sender\u2019s BaseAccount to obtain account_number, sequence and on-chain public key.",
+            "function": "get_account_info(sender_address)",
+            "usage": "acct_info = get_account_info(sender_address)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Ensures the sender has enough spendable ujuno to cover gas and fees before broadcasting.",
+            "function": "check_spendable_balance(sender_address, required_amount, denom='ujuno')",
+            "usage": "check_spendable_balance(sender_address, required_amount=80000)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Builds a MsgExecuteContract protobuf that calls `{ \"reset\": { \"count\": 0 } }` on the target contract.",
+            "function": "construct_msg_execute_reset(sender_address, contract_address)",
+            "usage": "msg_any = construct_msg_execute_reset(sender_address, CONTRACT_ADDRESS)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Wraps the execute message in a TxBody and AuthInfo to produce an unsigned Tx skeleton.",
+            "function": "build_unsigned_tx(execute_msg_any, sequence, pub_key_any, gas_limit=200000, fee_amount=50000, fee_denom='ujuno', memo='')",
+            "usage": "tx = build_unsigned_tx(msg_any, acct_info['sequence'], acct_info['pub_key'])"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Simulates the unsigned Tx via the LCD, then updates its gas_limit and fee based on gas_used.",
+            "function": "simulate_tx_and_update_fee(tx, gas_price=Decimal('0.025'), gas_adjustment=1.2, fee_denom='ujuno')",
+            "usage": "sim_details = simulate_tx_and_update_fee(tx)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Signs the adjusted transaction with the sender\u2019s secp256k1 private key, returning raw tx bytes.",
+            "function": "sign_tx(tx, account_number, chain_id='juno-1', private_key_hex=None)",
+            "usage": "signed = sign_tx(tx, acct_info['account_number'])"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Broadcasts the signed transaction to the Juno LCD and returns the resulting tx_response.",
+            "function": "broadcast_tx(tx_bytes_b64, mode='BROADCAST_MODE_BLOCK')",
+            "usage": "tx_response = broadcast_tx(signed['tx_bytes_b64'], mode='BROADCAST_MODE_BLOCK')"
+        },
+        {
+            "step": 9,
+            "label": "backend",
+            "introduction": "Queries the contract after inclusion to confirm the on-chain counter value is now zero.",
+            "function": "verify_reset_effect(contract_address, expected_count=0)",
+            "usage": "verify_reset_effect(CONTRACT_ADDRESS, expected_count=0)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "sender_address = get_sender_address()#step: 1 Tool: get_sender_address Desciption: Determine the bech32 address that will sign and pay fees for the transaction (e.g., from a connected wallet or backend configuration).",
+        "acct_info = get_account_info(sender_address)#step: 2 Tool: lcd_get_account_info Desciption: Query https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/{sender_address} to obtain the account_number and sequence needed for transaction signing.",
+        "check_spendable_balance(sender_address, required_amount=80000)#step: 3 Tool: lcd_check_spendable_balance Desciption: Query https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/spendable_balances/{sender_address} to confirm the sender has sufficient JUNO (or appropriate fee denom) to cover gas and fees.",
+        "msg_any = construct_msg_execute_reset(sender_address, CONTRACT_ADDRESS)#step: 4 Tool: construct_msg_execute_reset Desciption: Create a CosmWasm MsgExecuteContract message with fields: sender = sender_address, contract = CONTRACT_ADDRESS, msg = {\"reset\": {\"count\": 0}}, funds = []. Serialize this message using the correct protobuf type_url for MsgExecuteContract.",
+        "tx = build_unsigned_tx(msg_any, acct_info['sequence'], acct_info['pub_key'])#step: 5 Tool: build_unsigned_tx Desciption: Wrap the MsgExecuteContract in a Tx body (including optional memo), set an initial gas_limit and fee amount in auth_info.fee, and prepare an unsigned transaction with appropriate signer_infos (public key, sequence, sign mode).",
+        "sim_details = simulate_tx_and_update_fee(tx)#step: 6 Tool: simulate_tx_via_lcd Desciption: POST the unsigned transaction (tx or tx_bytes) to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate to estimate gas usage, then update the transaction's gas_limit and fee based on the returned gas_info.gas_used.",
+        "signed = sign_tx(tx, acct_info['account_number'])#step: 7 Tool: sign_tx Desciption: On the backend, sign the adjusted transaction with the sender's private key, producing raw tx_bytes ready for broadcast.",
+        "tx_response = broadcast_tx(signed['tx_bytes_b64'], mode='BROADCAST_MODE_BLOCK')#step: 8 Tool: broadcast_tx_via_lcd Desciption: Broadcast the signed transaction by POSTing tx_bytes and mode=BROADCAST_MODE_BLOCK (or SYNC) to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs, capturing the returned tx_response including txhash and code.",
+        "verify_reset_effect(CONTRACT_ADDRESS, expected_count=0)#step: 9 Tool: verify_reset_effect Desciption: After the transaction is included in a block, query the contract's current count using the \"Get current count from contract\" workflow and confirm that the on-chain count is now 0."
+    ],
+    "intent": "Execute reset on contract CONTRACT_ADDRESS setting count to 0",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_address",
+            "description": "Determine the bech32 address that will sign and pay fees for the transaction (e.g., from a connected wallet or backend configuration)."
+        },
+        {
+            "step": 2,
+            "tool": "lcd_get_account_info",
+            "description": "Query https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/{sender_address} to obtain the account_number and sequence needed for transaction signing."
+        },
+        {
+            "step": 3,
+            "tool": "lcd_check_spendable_balance",
+            "description": "Query https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/spendable_balances/{sender_address} to confirm the sender has sufficient JUNO (or appropriate fee denom) to cover gas and fees."
+        },
+        {
+            "step": 4,
+            "tool": "construct_msg_execute_reset",
+            "description": "Create a CosmWasm MsgExecuteContract message with fields: sender = sender_address, contract = CONTRACT_ADDRESS, msg = {\"reset\": {\"count\": 0}}, funds = []. Serialize this message using the correct protobuf type_url for MsgExecuteContract."
+        },
+        {
+            "step": 5,
+            "tool": "build_unsigned_tx",
+            "description": "Wrap the MsgExecuteContract in a Tx body (including optional memo), set an initial gas_limit and fee amount in auth_info.fee, and prepare an unsigned transaction with appropriate signer_infos (public key, sequence, sign mode)."
+        },
+        {
+            "step": 6,
+            "tool": "simulate_tx_via_lcd",
+            "description": "POST the unsigned transaction (tx or tx_bytes) to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate to estimate gas usage, then update the transaction's gas_limit and fee based on the returned gas_info.gas_used."
+        },
+        {
+            "step": 7,
+            "tool": "sign_tx",
+            "description": "On the backend, sign the adjusted transaction with the sender's private key, producing raw tx_bytes ready for broadcast."
+        },
+        {
+            "step": 8,
+            "tool": "broadcast_tx_via_lcd",
+            "description": "Broadcast the signed transaction by POSTing tx_bytes and mode=BROADCAST_MODE_BLOCK (or SYNC) to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs, capturing the returned tx_response including txhash and code."
+        },
+        {
+            "step": 9,
+            "tool": "verify_reset_effect",
+            "description": "After the transaction is included in a block, query the contract's current count using the \"Get current count from contract\" workflow and confirm that the on-chain count is now 0."
+        }
+    ],
+    "outcome_checks": [
+        "The broadcast endpoint /cosmos/tx/v1beta1/txs returns tx_response.code == 0 and a valid txhash.",
+        "A subsequent query of the contract's current count returns exactly 0."
+    ]
+}

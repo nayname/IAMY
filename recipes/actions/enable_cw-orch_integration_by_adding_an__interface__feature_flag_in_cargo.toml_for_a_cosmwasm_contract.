@@ -1,0 +1,54 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a backend helper that loads and parses Cargo.toml using tomlkit so later steps can safely mutate [dependencies] and [features].",
+            "code": "from pathlib import Path\n\nfrom tomlkit import parse\n\n\ndef load_cargo_toml(path: str = 'Cargo.toml'):\n    '''\n    Load and parse a Cargo.toml file using tomlkit so that sections like\n    [package], [dependencies], and [features] can be modified while\n    preserving formatting and comments.\n    '''\n    cargo_path = Path(path)\n\n    if not cargo_path.is_file():\n        raise FileNotFoundError(f'Cargo.toml not found at: {cargo_path}')\n\n    try:\n        content = cargo_path.read_text(encoding='utf-8')\n    except OSError as exc:\n        raise RuntimeError(f'Failed to read {cargo_path}: {exc}') from exc\n\n    try:\n        doc = parse(content)\n    except Exception as exc:  # tomlkit may raise several parse errors\n        raise ValueError(f'Failed to parse {cargo_path} as TOML: {exc}') from exc\n\n    return doc\n",
+            "usage": "doc = load_cargo_toml()  # loads ./Cargo.toml into a tomlkit document"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 ensures that the [dependencies] section contains an optional cw-orch dependency without touching existing dependencies.",
+            "code": "from collections.abc import MutableMapping\n\nfrom tomlkit import table\n\n\ndef ensure_cw_orch_dependency(doc, version: str):\n    '''\n    Ensure that the [dependencies] table contains an optional cw-orch\n    entry. Existing dependencies are left untouched.\n\n    Args:\n        doc: Parsed Cargo.toml document returned by load_cargo_toml.\n        version: cw-orch crate version to set if the dependency is missing\n                 (for example '0.21.0').\n    '''\n    if not isinstance(doc, MutableMapping):\n        raise TypeError('Expected a TOML document mapping for doc')\n\n    if 'dependencies' not in doc or doc['dependencies'] is None:\n        doc['dependencies'] = table()\n\n    deps = doc['dependencies']\n\n    if not isinstance(deps, MutableMapping):\n        raise TypeError('The [dependencies] section is not a table')\n\n    # Only add cw-orch if it is not already declared.\n    if 'cw-orch' not in deps:\n        deps['cw-orch'] = {\n            'version': version,\n            'optional': True,\n        }\n\n    return doc\n",
+            "usage": "doc = ensure_cw_orch_dependency(doc, version='0.21.0')  # choose the cw-orch version you want"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 guarantees that a [features] table exists in Cargo.toml while preserving any existing feature definitions.",
+            "code": "from collections.abc import MutableMapping\n\nfrom tomlkit import table\n\n\ndef ensure_features_table_exists(doc):\n    '''\n    Ensure that a [features] table exists in the Cargo.toml document.\n    Any existing feature definitions are preserved.\n    '''\n    if not isinstance(doc, MutableMapping):\n        raise TypeError('Expected a TOML document mapping for doc')\n\n    if 'features' not in doc or doc['features'] is None:\n        doc['features'] = table()\n    else:\n        features = doc['features']\n        if not isinstance(features, MutableMapping):\n            raise TypeError('The [features] section exists but is not a table')\n\n    return doc\n",
+            "usage": "doc = ensure_features_table_exists(doc)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 adds or updates the `interface` feature so that it enables cw-orch via `interface = ['dep:cw-orch']`, merging with any existing entries.",
+            "code": "from collections.abc import MutableMapping, MutableSequence\n\nfrom tomlkit import array\n\n\ndef add_interface_feature_flag(doc):\n    '''\n    Add or update the `interface` feature so that it enables the cw-orch\n    dependency: interface = ['dep:cw-orch'].\n    If `interface` already exists, merge 'dep:cw-orch' into the list\n    without removing existing items.\n    '''\n    if not isinstance(doc, MutableMapping):\n        raise TypeError('Expected a TOML document mapping for doc')\n\n    if 'features' not in doc or doc['features'] is None:\n        raise KeyError('No [features] table found; call ensure_features_table_exists first')\n\n    features = doc['features']\n    if not isinstance(features, MutableMapping):\n        raise TypeError('The [features] section is not a table')\n\n    if 'interface' not in features or features['interface'] is None:\n        vals = array()\n        vals.append('dep:cw-orch')\n        features['interface'] = vals\n    else:\n        vals = features['interface']\n        if not isinstance(vals, MutableSequence):\n            raise TypeError('features.interface must be an array of feature flags')\n\n        existing = [str(v) for v in vals]\n        if 'dep:cw-orch' not in existing:\n            vals.append('dep:cw-orch')\n\n    return doc\n",
+            "usage": "doc = add_interface_feature_flag(doc)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 ensures that the `default` feature list includes `interface`, creating `default = ['interface']` if it does not exist.",
+            "code": "from collections.abc import MutableMapping, MutableSequence\n\nfrom tomlkit import array\n\n\ndef ensure_default_includes_interface(doc):\n    '''\n    Ensure that the `default` feature list includes 'interface'. If the\n    `default` feature does not exist, it is created as ['interface'].\n    '''\n    if not isinstance(doc, MutableMapping):\n        raise TypeError('Expected a TOML document mapping for doc')\n\n    if 'features' not in doc or doc['features'] is None:\n        raise KeyError('No [features] table found; call ensure_features_table_exists first')\n\n    features = doc['features']\n    if not isinstance(features, MutableMapping):\n        raise TypeError('The [features] section is not a table')\n\n    if 'default' not in features or features['default'] is None:\n        vals = array()\n        vals.append('interface')\n        features['default'] = vals\n    else:\n        vals = features['default']\n        if not isinstance(vals, MutableSequence):\n            raise TypeError('features.default must be an array of feature flags')\n\n        existing = [str(v) for v in vals]\n        if 'interface' not in existing:\n            vals.append('interface')\n\n    return doc\n",
+            "usage": "doc = ensure_default_includes_interface(doc)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Step 6 serializes the modified TOML document back to Cargo.toml, overwriting the original file while preserving formatting where possible.",
+            "code": "from pathlib import Path\n\nfrom tomlkit import dumps\n\n\ndef write_cargo_toml(doc, path: str = 'Cargo.toml'):\n    '''\n    Serialize the modified TOML document back to Cargo.toml, preserving\n    formatting where possible, and overwrite the original file.\n    '''\n    cargo_path = Path(path)\n\n    try:\n        content = dumps(doc)\n        cargo_path.write_text(content, encoding='utf-8')\n    except OSError as exc:\n        raise RuntimeError(f'Failed to write {cargo_path}: {exc}') from exc\n\n    return str(cargo_path)\n",
+            "usage": "write_cargo_toml(doc)  # writes the updated Cargo.toml to disk"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Step 7 runs `cargo check --features interface` in the project directory to verify that enabling the `interface` feature compiles successfully.",
+            "code": "import subprocess\nfrom pathlib import Path\n\n\ndef cargo_check_with_interface_feature(project_root: str = '.'): \n    '''\n    Run `cargo check --features interface` in the given project root to\n    verify that enabling the `interface` feature compiles successfully.\n    Raises RuntimeError if cargo is missing or the check fails.\n    '''\n    root = Path(project_root)\n    if not root.is_dir():\n        raise NotADirectoryError(f'Not a directory: {root}')\n\n    cmd = ['cargo', 'check', '--features', 'interface']\n\n    try:\n        result = subprocess.run(\n            cmd,\n            cwd=str(root),\n            stdout=subprocess.PIPE,\n            stderr=subprocess.PIPE,\n            text=True,\n            check=False,\n        )\n    except FileNotFoundError as exc:\n        raise RuntimeError('cargo executable not found; ensure Rust is installed and on PATH') from exc\n    except Exception as exc:\n        raise RuntimeError(f'Failed to run cargo check: {exc}') from exc\n\n    if result.returncode != 0:\n        raise RuntimeError(\n            'cargo check --features interface failed with exit code '\n            f'{result.returncode}. STDOUT: {result.stdout} STDERR: {result.stderr}'\n        )\n\n    return {\n        'returncode': result.returncode,\n        'stdout': result.stdout,\n        'stderr': result.stderr,\n    }\n",
+            "usage": "result = cargo_check_with_interface_feature('.')  # runs cargo check in the project root; raises on failure"
+        }
+    ]
+}

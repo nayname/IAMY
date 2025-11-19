@@ -1,0 +1,26 @@
+{
+    "label": "upload",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a Python helper that takes the raw JSON string returned by the previous wasm store (or similar) transaction and parses it into a Python dictionary.",
+            "code": "import json\n\nBASE_LCD_URL = 'https://lcd-archive.junonetwork.io'\n\n\ndef retrieve_last_tx_output(raw_output: str) -> dict:\n    '''Parse the JSON output string from the last transaction command.\n\n    Args:\n        raw_output: JSON string printed by the CLI or SDK after broadcasting a tx\n            (for example, a wasm store transaction response).\n\n    Returns:\n        Parsed transaction output as a Python dictionary.\n\n    Raises:\n        ValueError: If the input is empty or not valid JSON.\n    '''\n    if not raw_output or not raw_output.strip():\n        raise ValueError('raw_output is empty; provide the JSON string from the last transaction.')\n\n    try:\n        tx_output = json.loads(raw_output)\n    except json.JSONDecodeError as exc:\n        raise ValueError(f'Failed to parse transaction JSON output: {exc}') from exc\n\n    # Basic sanity check: ensure we at least have a dict\n    if not isinstance(tx_output, dict):\n        raise ValueError('Parsed transaction output is not a JSON object (dict).')\n\n    return tx_output\n",
+            "usage": "raw_json = '<paste or capture the JSON string emitted by the last wasm store tx>'\ntx_output = retrieve_last_tx_output(raw_json)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 provides a Python function that inspects the parsed transaction JSON and extracts the numeric code_id, supporting both direct fields and standard Cosmos SDK tx_response logs from a MsgStoreCode transaction.",
+            "code": "def parse_code_id_from_output(tx_output: dict) -> str:\n    '''Extract the numeric code_id from a transaction output dict.\n\n    This supports:\n    - a direct top-level 'code_id' field, or\n    - Cosmos SDK tx_response.logs events (e.g. after MsgStoreCode).\n\n    Raises:\n        ValueError: If code_id cannot be found or is not numeric.\n    '''\n    if not isinstance(tx_output, dict):\n        raise ValueError('tx_output must be a dictionary.')\n\n    code_id = None\n\n    # Case 1: direct field\n    if 'code_id' in tx_output:\n        code_id = tx_output['code_id']\n\n    # Case 2: typical Cosmos SDK tx_response logs\n    if not code_id:\n        tx_response = tx_output.get('tx_response') or tx_output.get('result') or {}\n        logs = tx_response.get('logs') or []\n        for log in logs:\n            events = log.get('events') or []\n            for event in events:\n                if event.get('type') == 'store_code':\n                    for attr in event.get('attributes') or []:\n                        key = attr.get('key')\n                        if key in ('code_id', 'codeID'):\n                            code_id = attr.get('value')\n                            break\n                if code_id:\n                    break\n            if code_id:\n                break\n\n    if code_id is None:\n        raise ValueError('Could not find code_id in transaction output; ensure this is a wasm store transaction JSON.')\n\n    code_id_str = str(code_id).strip()\n    if not code_id_str.isdigit():\n        raise ValueError(f'Extracted code_id {code_id_str} is not purely numeric.')\n\n    return code_id_str\n",
+            "usage": "code_id = parse_code_id_from_output(tx_output)\n# code_id is now a string like '12' that you can reuse in later steps"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 defines a Python helper that turns the extracted code_id into a shell export command so that a calling script can easily set the CODE_ID environment variable.",
+            "code": "def export_shell_variable_CODE_ID(code_id: str) -> str:\n    '''Return a shell export command for the given code_id.\n\n    This does not modify the current process environment; instead it returns\n    a string like 'export CODE_ID=12' that a shell script can eval.\n    '''\n    if not code_id or not str(code_id).strip().isdigit():\n        raise ValueError('code_id must be a non-empty numeric string.')\n\n    sanitized = str(code_id).strip()\n    return f'export CODE_ID={sanitized}'\n",
+            "usage": "code_id = parse_code_id_from_output(tx_output)\nexport_cmd = export_shell_variable_CODE_ID(code_id)\nprint(export_cmd)  # prints: export CODE_ID=<code_id>\n\n# Example in a POSIX shell after wrapping the above in a script main():\n# CODE_ID=$(python your_script.py | awk 'NR==1{print $NF}')\n# or\n# eval \"$(python your_script.py)\"  # if the script prints only the export command"
+        }
+    ]
+}

@@ -6,193 +6,53 @@
             "response_metadata": {},
             "type": "human",
             "name": null,
-            "id": "a86a576a-d8ca-4251-af60-ad5d14770f30"
+            "id": "d466ce43-bf4d-43b7-9b15-56dccd82fe72"
         },
         {
-            "content": "",
+            "content": "[\n  {\n    \"intent\": \"Query the smart (contract-state smart) view of a CosmWasm contract on Juno, using junod CLI and/or the LCD endpoint.\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"collect_query_parameters\",\n        \"description\": \"Obtain the target CosmWasm contract address (bech32), the JSON query message (e.g. {\\\"config\\\":{}}), and optional node settings (RPC/LCD URL, chain-id, keyring backend) from the caller or configuration.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"encode_smart_query_for_lcd\",\n        \"description\": \"Serialize the JSON query to a minified string and base64-encode it to produce query_data suitable for the LCD path parameter /cosmwasm/wasm/v1/contract/{address}/smart/{query_data}.\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"http_get_contract_smart_state\",\n        \"description\": \"Perform an HTTP GET to the Juno LCD endpoint using the base URL https://lcd-archive.junonetwork.io and the path /cosmwasm/wasm/v1/contract/{address}/smart/{query_data}, substituting the contract address and the base64-encoded query_data from previous steps. Capture the JSON response.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"decode_lcd_smart_query_response\",\n        \"description\": \"From the LCD response, read the \\\"data\\\" field (base64-encoded), decode it to bytes, and interpret the result as UTF-8 JSON (or the contract\u2019s documented format). This is the smart query result to return to the caller.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"execute_junod_cli_smart_query\",\n        \"description\": \"For environments where junod CLI is available, optionally run: junod query wasm contract-state smart <contract_address> '<json_query>' --node <rpc_endpoint> --chain-id <chain_id> --output json. Capture stdout and parse it as JSON. Use this either as the primary method or as a cross-check against the LCD result.\"\n      },\n      {\n        \"step\": 6,\n        \"tool\": \"compare_cli_and_lcd_results\",\n        \"description\": \"If both LCD and junod CLI were used, compare the decoded LCD result with the parsed CLI result; ensure they are equivalent or compatible. If they diverge, surface an error or warning including both raw outputs for debugging.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The LCD GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{address}/smart/{query_data} returns HTTP 200 and a JSON body containing a non-empty \\\"data\\\" field.\",\n      \"The \\\"data\\\" field from the LCD response decodes from base64 into valid UTF-8 JSON (or the contract\u2019s expected response format) without errors.\",\n      \"If junod CLI is used, the command junod query wasm contract-state smart <contract_address> '<json_query>' exits with status code 0 and prints valid JSON to stdout.\",\n      \"If both LCD and CLI are used, the decoded LCD result and parsed junod CLI result match (or are semantically equivalent) for the given query.\"\n    ]\n  }\n]",
             "additional_kwargs": {
                 "refusal": null
             },
             "response_metadata": {
                 "token_usage": {
-                    "completion_tokens": 743,
-                    "prompt_tokens": 655,
-                    "total_tokens": 1398,
+                    "completion_tokens": 3046,
+                    "prompt_tokens": 34823,
+                    "total_tokens": 37869,
                     "completion_tokens_details": {
                         "accepted_prediction_tokens": 0,
                         "audio_tokens": 0,
-                        "reasoning_tokens": 704,
+                        "reasoning_tokens": 2324,
                         "rejected_prediction_tokens": 0
                     },
                     "prompt_tokens_details": {
                         "audio_tokens": 0,
-                        "cached_tokens": 0
+                        "cached_tokens": 34688
                     }
                 },
                 "model_provider": "openai",
-                "model_name": "o3-2025-04-16",
+                "model_name": "gpt-5.1-2025-11-13",
                 "system_fingerprint": null,
-                "id": "chatcmpl-Cb6oRB3pCbbNNXVuPjkdptghkee5k",
-                "service_tier": "default",
-                "finish_reason": "tool_calls",
-                "logprobs": null
-            },
-            "type": "ai",
-            "name": null,
-            "id": "lc_run--a9ff8251-4c9c-4367-82af-6e4fd87d9de7-0",
-            "tool_calls": [
-                {
-                    "name": "search",
-                    "args": {
-                        "query": "junod query wasm contract-state smart",
-                        "section": "cli",
-                        "max_results": 5
-                    },
-                    "id": "call_EOXpbc0R80XxsCeYjGcfGdwu",
-                    "type": "tool_call"
-                }
-            ],
-            "invalid_tool_calls": [],
-            "usage_metadata": {
-                "input_tokens": 655,
-                "output_tokens": 743,
-                "total_tokens": 1398,
-                "input_token_details": {
-                    "audio": 0,
-                    "cache_read": 0
-                },
-                "output_token_details": {
-                    "audio": 0,
-                    "reasoning": 704
-                }
-            }
-        },
-        {
-            "content": "Found 5 result(s) for \"junod query wasm contract-state smart\":\n\n## 1. wasm\n**File:** /root/neutron/juno/cli/modules/wasm.md\n**Section:** cli\n**Relevance Score:** 13\n\n**Matching lines:**\n- Line 1: # wasm\n\n**Content Preview:**\n```\n# wasm\n\n```\n\n---\n\n## 2. Introduction\n**File:** /root/neutron/juno/cli/cli-introduction.md\n**Section:** cli\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 13: `junod` is a command line client for the Juno network. Juno users can use `junod` to send transactions to the Juno network and query the blockchain data.\n- Line 19: The default working directory for the `junod` is `$HOME/.juno`, which is mainly used to store configuration files and blockchain data. The Juno `key` data is saved in the working directory of `junod`. You can also specify the `junod` working directory by using the `--home` flag when executing `junod`.\n- Line 23: By default, `junod` uses `tcp://localhost:26657` as the RPC address to connect to the Juno network. This default configuration assumes that the machine executing `junod` is running as a full-node.\n- Line 25: The RPC address can be specified to connect to any full-node with an exposed RPC port by adding the `--node` flag when executing `junod`\n- Line 73: | [bank](modules/bank.md)                 | Bank subcommands for querying accounts and sending coins etc. |\n\n**Content Preview:**\n```\n\n`junod` is a command line client for the Juno network. Juno users can use `junod` to send transactions to the Juno network and query the blockchain data.\n\n\n---\n\n\nThe default working directory for the `junod` is `$HOME/.juno`, which is mainly used to store configuration files and blockchain data. The Juno `key` data is saved in the working directory of `junod`. You can also specify the `junod` working directory by using the `--home` flag when executing `junod`.\n\n\n---\n\n\nBy default, `junod` uses `tcp://localhost:26657` as the RPC address to connect to the Juno network. This default configuration assumes that the machine executing `junod` is running as a full-node.\n\n```\n\n---\n\n## 3. bank\n**File:** /root/neutron/juno/cli/modules/bank.md\n**Section:** cli\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 13: | [balances](bank.md#iris-query-bank-balances) | Query for account balances by address                  |\n- Line 14: | [total](bank.md#junod-query-bank-total)      | Query the total supply of coins of the chain           |\n- Line 15: | [send](bank.md#junod-tx-bank-send)           | Create and/or sign and broadcast a MsgSend transaction |\n- Line 17: ### junod query bank balances <a href=\"#iris-query-bank-balances\" id=\"iris-query-bank-balances\"></a>\n- Line 19: Query the total balance of an account or of a specific denomination.\n\n**Content Preview:**\n```\n| -------------------------------------------- | ------------------------------------------------------ |\n| [balances](bank.md#iris-query-bank-balances) | Query for account balances by address                  |\n| [total](bank.md#junod-query-bank-total)      | Query the total supply of coins of the chain           |\n\n---\n\n| [balances](bank.md#iris-query-bank-balances) | Query for account balances by address                  |\n| [total](bank.md#junod-query-bank-total)      | Query the total supply of coins of the chain           |\n| [send](bank.md#junod-tx-bank-send)           | Create and/or sign and broadcast a MsgSend transaction |\n\n---\n\n| [total](bank.md#junod-query-bank-total)      | Query the total supply of coins of the chain           |\n| [send](bank.md#junod-tx-bank-send)           | Create and/or sign and broadcast a MsgSend transaction |\n\n```\n\n---\n\n## 4. distribution\n**File:** /root/neutron/juno/cli/modules/distribution.md\n**Section:** cli\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 11: | [commission](distribution.md#junod-query-distribution-commission) | Query distribution validator commission |\n- Line 12: | [community-pool](distribution.md#iris-query-distribution-community-pool) | Query the amount of coins in the community pool |\n- Line 13: | [params](distribution.md#iris-query-distribution-rewards) | Query distribution params |\n- Line 14: | [rewards](distribution.md#iris-query-distribution-rewards) | Query all distribution delegator rewards or rewards from a particular validator |\n- Line 15: | [slashes](distribution.md#iris-query-distribution-slashes) | Query distribution validator slashes. |\n\n**Content Preview:**\n```\n| :--- | :--- |\n| [commission](distribution.md#junod-query-distribution-commission) | Query distribution validator commission |\n| [community-pool](distribution.md#iris-query-distribution-community-pool) | Query the amount of coins in the community pool |\n\n---\n\n| [commission](distribution.md#junod-query-distribution-commission) | Query distribution validator commission |\n| [community-pool](distribution.md#iris-query-distribution-community-pool) | Query the amount of coins in the community pool |\n| [params](distribution.md#iris-query-distribution-rewards) | Query distribution params |\n\n---\n\n| [community-pool](distribution.md#iris-query-distribution-community-pool) | Query the amount of coins in the community pool |\n| [params](distribution.md#iris-query-distribution-rewards) | Query distribution params |\n| [rewards](distribution.md#iris-query-distribution-rewards) | Query all distribution delegator rewards or rewards from a particular validator |\n```\n\n---\n\n## 5. tendermint\n**File:** /root/neutron/juno/cli/modules/tendermint.md\n**Section:** cli\n**Relevance Score:** 9\n\n**Matching lines:**\n- Line 2: description: The tendermint module allows for querying of validator and node addresses.\n- Line 11: | [show-address](tendermint.md#junod-tendermint-show-address) | Shows this node's tendermint validator consensus address |\n- Line 16: ### junod tendermint show-address\n- Line 21: junod tendermint show-address\n- Line 30: ### junod tendermint show-node-id <a id=\"iris-tendermint-show-node-id\"></a>\n\n**Content Preview:**\n```\n---\ndescription: The tendermint module allows for querying of validator and node addresses.\n---\n\n---\n\n| :--- | :--- |\n| [show-address](tendermint.md#junod-tendermint-show-address) | Shows this node's tendermint validator consensus address |\n| [show-node-id](tendermint.md#iris-tendermint-show-node-id) | Show this node's ID |\n\n---\n\n\n### junod tendermint show-address\n\n```\n\n---\n\n",
-            "additional_kwargs": {},
-            "response_metadata": {},
-            "type": "tool",
-            "name": "search",
-            "id": "e5e05d21-5332-45a4-9f89-cdf5c1dff092",
-            "tool_call_id": "call_EOXpbc0R80XxsCeYjGcfGdwu",
-            "artifact": null,
-            "status": "success"
-        },
-        {
-            "content": "",
-            "additional_kwargs": {
-                "refusal": null
-            },
-            "response_metadata": {
-                "token_usage": {
-                    "completion_tokens": 361,
-                    "prompt_tokens": 2759,
-                    "total_tokens": 3120,
-                    "completion_tokens_details": {
-                        "accepted_prediction_tokens": 0,
-                        "audio_tokens": 0,
-                        "reasoning_tokens": 320,
-                        "rejected_prediction_tokens": 0
-                    },
-                    "prompt_tokens_details": {
-                        "audio_tokens": 0,
-                        "cached_tokens": 0
-                    }
-                },
-                "model_provider": "openai",
-                "model_name": "o3-2025-04-16",
-                "system_fingerprint": null,
-                "id": "chatcmpl-Cb6odFOamBEaUOtsR27bL5m25a6sp",
-                "service_tier": "default",
-                "finish_reason": "tool_calls",
-                "logprobs": null
-            },
-            "type": "ai",
-            "name": null,
-            "id": "lc_run--915d2762-548e-4390-9715-adbcd1ecb552-0",
-            "tool_calls": [
-                {
-                    "name": "search",
-                    "args": {
-                        "query": "\"contract-state smart\" junod",
-                        "section": "cli",
-                        "max_results": 10
-                    },
-                    "id": "call_5kxlrc4ai8pKlWv5zHRgbM9p",
-                    "type": "tool_call"
-                }
-            ],
-            "invalid_tool_calls": [],
-            "usage_metadata": {
-                "input_tokens": 2759,
-                "output_tokens": 361,
-                "total_tokens": 3120,
-                "input_token_details": {
-                    "audio": 0,
-                    "cache_read": 0
-                },
-                "output_token_details": {
-                    "audio": 0,
-                    "reasoning": 320
-                }
-            }
-        },
-        {
-            "content": "Found 10 result(s) for \"\"contract-state smart\" junod\":\n\n## 1. bank\n**File:** /root/neutron/juno/cli/modules/bank.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 14: | [total](bank.md#junod-query-bank-total)      | Query the total supply of coins of the chain           |\n- Line 15: | [send](bank.md#junod-tx-bank-send)           | Create and/or sign and broadcast a MsgSend transaction |\n- Line 17: ### junod query bank balances <a href=\"#iris-query-bank-balances\" id=\"iris-query-bank-balances\"></a>\n- Line 22: junod query bank balances [address] [flags]\n- Line 33: ### junod query bank total\n\n**Content Preview:**\n```\n| [balances](bank.md#iris-query-bank-balances) | Query for account balances by address                  |\n| [total](bank.md#junod-query-bank-total)      | Query the total supply of coins of the chain           |\n| [send](bank.md#junod-tx-bank-send)           | Create and/or sign and broadcast a MsgSend transaction |\n\n---\n\n| [total](bank.md#junod-query-bank-total)      | Query the total supply of coins of the chain           |\n| [send](bank.md#junod-tx-bank-send)           | Create and/or sign and broadcast a MsgSend transaction |\n\n\n---\n\n\n### junod query bank balances <a href=\"#iris-query-bank-balances\" id=\"iris-query-bank-balances\"></a>\n\n```\n\n---\n\n## 2. distribution\n**File:** /root/neutron/juno/cli/modules/distribution.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 11: | [commission](distribution.md#junod-query-distribution-commission) | Query distribution validator commission |\n- Line 22: ### junod query distribution commission\n- Line 27: junod query distribution commission [validator] [flags]\n- Line 30: ### junod query distribution community-pool <a id=\"iris-query-distribution-community-pool\"></a>\n- Line 35: junod query distribution community-pool [flags]\n\n**Content Preview:**\n```\n| :--- | :--- |\n| [commission](distribution.md#junod-query-distribution-commission) | Query distribution validator commission |\n| [community-pool](distribution.md#iris-query-distribution-community-pool) | Query the amount of coins in the community pool |\n\n---\n\n\n### junod query distribution commission\n\n\n---\n\n```text\njunod query distribution commission [validator] [flags]\n```\n```\n\n---\n\n## 3. gov\n**File:** /root/neutron/juno/cli/modules/gov.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 27: ### junod query gov proposal <a id=\"juno-query-gov-proposal\"></a>\n- Line 32: junod query gov proposal [proposal-id] [flags]\n- Line 44: ### junod query gov proposals <a id=\"juno-query-gov-proposals\"></a>\n- Line 49: junod query gov proposals\n- Line 55: junod query gov proposals --limit=3 --status=Passed --depositor=<juno...>\n\n**Content Preview:**\n```\n\n### junod query gov proposal <a id=\"juno-query-gov-proposal\"></a>\n\n\n---\n\n```text\njunod query gov proposal [proposal-id] [flags]\n```\n\n---\n\n\n### junod query gov proposals <a id=\"juno-query-gov-proposals\"></a>\n\n```\n\n---\n\n## 4. keys\n**File:** /root/neutron/juno/cli/modules/keys.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 13: | [add](keys.md#junod-keys-add) | Add an encrypted private key \\(either newly generated or recovered\\), encrypt it, and save to disk |\n- Line 22: ### junod keys add\n- Line 27: junod keys add <key-name> [flags]\n- Line 54: junod keys add MyKey\n- Line 68: junod keys add MyKey --recover\n\n**Content Preview:**\n```\n| :--- | :--- |\n| [add](keys.md#junod-keys-add) | Add an encrypted private key \\(either newly generated or recovered\\), encrypt it, and save to disk |\n| [delete](keys.md#iris-keys-delete) | Delete the given key |\n\n---\n\n\n### junod keys add\n\n\n---\n\n```text\njunod keys add <key-name> [flags]\n```\n```\n\n---\n\n## 5. staking\n**File:** /root/neutron/juno/cli/modules/staking.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 33: ### junod query staking validator <a id=\"iris-query-staking-validator\"></a>\n- Line 40: junod query staking validator <junovaloper...>\n- Line 71: ### junod query staking validators <a id=\"iris-query-staking-validators\"></a>\n- Line 78: junod query staking validators\n- Line 81: The returned values will be similar to those from [`junod query staking validator`](staking.md#iris-query-staking-validator)\\`\\`\n\n**Content Preview:**\n```\n\n### junod query staking validator <a id=\"iris-query-staking-validator\"></a>\n\n\n---\n\n```text\njunod query staking validator <junovaloper...>\n```\n\n---\n\n\n### junod query staking validators <a id=\"iris-query-staking-validators\"></a>\n\n```\n\n---\n\n## 6. tendermint\n**File:** /root/neutron/juno/cli/modules/tendermint.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 11: | [show-address](tendermint.md#junod-tendermint-show-address) | Shows this node's tendermint validator consensus address |\n- Line 16: ### junod tendermint show-address\n- Line 21: junod tendermint show-address\n- Line 30: ### junod tendermint show-node-id <a id=\"iris-tendermint-show-node-id\"></a>\n- Line 35: junod tendermint show-node-id\n\n**Content Preview:**\n```\n| :--- | :--- |\n| [show-address](tendermint.md#junod-tendermint-show-address) | Shows this node's tendermint validator consensus address |\n| [show-node-id](tendermint.md#iris-tendermint-show-node-id) | Show this node's ID |\n\n---\n\n\n### junod tendermint show-address\n\n\n---\n\n```text\njunod tendermint show-address\n```\n```\n\n---\n\n## 7. Useful CLI Commands\n**File:** /root/neutron/juno/cli/useful-cli-commands.md\n**Section:** cli\n**Relevance Score:** 7\n\n**Matching lines:**\n- Line 11: junod status\n- Line 24: junod tendermint show-node-id\n- Line 32: junod query slashing signing-info $(junod tendermint show-validator)\n- Line 38: junod config chain-id juno-1\n- Line 44: junod keys show <your-key-name> -a --bech val\n\n**Content Preview:**\n```\n```bash\njunod status\n```\n\n---\n\n```bash\njunod tendermint show-node-id\n```\n\n---\n\n```bash\njunod query slashing signing-info $(junod tendermint show-validator)\n```\n```\n\n---\n\n## 8. Introduction\n**File:** /root/neutron/juno/cli/cli-introduction.md\n**Section:** cli\n**Relevance Score:** 6\n\n**Matching lines:**\n- Line 13: `junod` is a command line client for the Juno network. Juno users can use `junod` to send transactions to the Juno network and query the blockchain data.\n- Line 19: The default working directory for the `junod` is `$HOME/.juno`, which is mainly used to store configuration files and blockchain data. The Juno `key` data is saved in the working directory of `junod`. You can also specify the `junod` working directory by using the `--home` flag when executing `junod`.\n- Line 23: By default, `junod` uses `tcp://localhost:26657` as the RPC address to connect to the Juno network. This default configuration assumes that the machine executing `junod` is running as a full-node.\n- Line 25: The RPC address can be specified to connect to any full-node with an exposed RPC port by adding the `--node` flag when executing `junod`\n\n**Content Preview:**\n```\n\n`junod` is a command line client for the Juno network. Juno users can use `junod` to send transactions to the Juno network and query the blockchain data.\n\n\n---\n\n\nThe default working directory for the `junod` is `$HOME/.juno`, which is mainly used to store configuration files and blockchain data. The Juno `key` data is saved in the working directory of `junod`. You can also specify the `junod` working directory by using the `--home` flag when executing `junod`.\n\n\n---\n\n\nBy default, `junod` uses `tcp://localhost:26657` as the RPC address to connect to the Juno network. This default configuration assumes that the machine executing `junod` is running as a full-node.\n\n```\n\n---\n\n## 9. slashing\n**File:** /root/neutron/juno/cli/modules/slashing.md\n**Section:** cli\n**Relevance Score:** 5\n\n**Matching lines:**\n- Line 11: | [unjail](slashing.md#junod-tx-slashing-unjail) | Unjail validator previously jailed for downtime or double-sign. |\n- Line 13: ### junod tx slashing unjail\n- Line 26: junod tx slashing unjail --from juno1ludczrvlw36fkur9vy49lx4vjqhppn30h42ufg --chain-id juno\n\n**Content Preview:**\n```\n| :--- | :--- |\n| [unjail](slashing.md#junod-tx-slashing-unjail) | Unjail validator previously jailed for downtime or double-sign. |\n\n\n---\n\n\n### junod tx slashing unjail\n\n\n---\n\n```text\njunod tx slashing unjail --from juno1ludczrvlw36fkur9vy49lx4vjqhppn30h42ufg --chain-id juno\n```\n```\n\n---\n\n## 10. Module Reference\n**File:** /root/neutron/juno/cli/modules/README.md\n**Section:** cli\n**Relevance Score:** 3\n\n**Matching lines:**\n- Line 2: description: CLI reference for junod modules\n\n**Content Preview:**\n```\n---\ndescription: CLI reference for junod modules\ncover: ../../.gitbook/assets/Discord Invite (29).png\n```\n\n---\n\n",
-            "additional_kwargs": {},
-            "response_metadata": {},
-            "type": "tool",
-            "name": "search",
-            "id": "4506c32b-cec9-45bf-9960-789fe65d58a2",
-            "tool_call_id": "call_5kxlrc4ai8pKlWv5zHRgbM9p",
-            "artifact": null,
-            "status": "success"
-        },
-        {
-            "content": "[\n  {\n    \"intent\": \"Query a CosmWasm contract\u2019s smart state with junod CLI\",\n    \"workflow\": [\n      {\n        \"step\": 1,\n        \"tool\": \"obtain_contract_address\",\n        \"description\": \"Prompt the user to supply the deployed CosmWasm contract address on the Juno network.\"\n      },\n      {\n        \"step\": 2,\n        \"tool\": \"collect_query_msg\",\n        \"description\": \"Ask the user for the smart-query message in JSON form (e.g. {\\\"config\\\":{}}).\"\n      },\n      {\n        \"step\": 3,\n        \"tool\": \"validate_json\",\n        \"description\": \"Ensure the provided query message is valid, minified JSON.\"\n      },\n      {\n        \"step\": 4,\n        \"tool\": \"base64_encode\",\n        \"description\": \"Base-64 encode the validated JSON because `junod query wasm contract-state smart` expects the query in base-64.\"\n      },\n      {\n        \"step\": 5,\n        \"tool\": \"junod_query_wasm_contract_state_smart\",\n        \"description\": \"Run: `junod query wasm contract-state smart <contract-address> <base64-query> --output json --node <rpc-endpoint>` to retrieve the contract\u2019s smart-state response.\"\n      },\n      {\n        \"step\": 6,\n        \"tool\": \"format_response\",\n        \"description\": \"Parse and present the returned JSON to the user in a readable format.\"\n      }\n    ],\n    \"outcome_checks\": [\n      \"The CLI command exits successfully (exit code 0).\",\n      \"The response JSON is non-empty and contains the expected fields for the queried message.\"\n    ]\n  }\n]",
-            "additional_kwargs": {
-                "refusal": null
-            },
-            "response_metadata": {
-                "token_usage": {
-                    "completion_tokens": 1276,
-                    "prompt_tokens": 5843,
-                    "total_tokens": 7119,
-                    "completion_tokens_details": {
-                        "accepted_prediction_tokens": 0,
-                        "audio_tokens": 0,
-                        "reasoning_tokens": 896,
-                        "rejected_prediction_tokens": 0
-                    },
-                    "prompt_tokens_details": {
-                        "audio_tokens": 0,
-                        "cached_tokens": 0
-                    }
-                },
-                "model_provider": "openai",
-                "model_name": "o3-2025-04-16",
-                "system_fingerprint": null,
-                "id": "chatcmpl-Cb6olHkd1YLjQfX76eHUjm6G36FVI",
+                "id": "chatcmpl-CdCmI62yngh9hwyrhz0d4S13M3Ij2",
                 "service_tier": "default",
                 "finish_reason": "stop",
                 "logprobs": null
             },
             "type": "ai",
             "name": null,
-            "id": "lc_run--868d347d-902f-4cf6-b5a6-aad5dda2535b-0",
+            "id": "lc_run--e7bb3682-3742-4473-b401-630beed6a530-0",
             "tool_calls": [],
             "invalid_tool_calls": [],
             "usage_metadata": {
-                "input_tokens": 5843,
-                "output_tokens": 1276,
-                "total_tokens": 7119,
+                "input_tokens": 34823,
+                "output_tokens": 3046,
+                "total_tokens": 37869,
                 "input_token_details": {
                     "audio": 0,
-                    "cache_read": 0
+                    "cache_read": 34688
                 },
                 "output_token_details": {
                     "audio": 0,
-                    "reasoning": 896
+                    "reasoning": 2324
                 }
             }
         }

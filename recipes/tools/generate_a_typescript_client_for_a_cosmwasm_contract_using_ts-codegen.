@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "frontend",
+            "introduction": "ensureContractSchemas verifies (and if needed generates) the contract\u2019s JSON schema folder and checks that instantiate, execute, and query schema files are all present.",
+            "function": "ensureContractSchemas(contractRootDir, schemaDirName = 'schema')",
+            "usage": "ensureContractSchemas('./contracts/my-contract');"
+        },
+        {
+            "step": 2,
+            "label": "frontend",
+            "introduction": "No implemented helper was found that programmatically writes the ts-codegen configuration file.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "installTsCodegen adds @cosmwasm/ts-codegen to the project as a devDependency via npm (with a yarn fallback).",
+            "function": "installTsCodegen(version = 'latest')",
+            "usage": "installTsCodegen();"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "generateTsClient runs the ts-codegen CLI with the provided config file to produce the TypeScript client code.",
+            "function": "generateTsClient(configPath = 'ts-codegen.config.ts')",
+            "usage": "generateTsClient('ts-codegen.config.ts');"
+        },
+        {
+            "step": 5,
+            "label": "frontend",
+            "introduction": "typecheckGeneratedClient invokes the TypeScript compiler in no-emit mode to ensure the generated client (and the project) compile without type errors.",
+            "function": "typecheckGeneratedClient(extraArgs = [])",
+            "usage": "typecheckGeneratedClient();"
+        },
+        {
+            "step": 6,
+            "label": "frontend",
+            "introduction": "smokeTestMyContractQuery imports the generated client, connects to a Juno LCD endpoint, and executes a simple smart-contract query as an end-to-end smoke test.",
+            "function": "smokeTestMyContractQuery()",
+            "usage": "await smokeTestMyContractQuery();"
+        }
+    ],
+    "frontend": [
+        "ensureContractSchemas('./contracts/my-contract');//step: 1 Tool: collect_contract_json_schemas Desciption: Ensure the contract\u2019s JSON schema files are generated (for example, by running the contract\u2019s schema generation task such as `cargo schema` or equivalent). Confirm that schema files for execute, query, and instantiate messages are present in a known directory like `schema/` or `artifacts/schema/`.",
+        "undef//step: 2 Tool: create_ts_codegen_config_file Desciption: Create or update a `ts-codegen` configuration file (for example, `ts-codegen.config.ts` or `ts-codegen.config.js`) that specifies the contract name, the path to its schema directory, and the desired output directory for generated TypeScript code. Optionally, include Juno-specific parameters such as the preferred RPC or LCD endpoint (e.g., `https://lcd-archive.junonetwork.io`) and chain-id.",
+        "installTsCodegen();//step: 3 Tool: install_ts_codegen_cli Desciption: Add `@cosmwasm/ts-codegen` as a development dependency to the project (for example, using `npm` or `yarn`) so that the ts-codegen CLI can be invoked via `npx` or a package.json script.",
+        "generateTsClient('ts-codegen.config.ts');//step: 4 Tool: run_ts_codegen_generate Desciption: From the project root, invoke the ts-codegen CLI (for example, `npx @cosmwasm/ts-codegen generate-ts --config ts-codegen.config.ts`) to generate a TypeScript client package for the contract. Ensure the command completes successfully and writes files into the configured output directory.",
+        "typecheckGeneratedClient();//step: 5 Tool: typecheck_generated_client Desciption: Run the TypeScript compiler (for example, `npx tsc` or `npm run build`) to type-check the generated client code and confirm there are no TypeScript errors.",
+        "await smokeTestMyContractQuery();//step: 6 Tool: smoke_test_ts_client_against_juno Desciption: In a small test script, import the generated client, initialize it with a signer and a Juno endpoint (for example, using the configured LCD or RPC URL), and perform a simple query against the deployed contract (such as retrieving configuration or a known state field) to verify that the client works end-to-end."
+    ],
+    "backend": [],
+    "intent": "Generate a TypeScript client for a CosmWasm contract using ts-codegen.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "collect_contract_json_schemas",
+            "description": "Ensure the contract\u2019s JSON schema files are generated (for example, by running the contract\u2019s schema generation task such as `cargo schema` or equivalent). Confirm that schema files for execute, query, and instantiate messages are present in a known directory like `schema/` or `artifacts/schema/`."
+        },
+        {
+            "step": 2,
+            "tool": "create_ts_codegen_config_file",
+            "description": "Create or update a `ts-codegen` configuration file (for example, `ts-codegen.config.ts` or `ts-codegen.config.js`) that specifies the contract name, the path to its schema directory, and the desired output directory for generated TypeScript code. Optionally, include Juno-specific parameters such as the preferred RPC or LCD endpoint (e.g., `https://lcd-archive.junonetwork.io`) and chain-id."
+        },
+        {
+            "step": 3,
+            "tool": "install_ts_codegen_cli",
+            "description": "Add `@cosmwasm/ts-codegen` as a development dependency to the project (for example, using `npm` or `yarn`) so that the ts-codegen CLI can be invoked via `npx` or a package.json script."
+        },
+        {
+            "step": 4,
+            "tool": "run_ts_codegen_generate",
+            "description": "From the project root, invoke the ts-codegen CLI (for example, `npx @cosmwasm/ts-codegen generate-ts --config ts-codegen.config.ts`) to generate a TypeScript client package for the contract. Ensure the command completes successfully and writes files into the configured output directory."
+        },
+        {
+            "step": 5,
+            "tool": "typecheck_generated_client",
+            "description": "Run the TypeScript compiler (for example, `npx tsc` or `npm run build`) to type-check the generated client code and confirm there are no TypeScript errors."
+        },
+        {
+            "step": 6,
+            "tool": "smoke_test_ts_client_against_juno",
+            "description": "In a small test script, import the generated client, initialize it with a signer and a Juno endpoint (for example, using the configured LCD or RPC URL), and perform a simple query against the deployed contract (such as retrieving configuration or a known state field) to verify that the client works end-to-end."
+        }
+    ],
+    "outcome_checks": [
+        "Contract JSON schema files exist and are correctly referenced in the ts-codegen configuration.",
+        "The ts-codegen CLI command completes without errors and generates TypeScript files in the expected output directory.",
+        "The generated TypeScript project passes type-checking without compiler errors.",
+        "A simple runtime smoke test using the generated client can successfully query or execute against the deployed contract on Juno."
+    ]
+}

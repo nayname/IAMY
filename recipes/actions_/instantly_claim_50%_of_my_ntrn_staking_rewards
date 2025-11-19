@@ -1,81 +1,47 @@
 {
-    "tools": [
+    "label": "execute",
+    "workflow": [
         {
             "step": 1,
             "label": "frontend",
-            "introduction": "Retrieves the user\u2019s Neutron bech32 address from their connected browser wallet.",
-            "function": "getNeutronAddress()",
-            "usage": "const delegator = await getNeutronAddress();"
+            "introduction": "Initialises a Keplr connection, enables the Neutron chain and returns both the delegator address and an OfflineSigner instance.",
+            "code": "export const getDelegatorAddress = async (chainId = 'neutron-1') => {\n  if (!window || !window.keplr) {\n    throw new Error('Keplr wallet is not installed.');\n  }\n\n  try {\n    // Prompt wallet connection / network enable\n    await window.keplr.enable(chainId);\n\n    // Retrieve signer & accounts\n    const signer = window.getOfflineSigner(chainId);\n    const accounts = await signer.getAccounts();\n\n    if (!accounts.length) {\n      throw new Error('No accounts found in the connected wallet.');\n    }\n\n    return {\n      address: accounts[0].address,\n      signer,\n    };\n  } catch (err) {\n    console.error('[Keplr-Connect] ::', err);\n    throw new Error('Failed to connect the wallet.');\n  }\n};",
+            "usage": "const { address, signer } = await getDelegatorAddress();"
         },
         {
             "step": 2,
             "label": "frontend",
-            "introduction": "Queries the Neutron LCD for all unclaimed staking rewards belonging to the provided delegator address.",
-            "function": "queryPendingStakingRewards(delegatorAddress, restEndpoint)",
-            "usage": "const rewards = await queryPendingStakingRewards(delegator);"
+            "introduction": "Calls the public LCD to obtain all pending staking rewards for the given delegator.",
+            "code": "export const queryPendingStakingRewards = async (\n  delegatorAddress,\n  restEndpoint = 'https://rest-kralum.neutron-1.neutron.org'\n) => {\n  const url = `${restEndpoint}/cosmos/distribution/v1beta1/delegators/${delegatorAddress}/rewards`;\n  try {\n    const res = await fetch(url);\n    if (!res.ok) {\n      throw new Error(`Distribution query failed :: ${res.status}`);\n    }\n    return await res.json();\n  } catch (error) {\n    console.error('[Query-Rewards] ::', error);\n    throw error;\n  }\n};",
+            "usage": "const rewardsResponse = await queryPendingStakingRewards(address);"
         },
         {
             "step": 3,
             "label": "frontend",
-            "introduction": "Calculates a 50 % slice of each validator-specific reward entry from the LCD response.",
-            "function": "calculatePartialRewards(rewardsResponse, fraction, denom)",
-            "usage": "const halfRewards = calculatePartialRewards(rewards, 0.5);"
+            "introduction": "Takes the LCD response and produces an array that keeps just 50 % of each validator\u2019s reward.",
+            "code": "export const calculatePartialRewards = (\n  rewardsResponse,\n  fraction = 0.5,\n  denom = 'untrn'\n) => {\n  if (!rewardsResponse || !Array.isArray(rewardsResponse.rewards)) {\n    throw new Error('Malformed rewards response.');\n  }\n\n  const partial = rewardsResponse.rewards\n    .map((entry) => {\n      const coin = (entry.reward || []).find((c) => c.denom === denom);\n      const rawAmount = coin ? Number(coin.amount) : 0;\n      const half = Math.floor(rawAmount * fraction);\n      return {\n        validator_address: entry.validator_address,\n        amount: half.toString(),\n        denom,\n      };\n    })\n    .filter((c) => Number(c.amount) > 0);\n\n  return partial;\n};",
+            "usage": "const halfRewards = calculatePartialRewards(rewardsResponse);"
         },
         {
             "step": 4,
             "label": "backend",
-            "introduction": "Creates a MsgWithdrawDelegatorReward transaction (one per validator) for the specified partial-reward amounts and returns the sign-doc bytes.",
-            "function": "build_withdraw_tx(req)",
-            "usage": "const signDoc = build_withdraw_tx({ delegator_address: delegator, rewards: halfRewards });"
+            "introduction": "Python FastAPI endpoint that builds an unsigned MsgWithdrawDelegatorReward transaction (one message per validator) and returns a SignDoc ready for Keplr\u2019s `signDirect` flow.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom typing import List\nimport os, base64\n\nfrom cosmpy.aerial.client import LedgerClient\nfrom cosmpy.aerial.tx import Transaction, MsgWithdrawDelegatorReward\n\napp = FastAPI()\n\n# ---------------------------\n# Pydantic request / response\n# ---------------------------\nclass ValidatorPortion(BaseModel):\n    validator_address: str\n    amount: str  # kept for reference; MsgWithdrawDelegatorReward ignores it\n    denom: str\n\nclass BuildTxRequest(BaseModel):\n    delegator_address: str\n    rewards: List[ValidatorPortion]\n\nclass SignDocResponse(BaseModel):\n    body_bytes: str\n    auth_info_bytes: str\n    account_number: int\n    chain_id: str\n\n# -------------------------------------------\n# Helper to build and serialise the Sign-Doc\n# -------------------------------------------\n@app.post('/api/build_withdraw_tx', response_model=SignDocResponse)\nasync def build_withdraw_tx(req: BuildTxRequest):\n    try:\n        rpc = os.getenv('RPC_ENDPOINT', 'https://rpc-kralum.neutron-1.neutron.org')\n        client = LedgerClient(rpc)\n        account = client.query_account(req.delegator_address)\n\n        tx = Transaction()\n        # A MsgWithdrawDelegatorReward message per validator\n        for r in req.rewards:\n            tx.add_msg(\n                MsgWithdrawDelegatorReward(\n                    delegator_address=req.delegator_address,\n                    validator_address=r.validator_address,\n                )\n            )\n\n        # Basic fee / gas; adjust to your needs\n        tx.set_fee(2000, 'untrn')\n        tx.set_gas(200000 * len(req.rewards))\n\n        tx.set_account_num(account.account_number)\n        tx.set_sequence(account.sequence)\n        tx.set_chain_id(client.chain_id)\n\n        sign_doc = tx.get_sign_doc()\n\n        return SignDocResponse(\n            body_bytes=base64.b64encode(sign_doc.body_bytes).decode(),\n            auth_info_bytes=base64.b64encode(sign_doc.auth_info_bytes).decode(),\n            account_number=account.account_number,\n            chain_id=client.chain_id,\n        )\n\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "POST JSON `{ delegator_address, rewards: halfRewards }` to `/api/build_withdraw_tx` and store the JSON response as `signDoc` on the frontend."
         },
         {
             "step": 5,
             "label": "frontend",
-            "introduction": "Signs the withdraw-rewards transaction with Keplr and sends the signed payload to the backend for broadcasting.",
-            "function": "signAndBroadcastWithdrawal(signerAddress, signDoc, apiUrl)",
-            "usage": "const txResult = await signAndBroadcastWithdrawal(delegator, signDoc);"
+            "introduction": "Signs the SignDoc returned by step 4 with Keplr and forwards the signed data to the backend for broadcasting.",
+            "code": "import { Buffer } from 'buffer';\n\nexport const signAndBroadcastWithdrawal = async (\n  signerAddress,\n  signDoc,\n  apiUrl = '/api/broadcast_tx'\n) => {\n  if (!window.keplr) {\n    throw new Error('Keplr wallet missing.');\n  }\n\n  // Re-build the object expected by signDirect\n  const directSignDoc = {\n    bodyBytes: Uint8Array.from(atob(signDoc.body_bytes), (c) => c.charCodeAt(0)),\n    authInfoBytes: Uint8Array.from(atob(signDoc.auth_info_bytes), (c) => c.charCodeAt(0)),\n    chainId: signDoc.chain_id,\n    accountNumber: BigInt(signDoc.account_number),\n  };\n\n  // -------------------\n  // 1) Sign the TX bytes\n  // -------------------\n  const { signature } = await window.keplr.signDirect(\n    signDoc.chain_id,\n    signerAddress,\n    directSignDoc\n  );\n\n  // ------------------------------------------------\n  // 2) Send the signed payload to the backend (BFF)\n  // ------------------------------------------------\n  const res = await fetch(apiUrl, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({\n      body_bytes: signDoc.body_bytes,\n      auth_info_bytes: signDoc.auth_info_bytes,\n      signature: Buffer.from(signature.signature).toString('base64'),\n    }),\n  });\n\n  if (!res.ok) {\n    const err = await res.json();\n    throw new Error(err.detail || 'Broadcast failed');\n  }\n\n  return await res.json(); // { txhash: '...' }\n};",
+            "usage": "const txResult = await signAndBroadcastWithdrawal(address, signDoc);"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Receives the signed payload, builds a TxRaw object and broadcasts it to Neutron\u2019s RPC.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nimport base64, os\n\nfrom cosmpy.aerial.client import LedgerClient\nfrom cosmpy.protos.cosmos.tx.v1beta1.tx_pb2 import TxRaw\n\napp = FastAPI()\n\nclass BroadcastRequest(BaseModel):\n    body_bytes: str\n    auth_info_bytes: str\n    signature: str\n\n@app.post('/api/broadcast_tx')\nasync def broadcast_tx(req: BroadcastRequest):\n    try:\n        body_bytes = base64.b64decode(req.body_bytes)\n        auth_info_bytes = base64.b64decode(req.auth_info_bytes)\n        signature_bytes = base64.b64decode(req.signature)\n\n        tx_raw = TxRaw(\n            body_bytes=body_bytes,\n            auth_info_bytes=auth_info_bytes,\n            signatures=[signature_bytes],\n        )\n\n        rpc = os.getenv('RPC_ENDPOINT', 'https://rpc-kralum.neutron-1.neutron.org')\n        client = LedgerClient(rpc)\n        tx_response = client.broadcast_tx(tx_raw.SerializeToString(), broadcast_mode='sync')\n\n        return { 'txhash': tx_response.tx_hash.hex() }\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "Automatically invoked by the Step 5 frontend helper; returns `{ txhash }` on success."
         }
-    ],
-    "frontend": [
-        "const delegator = await getNeutronAddress();//step: 1 Tool: get_delegator_address Desciption: Identify the user\u2019s delegator address tied to their Neutron wallet.",
-        "const rewards = await queryPendingStakingRewards(delegator);//step: 2 Tool: query_pending_staking_rewards Desciption: Fetch the total unclaimed NTRN rewards for the delegator.",
-        "const halfRewards = calculatePartialRewards(rewards, 0.5);//step: 3 Tool: calculate_partial_amount Desciption: Compute 50 % of the pending reward amount.",
-        "const txResult = await signAndBroadcastWithdrawal(delegator, signDoc);//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign the reward-withdrawal transaction with the user\u2019s wallet and broadcast it to Neutron."
-    ],
-    "backend": [
-        "const signDoc = build_withdraw_tx({ delegator_address: delegator, rewards: halfRewards });#step: 4 Tool: construct_tx_distribution_withdraw_rewards Desciption: Build a MsgWithdrawDelegatorReward transaction with the calculated 50 % amount, adding split-withdraw logic if multiple validators are involved."
-    ],
-    "intent": "Instantly claim 50% of my NTRN staking rewards",
-    "workflow": [
-        {
-            "step": 1,
-            "tool": "get_delegator_address",
-            "description": "Identify the user\u2019s delegator address tied to their Neutron wallet."
-        },
-        {
-            "step": 2,
-            "tool": "query_pending_staking_rewards",
-            "description": "Fetch the total unclaimed NTRN rewards for the delegator."
-        },
-        {
-            "step": 3,
-            "tool": "calculate_partial_amount",
-            "description": "Compute 50 % of the pending reward amount."
-        },
-        {
-            "step": 4,
-            "tool": "construct_tx_distribution_withdraw_rewards",
-            "description": "Build a MsgWithdrawDelegatorReward transaction with the calculated 50 % amount, adding split-withdraw logic if multiple validators are involved."
-        },
-        {
-            "step": 5,
-            "tool": "sign_and_broadcast_tx",
-            "description": "Sign the reward-withdrawal transaction with the user\u2019s wallet and broadcast it to Neutron."
-        }
-    ],
-    "outcome_checks": [
-        "Confirm the transaction hash is included in a block.",
-        "Verify the delegator\u2019s NTRN balance has increased by roughly 50 % of previously pending rewards (minus gas).",
-        "Validate that the remaining ~50 % of rewards are still queryable as pending."
     ]
 }

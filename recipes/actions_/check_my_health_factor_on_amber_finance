@@ -1,67 +1,33 @@
 {
-    "tools": [
+    "label": "query_contract",
+    "workflow": [
         {
             "step": 1,
             "label": "frontend",
-            "introduction": "Retrieves the connected user\u2019s Neutron wallet address from the browser-injected Keplr extension.",
-            "function": "getUserWalletAddress()",
-            "usage": "const userAddress = await getUserWalletAddress();"
+            "introduction": "Step 1 exposes a helper that connects to the user\u2019s Keplr wallet on Neutron and returns the Bech32 address needed for subsequent queries.",
+            "code": "export const getUserAddress = async () => {\n  const chainId = 'neutron-1';\n\n  // Make sure the browser has access to a Keplr-compatible wallet\n  if (!window || !window.keplr) {\n    throw new Error('Keplr wallet is not installed.');\n  }\n\n  // Ask the wallet for permission to access the chain\n  await window.keplr.enable(chainId);\n\n  // Retrieve an OfflineSigner, then the actual account list\n  const signer = window.getOfflineSigner(chainId);\n  const accounts = await signer.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No account found in the connected wallet.');\n  }\n\n  // The first account is assumed to be the active one\n  return accounts[0].address;\n};",
+            "usage": "const userAddress = await getUserAddress();"
         },
         {
             "step": 2,
             "label": "backend",
-            "introduction": "Queries the Amber Finance smart-contract backend endpoint to obtain all open positions for the provided address.",
-            "function": "amber_positions(address)",
-            "usage": "const positions = await amber_positions(userAddress);"
+            "introduction": "Step 2 defines a FastAPI endpoint that queries the Amber smart-contract for every open position owned by a given address. The backend does the heavy lifting so the frontend never needs CosmJS or secrets.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport os, json, base64, httpx\n\napp = FastAPI()\n\n# Environment variables keep secrets & tunables out of source-code.\nNEUTRON_LCD = os.getenv('NEUTRON_LCD', 'https://rest-kralum.neutron.org')\nAMBER_CONTRACT_ADDR = os.getenv('AMBER_CONTRACT_ADDR', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')\n\nasync def _query_wasm_smart(contract_addr: str, query_msg: dict):\n    \"\"\"Low-level helper that hits the LCD `/smart/` endpoint.\"\"\"\n    msg_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()\n    url = f\"{NEUTRON_LCD}/cosmwasm/wasm/v1/contract/{contract_addr}/smart/{msg_b64}\"\n    async with httpx.AsyncClient(timeout=10) as client:\n        r = await client.get(url)\n        if r.status_code != 200:\n            raise HTTPException(status_code=r.status_code, detail=r.text)\n        # LCD wraps contract results inside a `data` or `result` field depending on version.\n        data = r.json()\n        return data.get('data') or data.get('result') or data\n\n@app.get('/api/amber_positions')\nasync def amber_positions(address: str):\n    \"\"\"Public route => `/api/amber_positions?address=<bech32>`\"\"\"\n    try:\n        query_msg = {\"positions_by_owner\": {\"owner\": address}}\n        positions = await _query_wasm_smart(AMBER_CONTRACT_ADDR, query_msg)\n        return positions  # Forward raw contract JSON back to the caller.\n    except HTTPException:\n        raise  # Re-throw FastAPI HTTP errors untouched.\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=f\"Amber query failed: {exc}\")",
+            "usage": "const positions = await fetch(`/api/amber_positions?address=${userAddress}`).then(r => r.json());"
         },
         {
             "step": 3,
             "label": "frontend",
-            "introduction": "Calculates (or normalises) the health factor, collateral and debt for every retrieved position.",
-            "function": "calculateHealthFactor(positions)",
-            "usage": "const computed = calculateHealthFactor(positions);"
+            "introduction": "With the raw position objects in hand, Step 3 calculates (or forwards) the Health Factor for each position. This example also works if the contract already returns the metric.",
+            "code": "/*\n * positions: Array<{ id: string | number, collateral: string, debt: string, health_factor?: string }>\n * All monetary fields are expected in micro-denom (e.g. `untrn`).\n */\nexport const calculateHealthFactor = (positions) => {\n  if (!Array.isArray(positions)) {\n    throw new Error('Invalid positions array received.');\n  }\n\n  return positions.map((p) => {\n    // Attempt to use the pre-computed value first\n    if (p.health_factor !== undefined) {\n      return {\n        id: p.id,\n        collateral: Number(p.collateral),\n        debt: Number(p.debt),\n        healthFactor: Number(p.health_factor)\n      };\n    }\n\n    const collateral = Number(p.collateral);\n    const debt = Number(p.debt);\n\n    // Protect against division by zero\n    const healthFactor = debt === 0 ? Infinity : collateral / debt;\n\n    return {\n      id: p.id,\n      collateral,\n      debt,\n      healthFactor\n    };\n  });\n};",
+            "usage": "const enriched = calculateHealthFactor(positions.positions || positions);"
         },
         {
             "step": 4,
             "label": "frontend",
-            "introduction": "Generates a human-readable summary that maps each position ID to its health factor, collateral and debt values.",
-            "function": "presentResults(computedPositions)",
-            "usage": "const summary = presentResults(computed);"
+            "introduction": "Step 4 formats the enriched data into a human-readable summary that can be printed to the console or rendered in the UI.",
+            "code": "export const presentResults = (computedPositions) => {\n  if (!Array.isArray(computedPositions)) {\n    throw new Error('Expected an array from calculateHealthFactor().');\n  }\n\n  return computedPositions.map((p) => {\n    const fmt = (v) => (v / 1e6).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });\n    const hf   = p.healthFactor === Infinity ? '\u221e' : p.healthFactor.toFixed(2);\n\n    return `Position #${p.id} \u2192 HF: ${hf}, Collateral: ${fmt(p.collateral)} NTRN, Debt: ${fmt(p.debt)} NTRN`;\n  }).join('\\n');\n};",
+            "usage": "console.log(presentResults(enriched));"
         }
-    ],
-    "frontend": [
-        "const userAddress = await getUserWalletAddress();//step: 1 Tool: get_user_address Desciption: Determine the wallet whose health factor is requested.",
-        "const computed = calculateHealthFactor(positions);//step: 3 Tool: calculate_health_factor Desciption: Compute or read the health factor metric returned by Amber for each position.",
-        "const summary = presentResults(computed);//step: 4 Tool: present_results Desciption: Return a formatted summary: position ID \u2192 health factor, collateral, debt."
-    ],
-    "backend": [
-        "const positions = await amber_positions(userAddress);#step: 2 Tool: query_amber_position Desciption: Fetch all active positions for the address from the Amber contract."
-    ],
-    "intent": "Check my health factor on Amber Finance",
-    "workflow": [
-        {
-            "step": 1,
-            "tool": "get_user_address",
-            "description": "Determine the wallet whose health factor is requested."
-        },
-        {
-            "step": 2,
-            "tool": "query_amber_position",
-            "description": "Fetch all active positions for the address from the Amber contract."
-        },
-        {
-            "step": 3,
-            "tool": "calculate_health_factor",
-            "description": "Compute or read the health factor metric returned by Amber for each position."
-        },
-        {
-            "step": 4,
-            "tool": "present_results",
-            "description": "Return a formatted summary: position ID \u2192 health factor, collateral, debt."
-        }
-    ],
-    "outcome_checks": [
-        "Health factor values are non-null and within expected numeric ranges.",
-        "Output clearly associates each position ID with its health factor."
     ]
 }

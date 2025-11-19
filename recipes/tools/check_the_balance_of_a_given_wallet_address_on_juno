@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Checks that the supplied string is a valid bech32 Juno address and raises an error when it is not.",
+            "function": "validate_juno_address_format(address, expected_prefix=\"juno\")",
+            "usage": "validate_juno_address_format(\"juno1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the Juno LCD for every bank balance held by the address.",
+            "function": "await fetch_all_balances(address)",
+            "usage": "all_balances = await fetch_all_balances(\"juno1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Retrieves the list of spendable (un-vested) balances for the same address.",
+            "function": "await fetch_spendable_balances(address)",
+            "usage": "spendable_balances = await fetch_spendable_balances(\"juno1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Downloads metadata for every known denom so amounts can be converted to display units.",
+            "function": "await fetch_denoms_metadata()",
+            "usage": "denom_metadata = await fetch_denoms_metadata()"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Merges raw, spendable and metadata information into a human-readable balance list grouped by denom.",
+            "function": "format_balances(all_balances, spendable_balances, metadata_index)",
+            "usage": "readable = format_balances(all_balances, spendable_balances, build_metadata_index(denom_metadata))"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "validate_juno_address_format(\"juno1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\")#step: 1 Tool: validate_juno_address_format Desciption: Validate that ADDRESS is a well-formed Juno bech32 address (correct prefix and checksum); abort with a clear error if invalid.",
+        "all_balances = await fetch_all_balances(\"juno1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\")#step: 2 Tool: backend_query_all_balances Desciption: From the BFF backend, perform an HTTP GET to the Juno LCD: GET https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/balances/{address} replacing {address} with ADDRESS, to retrieve all token balances.",
+        "spendable_balances = await fetch_spendable_balances(\"juno1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\")#step: 3 Tool: backend_query_spendable_balances Desciption: Optionally, perform GET https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/spendable_balances/{address} for ADDRESS to distinguish spendable from vested/locked balances.",
+        "denom_metadata = await fetch_denoms_metadata()#step: 4 Tool: backend_query_denoms_metadata Desciption: Optionally call GET https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/denoms_metadata to fetch metadata (base, display, exponent) for each denom so balances can be converted from base units to display units.",
+        "readable = format_balances(all_balances, spendable_balances, build_metadata_index(denom_metadata))#step: 5 Tool: format_and_return_balances Desciption: Combine the raw balances with any available denom metadata to compute human-readable amounts (using exponent for each denom) and return a structured list grouped by denom."
+    ],
+    "intent": "Check the balance of a given wallet address on Juno",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_juno_address_format",
+            "description": "Validate that ADDRESS is a well-formed Juno bech32 address (correct prefix and checksum); abort with a clear error if invalid."
+        },
+        {
+            "step": 2,
+            "tool": "backend_query_all_balances",
+            "description": "From the BFF backend, perform an HTTP GET to the Juno LCD: GET https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/balances/{address} replacing {address} with ADDRESS, to retrieve all token balances."
+        },
+        {
+            "step": 3,
+            "tool": "backend_query_spendable_balances",
+            "description": "Optionally, perform GET https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/spendable_balances/{address} for ADDRESS to distinguish spendable from vested/locked balances."
+        },
+        {
+            "step": 4,
+            "tool": "backend_query_denoms_metadata",
+            "description": "Optionally call GET https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/denoms_metadata to fetch metadata (base, display, exponent) for each denom so balances can be converted from base units to display units."
+        },
+        {
+            "step": 5,
+            "tool": "format_and_return_balances",
+            "description": "Combine the raw balances with any available denom metadata to compute human-readable amounts (using exponent for each denom) and return a structured list grouped by denom."
+        }
+    ],
+    "outcome_checks": [
+        "The LCD calls return HTTP 200 responses with a balances array (possibly empty) for ADDRESS.",
+        "If denom metadata was fetched, displayed amounts equal raw amount divided by 10^exponent for each denom.",
+        "No address format or network errors occur while querying the LCD."
+    ]
+}

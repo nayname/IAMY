@@ -1,0 +1,106 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "No helper function in the current codebase directly parses Rust msg definitions, so this step must be implemented manually.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Adds the cw-orch crate as an optional dependency to the contract\u2019s Cargo.toml file, writing the change back to disk.",
+            "function": "add_cw_orch_optional_dependency(project_root='.', version='0.18.0')",
+            "usage": "add_cw_orch_optional_dependency('/path/to/contract', '0.18.0')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "The current codebase has no utility that creates interface.rs automatically; this must be written manually.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "No existing helper applies the cw-orch #[interface] macro to a trait; this annotation must be added by hand.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "No helper is present to wire InstantiateMsg / ExecuteMsg / QueryMsg types into the trait; code must be written manually.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Re-exporting the generated interface from lib.rs is not automated by any existing function.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Runs `cargo check` in the contract crate to ensure the project (including the new interface) compiles successfully.",
+            "function": "run_cargo_check(crate_dir='.')",
+            "usage": "run_cargo_check('/path/to/contract')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "undef#step: 1 Tool: analyze_contract_msgs Desciption: From the CosmWasm contract crate, read the message definition module (commonly src/msg.rs) to identify InstantiateMsg, ExecuteMsg, QueryMsg, and any response types used by the contract.",
+        "add_cw_orch_optional_dependency('/path/to/contract', '0.18.0')#step: 2 Tool: edit_cargo_toml Desciption: In the contract's Cargo.toml, add the cw-orch (cw-orchestrator) dependency with the appropriate version and features (including the interface macro feature if required by the cw-orch version).",
+        "undef#step: 3 Tool: create_interface_rs Desciption: Create a new source file src/interface.rs in the contract crate and declare a Rust trait representing the contract's interface. Each trait method should correspond to one InstantiateMsg, ExecuteMsg, or QueryMsg variant and use the same argument and response types.",
+        "undef#step: 4 Tool: apply_cw_orch_interface_macro Desciption: Annotate the trait in src/interface.rs with cw-orch's #[interface] macro and mark each method with cw-orch attributes such as #[msg(instantiate)], #[msg(exec)], or #[msg(query)] so that cw-orch can derive the contract wrapper type and message wiring.",
+        "undef#step: 5 Tool: wire_interface_types Desciption: Inside src/interface.rs, import the contract's InstantiateMsg, ExecuteMsg, QueryMsg, and response structs, and ensure the interface macro is configured so those types are used for encoding and decoding messages (following the patterns from the cw-orchestrator Juno documentation).",
+        "undef#step: 6 Tool: re_export_interface Desciption: Re-export the generated cw-orch interface type from lib.rs or mod.rs (for example, pub use crate::interface::Counter;) so cw-orch scripts or tests in another crate can construct Counter<Chain> instances.",
+        "run_cargo_check('/path/to/contract')#step: 7 Tool: cargo_check Desciption: Run `cargo check` or `cargo build` on the contract crate to confirm that cw-orch and interface.rs compile correctly and that macro expansion succeeds."
+    ],
+    "intent": "Generate interface.rs for the contract with cw-orch interface macro",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "analyze_contract_msgs",
+            "description": "From the CosmWasm contract crate, read the message definition module (commonly src/msg.rs) to identify InstantiateMsg, ExecuteMsg, QueryMsg, and any response types used by the contract."
+        },
+        {
+            "step": 2,
+            "tool": "edit_cargo_toml",
+            "description": "In the contract's Cargo.toml, add the cw-orch (cw-orchestrator) dependency with the appropriate version and features (including the interface macro feature if required by the cw-orch version)."
+        },
+        {
+            "step": 3,
+            "tool": "create_interface_rs",
+            "description": "Create a new source file src/interface.rs in the contract crate and declare a Rust trait representing the contract's interface. Each trait method should correspond to one InstantiateMsg, ExecuteMsg, or QueryMsg variant and use the same argument and response types."
+        },
+        {
+            "step": 4,
+            "tool": "apply_cw_orch_interface_macro",
+            "description": "Annotate the trait in src/interface.rs with cw-orch's #[interface] macro and mark each method with cw-orch attributes such as #[msg(instantiate)], #[msg(exec)], or #[msg(query)] so that cw-orch can derive the contract wrapper type and message wiring."
+        },
+        {
+            "step": 5,
+            "tool": "wire_interface_types",
+            "description": "Inside src/interface.rs, import the contract's InstantiateMsg, ExecuteMsg, QueryMsg, and response structs, and ensure the interface macro is configured so those types are used for encoding and decoding messages (following the patterns from the cw-orchestrator Juno documentation)."
+        },
+        {
+            "step": 6,
+            "tool": "re_export_interface",
+            "description": "Re-export the generated cw-orch interface type from lib.rs or mod.rs (for example, pub use crate::interface::Counter;) so cw-orch scripts or tests in another crate can construct Counter<Chain> instances."
+        },
+        {
+            "step": 7,
+            "tool": "cargo_check",
+            "description": "Run `cargo check` or `cargo build` on the contract crate to confirm that cw-orch and interface.rs compile correctly and that macro expansion succeeds."
+        }
+    ],
+    "outcome_checks": [
+        "The contract crate compiles successfully after adding cw-orch and src/interface.rs.",
+        "The generated cw-orch interface type (for example, Counter<Chain>) can be imported from an external Rust binary or test crate.",
+        "A minimal cw-orch script using the interface (e.g. calling upload or a dry-run query) compiles and runs without serialization or type errors."
+    ]
+}

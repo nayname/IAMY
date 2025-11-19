@@ -1,0 +1,93 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Creates a LedgerClient connected to the Juno RPC endpoint, giving the backend a chain handle it can use for subsequent contract actions.",
+            "function": "init_signing_cosmwasm_client(wallet)",
+            "usage": "client = init_signing_cosmwasm_client(wallet)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "No fully-implemented function in the current codebase directly instantiates a cw-orch interface object.",
+            "function": "undef",
+            "usage": "undef"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Broadcasts a signed MsgStoreCode transaction to upload the compiled WASM to the Juno chain and returns the on-chain transaction response.",
+            "function": "broadcast_store_code_tx(tx_bytes)",
+            "usage": "tx_response = broadcast_store_code_tx(tx_bytes)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Fetches an instantiate transaction by hash, parses its logs and verifies the new contract, returning the instantiated contract address.",
+            "function": "await resolve_contract_from_txhash(tx_hash)",
+            "usage": "result = await resolve_contract_from_txhash(tx_hash)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Sends the {\"increment\":{}} execute message to the counter contract and waits for the transaction confirmation on-chain.",
+            "function": "execute_increment_msg_over_rpc(client, wallet, contract_address, memo=None)",
+            "usage": "exec_res = execute_increment_msg_over_rpc(client, wallet, contract_address)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Queries the contract via the LCD smart-query endpoint to retrieve the current counter value after the increment.",
+            "function": "get_current_count(contract_address)",
+            "usage": "count = get_current_count(contract_address)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "client = init_signing_cosmwasm_client(wallet)#step: 1 Tool: cw_orch_chain_setup_backend Desciption: In a backend Rust binary or test (not in the frontend), initialize a cw-orch chain handle (e.g. using DaemonBuilder or the chain type recommended in the Juno cw-orchestrator guide) with the target RPC endpoint, chain-id, and a funded signer key or mnemonic.",
+        "undef#step: 2 Tool: instantiate_cw_orch_interface Desciption: Import the generated cw-orch interface type from the contract crate (for example, Counter<Chain>) and construct it with the chain handle so it knows which contract artifact (.wasm) and messages to use.",
+        "tx_response = broadcast_store_code_tx(tx_bytes)#step: 3 Tool: cw_orch_upload Desciption: Call the interface's upload helper (for example, counter.upload()?) from the backend. This should broadcast a store-code transaction to the Juno chain and record the returned code_id within the cw-orch wrapper.",
+        "result = await resolve_contract_from_txhash(tx_hash)#step: 4 Tool: cw_orch_instantiate Desciption: From the backend, call the interface's instantiate helper (for example, counter.instantiate(InstantiateMsg { ... })?) with an appropriate InstantiateMsg. Capture the resulting contract address returned by cw-orch, which is derived from the instantiate transaction response.",
+        "exec_res = execute_increment_msg_over_rpc(client, wallet, contract_address)#step: 5 Tool: cw_orch_execute_increment Desciption: Use the cw-orch interface to execute the increment entry point on the newly instantiated counter contract (for example, counter.increment()?). Ensure the backend waits for the transaction to be included in a block and checks for a successful code in the result.",
+        "count = get_current_count(contract_address)#step: 6 Tool: lcd_query_smart_count Desciption: Optionally verify on-chain state by issuing an LCD request from the backend: GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{contract_address}/smart/{query_data}, where query_data is the base64-encoded JSON query (e.g. {\"get_count\":{}}). Decode the response and confirm that the counter value has increased compared to its initial value."
+    ],
+    "intent": "Upload, instantiate and increment the counter using cw-orchestrator",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "cw_orch_chain_setup_backend",
+            "description": "In a backend Rust binary or test (not in the frontend), initialize a cw-orch chain handle (e.g. using DaemonBuilder or the chain type recommended in the Juno cw-orchestrator guide) with the target RPC endpoint, chain-id, and a funded signer key or mnemonic."
+        },
+        {
+            "step": 2,
+            "tool": "instantiate_cw_orch_interface",
+            "description": "Import the generated cw-orch interface type from the contract crate (for example, Counter<Chain>) and construct it with the chain handle so it knows which contract artifact (.wasm) and messages to use."
+        },
+        {
+            "step": 3,
+            "tool": "cw_orch_upload",
+            "description": "Call the interface's upload helper (for example, counter.upload()?) from the backend. This should broadcast a store-code transaction to the Juno chain and record the returned code_id within the cw-orch wrapper."
+        },
+        {
+            "step": 4,
+            "tool": "cw_orch_instantiate",
+            "description": "From the backend, call the interface's instantiate helper (for example, counter.instantiate(InstantiateMsg { ... })?) with an appropriate InstantiateMsg. Capture the resulting contract address returned by cw-orch, which is derived from the instantiate transaction response."
+        },
+        {
+            "step": 5,
+            "tool": "cw_orch_execute_increment",
+            "description": "Use the cw-orch interface to execute the increment entry point on the newly instantiated counter contract (for example, counter.increment()?). Ensure the backend waits for the transaction to be included in a block and checks for a successful code in the result."
+        },
+        {
+            "step": 6,
+            "tool": "lcd_query_smart_count",
+            "description": "Optionally verify on-chain state by issuing an LCD request from the backend: GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{contract_address}/smart/{query_data}, where query_data is the base64-encoded JSON query (e.g. {\"get_count\":{}}). Decode the response and confirm that the counter value has increased compared to its initial value."
+        }
+    ],
+    "outcome_checks": [
+        "The cw-orch upload step returns a valid code_id and no transaction errors.",
+        "The cw-orch instantiate step returns a valid contract address (e.g. starting with juno1) and LCD GET /cosmwasm/wasm/v1/contract/{address} responds with contract_info.",
+        "After running the increment execute call, a smart query (either via cw-orch or via the LCD smart-query endpoint) returns a counter value that is exactly one higher than the initial value."
+    ]
+}

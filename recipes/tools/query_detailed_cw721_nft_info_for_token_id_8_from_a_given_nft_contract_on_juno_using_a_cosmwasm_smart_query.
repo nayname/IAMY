@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Checks that the supplied Juno contract address is valid and converts the numeric token ID into the string format expected by CW-721 contracts.",
+            "function": "validate_contract_and_token(contract_address, token_id)",
+            "usage": "normalized_addr, token_id_str = validate_contract_and_token('juno1abc...xyz', 8)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Creates the CW721 nft_info query object for the given token ID.",
+            "function": "build_nft_info_query_json(token_id)",
+            "usage": "query_json = build_nft_info_query_json(token_id_str)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Serializes the query JSON and base64-encodes it for use in the LCD smart-query endpoint.",
+            "function": "encode_query_to_base64(query)",
+            "usage": "query_b64 = encode_query_to_base64(query_json)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Sends the smart-query HTTP GET to Juno\u2019s LCD for the contract\u2019s nft_info response.",
+            "function": "lcd_smart_query_nft_info(contract_address, query_data_b64)",
+            "usage": "lcd_response = lcd_smart_query_nft_info(normalized_addr, query_b64)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Decodes the base64 \"data\" field from the LCD response and parses the contained JSON.",
+            "function": "decode_response_data(lcd_response)",
+            "usage": "nft_info = decode_response_data(lcd_response)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Runs the full validation, query, decode flow and returns the final nft_info metadata or raises a not-found error.",
+            "function": "return_nft_metadata(contract_address, token_id)",
+            "usage": "nft_info = return_nft_metadata('juno1abc...xyz', 8)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "normalized_addr, token_id_str = validate_contract_and_token('juno1abc...xyz', 8)#step: 1 Tool: validate_contract_and_token Desciption: Validate that CONTRACT_ADDRESS is a valid Juno bech32 address and that the token ID \"8\" is represented as the correct string type expected by the contract (e.g., \"8\").",
+        "query_json = build_nft_info_query_json(token_id_str)#step: 2 Tool: build_nft_info_query_json Desciption: Construct the CW721 nft_info query JSON object: {\"nft_info\": {\"token_id\": \"8\"}}.",
+        "query_b64 = encode_query_to_base64(query_json)#step: 3 Tool: encode_query_to_base64 Desciption: Serialize the nft_info JSON to UTF-8 and base64-encode it to produce QUERY_DATA_B64 for the LCD smart contract endpoint.",
+        "lcd_response = lcd_smart_query_nft_info(normalized_addr, query_b64)#step: 4 Tool: lcd_smart_query_nft_info Desciption: Perform an HTTP GET to \"https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/CONTRACT_ADDRESS/smart/QUERY_DATA_B64\" to query the contract's nft_info for token ID 8.",
+        "nft_info = decode_response_data(lcd_response)#step: 5 Tool: decode_response_data Desciption: Read the \"data\" field from the LCD response, decode it from base64 to bytes, and parse the result as JSON. This JSON should contain fields such as token_uri and extension as defined by the CW721 standard or the contract's schema.",
+        "nft_info = return_nft_metadata('juno1abc...xyz', 8)#step: 6 Tool: return_nft_metadata Desciption: Return the parsed nft_info object (including token_uri and any metadata extension fields) as the result. If the contract signals that the token does not exist (e.g., by returning an error), surface a clear not-found error."
+    ],
+    "intent": "Query detailed CW721 nft_info for token ID 8 from a given NFT contract on Juno using a CosmWasm smart query.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_contract_and_token",
+            "description": "Validate that CONTRACT_ADDRESS is a valid Juno bech32 address and that the token ID \"8\" is represented as the correct string type expected by the contract (e.g., \"8\")."
+        },
+        {
+            "step": 2,
+            "tool": "build_nft_info_query_json",
+            "description": "Construct the CW721 nft_info query JSON object: {\"nft_info\": {\"token_id\": \"8\"}}."
+        },
+        {
+            "step": 3,
+            "tool": "encode_query_to_base64",
+            "description": "Serialize the nft_info JSON to UTF-8 and base64-encode it to produce QUERY_DATA_B64 for the LCD smart contract endpoint."
+        },
+        {
+            "step": 4,
+            "tool": "lcd_smart_query_nft_info",
+            "description": "Perform an HTTP GET to \"https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/CONTRACT_ADDRESS/smart/QUERY_DATA_B64\" to query the contract's nft_info for token ID 8."
+        },
+        {
+            "step": 5,
+            "tool": "decode_response_data",
+            "description": "Read the \"data\" field from the LCD response, decode it from base64 to bytes, and parse the result as JSON. This JSON should contain fields such as token_uri and extension as defined by the CW721 standard or the contract's schema."
+        },
+        {
+            "step": 6,
+            "tool": "return_nft_metadata",
+            "description": "Return the parsed nft_info object (including token_uri and any metadata extension fields) as the result. If the contract signals that the token does not exist (e.g., by returning an error), surface a clear not-found error."
+        }
+    ],
+    "outcome_checks": [
+        "The GET request to /cosmwasm/wasm/v1/contract/{address}/smart/{query_data} returns HTTP 200 for valid tokens, or a clear error message for nonexistent tokens.",
+        "The \"data\" field from the response can be base64-decoded and parsed as JSON without errors.",
+        "The resulting JSON object includes the expected nft_info fields (for example, token_uri and extension) that correspond to token ID \"8\".",
+        "If token 8 does not exist, the error is reported explicitly rather than returning malformed or empty metadata."
+    ]
+}

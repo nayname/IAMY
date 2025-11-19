@@ -1,0 +1,54 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "retrieve_last_tx_output() converts the raw JSON string returned from the previous transaction into a Python dict for further inspection.",
+            "function": "retrieve_last_tx_output(raw_output: str)",
+            "usage": "tx_output = retrieve_last_tx_output(raw_tx_json)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "parse_code_id_from_output() scans the parsed transaction dictionary and pulls out the numeric code_id value.",
+            "function": "parse_code_id_from_output(tx_output: dict)",
+            "usage": "code_id = parse_code_id_from_output(tx_output)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "export_shell_variable_CODE_ID() formats the extracted code_id as a shell export statement so other commands can reference it.",
+            "function": "export_shell_variable_CODE_ID(code_id: str)",
+            "usage": "export_cmd = export_shell_variable_CODE_ID(code_id)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "tx_output = retrieve_last_tx_output(raw_tx_json)#step: 1 Tool: retrieve_last_tx_output Desciption: Access the JSON output from the last contract code upload or related command (for example, the response from a wasm store transaction that includes a code_id field or emits it in logs).",
+        "code_id = parse_code_id_from_output(tx_output)#step: 2 Tool: parse_code_id_from_output Desciption: Parse the captured JSON (using a shell tool like jq or backend JSON parser) to extract the numeric code_id value from the appropriate field or log event.",
+        "export_cmd = export_shell_variable_CODE_ID(code_id)#step: 3 Tool: export_shell_variable_CODE_ID Desciption: In the shell environment, assign the extracted code_id to an environment variable named CODE_ID so that subsequent commands can reference it (e.g., CODE_ID=<extracted value>)."
+    ],
+    "intent": "Store the returned code id in shell variable CODE_ID",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "retrieve_last_tx_output",
+            "description": "Access the JSON output from the last contract code upload or related command (for example, the response from a wasm store transaction that includes a code_id field or emits it in logs)."
+        },
+        {
+            "step": 2,
+            "tool": "parse_code_id_from_output",
+            "description": "Parse the captured JSON (using a shell tool like jq or backend JSON parser) to extract the numeric code_id value from the appropriate field or log event."
+        },
+        {
+            "step": 3,
+            "tool": "export_shell_variable_CODE_ID",
+            "description": "In the shell environment, assign the extracted code_id to an environment variable named CODE_ID so that subsequent commands can reference it (e.g., CODE_ID=<extracted value>)."
+        }
+    ],
+    "outcome_checks": [
+        "The parsed code_id is non-empty and numeric.",
+        "Echoing $CODE_ID in the shell prints the same value as found in the original transaction output.",
+        "Subsequent commands that rely on CODE_ID (such as contract instantiation or queries that use CODE_ID-derived addresses) behave as expected."
+    ]
+}

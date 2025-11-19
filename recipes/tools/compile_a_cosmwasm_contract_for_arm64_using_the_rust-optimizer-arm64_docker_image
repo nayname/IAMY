@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Checks that Docker is installed and responsive by running the `docker version` command.",
+            "function": "verify_docker_installed()",
+            "usage": "docker_status = verify_docker_installed()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Runs `cargo check` in the contract root to make sure the Rust project compiles before optimization.",
+            "function": "verify_contract_builds_locally(project_root)",
+            "usage": "verify_contract_builds_locally(\"/path/to/contract\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Invokes the CosmWasm ARM64 rust-optimizer Docker image against the contract directory.",
+            "function": "run_rust_optimizer_arm64(project_root, tag='latest')",
+            "usage": "run_rust_optimizer_arm64(\"/path/to/contract\", tag=\"latest\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Lists the optimized .wasm files produced in the artifacts directory after the optimizer finishes.",
+            "function": "collect_optimized_wasm_artifacts(project_root)",
+            "usage": "wasm_files = collect_optimized_wasm_artifacts(\"/path/to/contract\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "docker_status = verify_docker_installed()#step: 1 Tool: shell_verify_docker_installed Desciption: On the build machine (ARM64 host or Apple Silicon), run `docker version` to confirm Docker is installed and running; if not, instruct the user to install Docker first.",
+        "verify_contract_builds_locally(\"/path/to/contract\")#step: 2 Tool: shell_verify_contract_builds_locally Desciption: From the smart contract project root (where Cargo.toml resides), run `cargo check` to ensure the Rust project compiles before running the optimizer.",
+        "run_rust_optimizer_arm64(\"/path/to/contract\", tag=\"latest\")#step: 3 Tool: shell_run_rust_optimizer_arm64 Desciption: From the contract root directory, execute the rust-optimizer ARM64 Docker image (using an appropriate tag, e.g. latest or a pinned version): `docker run --rm -v \"$(pwd)\":/code --mount type=volume,source=\"$(basename \"$(pwd)\")_cache\",target=/code/target cosmwasm/rust-optimizer-arm64:TAG`, replacing TAG with the desired image tag.",
+        "wasm_files = collect_optimized_wasm_artifacts(\"/path/to/contract\")#step: 4 Tool: shell_collect_artifacts Desciption: After the optimizer completes, inspect the ./artifacts directory created in the project root and list the generated optimized .wasm files (e.g. `ls artifacts/*.wasm`)."
+    ],
+    "intent": "Compile a CosmWasm contract for ARM64 using the rust-optimizer-arm64 Docker image",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "shell_verify_docker_installed",
+            "description": "On the build machine (ARM64 host or Apple Silicon), run `docker version` to confirm Docker is installed and running; if not, instruct the user to install Docker first."
+        },
+        {
+            "step": 2,
+            "tool": "shell_verify_contract_builds_locally",
+            "description": "From the smart contract project root (where Cargo.toml resides), run `cargo check` to ensure the Rust project compiles before running the optimizer."
+        },
+        {
+            "step": 3,
+            "tool": "shell_run_rust_optimizer_arm64",
+            "description": "From the contract root directory, execute the rust-optimizer ARM64 Docker image (using an appropriate tag, e.g. latest or a pinned version): `docker run --rm -v \"$(pwd)\":/code --mount type=volume,source=\"$(basename \"$(pwd)\")_cache\",target=/code/target cosmwasm/rust-optimizer-arm64:TAG`, replacing TAG with the desired image tag."
+        },
+        {
+            "step": 4,
+            "tool": "shell_collect_artifacts",
+            "description": "After the optimizer completes, inspect the ./artifacts directory created in the project root and list the generated optimized .wasm files (e.g. `ls artifacts/*.wasm`)."
+        }
+    ],
+    "outcome_checks": [
+        "The Docker rust-optimizer-arm64 container exits with status code 0 and no build errors in the logs.",
+        "At least one optimized .wasm file exists in the artifacts directory, typically named after the contract (for example, artifacts/contract_name.wasm).",
+        "The generated .wasm file passes basic validation (e.g., can be uploaded to a local Juno node or checked with `wasm-objdump` without errors)."
+    ]
+}

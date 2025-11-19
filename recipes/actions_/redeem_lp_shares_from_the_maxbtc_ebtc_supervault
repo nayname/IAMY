@@ -1,80 +1,40 @@
 {
-    "tools": [
+    "label": "execute",
+    "workflow": [
         {
             "step": 1,
             "label": "frontend",
-            "introduction": "Obtains the user\u2019s Neutron wallet address (and signer) via the browser wallet extension.",
-            "function": "getUserAddress(chainId = 'neutron-1')",
-            "usage": "const { address: userAddr, signer } = await getUserAddress();"
+            "introduction": "Connects to the user\u2019s Keplr wallet, enables the Neutron chain, and returns both the signer and the user\u2019s bech32 address.",
+            "code": "export const getUserAddress = async (chainId = 'neutron-1') => {\n  // Check that Keplr is available in the browser\n  if (!window.keplr) {\n    throw new Error('Keplr wallet not found. Please install or unlock the Keplr browser extension.');\n  }\n\n  // Ask Keplr to enable the target chain (this may prompt the user)\n  await window.keplr.enable(chainId);\n\n  // Obtain an OfflineSigner instance for the chain\n  const signer = window.getOfflineSigner(chainId);\n  const accounts = await signer.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No accounts detected in Keplr for the selected chain.');\n  }\n\n  // Return signer (for later use) and address\n  return {\n    signer,\n    address: accounts[0].address,\n  };\n};",
+            "usage": "const { signer, address } = await getUserAddress();"
         },
         {
             "step": 2,
             "label": "frontend",
-            "introduction": "Queries the Supervault smart-contract over LCD to fetch the user\u2019s current LP-share balance.",
-            "function": "queryShareBalance(restEndpoint, contractAddress, userAddress)",
-            "usage": "const currentBalance = await queryShareBalance('https://rest-kralum.neutron.org', vaultAddr, userAddr);"
+            "introduction": "Queries the Supervault contract to obtain the user\u2019s current LP share balance via the CosmWasm REST endpoint.",
+            "code": "export const queryShareBalance = async (restEndpoint, contractAddress, userAddress) => {\n  // The exact query key (\"balance\") should match the Supervault contract\u2019s API.\n  const queryPayload = { \"balance\": { \"address\": userAddress } };\n\n  // CosmWasm REST endpoints expect the query JSON to be base64-encoded.\n  const base64Query = btoa(JSON.stringify(queryPayload));\n  const url = `${restEndpoint}/cosmwasm/wasm/v1/contract/${contractAddress}/smart/${base64Query}`;\n\n  const response = await fetch(url);\n  if (!response.ok) {\n    throw new Error(`Contract query failed: ${response.status} ${response.statusText}`);\n  }\n\n  const { data } = await response.json();\n  // Assume the contract returns `{ balance: \"<amount>\" }`. Adjust as needed.\n  return data?.balance || '0';\n};",
+            "usage": "const availableShares = await queryShareBalance(REST_ENDPOINT, CONTRACT_ADDRESS, address);"
         },
         {
             "step": 3,
             "label": "frontend",
-            "introduction": "Checks that the requested redemption amount does not exceed the user\u2019s available LP shares.",
-            "function": "validateRedeemAmount(requestedAmount, availableShares)",
-            "usage": "validateRedeemAmount(sharesToRedeem, currentBalance);"
+            "introduction": "Performs a simple client-side check to be sure the requested redemption does not exceed the user\u2019s share balance.",
+            "code": "export const validateRedeemAmount = (requestedAmount, availableShares) => {\n  const req = BigInt(requestedAmount);\n  const avail = BigInt(availableShares);\n\n  if (req <= 0n) {\n    throw new Error('Redeem amount must be greater than zero.');\n  }\n  if (req > avail) {\n    throw new Error('Redeem amount exceeds the available share balance.');\n  }\n  // Validation successful\n  return true;\n};",
+            "usage": "validateRedeemAmount(sharesToRedeem, availableShares);"
         },
         {
             "step": 4,
             "label": "backend",
-            "introduction": "Builds a CosmWasm MsgExecuteContract containing the Supervault \"withdraw\" execute payload.",
-            "function": "construct_wasm_execute_msg(sender, contract_address, shares_to_redeem)",
-            "usage": "const executeMsg = construct_wasm_execute_msg(userAddr, vaultAddr, sharesToRedeem);"
+            "introduction": "Creates a `MsgExecuteContract` protobuf message that calls the Supervault\u2019s `withdraw` entry point with the desired share amount.",
+            "code": "import json\nfrom cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgExecuteContract\n\n\ndef construct_wasm_execute_msg(sender: str, contract_address: str, shares_to_redeem: int) -> MsgExecuteContract:\n    \"\"\"Build a MsgExecuteContract for a Supervault `withdraw` call.\n\n    Args:\n        sender (str): The bech32 address initiating the transaction.\n        contract_address (str): The Supervault contract address.\n        shares_to_redeem (int): LP shares to redeem.\n\n    Returns:\n        MsgExecuteContract: Ready-to-sign protobuf message.\n    \"\"\"\n    withdraw_msg = {\"withdraw\": {\"amount\": str(shares_to_redeem)}}\n\n    msg = MsgExecuteContract(\n        sender=sender,\n        contract=contract_address,\n        msg=json.dumps(withdraw_msg).encode('utf-8'),\n        funds=[]  # No native coins sent along with the execute call\n    )\n    return msg",
+            "usage": "execute_msg = construct_wasm_execute_msg(sender_address, CONTRACT_ADDRESS, shares_to_redeem)"
         },
         {
             "step": 5,
-            "label": "frontend",
-            "introduction": "Signs the transaction with the user\u2019s key and relays the signed bytes to the backend for broadcasting to Neutron.",
-            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo = '')",
-            "usage": "const txHash = await signAndBroadcast(signer, userAddr, [executeMsg], 'auto');"
+            "label": "backend",
+            "introduction": "Signs the constructed message with a mnemonic held on the server (or another secure signing method) and broadcasts it to the Neutron network.",
+            "code": "import os\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.aerial.wallet import MnemonicWallet\n\n# IMPORTANT: never hard-code sensitive keys. Use environment variables or a secure vault.\nMNEMONIC_ENV = \"USER_MNEMONIC\"  # The environment variable expected to store the user mnemonic.\n\nNETWORK = NetworkConfig(\n    chain_id=\"neutron-1\",\n    url=\"https://rpc.kralum.neutron-1.neutron.org\",  # Replace with a trusted RPC endpoint\n    fee_denom=\"untrn\",\n    fee_minimum_gas_price=0.025,\n)\n\ndef sign_and_broadcast_tx(execute_msg):\n    \"\"\"Signs and broadcasts the given execute message.\n\n    Args:\n        execute_msg (MsgExecuteContract): Message produced by `construct_wasm_execute_msg`.\n\n    Returns:\n        dict: `{ \"tx_hash\": \"...\" }` when successful.\n    \"\"\"\n    mnemonic = os.getenv(MNEMONIC_ENV)\n    if not mnemonic:\n        raise EnvironmentError(f\"Mnemonic not provided in env var {MNEMONIC_ENV}.\")\n\n    wallet = MnemonicWallet(mnemonic)\n    client = LedgerClient(NETWORK)\n\n    tx = Transaction()\n    tx.add_message(execute_msg)\n    tx.with_sender(wallet.address())\n\n    # Estimate gas & fees, sign, then broadcast\n    tx = tx.autofill(client)\n    tx = tx.sign(wallet)\n\n    response = client.broadcast_block(tx)\n    if response.is_ok():\n        return {\"tx_hash\": response.tx_hash}\n    else:\n        raise Exception(f\"Broadcast failed: {response.raw_log}\")",
+            "usage": "tx_receipt = sign_and_broadcast_tx(execute_msg)"
         }
-    ],
-    "frontend": [
-        "const { address: userAddr, signer } = await getUserAddress();//step: 1 Tool: get_user_address Desciption: Identify the wallet address that holds the Supervault shares.",
-        "const currentBalance = await queryShareBalance('https://rest-kralum.neutron.org', vaultAddr, userAddr);//step: 2 Tool: query_contract_state Desciption: Fetch the user\u2019s current share balance and the Supervault contract address (e.g., `supervault_maxBTC_eBTC`) to determine the maximum redeemable amount.",
-        "validateRedeemAmount(sharesToRedeem, currentBalance);//step: 3 Tool: validate_redeem_amount Desciption: Confirm the user has enough LP shares to cover the requested redemption.",
-        "const txHash = await signAndBroadcast(signer, userAddr, [executeMsg], 'auto');//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign the transaction with the user\u2019s key and broadcast it to the Neutron network."
-    ],
-    "backend": [
-        "const executeMsg = construct_wasm_execute_msg(userAddr, vaultAddr, sharesToRedeem);#step: 4 Tool: construct_wasm_execute_msg Desciption: Build a `withdraw` execute message for the Supervault contract with `{ \"amount\": <shares_to_redeem> }`."
-    ],
-    "intent": "Redeem LP shares from the maxBTC/eBTC Supervault",
-    "workflow": [
-        {
-            "step": 1,
-            "tool": "get_user_address",
-            "description": "Identify the wallet address that holds the Supervault shares."
-        },
-        {
-            "step": 2,
-            "tool": "query_contract_state",
-            "description": "Fetch the user\u2019s current share balance and the Supervault contract address (e.g., `supervault_maxBTC_eBTC`) to determine the maximum redeemable amount."
-        },
-        {
-            "step": 3,
-            "tool": "validate_redeem_amount",
-            "description": "Confirm the user has enough LP shares to cover the requested redemption."
-        },
-        {
-            "step": 4,
-            "tool": "construct_wasm_execute_msg",
-            "description": "Build a `withdraw` execute message for the Supervault contract with `{ \"amount\": <shares_to_redeem> }`."
-        },
-        {
-            "step": 5,
-            "tool": "sign_and_broadcast_tx",
-            "description": "Sign the transaction with the user\u2019s key and broadcast it to the Neutron network."
-        }
-    ],
-    "outcome_checks": [
-        "Verify the transaction hash was included in a block without error codes.",
-        "Confirm the user\u2019s maxBTC and eBTC balances increased while their Supervault share balance decreased by the redeemed amount."
     ]
 }

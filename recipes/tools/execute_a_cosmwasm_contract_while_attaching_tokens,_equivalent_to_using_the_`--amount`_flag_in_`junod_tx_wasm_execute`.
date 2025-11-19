@@ -1,0 +1,107 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Parses a CLI-style coin string and returns a validated list of {denom, amount} objects.",
+            "function": "parse_and_validate_amounts(coin_str, allowed_denoms=None)",
+            "usage": "coins = parse_and_validate_amounts(\"50000ujunox,25000ujuno\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the Juno LCD for the sender\u2019s spendable balances and ensures each requested denom has sufficient funds (including fee buffers).",
+            "function": "await check_spendable_balances_for_sender(sender_address, required_funds, expected_fee_per_denom=None, lcd_url=LCD_URL)",
+            "usage": "balances = await check_spendable_balances_for_sender(sender, coins)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Builds a MsgExecuteContract protobuf, embedding the execute JSON and the funds array that replicates the --amount flag.",
+            "function": "build_execute_contract_msg_with_funds(sender, contract, execute_msg, funds)",
+            "usage": "msg = build_execute_contract_msg_with_funds(sender_addr, contract_addr, {\"increment\": {}}, coins)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Wraps the MsgExecuteContract in an unsigned Tx, calculating a provisional gas limit and fee for the target chain-id.",
+            "function": "await construct_execute_tx(msg, public_key_bytes, sequence, gas_limit=200000, gas_adjustment=1.0, lcd_url=LCD_URL)",
+            "usage": "unsigned_tx, gas_limit, fee_coin = await construct_execute_tx(msg, pubkey_bytes, seq)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "POSTs the unsigned Tx to /simulate to obtain gas_used and returns an adjusted gas_limit for later signing.",
+            "function": "await simulate_execute_tx(unsigned_tx, gas_adjustment=1.2, lcd_url=LCD_URL)",
+            "usage": "gas_used, new_gas_limit = await simulate_execute_tx(unsigned_tx)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Signs the updated transaction with the sender\u2019s key and broadcasts it to the LCD in BROADCAST_MODE_BLOCK, returning the txhash and full response.",
+            "function": "await sign_and_broadcast_execute_tx(unsigned_tx, privkey_hex, account_number, sequence, chain_id, lcd_url=LCD_URL)",
+            "usage": "txhash, tx_resp = await sign_and_broadcast_execute_tx(unsigned_tx, PRIVKEY_HEX, acct_num, seq, \"juno-1\")"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Re-queries contract and sender balances to confirm the attached funds were transferred as expected.",
+            "function": "await verify_funds_transferred_to_contract(contract_address, sender_address, attached_funds, before_contract_balances=None, before_sender_balances=None, lcd_url=LCD_URL)",
+            "usage": "verification = await verify_funds_transferred_to_contract(contract_addr, sender_addr, coins)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "coins = parse_and_validate_amounts(\"50000ujunox,25000ujuno\")#step: 1 Tool: parse_and_validate_amounts Desciption: Parse the human-provided coin string (for example, `\"100000ujunox\"` or `\"50000ujunox,25000ujuno\"`) into a list of `{denom, amount}` objects. Validate that each `amount` is a positive integer and that each `denom` matches expected Juno denominations.",
+        "balances = await check_spendable_balances_for_sender(sender, coins)#step: 2 Tool: check_spendable_balances_for_sender Desciption: Call `https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/spendable_balances/{sender_address}` and ensure the sender has at least the requested token amounts plus expected fees in each denom to be attached to the contract execution.",
+        "msg = build_execute_contract_msg_with_funds(sender_addr, contract_addr, {\"increment\": {}}, coins)#step: 3 Tool: build_execute_contract_msg_with_funds Desciption: Construct a `/cosmwasm.wasm.v1.MsgExecuteContract` message including the target `contract` address, the JSON-encoded execute `msg`, the `sender` address, and a `funds` array equal to the parsed coin list. This `funds` field is the programmatic equivalent of the CLI `--amount` flag.",
+        "unsigned_tx, gas_limit, fee_coin = await construct_execute_tx(msg, pubkey_bytes, seq)#step: 4 Tool: construct_execute_tx Desciption: Wrap the `MsgExecuteContract` message in a transaction for the correct Juno chain-id (for example, `uni-6` for testnet), setting initial `gas_limit` and `fee` based on node `minimum_gas_price` and a conservative gas estimate.",
+        "gas_used, new_gas_limit = await simulate_execute_tx(unsigned_tx)#step: 5 Tool: simulate_execute_tx Desciption: POST the unsigned transaction to `https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate` to obtain `gas_info.gas_used`. Use this to fine-tune the `gas_limit` (for example, set it to `gas_used * 1.2`).",
+        "txhash, tx_resp = await sign_and_broadcast_execute_tx(unsigned_tx, PRIVKEY_HEX, acct_num, seq, \"juno-1\")#step: 6 Tool: sign_and_broadcast_execute_tx Desciption: Sign the transaction with the sender\u2019s key (including the updated gas and fees) and broadcast it by POSTing to `https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs` with `tx_bytes` and `mode` set to `BROADCAST_MODE_BLOCK`. Capture the resulting `tx_response` and `txhash`.",
+        "verification = await verify_funds_transferred_to_contract(contract_addr, sender_addr, coins)#step: 7 Tool: verify_funds_transferred_to_contract Desciption: After the transaction is included in a block, query `https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/balances/{contract_address}/by_denom?denom={attached_denom}` (or the full balances list) and confirm the contract\u2019s balance has increased by the attached amount(s). Optionally also confirm the sender\u2019s corresponding balances decreased."
+    ],
+    "intent": "Execute a CosmWasm contract while attaching tokens, equivalent to using the `--amount` flag in `junod tx wasm execute`.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "parse_and_validate_amounts",
+            "description": "Parse the human-provided coin string (for example, `\"100000ujunox\"` or `\"50000ujunox,25000ujuno\"`) into a list of `{denom, amount}` objects. Validate that each `amount` is a positive integer and that each `denom` matches expected Juno denominations."
+        },
+        {
+            "step": 2,
+            "tool": "check_spendable_balances_for_sender",
+            "description": "Call `https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/spendable_balances/{sender_address}` and ensure the sender has at least the requested token amounts plus expected fees in each denom to be attached to the contract execution."
+        },
+        {
+            "step": 3,
+            "tool": "build_execute_contract_msg_with_funds",
+            "description": "Construct a `/cosmwasm.wasm.v1.MsgExecuteContract` message including the target `contract` address, the JSON-encoded execute `msg`, the `sender` address, and a `funds` array equal to the parsed coin list. This `funds` field is the programmatic equivalent of the CLI `--amount` flag."
+        },
+        {
+            "step": 4,
+            "tool": "construct_execute_tx",
+            "description": "Wrap the `MsgExecuteContract` message in a transaction for the correct Juno chain-id (for example, `uni-6` for testnet), setting initial `gas_limit` and `fee` based on node `minimum_gas_price` and a conservative gas estimate."
+        },
+        {
+            "step": 5,
+            "tool": "simulate_execute_tx",
+            "description": "POST the unsigned transaction to `https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate` to obtain `gas_info.gas_used`. Use this to fine-tune the `gas_limit` (for example, set it to `gas_used * 1.2`)."
+        },
+        {
+            "step": 6,
+            "tool": "sign_and_broadcast_execute_tx",
+            "description": "Sign the transaction with the sender\u2019s key (including the updated gas and fees) and broadcast it by POSTing to `https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs` with `tx_bytes` and `mode` set to `BROADCAST_MODE_BLOCK`. Capture the resulting `tx_response` and `txhash`."
+        },
+        {
+            "step": 7,
+            "tool": "verify_funds_transferred_to_contract",
+            "description": "After the transaction is included in a block, query `https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/balances/{contract_address}/by_denom?denom={attached_denom}` (or the full balances list) and confirm the contract\u2019s balance has increased by the attached amount(s). Optionally also confirm the sender\u2019s corresponding balances decreased."
+        }
+    ],
+    "outcome_checks": [
+        "The execute transaction is included in a block with `tx_response.code == 0` and no error messages.",
+        "The contract account\u2019s on-chain balances (queried via the bank LCD endpoints) reflect an increase equal to the attached `--amount` tokens.",
+        "The sender\u2019s balance for each attached denom decreases by the correct amount plus gas fees.",
+        "Contract-specific effects of the execution (state changes or events) match what is expected when funds are provided."
+    ]
+}

@@ -1,80 +1,40 @@
 {
-    "tools": [
-		{
-			"step": 0,
-			"label": "frontend",
-			"introduction": "ensureWalletConnected connects to the user’s browser wallet (Keplr/Leap) and returns an OfflineSigner, confirming the wallet is ready.",
-			"function": "ensureWalletConnected()",
-			"usage": "const signer = await ensureWalletConnected();"
-		},
-		{
-			"step": 1,
-			"label": "frontend",
-			"introduction": "getWalletAddress obtains the sender’s bech32 Neutron address from the OfflineSigner.",
-			"function": "getWalletAddress(signer)",
-			"usage": "const sender = await getWalletAddress(signer);"
-		},
+    "label": "execute",
+    "workflow": [
+        {
             "step": 1,
             "label": "frontend",
-            "introduction": "Connects to the user\u2019s Keplr wallet on Neutron and returns the bech32 address that owns the Amber positions.",
-            "function": "getUserWalletAddress()",
-            "usage": "const userAddress = await getUserWalletAddress();"
+            "introduction": "Connects Keplr, verifies that the user granted access to the Neutron chain, and returns the user\u2019s Bech32 address. This address is needed to query Amber positions and to build the emergency withdrawal transaction.",
+            "code": "/* src/utils/wallet.js */\nexport const getUserWalletAddress = async (chainId = 'neutron-1') => {\n  // Ensure Keplr is injected\n  const { keplr } = window;\n  if (!keplr) {\n    throw new Error('Keplr extension not found. Install it first.');\n  }\n\n  // Ask Keplr to enable the Neutron network (prompts the user if not already enabled)\n  await keplr.enable(chainId);\n\n  // Obtain an OfflineSigner and read the first account\n  const offlineSigner = keplr.getOfflineSigner(chainId);\n  const accounts = await offlineSigner.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No Neutron account found in Keplr.');\n  }\n\n  return accounts[0].address; // Bech32 address (e.g. neutron1...)\n};",
+            "usage": "const walletAddress = await getUserWalletAddress();"
         },
         {
             "step": 2,
             "label": "backend",
-            "introduction": "Queries the Amber Finance smart-contract for every position owned by the supplied wallet address.",
-            "function": "amber_positions(user_address)",
-            "usage": "const positions = await amber_positions(userAddress);"
+            "introduction": "Queries the Amber contract for every active position owned by the supplied address. The function is exposed as a FastAPI endpoint that the frontend can call with a simple fetch.",
+            "code": "# backend/routes/amber.py\nfrom fastapi import APIRouter, HTTPException\nimport httpx, base64, json, os\n\nrouter = APIRouter()\n\n# NOTE: replace with the real Amber contract address once known\nAMBER_CONTRACT = os.getenv(\"AMBER_CONTRACT\", \"neutron1ambercontract...\")\nLCD_ENDPOINT   = os.getenv(\"LCD_ENDPOINT\",   \"https://rest-kralum.neutron.org\")\n\n@router.get(\"/api/amber/positions\")\nasync def query_amber_contract_positions(address: str):\n    \"\"\"Return all Amber positions owned by the given wallet address.\"\"\"\n    # Build the smart-query `{ \"positions\": { \"owner\": <address> } }`\n    query_object = {\"positions\": {\"owner\": address}}\n    query_b64    = base64.b64encode(json.dumps(query_object).encode()).decode()\n\n    url = f\"{LCD_ENDPOINT}/cosmwasm/wasm/v1/contract/{AMBER_CONTRACT}/smart/{query_b64}\"\n\n    async with httpx.AsyncClient() as client:\n        resp = await client.get(url, timeout=10)\n\n    if resp.status_code != 200:\n        raise HTTPException(status_code=resp.status_code, detail=resp.text)\n\n    return resp.json()  # Forward Amber\u2019s JSON response verbatim",
+            "usage": "await fetch(`/api/amber/positions?address=${walletAddress}`)\n  .then(r => r.json())\n  .then(data => console.log('Active Amber positions', data));"
         },
         {
             "step": 3,
-            "label": "frontend",
-            "introduction": "Builds a MsgExecuteContract object that calls Amber\u2019s emergency_withdraw with the chosen position_id.",
-            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds)",
-            "usage": "const txMsg = constructTxWasmExecute(userAddress, AMBER_CONTRACT, { emergency_withdraw: { position_id } }, []);"
+            "label": "backend",
+            "introduction": "Builds an unsigned emergency_withdraw transaction for a specific `position_id`. The endpoint returns a proto-encoded `SignDoc` (all fields base64-encoded) that the frontend can sign with `keplr.signDirect`.",
+            "code": "# backend/routes/tx.py\nfrom fastapi import APIRouter, HTTPException\nfrom google.protobuf.json_format import MessageToDict\nfrom cosmpy.aerial.client.lcd import LCDClient\nfrom cosmpy.aerial.tx import Transaction\nfrom cosmpy.aerial.wallet import Address\nfrom cosmpy.aerial.provision import faucet\nfrom cosmpy.protogen.cosmwasm.wasm.v1 import tx_pb2 as wasm_tx\nimport base64, os, json\n\nrouter = APIRouter()\n\nCHAIN_ID      = os.getenv(\"CHAIN_ID\", \"neutron-1\")\nRPC_ENDPOINT  = os.getenv(\"RPC_ENDPOINT\", \"https://rpc-kralum.neutron.org:443\")\nAMBER_CONTRACT = os.getenv(\"AMBER_CONTRACT\", \"neutron1ambercontract...\")\nFEE_DENOM      = os.getenv(\"FEE_DENOM\", \"untrn\")\nFEE_GAS        = int(os.getenv(\"FEE_GAS\", \"250000\"))\nFEE_AMOUNT     = os.getenv(\"FEE_AMOUNT\", \"5000\")\n\nlcd = LCDClient(url=RPC_ENDPOINT, chain_id=CHAIN_ID)\n\n@router.post(\"/api/tx/prepare\")\nasync def construct_tx_amber_emergency_withdraw(payload: dict):\n    \"\"\"\n    Body example:\n    {\n      \"sender\": \"neutron1...\",\n      \"position_id\": 42\n    }\n    \"\"\"\n    sender      = payload.get(\"sender\")\n    position_id = payload.get(\"position_id\")\n    if sender is None or position_id is None:\n        raise HTTPException(status_code=400, detail=\"'sender' and 'position_id' are required\")\n\n    # 1. Build MsgExecuteContract\n    msg = wasm_tx.MsgExecuteContract(\n        sender   = sender,\n        contract = AMBER_CONTRACT,\n        msg      = json.dumps({\"emergency_withdraw\": {\"position_id\": int(position_id)}}).encode(),\n        funds    = []  # No funds required\n    )\n\n    # 2. Ask the LCD for account_number / sequence\n    account_info = lcd.auth.account_info(Address(sender))\n    account_number = int(account_info.base_account.account_number)\n    sequence       = int(account_info.base_account.sequence)\n\n    # 3. Build the unsigned Tx\n    tx = Transaction()\n    tx.add_message(msg)\n    tx.seal(\n        gas_limit = FEE_GAS,\n        fee_denom = FEE_DENOM,\n        fee_amount = FEE_AMOUNT,\n        memo = \"Amber emergency withdraw\"\n    )\n\n    # 4. Encode SignDoc fields for Keplr\n    sign_doc = tx.get_sign_doc(chain_id=CHAIN_ID, account_number=account_number, sequence=sequence)\n\n    response = {\n        \"bodyBytes\":      base64.b64encode(sign_doc.body_bytes).decode(),\n        \"authInfoBytes\":  base64.b64encode(sign_doc.auth_info_bytes).decode(),\n        \"chainId\":        CHAIN_ID,\n        \"accountNumber\":  str(account_number)\n    }\n\n    # Return everything the frontend needs to call `keplr.signDirect`\n    return response",
+            "usage": "const signDoc = await fetch('/api/tx/prepare', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ sender: walletAddress, position_id: 42 })\n}).then(r => r.json());"
         },
         {
             "step": 4,
             "label": "frontend",
-            "introduction": "Uses Keplr to sign the emergency-withdraw SignDoc and forwards the signed payload to the backend for broadcasting.",
-            "function": "signAndBroadcastEmergencyWithdraw(signDocFromBackend, chainId)",
-            "usage": "const txHash = await signAndBroadcastEmergencyWithdraw(signDocFromBackend, 'neutron-1');"
+            "introduction": "Signs the `SignDoc` using Keplr and sends the signed payload back to the backend for broadcasting. The function handles base64 \u2192 Uint8Array conversions required by `keplr.signDirect`.",
+            "code": "/* src/utils/tx.js */\nexport const signAndBroadcastEmergencyWithdraw = async (signDocFromBackend, chainId = 'neutron-1') => {\n  const { keplr } = window;\n  if (!keplr) throw new Error('Keplr extension not available.');\n\n  // Decode base64-encoded fields returned by the backend\n  const toUint8Array = (b64) => Uint8Array.from(atob(b64), c => c.charCodeAt(0));\n\n  const signDoc = {\n    bodyBytes:     toUint8Array(signDocFromBackend.bodyBytes),\n    authInfoBytes: toUint8Array(signDocFromBackend.authInfoBytes),\n    chainId:       signDocFromBackend.chainId,\n    accountNumber: Number(signDocFromBackend.accountNumber)\n  };\n\n  // Fetch the signer address again (defensive)\n  const offlineSigner = keplr.getOfflineSigner(chainId);\n  const [account]     = await offlineSigner.getAccounts();\n\n  // 1. Sign the proto\u2010SignDoc (DIRECT mode)\n  const { signature } = await keplr.signDirect(chainId, account.address, signDoc);\n\n  // 2. POST the signed doc + signature back to the backend for final assembly & broadcast\n  const res = await fetch('/api/tx/broadcast', {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({\n      bodyBytes:     signDocFromBackend.bodyBytes,\n      authInfoBytes: signDocFromBackend.authInfoBytes,\n      signature:     Buffer.from(signature.signature, 'base64').toString('base64')\n    })\n  });\n\n  if (!res.ok) {\n    const text = await res.text();\n    throw new Error(`Broadcast failed: ${text}`);\n  }\n\n  const { txhash } = await res.json();\n  return txhash;\n};",
+            "usage": "const txHash = await signAndBroadcastEmergencyWithdraw(signDoc);\nconsole.log('Tx sent! Hash:', txHash);"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Consumes the signed payload, assembles a `TxRaw`, broadcasts it to the Neutron network, and returns the resulting transaction hash.",
+            "code": "# backend/routes/broadcast.py\nfrom fastapi import APIRouter, HTTPException\nfrom cosmpy.protogen.cosmos.tx.v1beta1 import tx_pb2\nfrom cosmpy.aerial.client.lcd import LCDClient\nimport base64, os, json, httpx\n\nrouter = APIRouter()\n\nCHAIN_ID     = os.getenv(\"CHAIN_ID\", \"neutron-1\")\nRPC_ENDPOINT = os.getenv(\"RPC_ENDPOINT\", \"https://rpc-kralum.neutron.org:443\")\n\nlcd = LCDClient(url=RPC_ENDPOINT, chain_id=CHAIN_ID)\n\n@router.post(\"/api/tx/broadcast\")\nasync def broadcast_signed_tx(payload: dict):\n    \"\"\"\n    Expected body:\n    {\n      \"bodyBytes\":     \"...base64...\",\n      \"authInfoBytes\": \"...base64...\",\n      \"signature\":     \"...base64...\"\n    }\n    \"\"\"\n    try:\n        body_bytes     = base64.b64decode(payload[\"bodyBytes\"])\n        auth_info      = base64.b64decode(payload[\"authInfoBytes\"])\n        signature_raw  = base64.b64decode(payload[\"signature\"])\n    except Exception as e:\n        raise HTTPException(status_code=400, detail=f\"Invalid base64 in request: {e}\")\n\n    # Assemble TxRaw manually\n    tx_raw = tx_pb2.TxRaw(\n        body_bytes          = body_bytes,\n        auth_info_bytes     = auth_info,\n        signatures          = [signature_raw]\n    )\n\n    # Broadcast (sync mode so we get a txhash immediately)\n    tx_response = lcd.tx.broadcast_tx(tx_raw.SerializeToString(), broadcast_mode=\"sync\")\n\n    if tx_response.tx_response.code != 0:\n        raise HTTPException(status_code=500, detail=tx_response.tx_response.raw_log)\n\n    return {\"txhash\": tx_response.tx_response.txhash}",
+            "usage": "Automatically called by the frontend helper in Step 4. No direct manual call required."
         }
-    ],
-    "frontend": [
-        "const userAddress = await getUserWalletAddress();//step: 1 Tool: get_user_wallet_address Desciption: Retrieve the wallet address that owns the Amber position.",
-        "const txMsg = constructTxWasmExecute(userAddress, AMBER_CONTRACT, { emergency_withdraw: { position_id } }, []);//step: 3 Tool: construct_tx_amber_emergency_withdraw Desciption: Build the emergency_withdraw transaction message with the selected position_id.",
-        "const txHash = await signAndBroadcastEmergencyWithdraw(signDocFromBackend, 'neutron-1');//step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the emergency withdrawal transaction and broadcast it to the network."
-    ],
-    "backend": [
-        "const positions = await amber_positions(userAddress);#step: 2 Tool: query_amber_contract_positions Desciption: Fetch all active Amber positions for the wallet to obtain the specific position_id to withdraw."
-    ],
-    "intent": "Execute an emergency withdrawal for the user's Amber trading position",
-    "workflow": [
-        {
-            "step": 1,
-            "tool": "get_user_wallet_address",
-            "description": "Retrieve the wallet address that owns the Amber position."
-        },
-        {
-            "step": 2,
-            "tool": "query_amber_contract_positions",
-            "description": "Fetch all active Amber positions for the wallet to obtain the specific position_id to withdraw."
-        },
-        {
-            "step": 3,
-            "tool": "construct_tx_amber_emergency_withdraw",
-            "description": "Build the emergency_withdraw transaction message with the selected position_id."
-        },
-        {
-            "step": 4,
-            "tool": "sign_and_broadcast_tx",
-            "description": "Sign the emergency withdrawal transaction and broadcast it to the network."
-        }
-    ],
-    "outcome_checks": [
-        "Confirm the transaction was included in a block and emitted an `EmergencyWithdrawal` event from the Amber contract.",
-        "Verify the position_id no longer appears in the wallet\u2019s list of active Amber positions and the withdrawn tokens are returned to the user\u2019s balance."
     ]
 }

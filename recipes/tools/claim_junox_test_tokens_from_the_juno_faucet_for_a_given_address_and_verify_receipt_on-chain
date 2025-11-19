@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Checks that the given string is a valid Juno bech32 account address and reports any prefix or checksum errors.",
+            "function": "validate_juno_address_format(address)",
+            "usage": "result = validate_juno_address_format(my_address)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the Juno LCD for the current JUNOX (ujunox) balance of the address before the faucet request is made.",
+            "function": "query_junox_balance_before_faucet(address)",
+            "usage": "before = await query_junox_balance_before_faucet(my_address)"
+        },
+        {
+            "step": 3,
+            "label": "frontend",
+            "introduction": "Opens the configured Juno faucet web interface in a new browser window or tab.",
+            "function": "openJunoFaucetUI(faucetUrl)",
+            "usage": "openJunoFaucetUI(process.env.NEXT_PUBLIC_JUNO_UNI6_FAUCET_URL)"
+        },
+        {
+            "step": 4,
+            "label": "frontend",
+            "introduction": "Guides the user to paste the address, pick JUNOX, and submit the faucet request while handling common UI errors.",
+            "function": "instructUserToRequestFaucetTokens(address, denomLabel)",
+            "usage": "instructUserToRequestFaucetTokens(my_address)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Polls the LCD for the faucet-returned transaction hash until it succeeds, fails, or the timeout is reached.",
+            "function": "poll_faucet_tx_until_final(tx_hash)",
+            "usage": "tx_result = await poll_faucet_tx_until_final(faucet_txhash)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Re-checks the JUNOX balance after the faucet and reports the change compared to the pre-faucet amount.",
+            "function": "compare_junox_balance_after_faucet(address, pre_faucet_amount)",
+            "usage": "after = await compare_junox_balance_after_faucet(my_address, before['amount'])"
+        }
+    ],
+    "frontend": [
+        "openJunoFaucetUI(process.env.NEXT_PUBLIC_JUNO_UNI6_FAUCET_URL)//step: 3 Tool: frontend_open_faucet_ui Desciption: Trigger a frontend action to open the official Juno uni-6 faucet web UI as documented by the Juno team (URL is environment-specific and configured outside this recipe).",
+        "instructUserToRequestFaucetTokens(my_address)//step: 4 Tool: frontend_request_faucet_tokens Desciption: In the faucet UI, have the user input ADDRESS, select JUNOX (or the default token), and submit the faucet request, handling any visible errors such as rate limiting or daily limits."
+    ],
+    "backend": [
+        "result = validate_juno_address_format(my_address)#step: 1 Tool: validate_juno_address_format Desciption: Validate that ADDRESS is a proper Juno bech32 account address; reject if the prefix or checksum is invalid.",
+        "before = await query_junox_balance_before_faucet(my_address)#step: 2 Tool: backend_query_balance_before_faucet Desciption: From the backend, query the current balance for the expected JUNOX denom for ADDRESS using the network-appropriate LCD. For example, perform GET {LCD_BASE}/cosmos/bank/v1beta1/balances/{address}/by_denom?denom=ujunox (or the correct testnet denom), and record the pre-faucet amount (default LCD_BASE is https://lcd-archive.junonetwork.io).",
+        "tx_result = await poll_faucet_tx_until_final(faucet_txhash)#step: 5 Tool: backend_optional_poll_txhash Desciption: If the faucet service returns a transaction hash, have the backend poll GET {LCD_BASE}/cosmos/tx/v1beta1/txs/{hash} until the tx_response.code is 0 (success) or a timeout is reached.",
+        "after = await compare_junox_balance_after_faucet(my_address, before['amount'])#step: 6 Tool: backend_query_balance_after_faucet Desciption: After the faucet indicates success (or after a suitable delay), query the JUNOX balance for ADDRESS again via GET {LCD_BASE}/cosmos/bank/v1beta1/balances/{address}/by_denom?denom=ujunox (or appropriate denom) and compare with the pre-faucet amount."
+    ],
+    "intent": "Claim JUNOX test tokens from the Juno faucet for a given address and verify receipt on-chain",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_juno_address_format",
+            "description": "Validate that ADDRESS is a proper Juno bech32 account address; reject if the prefix or checksum is invalid."
+        },
+        {
+            "step": 2,
+            "tool": "backend_query_balance_before_faucet",
+            "description": "From the backend, query the current balance for the expected JUNOX denom for ADDRESS using the network-appropriate LCD. For example, perform GET {LCD_BASE}/cosmos/bank/v1beta1/balances/{address}/by_denom?denom=ujunox (or the correct testnet denom), and record the pre-faucet amount (default LCD_BASE is https://lcd-archive.junonetwork.io)."
+        },
+        {
+            "step": 3,
+            "tool": "frontend_open_faucet_ui",
+            "description": "Trigger a frontend action to open the official Juno uni-6 faucet web UI as documented by the Juno team (URL is environment-specific and configured outside this recipe)."
+        },
+        {
+            "step": 4,
+            "tool": "frontend_request_faucet_tokens",
+            "description": "In the faucet UI, have the user input ADDRESS, select JUNOX (or the default token), and submit the faucet request, handling any visible errors such as rate limiting or daily limits."
+        },
+        {
+            "step": 5,
+            "tool": "backend_optional_poll_txhash",
+            "description": "If the faucet service returns a transaction hash, have the backend poll GET {LCD_BASE}/cosmos/tx/v1beta1/txs/{hash} until the tx_response.code is 0 (success) or a timeout is reached."
+        },
+        {
+            "step": 6,
+            "tool": "backend_query_balance_after_faucet",
+            "description": "After the faucet indicates success (or after a suitable delay), query the JUNOX balance for ADDRESS again via GET {LCD_BASE}/cosmos/bank/v1beta1/balances/{address}/by_denom?denom=ujunox (or appropriate denom) and compare with the pre-faucet amount."
+        }
+    ],
+    "outcome_checks": [
+        "The faucet UI confirms that the request for JUNOX to ADDRESS was accepted (no rate-limit or error messages).",
+        "If a transaction hash was provided, GET /cosmos/tx/v1beta1/txs/{hash} returns tx_response.code = 0, indicating the faucet transfer succeeded.",
+        "The post-faucet JUNOX balance for ADDRESS is greater than or equal to the pre-faucet balance by at least the advertised faucet amount."
+    ]
+}

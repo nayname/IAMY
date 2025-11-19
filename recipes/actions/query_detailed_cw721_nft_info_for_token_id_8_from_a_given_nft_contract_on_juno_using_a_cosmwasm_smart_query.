@@ -1,0 +1,47 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Backend helper that validates a Juno bech32 contract address and normalizes the CW721 token_id to a string (e.g., '8').",
+            "code": "import re\nfrom typing import Tuple, Union\n\n# Simple regex for Juno bech32 addresses (prefix 'juno1' and 38-character data part)\nJUNO_ADDRESS_REGEX = re.compile(r'^juno1[0-9a-z]{38}$')\n\n\nclass ValidationError(Exception):\n    # Raised when the contract address or token_id is invalid.\n    pass\n\n\ndef validate_contract_and_token(contract_address: str, token_id: Union[str, int]) -> Tuple[str, str]:\n    '''\n    Validate that the contract_address looks like a Juno bech32 address and\n    normalize token_id to a non-empty string (e.g., '8').\n    '''\n    if not isinstance(contract_address, str) or not JUNO_ADDRESS_REGEX.match(contract_address):\n        raise ValidationError(f'Invalid Juno contract address: {contract_address!r}')\n\n    # Normalize token_id into a string as expected by CW721 contracts\n    if isinstance(token_id, int):\n        if token_id < 0:\n            raise ValidationError('token_id must be non-negative.')\n        token_id_str = str(token_id)\n    elif isinstance(token_id, str):\n        token_id_str = token_id.strip()\n        if not token_id_str:\n            raise ValidationError('token_id string cannot be empty.')\n    else:\n        raise ValidationError('token_id must be either a string or an integer.')\n\n    return contract_address, token_id_str\n",
+            "usage": "contract_addr, token_id_str = validate_contract_and_token(CONTRACT_ADDRESS, '8')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Backend function that builds the CW721 nft_info query JSON object for the given token_id string.",
+            "code": "from typing import Dict\n\n\ndef build_nft_info_query_json(token_id: str) -> Dict:\n    '''\n    Build the CW721 nft_info query JSON:\n    {'nft_info': {'token_id': '<token_id>'}}\n    '''\n    if not isinstance(token_id, str) or not token_id:\n        raise ValueError('token_id must be a non-empty string.')\n\n    query = {\n        'nft_info': {\n            'token_id': token_id,\n        }\n    }\n    return query\n",
+            "usage": "query = build_nft_info_query_json(token_id_str)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Backend function that serializes the nft_info query JSON to UTF-8 and base64-encodes it for use in the LCD smart query endpoint.",
+            "code": "import base64\nimport json\nfrom typing import Dict\n\n\ndef encode_query_to_base64(query: Dict) -> str:\n    '''\n    Serialize the query dict to JSON (UTF-8) and return a base64-encoded string.\n    '''\n    try:\n        json_bytes = json.dumps(query, separators=(',', ':'), ensure_ascii=False).encode('utf-8')\n    except (TypeError, ValueError) as exc:\n        raise ValueError(f'Failed to serialize query to JSON: {exc}') from exc\n\n    encoded = base64.b64encode(json_bytes).decode('ascii')\n    return encoded\n",
+            "usage": "query_b64 = encode_query_to_base64(query)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Backend function that calls the Juno LCD /cosmwasm/wasm/v1/contract/{address}/smart/{query_data} endpoint to query nft_info for the specified token.",
+            "code": "import requests\nfrom urllib.parse import quote\nfrom typing import Any, Dict\n\nLCD_BASE_URL = 'https://lcd-archive.junonetwork.io'\n\n\nclass ContractQueryError(Exception):\n    # Represents errors returned from the LCD smart contract query.\n    pass\n\n\ndef lcd_smart_query_nft_info(contract_address: str, query_data_b64: str, timeout: float = 10.0) -> Dict[str, Any]:\n    '''\n    Call the Juno LCD smart query endpoint for a CW721 nft_info query.\n    '''\n    if not isinstance(query_data_b64, str) or not query_data_b64:\n        raise ValueError('query_data_b64 must be a non-empty base64 string.')\n\n    # query_data must be URL-encoded because it is part of the path\n    encoded_query_data = quote(query_data_b64, safe='')\n    url = f'{LCD_BASE_URL}/cosmwasm/wasm/v1/contract/{contract_address}/smart/{encoded_query_data}'\n\n    try:\n        response = requests.get(url, timeout=timeout)\n    except requests.RequestException as exc:\n        raise ContractQueryError(f'Network error while querying contract: {exc}') from exc\n\n    if response.status_code != 200:\n        # Attempt to surface a helpful error message from the LCD\n        try:\n            err_json = response.json()\n            message = err_json.get('message') or str(err_json)\n        except ValueError:\n            message = response.text\n\n        raise ContractQueryError(\n            f'LCD returned HTTP {response.status_code} for smart query: {message}'\n        )\n\n    try:\n        lcd_json = response.json()\n    except ValueError as exc:\n        raise ContractQueryError(f'Failed to parse LCD JSON response: {exc}') from exc\n\n    if 'data' not in lcd_json:\n        raise ContractQueryError(f'LCD response did not contain expected \\'data\\' field: {lcd_json}')\n\n    return lcd_json\n",
+            "usage": "lcd_response = lcd_smart_query_nft_info(contract_addr, query_b64)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Backend helper that decodes the base64-encoded 'data' field from the LCD response and parses it into the nft_info JSON object.",
+            "code": "import base64\nimport json\nfrom typing import Any, Dict\n\nclass ResponseDecodeError(Exception):\n    # Raised when the LCD response 'data' field cannot be decoded into JSON.\n    pass\n\n\ndef decode_response_data(lcd_response: Dict[str, Any]) -> Dict[str, Any]:\n    '''\n    Decode the base64-encoded 'data' field from the LCD response and parse it as JSON.\n    '''\n    if 'data' not in lcd_response:\n        raise ResponseDecodeError('LCD response does not contain \\'data\\' field.')\n\n    data_field = lcd_response['data']\n    if not isinstance(data_field, str):\n        raise ResponseDecodeError(\n            f'Expected \\'data\\' to be a base64 string, got {type(data_field)} instead.'\n        )\n\n    try:\n        raw_bytes = base64.b64decode(data_field)\n    except (ValueError, TypeError) as exc:\n        raise ResponseDecodeError(f'Failed to base64-decode LCD data field: {exc}') from exc\n\n    try:\n        decoded_json = json.loads(raw_bytes.decode('utf-8'))\n    except (UnicodeDecodeError, json.JSONDecodeError) as exc:\n        raise ResponseDecodeError(f'Failed to decode JSON from contract data: {exc}') from exc\n\n    return decoded_json\n",
+            "usage": "nft_info = decode_response_data(lcd_response)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "High-level backend helper that orchestrates all previous steps to return the parsed nft_info metadata, surfacing a clear not-found error if the token does not exist.",
+            "code": "from typing import Any, Dict, Union\n\nclass NftNotFoundError(Exception):\n    # Raised when the requested NFT token does not exist.\n    pass\n\n\ndef return_nft_metadata(contract_address: str, token_id: Union[str, int]) -> Dict[str, Any]:\n    '''\n    Run the full CW721 nft_info workflow and return the parsed NFT metadata.\n    The result typically includes fields like 'token_uri' and 'extension'.\n    '''\n    # Step 1: validate address and token\n    normalized_address, token_id_str = validate_contract_and_token(contract_address, token_id)\n\n    # Step 2: build query JSON\n    query_json = build_nft_info_query_json(token_id_str)\n\n    # Step 3: encode query to base64\n    query_b64 = encode_query_to_base64(query_json)\n\n    # Step 4: send LCD smart query and handle potential 'not found' messages\n    try:\n        lcd_response = lcd_smart_query_nft_info(normalized_address, query_b64)\n    except ContractQueryError as exc:\n        msg = str(exc).lower()\n        if 'not found' in msg or 'no token' in msg or ('token_id' in msg and 'does not exist' in msg):\n            raise NftNotFoundError(f'NFT with token_id {token_id_str} does not exist.') from exc\n        raise\n\n    # Step 5: decode the 'data' field into the nft_info JSON\n    nft_info = decode_response_data(lcd_response)\n\n    # Step 6: return the parsed NFT metadata as-is\n    return nft_info\n",
+            "usage": "metadata = return_nft_metadata(CONTRACT_ADDRESS, '8')"
+        }
+    ]
+}

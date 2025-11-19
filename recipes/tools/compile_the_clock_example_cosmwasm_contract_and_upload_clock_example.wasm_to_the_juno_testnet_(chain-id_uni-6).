@@ -1,0 +1,146 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Runs the CosmWasm Rust optimizer in Docker to compile the clock_example contract and returns the path of the generated clock_example.wasm artifact.",
+            "function": "compile_clock_example(contract_root='.')",
+            "usage": "wasm_path = compile_clock_example('.')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Loads the compiled WASM file from disk into memory and ensures the file is present and non-empty.",
+            "function": "load_wasm_artifact_bytes(wasm_path)",
+            "usage": "wasm_bytes = load_wasm_artifact_bytes('artifacts/clock_example.wasm')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Queries the Juno LCD config endpoint to obtain and parse the node\u2019s minimum_gas_price into amount and denom.",
+            "function": "fetch_minimum_gas_price()",
+            "usage": "gas_price_amount, gas_price_denom = fetch_minimum_gas_price()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Retrieves the sender\u2019s account_number, sequence and spendable balances from the Juno testnet LCD.",
+            "function": "fetch_sender_account_state(address)",
+            "usage": "acct = fetch_sender_account_state(sender_addr)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Constructs an unsigned /cosmwasm.wasm.v1.MsgStoreCode transaction with initial gas limit and fee for later simulation.",
+            "function": "construct_msg_store_code_tx_for_simulation(sender, wasm_bytes, gas_price_amount, gas_price_denom, initial_gas_limit=2000000, chain_id='uni-6')",
+            "usage": "tx_info = construct_msg_store_code_tx_for_simulation(sender_addr, wasm_bytes, gas_price_amount, gas_price_denom)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Submits the unsigned transaction to /cosmos/tx/v1beta1/simulate to estimate gas usage and suggest an adjusted gas limit.",
+            "function": "simulate_store_code_tx(tx_bytes)",
+            "usage": "sim = simulate_store_code_tx(tx_info['tx_bytes'])"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Signs the MsgStoreCode transaction with the sender\u2019s secp256k1 private key producing ready-to-broadcast tx bytes.",
+            "function": "sign_store_code_tx(sender, wasm_bytes, gas_price_amount, gas_price_denom, gas_limit, account_number, sequence, chain_id, privkey_hex)",
+            "usage": "signed = sign_store_code_tx(sender_addr, wasm_bytes, gas_price_amount, gas_price_denom, sim['adjusted_gas_limit'], acct['account_number'], acct['sequence'], 'uni-6', privkey_hex)"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Broadcasts the signed MsgStoreCode transaction to the Juno LCD in BROADCAST_MODE_BLOCK and returns the tx_response.",
+            "function": "broadcast_store_code_tx(tx_bytes)",
+            "usage": "tx_resp = broadcast_store_code_tx(signed['tx_bytes'])"
+        },
+        {
+            "step": 9,
+            "label": "backend",
+            "introduction": "Scans the transaction logs for the code_id attribute produced by the store_code event.",
+            "function": "extract_code_id_from_logs(tx_response)",
+            "usage": "code_id = extract_code_id_from_logs(tx_resp)"
+        },
+        {
+            "step": 10,
+            "label": "backend",
+            "introduction": "Queries on-chain code information for the extracted code_id and verifies the creator matches the sender.",
+            "function": "verify_code_uploaded_on_chain(code_id, expected_creator)",
+            "usage": "verification = verify_code_uploaded_on_chain(code_id, sender_addr)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "wasm_path = compile_clock_example('.')#step: 1 Tool: compile_clock_example_with_rust_optimizer Desciption: From the contract root directory, run the CosmWasm Rust optimizer (for example, a dockerized `cosmwasm/rust-optimizer` image) to compile the `clock_example` crate for the `wasm32-unknown-unknown` target and produce an optimized artifact at `artifacts/clock_example.wasm`.",
+        "wasm_bytes = load_wasm_artifact_bytes('artifacts/clock_example.wasm')#step: 2 Tool: load_wasm_artifact_bytes Desciption: Read the `artifacts/clock_example.wasm` file into memory as a byte array, verifying that the file exists and is non-empty.",
+        "gas_price_amount, gas_price_denom = fetch_minimum_gas_price()#step: 3 Tool: fetch_minimum_gas_price Desciption: Query `https://lcd-archive.junonetwork.io/cosmos/base/node/v1beta1/config` to retrieve the node's `minimum_gas_price`. Use this value when choosing transaction fees for the Juno testnet.",
+        "acct = fetch_sender_account_state(sender_addr)#step: 4 Tool: fetch_sender_account_state Desciption: Using the sender\u2019s bech32 address, query `https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/{address}` to obtain account number and sequence, and `https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/spendable_balances/{address}` to confirm there are sufficient `ujunox` tokens to pay for gas and fees on the `uni-6` testnet.",
+        "tx_info = construct_msg_store_code_tx_for_simulation(sender_addr, wasm_bytes, gas_price_amount, gas_price_denom)#step: 5 Tool: construct_msg_store_code_tx Desciption: Construct a Cosmos SDK transaction for chain-id `uni-6` containing a single message of type `/cosmwasm.wasm.v1.MsgStoreCode`. Set the `sender` to the account from the previous step and embed the WASM artifact bytes (typically compressed) in the message. Set an initial `gas_limit` and `fee` using the `minimum_gas_price` and a conservative gas estimate.",
+        "sim = simulate_store_code_tx(tx_info['tx_bytes'])#step: 6 Tool: simulate_store_code_tx Desciption: POST to `https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate` with the unsigned transaction (as `tx` or `tx_bytes` as appropriate) to obtain `gas_info.gas_used`. Use this value to adjust the transaction\u2019s `gas_limit` (for example, multiply by a safety factor such as 1.2\u20131.4).",
+        "signed = sign_store_code_tx(sender_addr, wasm_bytes, gas_price_amount, gas_price_denom, sim['adjusted_gas_limit'], acct['account_number'], acct['sequence'], 'uni-6', privkey_hex)#step: 7 Tool: sign_store_code_tx Desciption: Sign the updated transaction (with adjusted gas and fees) using the sender\u2019s private key, producing a fully signed `tx_bytes` ready for broadcast. Ensure the sign-doc includes chain-id `uni-6`, the correct account number, and sequence.",
+        "tx_resp = broadcast_store_code_tx(signed['tx_bytes'])#step: 8 Tool: broadcast_store_code_tx Desciption: Broadcast the signed transaction by POSTing to `https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs` with a JSON body including `tx_bytes` (base64-encoded) and `mode` set to `BROADCAST_MODE_BLOCK`. Capture the returned `tx_response.txhash` and the full `tx_response`.",
+        "code_id = extract_code_id_from_logs(tx_resp)#step: 9 Tool: extract_code_id_from_logs Desciption: From the successful `tx_response`, scan `logs` and their `events` for the store-code related event (commonly `store_code` or a wasm message event) and read the `code_id` attribute. Persist this `code_id` value for later instantiation of the `clock_example` contract.",
+        "verification = verify_code_uploaded_on_chain(code_id, sender_addr)#step: 10 Tool: verify_code_uploaded_on_chain Desciption: Query `https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/code/{code_id}` using the extracted `code_id`. Confirm that the returned `code_info` exists, that the `creator` field matches the sender address, and that the code is available for instantiation."
+    ],
+    "intent": "Compile the clock_example CosmWasm contract and upload clock_example.wasm to the Juno testnet (chain-id uni-6).",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "compile_clock_example_with_rust_optimizer",
+            "description": "From the contract root directory, run the CosmWasm Rust optimizer (for example, a dockerized `cosmwasm/rust-optimizer` image) to compile the `clock_example` crate for the `wasm32-unknown-unknown` target and produce an optimized artifact at `artifacts/clock_example.wasm`."
+        },
+        {
+            "step": 2,
+            "tool": "load_wasm_artifact_bytes",
+            "description": "Read the `artifacts/clock_example.wasm` file into memory as a byte array, verifying that the file exists and is non-empty."
+        },
+        {
+            "step": 3,
+            "tool": "fetch_minimum_gas_price",
+            "description": "Query `https://lcd-archive.junonetwork.io/cosmos/base/node/v1beta1/config` to retrieve the node's `minimum_gas_price`. Use this value when choosing transaction fees for the Juno testnet."
+        },
+        {
+            "step": 4,
+            "tool": "fetch_sender_account_state",
+            "description": "Using the sender\u2019s bech32 address, query `https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/{address}` to obtain account number and sequence, and `https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/spendable_balances/{address}` to confirm there are sufficient `ujunox` tokens to pay for gas and fees on the `uni-6` testnet."
+        },
+        {
+            "step": 5,
+            "tool": "construct_msg_store_code_tx",
+            "description": "Construct a Cosmos SDK transaction for chain-id `uni-6` containing a single message of type `/cosmwasm.wasm.v1.MsgStoreCode`. Set the `sender` to the account from the previous step and embed the WASM artifact bytes (typically compressed) in the message. Set an initial `gas_limit` and `fee` using the `minimum_gas_price` and a conservative gas estimate."
+        },
+        {
+            "step": 6,
+            "tool": "simulate_store_code_tx",
+            "description": "POST to `https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate` with the unsigned transaction (as `tx` or `tx_bytes` as appropriate) to obtain `gas_info.gas_used`. Use this value to adjust the transaction\u2019s `gas_limit` (for example, multiply by a safety factor such as 1.2\u20131.4)."
+        },
+        {
+            "step": 7,
+            "tool": "sign_store_code_tx",
+            "description": "Sign the updated transaction (with adjusted gas and fees) using the sender\u2019s private key, producing a fully signed `tx_bytes` ready for broadcast. Ensure the sign-doc includes chain-id `uni-6`, the correct account number, and sequence."
+        },
+        {
+            "step": 8,
+            "tool": "broadcast_store_code_tx",
+            "description": "Broadcast the signed transaction by POSTing to `https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs` with a JSON body including `tx_bytes` (base64-encoded) and `mode` set to `BROADCAST_MODE_BLOCK`. Capture the returned `tx_response.txhash` and the full `tx_response`."
+        },
+        {
+            "step": 9,
+            "tool": "extract_code_id_from_logs",
+            "description": "From the successful `tx_response`, scan `logs` and their `events` for the store-code related event (commonly `store_code` or a wasm message event) and read the `code_id` attribute. Persist this `code_id` value for later instantiation of the `clock_example` contract."
+        },
+        {
+            "step": 10,
+            "tool": "verify_code_uploaded_on_chain",
+            "description": "Query `https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/code/{code_id}` using the extracted `code_id`. Confirm that the returned `code_info` exists, that the `creator` field matches the sender address, and that the code is available for instantiation."
+        }
+    ],
+    "outcome_checks": [
+        "The `artifacts/clock_example.wasm` file exists and has a reasonable size (indicating a successful optimizer build).",
+        "The simulation call to `/cosmos/tx/v1beta1/simulate` returns a valid `gas_used` and no execution errors.",
+        "The broadcast call to `/cosmos/tx/v1beta1/txs` returns a `tx_response` with `code == 0` and a non-empty `txhash`.",
+        "A subsequent query to `/cosmwasm/wasm/v1/code/{code_id}` using the extracted `code_id` returns `code_info` with the expected `creator` address."
+    ]
+}

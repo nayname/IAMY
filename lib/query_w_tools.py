@@ -40,10 +40,10 @@ def a_wrapper_for_tools_condition(state) -> Literal["tools", "__end__"]:
     print(f"---DECISION: The pre-built tools_condition decided: '{result}'---")
     return result
 
-async def create_graph(session, query, provider="OpenAI"):
+async def create_graph(session, query, provider="OpenAI", mod_name="gpt-5.1"):
 
     if provider == "OpenAI":
-        llm = ChatOpenAI(model="o3", reasoning_effort="high")
+        llm = ChatOpenAI(model=mod_name, reasoning_effort="high")
     else:
         # Use Claude Sonnet 4.5 - the smartest and most efficient model
         llm = ChatAnthropic(

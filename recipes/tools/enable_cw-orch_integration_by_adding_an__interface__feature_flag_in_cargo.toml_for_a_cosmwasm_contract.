@@ -1,0 +1,107 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Reads the Cargo.toml file from disk and returns a tomlkit document for in-place editing.",
+            "function": "load_cargo_toml(path='Cargo.toml')",
+            "usage": "doc = load_cargo_toml('contracts/Counter/Cargo.toml')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Adds an optional cw-orch entry to the [dependencies] table if it is missing.",
+            "function": "ensure_cw_orch_dependency(doc, version)",
+            "usage": "doc = ensure_cw_orch_dependency(doc, '0.21.0')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Guarantees that a [features] table exists in the parsed Cargo.toml document.",
+            "function": "ensure_features_table_exists(doc)",
+            "usage": "doc = ensure_features_table_exists(doc)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Creates or updates the \"interface\" feature so it activates the cw-orch dependency.",
+            "function": "add_interface_feature_flag(doc)",
+            "usage": "doc = add_interface_feature_flag(doc)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Ensures the default feature list includes \"interface\" so it is enabled by default.",
+            "function": "ensure_default_includes_interface(doc)",
+            "usage": "doc = ensure_default_includes_interface(doc)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Serializes the modified TOML back to Cargo.toml on disk.",
+            "function": "write_cargo_toml(doc, path='Cargo.toml')",
+            "usage": "write_cargo_toml(doc, 'contracts/Counter/Cargo.toml')"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Runs `cargo check --features interface` to verify the crate builds with the new feature flag.",
+            "function": "cargo_check_with_interface_feature(project_root='.')",
+            "usage": "cargo_check_with_interface_feature('./contracts/Counter')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "doc = load_cargo_toml('contracts/Counter/Cargo.toml')#step: 1 Tool: load_cargo_toml Desciption: Open the contract crate's Cargo.toml file from disk and parse it as TOML so that [package], [dependencies], and [features] sections can be modified programmatically.",
+        "doc = ensure_cw_orch_dependency(doc, '0.21.0')#step: 2 Tool: ensure_cw_orch_dependency Desciption: In the [dependencies] table, add an optional cw-orch dependency if it is not present, for example: `cw-orch = { version = \"<latest>\", optional = true }`. Keep existing dependencies unchanged.",
+        "doc = ensure_features_table_exists(doc)#step: 3 Tool: ensure_features_table_exists Desciption: If the [features] table does not exist, create it. Preserve any existing feature definitions such as `default` or other custom features.",
+        "doc = add_interface_feature_flag(doc)#step: 4 Tool: add_interface_feature_flag Desciption: In the [features] table, add or update the `interface` feature so that it enables the cw-orch dependency. A canonical entry is: `interface = [\"dep:cw-orch\"]`. If `interface` already exists, merge `\"dep:cw-orch\"` into the list without removing existing items.",
+        "doc = ensure_default_includes_interface(doc)#step: 5 Tool: ensure_default_includes_interface Desciption: Update the `default` feature list under [features] to include `\"interface\"` so that cw-orch integration is enabled when the crate is built with default features. If `default` does not exist, set `default = [\"interface\"]`.",
+        "write_cargo_toml(doc, 'contracts/Counter/Cargo.toml')#step: 6 Tool: write_cargo_toml Desciption: Serialize the modified TOML structure back to Cargo.toml, preserving formatting where possible, and overwrite the original file.",
+        "cargo_check_with_interface_feature('./contracts/Counter')#step: 7 Tool: cargo_check_with_interface_feature Desciption: Run `cargo check --features interface` (or the equivalent build command in the project environment) to ensure that enabling the `interface` feature with cw-orch compiles successfully."
+    ],
+    "intent": "Enable cw-orch integration by adding an 'interface' feature flag in Cargo.toml for a CosmWasm contract.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "load_cargo_toml",
+            "description": "Open the contract crate's Cargo.toml file from disk and parse it as TOML so that [package], [dependencies], and [features] sections can be modified programmatically."
+        },
+        {
+            "step": 2,
+            "tool": "ensure_cw_orch_dependency",
+            "description": "In the [dependencies] table, add an optional cw-orch dependency if it is not present, for example: `cw-orch = { version = \"<latest>\", optional = true }`. Keep existing dependencies unchanged."
+        },
+        {
+            "step": 3,
+            "tool": "ensure_features_table_exists",
+            "description": "If the [features] table does not exist, create it. Preserve any existing feature definitions such as `default` or other custom features."
+        },
+        {
+            "step": 4,
+            "tool": "add_interface_feature_flag",
+            "description": "In the [features] table, add or update the `interface` feature so that it enables the cw-orch dependency. A canonical entry is: `interface = [\"dep:cw-orch\"]`. If `interface` already exists, merge `\"dep:cw-orch\"` into the list without removing existing items."
+        },
+        {
+            "step": 5,
+            "tool": "ensure_default_includes_interface",
+            "description": "Update the `default` feature list under [features] to include `\"interface\"` so that cw-orch integration is enabled when the crate is built with default features. If `default` does not exist, set `default = [\"interface\"]`."
+        },
+        {
+            "step": 6,
+            "tool": "write_cargo_toml",
+            "description": "Serialize the modified TOML structure back to Cargo.toml, preserving formatting where possible, and overwrite the original file."
+        },
+        {
+            "step": 7,
+            "tool": "cargo_check_with_interface_feature",
+            "description": "Run `cargo check --features interface` (or the equivalent build command in the project environment) to ensure that enabling the `interface` feature with cw-orch compiles successfully."
+        }
+    ],
+    "outcome_checks": [
+        "Cargo.toml contains an [dependencies] entry for cw-orch marked as optional.",
+        "Cargo.toml has a [features] table with an `interface = [\"dep:cw-orch\", ...]` line.",
+        "The `default` feature list includes `\"interface\"` or the project\u2019s documented feature configuration for cw-orch.",
+        "`cargo check --features interface` completes without compilation errors."
+    ]
+}

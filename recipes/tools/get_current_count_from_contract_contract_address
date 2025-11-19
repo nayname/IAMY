@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Resolves the counter contract\u2019s bech32 address from an explicit argument or the CONTRACT_ADDRESS environment variable.",
+            "function": "resolve_contract_address(explicit_address=None, env_var_name='CONTRACT_ADDRESS')",
+            "usage": "contract_address = resolve_contract_address()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Constructs the JSON {\"get_count\": {}} query and base64-encodes it for use in the LCD smart-query URL.",
+            "function": "build_get_count_query_payload()",
+            "usage": "query_data_b64 = build_get_count_query_payload()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Sends an HTTP GET to the Juno LCD smart-contract endpoint with the contract address and encoded query payload.",
+            "function": "lcd_query_wasm_smart(contract_address, query_data_b64, timeout=10.0)",
+            "usage": "lcd_response = lcd_query_wasm_smart(contract_address, query_data_b64)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Decodes the LCD response, parses the returned JSON, and extracts the numeric counter value.",
+            "function": "decode_and_extract_count(lcd_response)",
+            "usage": "current_count = decode_and_extract_count(lcd_response)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "contract_address = resolve_contract_address()#step: 1 Tool: resolve_contract_address Desciption: Obtain the target counter contract's bech32 address (e.g., from environment variable CONTRACT_ADDRESS or from a previous instantiate response).",
+        "query_data_b64 = build_get_count_query_payload()#step: 2 Tool: build_get_count_query_payload Desciption: Construct the contract-specific JSON query to fetch the count (for a standard counter contract, {\"get_count\": {}}), then base64-encode this JSON to form query_data.",
+        "lcd_response = lcd_query_wasm_smart(contract_address, query_data_b64)#step: 3 Tool: lcd_query_wasm_smart Desciption: Send an HTTP GET request to https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{contract_address}/smart/{query_data}, filling in the contract address and encoded payload.",
+        "current_count = decode_and_extract_count(lcd_response)#step: 4 Tool: decode_and_extract_count Desciption: Base64-decode the 'data' field from the LCD response, parse it as JSON, and read the 'count' field from the resulting object as an integer."
+    ],
+    "intent": "Get current count from contract CONTRACT_ADDRESS",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "resolve_contract_address",
+            "description": "Obtain the target counter contract's bech32 address (e.g., from environment variable CONTRACT_ADDRESS or from a previous instantiate response)."
+        },
+        {
+            "step": 2,
+            "tool": "build_get_count_query_payload",
+            "description": "Construct the contract-specific JSON query to fetch the count (for a standard counter contract, {\"get_count\": {}}), then base64-encode this JSON to form query_data."
+        },
+        {
+            "step": 3,
+            "tool": "lcd_query_wasm_smart",
+            "description": "Send an HTTP GET request to https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{contract_address}/smart/{query_data}, filling in the contract address and encoded payload."
+        },
+        {
+            "step": 4,
+            "tool": "decode_and_extract_count",
+            "description": "Base64-decode the 'data' field from the LCD response, parse it as JSON, and read the 'count' field from the resulting object as an integer."
+        }
+    ],
+    "outcome_checks": [
+        "The smart query endpoint returns HTTP 200 and includes a 'data' field.",
+        "The decoded JSON contains a 'count' field.",
+        "The 'count' value is numeric and can be used in subsequent logic (e.g., comparisons before and after increment/reset)."
+    ]
+}

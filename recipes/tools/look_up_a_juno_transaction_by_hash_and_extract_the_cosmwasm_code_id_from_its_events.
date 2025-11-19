@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Validates that a supplied transaction hash is exactly 64 hexadecimal characters and returns it in normalized form.",
+            "function": "validate_tx_hash(tx_hash)",
+            "usage": "normalized_hash = validate_tx_hash(\"38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Performs an HTTP GET against the Juno LCD to retrieve the transaction JSON for a given hash.",
+            "function": "fetch_tx_by_hash(tx_hash)",
+            "usage": "fetch_result = fetch_tx_by_hash(normalized_hash)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Ensures the LCD responded with HTTP 200 and that tx_response.code equals 0, returning the tx_response on success.",
+            "function": "check_tx_found_and_success(status_code, payload)",
+            "usage": "tx_response = check_tx_found_and_success(fetch_result[\"status_code\"], fetch_result[\"data\"])"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Scans tx_response logs/events for attributes named \"code_id\" under \"store_code\" or \"instantiate\" events.",
+            "function": "extract_code_id_from_events(tx_response)",
+            "usage": "event_candidates = extract_code_id_from_events(tx_response)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "As a fallback, searches the raw_log text for a code_id pattern when structured events did not supply one.",
+            "function": "fallback_parse_raw_log_for_code_id(tx_response)",
+            "usage": "fallback_code_id = fallback_parse_raw_log_for_code_id(tx_response)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Combines event-based candidates and any fallback value to return the final code_id result or an error.",
+            "function": "return_code_id(event_candidates, fallback_code_id)",
+            "usage": "final_result = return_code_id(event_candidates, fallback_code_id)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "normalized_hash = validate_tx_hash(\"38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085\")#step: 1 Tool: validate_tx_hash Desciption: Validate that the provided transaction hash \"38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085\" is a 64-character hex string (case-insensitive). If the format is invalid, stop and return a clear error.",
+        "fetch_result = fetch_tx_by_hash(normalized_hash)#step: 2 Tool: lcd_get_tx_by_hash Desciption: Perform an HTTP GET to \"https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs/38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085\" to fetch the transaction and its \"tx_response\".",
+        "tx_response = check_tx_found_and_success(fetch_result[\"status_code\"], fetch_result[\"data\"])#step: 3 Tool: check_tx_found_and_success Desciption: Verify the LCD call returned HTTP 200 and that \"tx_response.code\" equals 0. If the transaction is not found or the code is non-zero, return an error including \"tx_response.raw_log\" when available.",
+        "event_candidates = extract_code_id_from_events(tx_response)#step: 4 Tool: extract_code_id_from_events Desciption: Iterate over \"tx_response.logs[*].events[*].attributes[*]\" and collect any attribute where the event type is \"store_code\" or \"instantiate\" and the attribute key is \"code_id\". Record the corresponding \"value\" fields as candidate code IDs.",
+        "fallback_code_id = fallback_parse_raw_log_for_code_id(tx_response)#step: 5 Tool: fallback_parse_raw_log_for_code_id Desciption: If no \"code_id\" attribute is found in structured logs, parse \"tx_response.raw_log\" as text and search for a pattern where \"code_id\" is followed by an integer (e.g., using a regular expression like \"code_id\\\"?: ?\\\"?(\\\\d+)\\\"?\"). Extract that integer as a fallback code_id.",
+        "final_result = return_code_id(event_candidates, fallback_code_id)#step: 6 Tool: return_code_id Desciption: If exactly one code_id was found, return it as the result. If multiple distinct code IDs are found (e.g., multiple store_code or instantiate events), return the list of code IDs along with minimal context (event type and index). If none are found, return an explicit error stating that this transaction does not include a CosmWasm store_code or instantiate event exposing a code_id."
+    ],
+    "intent": "Look up a Juno transaction by hash and extract the CosmWasm code_id from its events.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_tx_hash",
+            "description": "Validate that the provided transaction hash \"38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085\" is a 64-character hex string (case-insensitive). If the format is invalid, stop and return a clear error."
+        },
+        {
+            "step": 2,
+            "tool": "lcd_get_tx_by_hash",
+            "description": "Perform an HTTP GET to \"https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs/38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085\" to fetch the transaction and its \"tx_response\"."
+        },
+        {
+            "step": 3,
+            "tool": "check_tx_found_and_success",
+            "description": "Verify the LCD call returned HTTP 200 and that \"tx_response.code\" equals 0. If the transaction is not found or the code is non-zero, return an error including \"tx_response.raw_log\" when available."
+        },
+        {
+            "step": 4,
+            "tool": "extract_code_id_from_events",
+            "description": "Iterate over \"tx_response.logs[*].events[*].attributes[*]\" and collect any attribute where the event type is \"store_code\" or \"instantiate\" and the attribute key is \"code_id\". Record the corresponding \"value\" fields as candidate code IDs."
+        },
+        {
+            "step": 5,
+            "tool": "fallback_parse_raw_log_for_code_id",
+            "description": "If no \"code_id\" attribute is found in structured logs, parse \"tx_response.raw_log\" as text and search for a pattern where \"code_id\" is followed by an integer (e.g., using a regular expression like \"code_id\\\"?: ?\\\"?(\\\\d+)\\\"?\"). Extract that integer as a fallback code_id."
+        },
+        {
+            "step": 6,
+            "tool": "return_code_id",
+            "description": "If exactly one code_id was found, return it as the result. If multiple distinct code IDs are found (e.g., multiple store_code or instantiate events), return the list of code IDs along with minimal context (event type and index). If none are found, return an explicit error stating that this transaction does not include a CosmWasm store_code or instantiate event exposing a code_id."
+        }
+    ],
+    "outcome_checks": [
+        "The GET request to /cosmos/tx/v1beta1/txs/{hash} succeeds with HTTP 200.",
+        "\"tx_response.code\" is 0, meaning the transaction executed successfully on-chain.",
+        "At least one code_id value is found either in structured events or by parsing raw_log.",
+        "The final output clearly exposes one or more code_id values as plain strings/integers that can be used in subsequent CosmWasm queries (e.g., /cosmwasm/wasm/v1/code/{code_id})."
+    ]
+}

@@ -3,38 +3,65 @@
         {
             "step": 1,
             "label": "backend",
-            "introduction": "Compiles the CosmWasm smart-contract in the specified folder and outputs an optimized .wasm file.",
-            "function": "compile_wasm_contract(contract_dir)",
-            "usage": "wasm_path = compile_wasm_contract('.')"
+            "introduction": "Locates the single-contract project root by walking up the directory tree until it finds a Cargo.toml that is not a workspace.",
+            "function": "detect_contract_project_root(start_dir: Optional[str] = None)",
+            "usage": "project_root = detect_contract_project_root()"
         },
         {
             "step": 2,
             "label": "backend",
-            "introduction": "Checks that the build artifacts folder contains all the expected files after compilation.",
-            "function": "verify_generated_artifacts(output_dir, validators=1)",
-            "usage": "is_valid = verify_generated_artifacts('./artifacts')"
+            "introduction": "Parses Cargo.toml under the project root and returns the contract package name along with the expected artifacts/CONTRACT_NAME.wasm path.",
+            "function": "read_contract_name_from_cargo(project_root: str)",
+            "usage": "contract_name, artifact_path = read_contract_name_from_cargo(str(project_root))"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Runs the official CosmWasm rust-optimizer (via Docker by default) to build a stripped, optimized .wasm file for the contract.",
+            "function": "run_rust_optimizer(project_root: str, use_docker: bool = True, docker_image: str = 'cosmwasm/rust-optimizer:0.14.0', timeout_seconds: Optional[int] = None)",
+            "usage": "optimizer_logs = run_rust_optimizer(str(project_root))"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Checks that the optimizer produced a non-empty, valid WebAssembly module at the expected artifacts path (including magic-byte and optional validator checks).",
+            "function": "verify_wasm_artifact(artifact_path: str, optimizer_stdout: Optional[str] = None, optimizer_stderr: Optional[str] = None, run_wasm_validator: bool = True, wasm_validator_cmd: Optional[list] = None)",
+            "usage": "verification_info = verify_wasm_artifact(str(artifact_path))"
         }
     ],
     "frontend": [],
     "backend": [
-        "wasm_path = compile_wasm_contract('.')#step: 1 Tool: docker_run_rust_optimizer Desciption: Execute `docker run --rm -v $(pwd):/code --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/rust-optimizer:0.12.11` from the project root.",
-        "is_valid = verify_generated_artifacts('./artifacts')#step: 2 Tool: verify_artifacts_directory Desciption: Confirm the ./artifacts directory now holds <crate_name>.wasm and contracts.txt."
+        "project_root = detect_contract_project_root()#step: 1 Tool: bff_detect_contract_project_root Desciption: From the backend, determine the current contract project root (directory containing Cargo.toml for the single contract). Validate that it is not a multi-contract workspace for this action.",
+        "contract_name, artifact_path = read_contract_name_from_cargo(str(project_root))#step: 2 Tool: bff_read_contract_name_from_cargo Desciption: Parse Cargo.toml in the project root and read the [package] name to infer the output contract name (CONTRACT_NAME). This will determine the expected artifact path artifacts/CONTRACT_NAME.wasm.",
+        "optimizer_logs = run_rust_optimizer(str(project_root))#step: 3 Tool: bff_run_rust_optimizer Desciption: Execute the CosmWasm rust-optimizer build in the backend, e.g. by running the official rust-optimizer Docker image or native script. Mount the project root and run the optimizer so that it produces a stripped and optimized wasm file under artifacts/CONTRACT_NAME.wasm.",
+        "verification_info = verify_wasm_artifact(str(artifact_path))#step: 4 Tool: bff_verify_wasm_artifact Desciption: After the optimizer finishes, confirm that artifacts/CONTRACT_NAME.wasm exists, is non-empty, and is a valid wasm module (check magic bytes and optionally run a wasm validation tool). Surface any optimizer stderr/stdout in case of failure."
     ],
     "intent": "Compile the current CosmWasm smart contract using rust-optimizer",
     "workflow": [
         {
             "step": 1,
-            "tool": "docker_run_rust_optimizer",
-            "description": "Execute `docker run --rm -v $(pwd):/code --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/rust-optimizer:0.12.11` from the project root."
+            "tool": "bff_detect_contract_project_root",
+            "description": "From the backend, determine the current contract project root (directory containing Cargo.toml for the single contract). Validate that it is not a multi-contract workspace for this action."
         },
         {
             "step": 2,
-            "tool": "verify_artifacts_directory",
-            "description": "Confirm the ./artifacts directory now holds <crate_name>.wasm and contracts.txt."
+            "tool": "bff_read_contract_name_from_cargo",
+            "description": "Parse Cargo.toml in the project root and read the [package] name to infer the output contract name (CONTRACT_NAME). This will determine the expected artifact path artifacts/CONTRACT_NAME.wasm."
+        },
+        {
+            "step": 3,
+            "tool": "bff_run_rust_optimizer",
+            "description": "Execute the CosmWasm rust-optimizer build in the backend, e.g. by running the official rust-optimizer Docker image or native script. Mount the project root and run the optimizer so that it produces a stripped and optimized wasm file under artifacts/CONTRACT_NAME.wasm."
+        },
+        {
+            "step": 4,
+            "tool": "bff_verify_wasm_artifact",
+            "description": "After the optimizer finishes, confirm that artifacts/CONTRACT_NAME.wasm exists, is non-empty, and is a valid wasm module (check magic bytes and optionally run a wasm validation tool). Surface any optimizer stderr/stdout in case of failure."
         }
     ],
     "outcome_checks": [
-        "artifacts/<crate_name>.wasm exists and is non-zero in size.",
-        "contracts.txt lists the correct SHA256 checksum for the new wasm."
+        "The rust-optimizer process exits with a zero status code and no build errors.",
+        "An optimized wasm file exists at artifacts/CONTRACT_NAME.wasm with a non-zero size.",
+        "Basic wasm validation of artifacts/CONTRACT_NAME.wasm succeeds, indicating a valid CosmWasm binary ready for upload."
     ]
 }

@@ -53,12 +53,12 @@ def explain_workflow(query):
     return (answer.choices[0].message.content)
 
 
-def show_apis(query):
-    print("!!!!")
-    embedding_model = SentenceTransformer("BAAI/bge-large-en-v1.5")
-    quadrant_client = QdrantClient("localhost", port=6333)
-
-    print(retrieve(query, quadrant_client, embedding_model))
-
-
-show_apis("/cosmos/bank/v1beta1/denom_owners")
+# def show_apis(query):
+#     print("!!!!")
+#     embedding_model = SentenceTransformer("BAAI/bge-large-en-v1.5")
+#     quadrant_client = QdrantClient("localhost", port=6333)
+#
+#     print(retrieve(query, quadrant_client, embedding_model))
+#
+#
+# show_apis("/cosmos/bank/v1beta1/denom_owners")

@@ -1,92 +1,47 @@
 {
-    "tools": [
-        {
-            "step": 1,
-            "label": "frontend",
-            "introduction": "Fetches the user\u2019s bech32 address (and offline signer) from the connected Keplr / Leap wallet so we know which wallet will open the Amber position.",
-            "function": "getOfflineSignerAndAddress(chainId = 'neutron-1')",
-            "usage": "const { address, signer } = await getOfflineSignerAndAddress();"
-        },
-        {
-            "step": 2,
-            "label": "frontend",
-            "introduction": "Calls the Neutron LCD to be sure the wallet holds at least 1 maxBTC (plus a small NTRN fee balance) before proceeding.",
-            "function": "validateTokenBalance(address, options?)",
-            "usage": "await validateTokenBalance(address);"
-        },
-        {
-            "step": 3,
-            "label": "frontend",
-            "introduction": "Queries Amber\u2019s smart-contract for current market parameters such as max-leverage, collateral factors and interest rates.",
-            "function": "queryAmberMarketParameters({ contract, restEndpoint } = {})",
-            "usage": "const market = await queryAmberMarketParameters();"
-        },
-        {
-            "step": 4,
-            "label": "frontend",
-            "introduction": "Builds a MsgExecuteContract that tells Amber to open a 5\u00d7-leveraged position using exactly 1 maxBTC as collateral.",
-            "function": "constructOpenLeverageMsg({ sender, collateralAmount, collateralDenom, leverage, contract })",
-            "usage": "const execMsg = constructOpenLeverageMsg({ sender: address });"
-        },
-        {
-            "step": 5,
-            "label": "frontend",
-            "introduction": "Uses the signer to sign the execute message and forwards the signed bytes to the backend relayer, returning the transaction hash once broadcast.",
-            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo = '')",
-            "usage": "const txHash = await signAndBroadcast(signer, address, [execMsg], 'auto');"
-        },
-        {
-            "step": 6,
-            "label": "frontend",
-            "introduction": "Polls Amber Finance until the newly created position appears and returns its ID, borrowed amount and health-factor.",
-            "function": "queryPositionStatus({ owner, contract, restEndpoint, retries, delayMs })",
-            "usage": "const position = await queryPositionStatus({ owner: address });"
-        }
-    ],
-    "frontend": [
-        "const { address, signer } = await getOfflineSignerAndAddress();//step: 1 Tool: get_user_address Desciption: Determine the wallet initiating the leveraged position.",
-        "await validateTokenBalance(address);//step: 2 Tool: validate_token_balance Desciption: Verify the user holds at least 1 maxBTC (plus gas fees).",
-        "const market = await queryAmberMarketParameters();//step: 3 Tool: query_amber_market_parameters Desciption: Fetch Amber Finance parameters (maximum leverage allowed, collateral factors, interest rate) to ensure 5\u00d7 leverage is within limits.",
-        "const execMsg = constructOpenLeverageMsg({ sender: address });//step: 4 Tool: construct_open_leverage_msg Desciption: Generate an Amber `open_position` execute message with `{ \"collateral\": 1 maxBTC, \"leverage\": \"5x\" }`.",
-        "const txHash = await signAndBroadcast(signer, address, [execMsg], 'auto');//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the open-position transaction.",
-        "const position = await queryPositionStatus({ owner: address });//step: 6 Tool: query_position_status Desciption: Poll the Amber contract for the new position ID, borrowed amount, and health factor."
-    ],
-    "backend": [],
-    "intent": "Open a 5\u00d7 leveraged loop position with 1 maxBTC on Amber",
+    "label": "execute",
     "workflow": [
         {
             "step": 1,
-            "tool": "get_user_address",
-            "description": "Determine the wallet initiating the leveraged position."
+            "label": "frontend",
+            "introduction": "Connect to Keplr in the browser and return the user\u2019s Neutron address; this will identify who is opening the 5\u00d7 leveraged position.",
+            "code": "export const getUserAddress = async () => {\n  const chainId = 'neutron-1'; // Main-net; replace with the test-net ID if needed\n\n  // 1. Make sure Keplr is injected in the page\n  if (!window.keplr) {\n    throw new Error('Keplr wallet is not installed.');\n  }\n\n  // 2. Ask the wallet to enable the selected chain\n  await window.keplr.enable(chainId);\n\n  // 3. Fetch the first account from the signer\n  const offlineSigner = window.getOfflineSigner(chainId);\n  const accounts = await offlineSigner.getAccounts();\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No account found in Keplr.');\n  }\n\n  return accounts[0].address; // Neutron bech-32 address\n};",
+            "usage": "const myAddress = await getUserAddress();"
         },
         {
             "step": 2,
-            "tool": "validate_token_balance",
-            "description": "Verify the user holds at least 1 maxBTC (plus gas fees)."
+            "label": "frontend",
+            "introduction": "Check the user\u2019s balance of maxBTC via Neutron\u2019s public REST (LCD) endpoint and be sure at least 1 maxBTC (plus extra for gas) is available.",
+            "code": "export const validateTokenBalance = async (\n  address,\n  {\n    min = BigInt(1_000000), // 1.0 maxBTC in micro-denom units (example: 1e6)\n    denom = 'amaxbtc',      // replace with the exact on-chain denom for maxBTC\n    restEndpoint = 'https://rest-kralum.neutron.org' // example REST endpoint\n  } = {}\n) => {\n  try {\n    const url = `${restEndpoint}/cosmos/bank/v1beta1/balances/${address}/${denom}`;\n    const res = await fetch(url);\n    if (!res.ok) throw new Error(`LCD error: ${res.status}`);\n\n    const { balance } = await res.json();\n    const amount = BigInt(balance?.amount || 0);\n\n    if (amount < min) {\n      throw new Error(`Insufficient balance: need \u2265 ${min} ${denom}, have ${amount}`);\n    }\n    return { ok: true, amount };\n  } catch (err) {\n    console.error(err);\n    return { ok: false, reason: err.message };\n  }\n};",
+            "usage": "const ok = await validateTokenBalance(myAddress);\nif (!ok.ok) alert(ok.reason);"
         },
         {
             "step": 3,
-            "tool": "query_amber_market_parameters",
-            "description": "Fetch Amber Finance parameters (maximum leverage allowed, collateral factors, interest rate) to ensure 5\u00d7 leverage is within limits."
+            "label": "frontend",
+            "introduction": "Query the Amber Finance smart-contract for its current leverage and collateral parameters to confirm that 5\u00d7 is allowed.",
+            "code": "export const queryAmberMarketParameters = async (\n  {\n    contract = 'neutron1ambercontractaddressxxxxxxxxxxxx', // Amber contract address\n    restEndpoint = 'https://rest-kralum.neutron.org'\n  } = {}\n) => {\n  // The Amber contract is assumed to expose `{ \"config\": {} }` or similar.\n  const query = { market_params: {} };\n  const encoded = btoa(JSON.stringify(query));\n  const url = `${restEndpoint}/cosmwasm/wasm/v1/contract/${contract}/smart/${encoded}`;\n\n  const res = await fetch(url);\n  if (!res.ok) throw new Error(`Amber query failed: ${res.status}`);\n\n  return await res.json(); // \u2192 { data: { max_leverage: '6', collateral_factor: '0.8', ... } }\n};",
+            "usage": "const params = await queryAmberMarketParameters();\nif (Number(params.data.max_leverage) < 5) throw new Error('5\u00d7 leverage not permitted');"
         },
         {
             "step": 4,
-            "tool": "construct_open_leverage_msg",
-            "description": "Generate an Amber `open_position` execute message with `{ \"collateral\": 1 maxBTC, \"leverage\": \"5x\" }`."
+            "label": "frontend",
+            "introduction": "Create the CosmWasm `MsgExecuteContract` payload that opens a 5\u00d7 leveraged position using exactly 1 maxBTC as collateral.",
+            "code": "export const constructOpenLeverageMsg = (\n  {\n    sender,\n    collateralAmount = '1000000',           // 1.0 maxBTC in micro-units\n    collateralDenom = 'amaxbtc',            // actual on-chain denom\n    leverage = '5',\n    contract = 'neutron1ambercontractaddressxxxxxxxxxxxx'\n  }\n) => {\n  if (!sender) throw new Error('`sender` (wallet address) is required');\n\n  // Amber-specific execute message\n  const executeMsg = {\n    open_position: {\n      collateral: {\n        denom: collateralDenom,\n        amount: collateralAmount\n      },\n      leverage\n    }\n  };\n\n  // Standard CosmWasm MsgExecuteContract to be signed later\n  return {\n    typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',\n    value: {\n      sender,\n      contract,\n      msg: new TextEncoder().encode(JSON.stringify(executeMsg)),\n      funds: [{ denom: collateralDenom, amount: collateralAmount }]\n    }\n  };\n};",
+            "usage": "const msg = constructOpenLeverageMsg({ sender: myAddress });"
         },
         {
             "step": 5,
-            "tool": "sign_and_broadcast_tx",
-            "description": "Sign and broadcast the open-position transaction."
+            "label": "backend",
+            "introduction": "Sign and broadcast the open-position transaction on behalf of the user using cosmpy. (In production you should never handle user mnemonics server-side; this is a demo of the BFF pattern.)",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import Wallet\nfrom cosmpy.aerial.tx import Transaction, SigningCfg\n\nAMBER_CONTRACT = 'neutron1ambercontractaddressxxxxxxxxxxxx'\nRPC_ENDPOINT = 'https://rpc-neutron.keplr.app'\nCHAIN_ID = 'neutron-1'\n\napp = FastAPI()\n\nclass OpenPositionRequest(BaseModel):\n    mnemonic: str                       # !! Only for demo purposes !!\n    open_position_msg: dict             # MsgExecuteContract generated in Step 4\n    gas_limit: int = 250000             # conservative default\n    gas_price: float = 0.025            # NTRN per gas unit\n\n@app.post('/api/open_position')\nasync def open_position(req: OpenPositionRequest):\n    try:\n        # 1. Build client & wallet\n        net_cfg = NetworkConfig(\n            chain_id=CHAIN_ID,\n            url=RPC_ENDPOINT,\n            fee_minimum_gas_price=req.gas_price,\n            fee_denomination='untrn'\n        )\n        client = LedgerClient(net_cfg)\n        wallet = Wallet(req.mnemonic)\n\n        # 2. Craft the transaction\n        tx = (\n            Transaction()\n            .with_messages(req.open_position_msg)\n            .with_sequence(client.query_account_sequence(wallet.address()))\n            .with_account_num(client.query_account_number(wallet.address()))\n            .with_gas(req.gas_limit)\n            .with_chain_id(net_cfg.chain_id)\n        )\n\n        # 3. Sign & broadcast\n        signed_tx = wallet.sign(tx)\n        tx_response = client.broadcast_tx_block(signed_tx)\n\n        if tx_response.is_error:\n            raise HTTPException(400, f'Broadcast failed: {tx_response.log}')\n        return {\"tx_hash\": tx_response.tx_hash, \"height\": tx_response.height}\n\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "await fetch('/api/open_position', { method: 'POST', body: JSON.stringify({\n  mnemonic: 'your twelve words \u2026',\n  open_position_msg: msg,\n  gas_limit: 250000,\n  gas_price: 0.025\n}) }).then(r => r.json());"
         },
         {
             "step": 6,
-            "tool": "query_position_status",
-            "description": "Poll the Amber contract for the new position ID, borrowed amount, and health factor."
+            "label": "frontend",
+            "introduction": "Poll Amber for the newly-created position, returning the position ID, borrowed amount and health factor until a result is available or a timeout occurs.",
+            "code": "export const queryPositionStatus = async (\n  {\n    owner,\n    contract = 'neutron1ambercontractaddressxxxxxxxxxxxx',\n    restEndpoint = 'https://rest-kralum.neutron.org',\n    retries = 10,\n    delayMs = 3000\n  }\n) => {\n  if (!owner) throw new Error('Owner address is required');\n\n  const query = { positions_by_owner: { owner } };\n  const encoded = btoa(JSON.stringify(query));\n  const url = `${restEndpoint}/cosmwasm/wasm/v1/contract/${contract}/smart/${encoded}`;\n\n  for (let i = 0; i < retries; i++) {\n    const res = await fetch(url);\n    if (res.ok) {\n      const data = await res.json();\n      if (data?.data?.positions?.length) {\n        return data.data.positions[0]; // Return the first position found\n      }\n    }\n    await new Promise(r => setTimeout(r, delayMs));\n  }\n  throw new Error('Position not found within timeout window');\n};",
+            "usage": "const myPosition = await queryPositionStatus({ owner: myAddress });\nconsole.log('Borrowed:', myPosition.borrowed_amount, 'HF:', myPosition.health_factor);"
         }
-    ],
-    "outcome_checks": [
-        "Ensure the transaction succeeded and a position ID was returned.",
-        "Validate that the position\u2019s health factor is above the liquidation threshold and leverage approximates 5\u00d7."
     ]
 }

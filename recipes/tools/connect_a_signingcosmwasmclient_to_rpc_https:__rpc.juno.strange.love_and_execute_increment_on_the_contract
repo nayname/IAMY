@@ -1,0 +1,93 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Loads a LocalWallet from the JUNO_MNEMONIC environment variable so that backend code can sign Juno transactions.",
+            "function": "prepare_backend_signer()",
+            "usage": "wallet = prepare_backend_signer()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Creates a LedgerClient connected to https://rpc.juno.strange.love and ready to use the provided wallet for signing.",
+            "function": "init_signing_cosmwasm_client(wallet)",
+            "usage": "client = init_signing_cosmwasm_client(wallet)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Fetches the target counter contract address, typically from the CONTRACT_ADDRESS environment variable.",
+            "function": "resolve_contract_address()",
+            "usage": "contract_addr = resolve_contract_address()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Sends the {\"increment\":{}} execute message to the contract over RPC and returns the resulting tx hash.",
+            "function": "execute_increment_msg_over_rpc(client, wallet, contract_address, memo=None)",
+            "usage": "tx_info = execute_increment_msg_over_rpc(client, wallet, contract_addr)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Polls the Juno LCD until the given txhash is found in a block and confirmed with code 0.",
+            "function": "confirm_tx_via_lcd(txhash, max_attempts=12, poll_interval=2.0)",
+            "usage": "tx_response = confirm_tx_via_lcd(tx_info['txhash'])"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Queries the contract before and after execution to ensure the counter increased by exactly one.",
+            "function": "verify_incremented_count(contract_address, before)",
+            "usage": "verification = verify_incremented_count(contract_addr, before_count)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "wallet = prepare_backend_signer()#step: 1 Tool: prepare_backend_signer Desciption: On the backend, load or configure an offline signer for the user's Juno account (e.g., from mnemonic, keyring, or remote signer) that can be used by SigningCosmWasmClient to sign transactions.",
+        "client = init_signing_cosmwasm_client(wallet)#step: 2 Tool: init_signing_cosmwasm_client Desciption: Initialize a SigningCosmWasmClient (or equivalent backend client) connected to the RPC endpoint https://rpc.juno.strange.love using the prepared signer.",
+        "contract_addr = resolve_contract_address()#step: 3 Tool: resolve_contract_address Desciption: Determine the target counter contract address (e.g., from environment variable CONTRACT_ADDRESS or a stored instantiate result).",
+        "tx_info = execute_increment_msg_over_rpc(client, wallet, contract_addr)#step: 4 Tool: execute_increment_msg_over_rpc Desciption: Using the initialized SigningCosmWasmClient, execute the contract by sending msg {\"increment\": {}} with an appropriate fee and optional memo, returning a transaction hash or detailed result from the RPC call.",
+        "tx_response = confirm_tx_via_lcd(tx_info['txhash'])#step: 5 Tool: confirm_tx_via_lcd Desciption: With the returned txhash, query https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs/{txhash} to confirm the transaction was included in a block and that tx_response.code == 0.",
+        "verification = verify_incremented_count(contract_addr, before_count)#step: 6 Tool: verify_incremented_count Desciption: Use the \"Get current count from contract CONTRACT_ADDRESS\" workflow both before and after the increment (or compare to a previously stored value) to verify that the count increased by 1."
+    ],
+    "intent": "Connect a SigningCosmWasmClient to RPC https://rpc.juno.strange.love and execute increment on the contract",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "prepare_backend_signer",
+            "description": "On the backend, load or configure an offline signer for the user's Juno account (e.g., from mnemonic, keyring, or remote signer) that can be used by SigningCosmWasmClient to sign transactions."
+        },
+        {
+            "step": 2,
+            "tool": "init_signing_cosmwasm_client",
+            "description": "Initialize a SigningCosmWasmClient (or equivalent backend client) connected to the RPC endpoint https://rpc.juno.strange.love using the prepared signer."
+        },
+        {
+            "step": 3,
+            "tool": "resolve_contract_address",
+            "description": "Determine the target counter contract address (e.g., from environment variable CONTRACT_ADDRESS or a stored instantiate result)."
+        },
+        {
+            "step": 4,
+            "tool": "execute_increment_msg_over_rpc",
+            "description": "Using the initialized SigningCosmWasmClient, execute the contract by sending msg {\"increment\": {}} with an appropriate fee and optional memo, returning a transaction hash or detailed result from the RPC call."
+        },
+        {
+            "step": 5,
+            "tool": "confirm_tx_via_lcd",
+            "description": "With the returned txhash, query https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs/{txhash} to confirm the transaction was included in a block and that tx_response.code == 0."
+        },
+        {
+            "step": 6,
+            "tool": "verify_incremented_count",
+            "description": "Use the \"Get current count from contract CONTRACT_ADDRESS\" workflow both before and after the increment (or compare to a previously stored value) to verify that the count increased by 1."
+        }
+    ],
+    "outcome_checks": [
+        "The SigningCosmWasmClient successfully connects to https://rpc.juno.strange.love and can fetch chain information without error.",
+        "The LCD tx lookup at /cosmos/tx/v1beta1/txs/{txhash} returns tx_response.code == 0 for the increment transaction.",
+        "The contract's count queried after execution is exactly one greater than its value before the increment."
+    ]
+}

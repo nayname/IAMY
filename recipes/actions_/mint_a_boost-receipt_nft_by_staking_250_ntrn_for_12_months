@@ -1,94 +1,47 @@
 {
-    "tools": [
-        {
-            "step": 1,
-            "label": "frontend",
-            "introduction": "Retrieves the connected browser wallet\u2019s Neutron bech32 address.",
-            "function": "getNeutronAddress()",
-            "usage": "const userAddr = await getNeutronAddress();"
-        },
-        {
-            "step": 2,
-            "label": "backend",
-            "introduction": "Queries the on-chain bank module to obtain the user\u2019s spendable NTRN balance.",
-            "function": "query_bank_balance(address, denom='untrn')",
-            "usage": "balance = query_bank_balance(userAddr, 'untrn')"
-        },
-        {
-            "step": 3,
-            "label": "backend",
-            "introduction": "Creates a MsgExecuteContract transaction that calls `stake_and_mint_nft` with 250 NTRN for 12 months.",
-            "function": "build_stake_and_mint_tx(sender_address, contract_address, amount=250000000, denom='untrn', duration='12_months')",
-            "usage": "tx = build_stake_and_mint_tx(userAddr, BOOST_CONTRACT_ADDR, 250000000, 'untrn', '12_months')"
-        },
-        {
-            "step": 4,
-            "label": "backend",
-            "introduction": "Signs the prepared transaction with the backend wallet and broadcasts it to the Neutron network.",
-            "function": "sign_and_broadcast(tx, client)",
-            "usage": "broadcastResult = sign_and_broadcast(tx, client)"
-        },
-        {
-            "step": 5,
-            "label": "backend",
-            "introduction": "Polls the chain until the broadcasted transaction is included in a block.",
-            "function": "wait_for_tx_commit(tx_hash, client, timeout=120, poll=2.0)",
-            "usage": "receipt = wait_for_tx_commit(broadcastResult['tx_hash'], client)"
-        },
-        {
-            "step": 6,
-            "label": "backend",
-            "introduction": "Queries the NFT contract to list token IDs owned by the user and confirm the mint.",
-            "function": "query_nft_tokens(client, contract_address, owner_address)",
-            "usage": "tokens = query_nft_tokens(client, NFT_CONTRACT_ADDR, userAddr)"
-        }
-    ],
-    "frontend": [
-        "const userAddr = await getNeutronAddress();//step: 1 Tool: get_neutron_address Desciption: Identify the user\u2019s Neutron wallet address."
-    ],
-    "backend": [
-        "balance = query_bank_balance(userAddr, 'untrn')#step: 2 Tool: bank_query_balance Desciption: Ensure at least 250 NTRN (250000000 untrn) is available.",
-        "tx = build_stake_and_mint_tx(userAddr, BOOST_CONTRACT_ADDR, 250000000, 'untrn', '12_months')#step: 3 Tool: construct_boost_nft_stake_msg Desciption: Build a `stake_and_mint_nft` message to the Boost contract with `{ amount: 250000000untrn, duration: 12_months }`.",
-        "broadcastResult = sign_and_broadcast(tx, client)#step: 4 Tool: sign_and_broadcast_tx Desciption: Sign and broadcast the transaction to stake and mint the NFT.",
-        "receipt = wait_for_tx_commit(broadcastResult['tx_hash'], client)#step: 5 Tool: wait_for_tx_commit Desciption: Monitor inclusion of the transaction in a block.",
-        "tokens = query_nft_tokens(client, NFT_CONTRACT_ADDR, userAddr)#step: 6 Tool: query_nft_contract Desciption: Query the NFT contract\u2019s `tokens { owner }` endpoint to confirm a new token ID has been minted to the user."
-    ],
-    "intent": "Mint a boost-receipt NFT by staking 250 NTRN for 12 months",
+    "label": "execute",
     "workflow": [
         {
             "step": 1,
-            "tool": "get_neutron_address",
-            "description": "Identify the user\u2019s Neutron wallet address."
+            "label": "frontend",
+            "introduction": "Step 1 ensures the user has Keplr installed, enables the Neutron chain, and returns both the signer and the user\u2019s Neutron address.",
+            "code": "export const connectNeutronWallet = async (chainId = 'neutron-1') => {\n  // Ensure Keplr is available\n  if (typeof window === 'undefined' || !window.keplr) {\n    throw new Error('Keplr wallet is not installed.');\n  }\n\n  try {\n    await window.keplr.enable(chainId);\n    const signer = window.keplr.getOfflineSigner(chainId);\n    const accounts = await signer.getAccounts();\n    if (!accounts || accounts.length === 0) {\n      throw new Error('No account found in Keplr.');\n    }\n    return { signer, address: accounts[0].address };\n  } catch (err) {\n    console.error('Failed to connect to Keplr:', err);\n    throw err;\n  }\n};",
+            "usage": "const { signer, address } = await connectNeutronWallet();"
         },
         {
             "step": 2,
-            "tool": "bank_query_balance",
-            "description": "Ensure at least 250 NTRN (250000000 untrn) is available."
+            "label": "backend",
+            "introduction": "Step 2 exposes a FastAPI endpoint that returns the user\u2019s balance in micro-denomination (untrn) using cosmpy.",
+            "code": "from fastapi import FastAPI, HTTPException\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\n\napp = FastAPI(title='Neutron BFF')\n\nNETWORK = NetworkConfig(\n    chain_id='neutron-1',\n    url='https://rpc-kralum.neutron.org',\n    fee_denom='untrn',\n    gas_price=0.01,\n    prefix='neutron',\n)\n\nclient = LedgerClient(NETWORK)\n\n@app.get('/balance/{address}')\nasync def query_balance(address: str, denom: str = 'untrn'):\n    # Returns the balance for a given Neutron address in micro-denom units (untrn)\n    try:\n        balance = client.query_bank_balance(address, denom=denom)\n        return {\n            'address': address,\n            'denom': denom,\n            'amount': int(balance),\n        }\n    except Exception as e:\n        raise HTTPException(status_code=400, detail=str(e))",
+            "usage": "const res = await fetch(`/api/balance/${address}`);\nconst { amount } = await res.json();\nif (Number(amount) < 250000000) {\n  throw new Error('Insufficient balance: need at least 250 NTRN.');\n}"
         },
         {
             "step": 3,
-            "tool": "construct_boost_nft_stake_msg",
-            "description": "Build a `stake_and_mint_nft` message to the Boost contract with `{ amount: 250000000untrn, duration: 12_months }`."
+            "label": "backend",
+            "introduction": "Step 3 constructs an unsigned MsgExecuteContract that calls `stake_and_mint_nft` on the Boost contract with the desired parameters.",
+            "code": "from cosmpy.aerial.tx import Transaction\nfrom cosmpy.aerial.contract import MsgExecuteContract\n\ndef build_stake_and_mint_tx(sender_address: str, contract_address: str, amount: int = 250000000, denom: str = 'untrn', duration: str = '12_months'):\n    # Build the JSON message expected by the Boost contract\n    execute_msg = {\n        'stake_and_mint_nft': {\n            'amount': f'{amount}{denom}',\n            'duration': duration,\n        }\n    }\n\n    # Funds that accompany the execute call\n    funds = [{ 'denom': denom, 'amount': str(amount) }]\n\n    # Construct the MsgExecuteContract protobuf wrapper\n    msg = MsgExecuteContract(\n        sender=sender_address,\n        contract=contract_address,\n        msg=execute_msg,\n        funds=funds,\n    )\n\n    # Wrap inside a Transaction for later signing\n    tx = Transaction()\n    tx.add_message(msg)\n    tx.with_sender(sender_address)\n    return tx",
+            "usage": "tx = build_stake_and_mint_tx(sender_address=address, contract_address=BOOST_CONTRACT_ADDRESS)"
         },
         {
             "step": 4,
-            "tool": "sign_and_broadcast_tx",
-            "description": "Sign and broadcast the transaction to stake and mint the NFT."
+            "label": "backend",
+            "introduction": "Step 4 signs the previously built transaction with a mnemonic stored in an environment variable and broadcasts it to the chain.",
+            "code": "import os\nfrom cosmpy.aerial.wallet import PrivateKey\nfrom cosmpy.aerial.client import LedgerClient\n\n\ndef sign_and_broadcast(tx, client: LedgerClient):\n    # Sign the provided Transaction using the mnemonic in the MNEMONIC env variable and broadcast it.\n    mnemonic = os.getenv('MNEMONIC')\n    if not mnemonic:\n        raise ValueError('MNEMONIC environment variable is not set.')\n\n    pk = PrivateKey.from_mnemonic(mnemonic)\n    signed_tx = tx.sign(pk)\n    resp = client.broadcast_transaction(signed_tx)\n\n    if resp.is_successful():\n        return { 'tx_hash': resp.tx_hash }\n    else:\n        raise RuntimeError(f'Broadcast failed with code {resp.code}: {resp.raw_log}')",
+            "usage": "tx_hash_dict = sign_and_broadcast(tx, client)\nprint('Broadcasted with TxHash:', tx_hash_dict['tx_hash'])"
         },
         {
             "step": 5,
-            "tool": "wait_for_tx_commit",
-            "description": "Monitor inclusion of the transaction in a block."
+            "label": "backend",
+            "introduction": "Step 5 polls the chain until the broadcasted transaction is included in a block or times out.",
+            "code": "import time\nfrom cosmpy.aerial.client import LedgerClient\n\n\ndef wait_for_tx_commit(tx_hash: str, client: LedgerClient, timeout: int = 120, poll: float = 2.0):\n    # Poll the chain for the transaction result\n    deadline = time.time() + timeout\n    while time.time() < deadline:\n        tx_info = client.query_tx(tx_hash)\n        if tx_info is not None:\n            return {\n                'status': 'confirmed',\n                'height': tx_info.height,\n                'raw_log': tx_info.raw_log,\n            }\n        time.sleep(poll)\n    raise TimeoutError('Timed out waiting for transaction commitment.')",
+            "usage": "confirmation = wait_for_tx_commit(tx_hash_dict['tx_hash'], client)\nprint('Tx confirmed at height', confirmation['height'])"
         },
         {
             "step": 6,
-            "tool": "query_nft_contract",
-            "description": "Query the NFT contract\u2019s `tokens { owner }` endpoint to confirm a new token ID has been minted to the user."
+            "label": "backend",
+            "introduction": "Step 6 queries the NFT contract to verify that a new token has been minted to the user.",
+            "code": "from cosmpy.aerial.client import LedgerClient\n\n\ndef query_nft_tokens(client: LedgerClient, contract_address: str, owner_address: str):\n    query = { 'tokens': { 'owner': owner_address } }\n    try:\n        result = client.query_contract_smart(contract_address, query)\n        # The exact shape depends on the contract; assume `{ tokens: [id1,id2,...] }` is returned\n        return result.get('tokens', [])\n    except Exception as e:\n        raise RuntimeError(f'Contract query failed: {e}')",
+            "usage": "my_tokens = query_nft_tokens(client, NFT_CONTRACT_ADDRESS, address)\nprint('Owned token IDs:', my_tokens)"
         }
-    ],
-    "outcome_checks": [
-        "Transaction success with `code == 0`.",
-        "NFT contract lists a new token ID owned by the user.",
-        "`token_metadata.lock_amount` equals 250 NTRN and `lock_duration` equals 12 months."
     ]
 }

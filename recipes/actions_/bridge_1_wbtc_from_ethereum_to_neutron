@@ -1,94 +1,47 @@
 {
-    "tools": [
-        {
-            "step": 1,
-            "label": "frontend",
-            "introduction": "Requests the user to connect MetaMask and verifies they hold at least 1 WBTC and enough ETH for gas.",
-            "function": "connectEthWallet()",
-            "usage": "const { account, wbtcBalance } = await connectEthWallet();"
-        },
-        {
-            "step": 2,
-            "label": "frontend",
-            "introduction": "Submits an ERC-20 approve transaction so the bridge contract can spend 1 WBTC from the user\u2019s wallet.",
-            "function": "approveErc20Spend({ ownerAddress, bridgeAddress, amountSats })",
-            "usage": "await approveErc20Spend({ ownerAddress: account, bridgeAddress: BRIDGE_ADDR, amountSats: \"100000000\" });"
-        },
-        {
-            "step": 3,
-            "label": "frontend",
-            "introduction": "Calls the bridge\u2019s deposit method to lock 1 WBTC on Ethereum and embed the destination Neutron address.",
-            "function": "depositWbtcToBridge({ ownerAddress, bridgeAddress, neutronAddress, amountSats })",
-            "usage": "const txHash = await depositWbtcToBridge({ ownerAddress: account, bridgeAddress: BRIDGE_ADDR, neutronAddress: NEUTRON_ADDR, amountSats: \"100000000\" });"
-        },
-        {
-            "step": 4,
-            "label": "backend",
-            "introduction": "Polls the Ethereum network until the deposit transaction reaches the desired confirmation depth.",
-            "function": "wait_for_confirmations(tx_hash, confirmations=12, poll=15)",
-            "usage": "const receipt = wait_for_confirmations(txHash, 12);"
-        },
-        {
-            "step": 5,
-            "label": "backend",
-            "introduction": "Monitors Neutron for the IBC packet that corresponds to the locked WBTC, confirming relay completion.",
-            "function": "wait_for_ibc_transfer(neutron_addr, source_tx, poll=15, timeout=1800)",
-            "usage": "const relayStatus = wait_for_ibc_transfer(NEUTRON_ADDR, txHash);"
-        },
-        {
-            "step": 6,
-            "label": "backend",
-            "introduction": "Queries the user\u2019s Neutron balance to detect the arrival of bridged WBTC (IBC denom).",
-            "function": "query_wbtc_balance(neutron_addr, ibc_denom)",
-            "usage": "const balance = query_wbtc_balance(NEUTRON_ADDR, IBC_WBTC_DENOM);"
-        }
-    ],
-    "frontend": [
-        "const { account, wbtcBalance } = await connectEthWallet();//step: 1 Tool: connect_eth_wallet Desciption: Prompt the user to connect MetaMask (or compatible) with at least 1 WBTC + gas on Ethereum mainnet.",
-        "await approveErc20Spend({ ownerAddress: account, bridgeAddress: BRIDGE_ADDR, amountSats: \"100000000\" });//step: 2 Tool: approve_erc20_spend Desciption: Call WBTC `approve()` allowing the Bridge contract to transfer 1 WBTC.",
-        "const txHash = await depositWbtcToBridge({ ownerAddress: account, bridgeAddress: BRIDGE_ADDR, neutronAddress: NEUTRON_ADDR, amountSats: \"100000000\" });//step: 3 Tool: call_ethereum_bridge_deposit Desciption: Invoke the Bridge contract\u2019s `deposit` or `lock` method for 1 WBTC, specifying the destination Neutron address in the payload."
-    ],
-    "backend": [
-        "const receipt = wait_for_confirmations(txHash, 12);#step: 4 Tool: monitor_eth_tx_confirmation Desciption: Wait for the Ethereum transaction to reach the required confirmation depth.",
-        "const relayStatus = wait_for_ibc_transfer(NEUTRON_ADDR, txHash);#step: 5 Tool: listen_bridge_relay Desciption: Track the bridge relayer or IBC relay status until a corresponding IBC packet is observed on Neutron.",
-        "const balance = query_wbtc_balance(NEUTRON_ADDR, IBC_WBTC_DENOM);#step: 6 Tool: query_neutron_bank_balance Desciption: Poll the user\u2019s Neutron address for the IBC-denominated WBTC balance (`ibc/\u2026wbtc`)."
-    ],
-    "intent": "Bridge 1 WBTC from Ethereum to Neutron",
+    "label": "others",
     "workflow": [
         {
             "step": 1,
-            "tool": "connect_eth_wallet",
-            "description": "Prompt the user to connect MetaMask (or compatible) with at least 1 WBTC + gas on Ethereum mainnet."
+            "label": "frontend",
+            "introduction": "Prompts the user to connect MetaMask, then verifies the account has at least 1 WBTC (8 decimals) and enough ETH for gas fees.",
+            "code": "/* connectEthWallet.js */\nexport const connectEthWallet = async () => {\n  // --- Constants -----------------------------------------------------------\n  const MIN_ETH_WEI = 10n ** 16n;            // \u2248 0.01 ETH for gas\n  const MIN_WBTC_SATS = 100000000n;          // 1 WBTC (8 dp)\n  const WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599'; // main-net\n  const BALANCE_OF_SELECTOR = '0x70a08231';  // keccak256('balanceOf(address)')[0:4]\n\n  // --- Pre-checks ----------------------------------------------------------\n  if (typeof window === 'undefined' || !window.ethereum) {\n    throw new Error('MetaMask (or compatible) wallet is not installed.');\n  }\n\n  // --- Request account -----------------------------------------------------\n  const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' });\n  if (!account) throw new Error('No Ethereum account returned by MetaMask.');\n\n  // --- Check ETH balance ---------------------------------------------------\n  const ethBalanceHex = await window.ethereum.request({\n    method: 'eth_getBalance',\n    params: [account, 'latest']\n  });\n  const ethBalanceWei = BigInt(ethBalanceHex);\n  if (ethBalanceWei < MIN_ETH_WEI) {\n    throw new Error('Insufficient ETH for gas (need at least \u22480.01 ETH).');\n  }\n\n  // --- Check WBTC balance --------------------------------------------------\n  const paddedAcct = account.slice(2).padStart(64, '0');\n  const data = BALANCE_OF_SELECTOR + paddedAcct;\n  const wbtcBalanceHex = await window.ethereum.request({\n    method: 'eth_call',\n    params: [{ to: WBTC_ADDRESS, data }, 'latest']\n  });\n  const wbtcBalance = BigInt(wbtcBalanceHex);\n  if (wbtcBalance < MIN_WBTC_SATS) {\n    throw new Error('At least 1 WBTC is required to continue.');\n  }\n\n  // --- Return account details ---------------------------------------------\n  return { account, wbtcBalance: wbtcBalance.toString() };\n};",
+            "usage": "const { account } = await connectEthWallet();\nconsole.log(`Connected with ${account}`);"
         },
         {
             "step": 2,
-            "tool": "approve_erc20_spend",
-            "description": "Call WBTC `approve()` allowing the Bridge contract to transfer 1 WBTC."
+            "label": "frontend",
+            "introduction": "Builds and sends the WBTC `approve()` transaction that allows the Bridge contract to move 1 WBTC on the user\u2019s behalf.",
+            "code": "/* approveErc20Spend.js */\nexport const approveErc20Spend = async ({ ownerAddress, bridgeAddress, amountSats = '100000000' }) => {\n  const WBTC_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';\n  const APPROVE_SELECTOR = '0x095ea7b3'; // keccak256('approve(address,uint256)')[0:4]\n\n  // --- Encode parameters ---------------------------------------------------\n  const spenderPadded = bridgeAddress.slice(2).padStart(64, '0');\n  const amountHex = BigInt(amountSats).toString(16).padStart(64, '0');\n  const data = APPROVE_SELECTOR + spenderPadded + amountHex;\n\n  // --- Send tx via MetaMask -------------------------------------------------\n  const txHash = await window.ethereum.request({\n    method: 'eth_sendTransaction',\n    params: [{\n      from: ownerAddress,\n      to: WBTC_ADDRESS,\n      data,\n      value: '0x0'\n    }]\n  });\n\n  return txHash; // user can track this tx for confirmation\n};",
+            "usage": "const txHash = await approveErc20Spend({ ownerAddress: account, bridgeAddress: BRIDGE_CONTRACT });\nconsole.log(`Approve tx sent: ${txHash}`);"
         },
         {
             "step": 3,
-            "tool": "call_ethereum_bridge_deposit",
-            "description": "Invoke the Bridge contract\u2019s `deposit` or `lock` method for 1 WBTC, specifying the destination Neutron address in the payload."
+            "label": "frontend",
+            "introduction": "Sends the actual `deposit`/`lock` transaction to the Bridge contract, forwarding 1 WBTC to the user\u2019s Neutron address. The function builds the call data and hands it to MetaMask for signing.",
+            "code": "/* depositWbtcToBridge.js */\nexport const depositWbtcToBridge = async ({\n  ownerAddress,\n  bridgeAddress,\n  neutronAddress,\n  amountSats = '100000000'\n}) => {\n  /*\n    NOTE: Every bridge has its own ABI.\n    Adjust `DEPOSIT_SELECTOR` and encoding if your bridge differs.\n    Example ABI (pseudo):\n      function deposit(address token, uint256 amount, bytes destination) external;\n    Keccak-256 selector => 0xb6b55f25 (placeholder here).\n  */\n  const TOKEN_ADDRESS = '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599';\n  const DEPOSIT_SELECTOR = '0xb6b55f25'; // placeholder selector \u2013 update to real one!\n\n  // --- Encode parameters ---------------------------------------------------\n  const pad = (hex, bytes = 64) => hex.replace(/^0x/, '').padStart(bytes, '0');\n\n  const tokenParam   = pad(TOKEN_ADDRESS);\n  const amountParam  = pad(BigInt(amountSats).toString(16));\n\n  // Destination (Neutron bech32) converted to raw UTF-8 hex -----------------\n  const destUtf8Hex  = Buffer.from(neutronAddress, 'utf8').toString('hex');\n  const destLen      = pad(Number(destUtf8Hex.length / 2).toString(16));\n  const destParam    = destUtf8Hex.padEnd(64, '0'); // right-pad to 32B\n\n  const data = DEPOSIT_SELECTOR + tokenParam + amountParam + destLen + destParam;\n\n  // --- Send tx via MetaMask -------------------------------------------------\n  const txHash = await window.ethereum.request({\n    method: 'eth_sendTransaction',\n    params: [{\n      from: ownerAddress,\n      to: bridgeAddress,\n      data,\n      value: '0x0'\n    }]\n  });\n\n  return txHash;\n};",
+            "usage": "const depositTx = await depositWbtcToBridge({ ownerAddress: account, bridgeAddress: BRIDGE_CONTRACT, neutronAddress: NTRN_ADDR });\nconsole.log(`Bridge deposit sent: ${depositTx}`);"
         },
         {
             "step": 4,
-            "tool": "monitor_eth_tx_confirmation",
-            "description": "Wait for the Ethereum transaction to reach the required confirmation depth."
+            "label": "backend",
+            "introduction": "Python helper that waits for an Ethereum transaction to reach a desired confirmation depth (defaults to 12 blocks). Requires an environment variable `ETH_RPC_URL` with main-net access.",
+            "code": "'''monitor_eth_tx.py'''\nimport os, time\nfrom typing import Dict\nfrom web3 import Web3, exceptions\n\nRPC_URL = os.getenv('ETH_RPC_URL')\nif not RPC_URL:\n    raise EnvironmentError('ETH_RPC_URL is not set in environment variables.')\n\nweb3 = Web3(Web3.HTTPProvider(RPC_URL))\n\ndef wait_for_confirmations(tx_hash: str, confirmations: int = 12, poll: int = 15) -> Dict:\n    \"\"\"Blocks until `confirmations` are reached for `tx_hash`.\"\"\"\n    try:\n        receipt = None\n        while receipt is None:\n            try:\n                receipt = web3.eth.get_transaction_receipt(tx_hash)\n            except exceptions.TransactionNotFound:\n                time.sleep(poll)\n        tx_block = receipt.blockNumber\n        while (web3.eth.block_number - tx_block) < confirmations:\n            time.sleep(poll)\n        return {\"status\": \"confirmed\", \"txHash\": tx_hash, \"confirmations\": confirmations}\n    except Exception as e:\n        return {\"status\": \"error\", \"error\": str(e)}",
+            "usage": "curl -X POST /api/wait_for_confirmations -d '{\"tx_hash\": \"0x...\"}'"
         },
         {
             "step": 5,
-            "tool": "listen_bridge_relay",
-            "description": "Track the bridge relayer or IBC relay status until a corresponding IBC packet is observed on Neutron."
+            "label": "backend",
+            "introduction": "Watches Neutron for an incoming IBC packet produced by the bridge relayer that matches the original Ethereum deposit. Simple long-polling implementation using Neutron\u2019s LCD REST API.",
+            "code": "'''listen_bridge_relay.py'''\nimport requests, time\nfrom typing import Dict\n\nLCD = 'https://lcd-kralum.neutron-1.neutron.org'  # Public LCD; replace if self-hosting\n\ndef wait_for_ibc_transfer(neutron_addr: str, source_tx: str, poll: int = 15, timeout: int = 1800) -> Dict:\n    \"\"\"Polls Neutron txs until an IBC transfer that correlates to `source_tx` is observed.\"\"\"\n    end_time = time.time() + timeout\n    page_key = None\n    while time.time() < end_time:\n        url = f\"{LCD}/cosmos/tx/v1beta1/txs?events=transfer.recipient='\" + neutron_addr + \"'\" + (f\"&pagination.key={page_key}\" if page_key else '')\n        resp = requests.get(url, timeout=10)\n        if resp.status_code == 200:\n            data = resp.json()\n            for tx in data.get('txs', []):\n                # Very naive correlation: search for the Ethereum tx-hash in memo / events\n                if source_tx.lower()[2:12] in str(tx):  # quick substring match\n                    return {\"status\": \"ibc_received\", \"neutron_txhash\": tx['txhash']}\n            page_key = data.get('pagination', {}).get('next_key')\n        time.sleep(poll)\n    return {\"status\": \"timeout\", \"message\": \"No IBC packet seen in allotted time.\"}",
+            "usage": "curl /api/wait_ibc?neutron_addr=NTRN...&source_tx=0x..."
         },
         {
             "step": 6,
-            "tool": "query_neutron_bank_balance",
-            "description": "Poll the user\u2019s Neutron address for the IBC-denominated WBTC balance (`ibc/\u2026wbtc`)."
+            "label": "backend",
+            "introduction": "Finally queries the user\u2019s Neutron bank balance for the bridged IBC-denomination of WBTC.",
+            "code": "'''query_neutron_bank_balance.py'''\nimport requests\nfrom typing import Dict\n\nLCD = 'https://lcd-kralum.neutron-1.neutron.org'\n\ndef query_wbtc_balance(neutron_addr: str, ibc_denom: str) -> Dict:\n    url = f\"{LCD}/cosmos/bank/v1beta1/balances/{neutron_addr}\"\n    resp = requests.get(url, timeout=10)\n    if resp.status_code != 200:\n        return {\"status\": \"error\", \"error\": resp.text}\n    balances = resp.json().get('balances', [])\n    for coin in balances:\n        if coin.get('denom') == ibc_denom:\n            amount = int(coin.get('amount', '0'))\n            return {\"status\": \"ok\", \"amount_sats\": amount}\n    return {\"status\": \"ok\", \"amount_sats\": 0}",
+            "usage": "curl /api/balance?neutron_addr=NTRN...&denom=ibc/\u2026wbtc"
         }
-    ],
-    "outcome_checks": [
-        "Ethereum transaction succeeded and reached finality.",
-        "An IBC packet acknowledgement is logged on Neutron.",
-        "Neutron bank balance increased by exactly 1 WBTC (IBC denom)."
     ]
 }

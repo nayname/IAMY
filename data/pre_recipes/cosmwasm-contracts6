@@ -1,137 +1,236 @@
 [
     {
-        "intent": "Add an \u201cinterface\u201d feature flag in Cargo.toml to enable cw-orch for a CosmWasm contract",
+        "intent": "Enable cw-orch integration by adding an 'interface' feature flag in Cargo.toml for a CosmWasm contract.",
         "workflow": [
             {
                 "step": 1,
-                "tool": "open_file",
-                "description": "Open the project\u2019s Cargo.toml in edit mode."
+                "tool": "load_cargo_toml",
+                "description": "Open the contract crate's Cargo.toml file from disk and parse it as TOML so that [package], [dependencies], and [features] sections can be modified programmatically."
             },
             {
                 "step": 2,
-                "tool": "add_dependency",
-                "description": "Under the [dependencies] section, add cw-orch as an optional dependency, e.g.  cw-orch = { version = \"*\", optional = true }."
+                "tool": "ensure_cw_orch_dependency",
+                "description": "In the [dependencies] table, add an optional cw-orch dependency if it is not present, for example: `cw-orch = { version = \"<latest>\", optional = true }`. Keep existing dependencies unchanged."
             },
             {
                 "step": 3,
-                "tool": "append_feature_flag",
-                "description": "Locate or create the [features] table and insert  interface = [\"dep:cw-orch\"]  to activate cw-orch when the feature is requested."
+                "tool": "ensure_features_table_exists",
+                "description": "If the [features] table does not exist, create it. Preserve any existing feature definitions such as `default` or other custom features."
             },
             {
                 "step": 4,
-                "tool": "save_file",
-                "description": "Save Cargo.toml with the new dependency and feature flag."
+                "tool": "add_interface_feature_flag",
+                "description": "In the [features] table, add or update the `interface` feature so that it enables the cw-orch dependency. A canonical entry is: `interface = [\"dep:cw-orch\"]`. If `interface` already exists, merge `\"dep:cw-orch\"` into the list without removing existing items."
             },
             {
                 "step": 5,
-                "tool": "cargo_build",
-                "description": "Run  cargo build --features interface  to be sure the build succeeds with the new flag."
+                "tool": "ensure_default_includes_interface",
+                "description": "Update the `default` feature list under [features] to include `\"interface\"` so that cw-orch integration is enabled when the crate is built with default features. If `default` does not exist, set `default = [\"interface\"]`."
+            },
+            {
+                "step": 6,
+                "tool": "write_cargo_toml",
+                "description": "Serialize the modified TOML structure back to Cargo.toml, preserving formatting where possible, and overwrite the original file."
+            },
+            {
+                "step": 7,
+                "tool": "cargo_check_with_interface_feature",
+                "description": "Run `cargo check --features interface` (or the equivalent build command in the project environment) to ensure that enabling the `interface` feature with cw-orch compiles successfully."
             }
         ],
         "outcome_checks": [
-            "Cargo.toml now contains cw-orch as an optional dependency and an interface feature pointing at it.",
-            "A build with cargo build --features interface completes without errors."
+            "Cargo.toml contains an [dependencies] entry for cw-orch marked as optional.",
+            "Cargo.toml has a [features] table with an `interface = [\"dep:cw-orch\", ...]` line.",
+            "The `default` feature list includes `\"interface\"` or the project\u2019s documented feature configuration for cw-orch.",
+            "`cargo check --features interface` completes without compilation errors."
         ]
     },
     {
-        "intent": "Query a CosmWasm smart contract through a REST endpoint using a base64-encoded query",
+        "intent": "Query a CosmWasm smart contract on Juno via REST using a base64-encoded smart query.",
         "workflow": [
             {
                 "step": 1,
-                "tool": "prepare_query_payload",
-                "description": "Create the JSON query object, e.g. {\"get_config\":{}} with no extra whitespace."
+                "tool": "validate_contract_address_format",
+                "description": "Validate that the provided contract address is a bech32 Juno address (prefix `juno` or testnet equivalent like `juno1...`) and is not empty."
             },
             {
                 "step": 2,
-                "tool": "encode_to_base64",
-                "description": "Base64-encode the JSON query string."
+                "tool": "build_query_json_string",
+                "description": "Take the high-level query description (for example, `{\"get_config\":{}}` or `{\"current_time\":{}}`), ensure it is valid JSON, and serialize it to a compact UTF-8 JSON string without trailing commas."
             },
             {
                 "step": 3,
-                "tool": "http_get",
-                "description": "Send a GET request to /cosmwasm/wasm/v1/contract/{contract_addr}/smart/{base64_query} (or the chain-specific REST path)."
+                "tool": "encode_query_to_base64",
+                "description": "Convert the UTF-8 JSON query string into bytes, then base64-encode those bytes using standard base64 encoding. URL-encode the resulting base64 string so it is safe to place into a URL path segment."
             },
             {
                 "step": 4,
-                "tool": "parse_response",
-                "description": "Decode and display the JSON result returned by the endpoint."
+                "tool": "http_get_lcd_smart_query",
+                "description": "Perform an HTTP GET request to the Juno LCD endpoint `https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{contract_address}/smart/{query_data}` where `{contract_address}` is the validated contract address and `{query_data}` is the URL-safe base64 string from the previous step. Set `Accept: application/json`."
+            },
+            {
+                "step": 5,
+                "tool": "parse_lcd_smart_query_response",
+                "description": "Parse the JSON body of the LCD response. Extract the `data` field, which is a base64-encoded blob representing the contract's binary response."
+            },
+            {
+                "step": 6,
+                "tool": "decode_contract_response_data",
+                "description": "Base64-decode the `data` field from the LCD response into bytes, interpret the bytes as UTF-8 JSON, and parse into a structured object representing the contract\u2019s query response."
             }
         ],
         "outcome_checks": [
-            "HTTP status 200 is returned.",
-            "The response body contains the expected JSON fields from the contract\u2019s query."
+            "The LCD call to `https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{address}/smart/{query_data}` returns HTTP 200 without error.",
+            "The `data` field is present in the response and can be successfully base64-decoded and parsed as JSON.",
+            "The decoded JSON matches the expected shape for the contract\u2019s query (for example, known fields like `count`, `config`, or `time` appear with valid values)."
         ]
     },
     {
-        "intent": "Compile the clock_example.wasm contract and upload it to the Juno testnet",
+        "intent": "Compile the clock_example CosmWasm contract and upload clock_example.wasm to the Juno testnet (chain-id uni-6).",
         "workflow": [
             {
                 "step": 1,
-                "tool": "rust_optimizer_build",
-                "description": "Run the CosmWasm rust-optimizer (e.g. docker run \u2026) to compile clock_example and create artifacts/clock_example.wasm."
+                "tool": "compile_clock_example_with_rust_optimizer",
+                "description": "From the contract root directory, run the CosmWasm Rust optimizer (for example, a dockerized `cosmwasm/rust-optimizer` image) to compile the `clock_example` crate for the `wasm32-unknown-unknown` target and produce an optimized artifact at `artifacts/clock_example.wasm`."
             },
             {
                 "step": 2,
-                "tool": "junod_tx_wasm_store",
-                "description": "Broadcast junod tx wasm store artifacts/clock_example.wasm --chain-id=uni-6 --from <KEY> --gas=auto --gas-prices=0.025ujunox -y."
+                "tool": "load_wasm_artifact_bytes",
+                "description": "Read the `artifacts/clock_example.wasm` file into memory as a byte array, verifying that the file exists and is non-empty."
             },
             {
                 "step": 3,
-                "tool": "poll_tx_hash",
-                "description": "Wait for the transaction to be included in a block and capture the resulting code_id."
+                "tool": "fetch_minimum_gas_price",
+                "description": "Query `https://lcd-archive.junonetwork.io/cosmos/base/node/v1beta1/config` to retrieve the node's `minimum_gas_price`. Use this value when choosing transaction fees for the Juno testnet."
+            },
+            {
+                "step": 4,
+                "tool": "fetch_sender_account_state",
+                "description": "Using the sender\u2019s bech32 address, query `https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/{address}` to obtain account number and sequence, and `https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/spendable_balances/{address}` to confirm there are sufficient `ujunox` tokens to pay for gas and fees on the `uni-6` testnet."
+            },
+            {
+                "step": 5,
+                "tool": "construct_msg_store_code_tx",
+                "description": "Construct a Cosmos SDK transaction for chain-id `uni-6` containing a single message of type `/cosmwasm.wasm.v1.MsgStoreCode`. Set the `sender` to the account from the previous step and embed the WASM artifact bytes (typically compressed) in the message. Set an initial `gas_limit` and `fee` using the `minimum_gas_price` and a conservative gas estimate."
+            },
+            {
+                "step": 6,
+                "tool": "simulate_store_code_tx",
+                "description": "POST to `https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate` with the unsigned transaction (as `tx` or `tx_bytes` as appropriate) to obtain `gas_info.gas_used`. Use this value to adjust the transaction\u2019s `gas_limit` (for example, multiply by a safety factor such as 1.2\u20131.4)."
+            },
+            {
+                "step": 7,
+                "tool": "sign_store_code_tx",
+                "description": "Sign the updated transaction (with adjusted gas and fees) using the sender\u2019s private key, producing a fully signed `tx_bytes` ready for broadcast. Ensure the sign-doc includes chain-id `uni-6`, the correct account number, and sequence."
+            },
+            {
+                "step": 8,
+                "tool": "broadcast_store_code_tx",
+                "description": "Broadcast the signed transaction by POSTing to `https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs` with a JSON body including `tx_bytes` (base64-encoded) and `mode` set to `BROADCAST_MODE_BLOCK`. Capture the returned `tx_response.txhash` and the full `tx_response`."
+            },
+            {
+                "step": 9,
+                "tool": "extract_code_id_from_logs",
+                "description": "From the successful `tx_response`, scan `logs` and their `events` for the store-code related event (commonly `store_code` or a wasm message event) and read the `code_id` attribute. Persist this `code_id` value for later instantiation of the `clock_example` contract."
+            },
+            {
+                "step": 10,
+                "tool": "verify_code_uploaded_on_chain",
+                "description": "Query `https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/code/{code_id}` using the extracted `code_id`. Confirm that the returned `code_info` exists, that the `creator` field matches the sender address, and that the code is available for instantiation."
             }
         ],
         "outcome_checks": [
-            "The build produces artifacts/clock_example.wasm below 2 MiB.",
-            "The store transaction is confirmed and a numeric code_id is returned on Juno testnet (uni-6)."
+            "The `artifacts/clock_example.wasm` file exists and has a reasonable size (indicating a successful optimizer build).",
+            "The simulation call to `/cosmos/tx/v1beta1/simulate` returns a valid `gas_used` and no execution errors.",
+            "The broadcast call to `/cosmos/tx/v1beta1/txs` returns a `tx_response` with `code == 0` and a non-empty `txhash`.",
+            "A subsequent query to `/cosmwasm/wasm/v1/code/{code_id}` using the extracted `code_id` returns `code_info` with the expected `creator` address."
         ]
     },
     {
-        "intent": "Execute a contract and attach tokens with the --amount flag",
+        "intent": "Execute a CosmWasm contract while attaching tokens, equivalent to using the `--amount` flag in `junod tx wasm execute`.",
         "workflow": [
             {
                 "step": 1,
-                "tool": "construct_execute_msg",
-                "description": "Prepare the JSON execute message for the desired contract endpoint."
+                "tool": "parse_and_validate_amounts",
+                "description": "Parse the human-provided coin string (for example, `\"100000ujunox\"` or `\"50000ujunox,25000ujuno\"`) into a list of `{denom, amount}` objects. Validate that each `amount` is a positive integer and that each `denom` matches expected Juno denominations."
             },
             {
                 "step": 2,
-                "tool": "junod_tx_wasm_execute",
-                "description": "Run  junod tx wasm execute <CONTRACT_ADDR> '<MSG_JSON>' --amount <NUMBER><DENOM> --from <KEY> --gas=auto -y."
+                "tool": "check_spendable_balances_for_sender",
+                "description": "Call `https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/spendable_balances/{sender_address}` and ensure the sender has at least the requested token amounts plus expected fees in each denom to be attached to the contract execution."
             },
             {
                 "step": 3,
-                "tool": "poll_tx_hash",
-                "description": "Wait until the execute transaction is finalized in a block."
+                "tool": "build_execute_contract_msg_with_funds",
+                "description": "Construct a `/cosmwasm.wasm.v1.MsgExecuteContract` message including the target `contract` address, the JSON-encoded execute `msg`, the `sender` address, and a `funds` array equal to the parsed coin list. This `funds` field is the programmatic equivalent of the CLI `--amount` flag."
+            },
+            {
+                "step": 4,
+                "tool": "construct_execute_tx",
+                "description": "Wrap the `MsgExecuteContract` message in a transaction for the correct Juno chain-id (for example, `uni-6` for testnet), setting initial `gas_limit` and `fee` based on node `minimum_gas_price` and a conservative gas estimate."
+            },
+            {
+                "step": 5,
+                "tool": "simulate_execute_tx",
+                "description": "POST the unsigned transaction to `https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate` to obtain `gas_info.gas_used`. Use this to fine-tune the `gas_limit` (for example, set it to `gas_used * 1.2`)."
+            },
+            {
+                "step": 6,
+                "tool": "sign_and_broadcast_execute_tx",
+                "description": "Sign the transaction with the sender\u2019s key (including the updated gas and fees) and broadcast it by POSTing to `https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs` with `tx_bytes` and `mode` set to `BROADCAST_MODE_BLOCK`. Capture the resulting `tx_response` and `txhash`."
+            },
+            {
+                "step": 7,
+                "tool": "verify_funds_transferred_to_contract",
+                "description": "After the transaction is included in a block, query `https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/balances/{contract_address}/by_denom?denom={attached_denom}` (or the full balances list) and confirm the contract\u2019s balance has increased by the attached amount(s). Optionally also confirm the sender\u2019s corresponding balances decreased."
             }
         ],
         "outcome_checks": [
-            "Transaction success flag true in the Tx response.",
-            "The contract balance increases by the specified amount and/or the contract logic emits the expected event."
+            "The execute transaction is included in a block with `tx_response.code == 0` and no error messages.",
+            "The contract account\u2019s on-chain balances (queried via the bank LCD endpoints) reflect an increase equal to the attached `--amount` tokens.",
+            "The sender\u2019s balance for each attached denom decreases by the correct amount plus gas fees.",
+            "Contract-specific effects of the execution (state changes or events) match what is expected when funds are provided."
         ]
     },
     {
-        "intent": "Generate a TypeScript client for a contract using ts-codegen",
+        "intent": "Generate a TypeScript client for a CosmWasm contract using ts-codegen.",
         "workflow": [
             {
                 "step": 1,
-                "tool": "install_ts_codegen",
-                "description": "Ensure ts-node and cosmwasm-ts-codegen are installed globally or in the project (e.g. npm i -D @cosmwasm/ts-codegen ts-node)."
+                "tool": "collect_contract_json_schemas",
+                "description": "Ensure the contract\u2019s JSON schema files are generated (for example, by running the contract\u2019s schema generation task such as `cargo schema` or equivalent). Confirm that schema files for execute, query, and instantiate messages are present in a known directory like `schema/` or `artifacts/schema/`."
             },
             {
                 "step": 2,
-                "tool": "run_ts_codegen",
-                "description": "Execute  ts-node ./node_modules/@cosmwasm/ts-codegen/bin/cli.js --schema ./schema --out ./src/ts --client react-query  (adjust paths as needed)."
+                "tool": "create_ts_codegen_config_file",
+                "description": "Create or update a `ts-codegen` configuration file (for example, `ts-codegen.config.ts` or `ts-codegen.config.js`) that specifies the contract name, the path to its schema directory, and the desired output directory for generated TypeScript code. Optionally, include Juno-specific parameters such as the preferred RPC or LCD endpoint (e.g., `https://lcd-archive.junonetwork.io`) and chain-id."
             },
             {
                 "step": 3,
-                "tool": "compile_typescript",
-                "description": "Run  tsc  or build the project to confirm the generated client compiles."
+                "tool": "install_ts_codegen_cli",
+                "description": "Add `@cosmwasm/ts-codegen` as a development dependency to the project (for example, using `npm` or `yarn`) so that the ts-codegen CLI can be invoked via `npx` or a package.json script."
+            },
+            {
+                "step": 4,
+                "tool": "run_ts_codegen_generate",
+                "description": "From the project root, invoke the ts-codegen CLI (for example, `npx @cosmwasm/ts-codegen generate-ts --config ts-codegen.config.ts`) to generate a TypeScript client package for the contract. Ensure the command completes successfully and writes files into the configured output directory."
+            },
+            {
+                "step": 5,
+                "tool": "typecheck_generated_client",
+                "description": "Run the TypeScript compiler (for example, `npx tsc` or `npm run build`) to type-check the generated client code and confirm there are no TypeScript errors."
+            },
+            {
+                "step": 6,
+                "tool": "smoke_test_ts_client_against_juno",
+                "description": "In a small test script, import the generated client, initialize it with a signer and a Juno endpoint (for example, using the configured LCD or RPC URL), and perform a simple query against the deployed contract (such as retrieving configuration or a known state field) to verify that the client works end-to-end."
             }
         ],
         "outcome_checks": [
-            "src/ts (or chosen output dir) now contains generated .ts files (contracts, messages, react-query hooks, etc.).",
-            "TypeScript compilation succeeds without type errors."
+            "Contract JSON schema files exist and are correctly referenced in the ts-codegen configuration.",
+            "The ts-codegen CLI command completes without errors and generates TypeScript files in the expected output directory.",
+            "The generated TypeScript project passes type-checking without compiler errors.",
+            "A simple runtime smoke test using the generated client can successfully query or execute against the deployed contract on Juno."
         ]
     }
 ]

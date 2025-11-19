@@ -130,7 +130,7 @@ async def create_intents(session, config):
             file_object = open(filepath, "r")
             content = file_object.read()
 
-            agent = await create_graph(session, synthesize_query_intents)
+            agent = await create_graph(session, synthesize_query_intents, "OpenAI", "o3")
             response = await agent.ainvoke({"messages": content}, config=config)
             print(response["messages"][-1].content)
 
@@ -173,7 +173,9 @@ async def create_pre_recipe(session, config):
 
     for batch in create_batch(pages, 5):
         if not os.path.exists('data/pre_recipes/' + batch[0]['label'] + str(count)):
-            agent = await create_graph(session, synthesize_recipes)
+            apis = open('data/res.json').read().replace("{", "{{").replace("}", "}}")
+
+            agent = await create_graph(session, synthesize_recipes+apis)
             langchain.verbose = True
             response = await agent.ainvoke({"messages": json.dumps(batch)}, config=config)
             print(response["messages"][-1].content)
@@ -251,7 +253,9 @@ async def create_actions(session, config):
                             workflow = key['workflow']
 
                             if workflow and not os.path.exists('recipes/actions/' + escape(key['intent'])):
-                                agent = await create_graph(session, synthesize_cosmwasm)
+                                apis = open('data/res.json').read().replace("{", "{{").replace("}", "}}")
+
+                                agent = await create_graph(session, synthesize_cosmwasm+apis)
                                 response = await agent.ainvoke({"messages": json.dumps(workflow)}, config=config)
                                 print(response["messages"][-1].content)
 
@@ -320,8 +324,9 @@ async def pick_tools(session, config):
                         for key in items:
                             count += 1
                             if not os.path.exists('recipes/tools/' + escape(key['intent'])) \
-                                    and os.path.exists(
-                                'recipes/actions/' + escape(key['intent'])):  # action == key['intent'] and
+                                    and os.path.exists('recipes/actions/' + escape(key['intent'])):  # action == key['intent'] and
+                                print("INTENT: "+escape(key['intent']))
+
                                 with open("/root/neutron/IAMY/recipes/frontend.jsx", "r") as f:
                                     frontend_tools = f.read()
 
@@ -338,7 +343,7 @@ async def pick_tools(session, config):
                                                                .replace("*#*INPUT_JSON*#*",
                                                                         json.dumps(key['workflow'])).replace("{", "{{")
                                                                .replace("}", "}}").replace("*#*INTENT*#*",
-                                                                                           key['intent']))
+                                                                                           key['intent']), "OpenAI", "o3")
                                     response = await agent.ainvoke({
                                         "messages": "FILE: frontend.jsx Content: " + frontend_tools + "\n\n\n FILE: backend.py Content: " + backend_tools},
                                         config=config)
@@ -371,6 +376,8 @@ async def pick_tools(session, config):
 
 
 async def pick_intent(query, tools):
+    print(tools)
+    die
     config = {"configurable": {"thread_id": 1234}}
 
     async with stdio_client(server_params) as (read, write):
@@ -385,7 +392,7 @@ async def pick_intent(query, tools):
             try:
                 agent = await create_graph(session, synthesize_classified_intent
                                            .replace("*#*INPUT_JSON*#*", json.dumps(tools))
-                                           .replace("{", "{{").replace("}", "}}"))
+                                           .replace("{", "{{").replace("}", "}}"), "OpenAI", "o3")
                 response = await agent.ainvoke({
                     "messages": query},
                     config=config)

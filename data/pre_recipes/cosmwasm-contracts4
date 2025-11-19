@@ -1,132 +1,186 @@
 [
     {
-        "intent": "Generate interface.rs for a CosmWasm contract with the cw-orch #[interface] macro",
+        "intent": "Generate interface.rs for the contract with cw-orch interface macro",
         "workflow": [
             {
                 "step": 1,
-                "tool": "locate_contract_crate",
-                "description": "Confirm (or ask for) the path of the CosmWasm contract crate that already defines InstantiateMsg, ExecuteMsg and QueryMsg."
+                "tool": "analyze_contract_msgs",
+                "description": "From the CosmWasm contract crate, read the message definition module (commonly src/msg.rs) to identify InstantiateMsg, ExecuteMsg, QueryMsg, and any response types used by the contract."
             },
             {
                 "step": 2,
-                "tool": "add_cargo_dependency",
-                "description": "Add `cw-orch = { version = \"^0.9\", default-features = false, features = [\"derive\"] }` under [dev-dependencies] in Cargo.toml so the interface macro is only pulled in for testing & scripting."
+                "tool": "edit_cargo_toml",
+                "description": "In the contract's Cargo.toml, add the cw-orch (cw-orchestrator) dependency with the appropriate version and features (including the interface macro feature if required by the cw-orch version)."
             },
             {
                 "step": 3,
-                "tool": "create_file",
-                "description": "Generate a new file `src/interface.rs` (or overwrite it if it exists)."
+                "tool": "create_interface_rs",
+                "description": "Create a new source file src/interface.rs in the contract crate and declare a Rust trait representing the contract's interface. Each trait method should correspond to one InstantiateMsg, ExecuteMsg, or QueryMsg variant and use the same argument and response types."
             },
             {
                 "step": 4,
-                "tool": "write_rust_code",
-                "description": "Insert the following boilerplate into interface.rs:\n\n```rust\nuse cosmwasm_std::{Addr, Response, DepsMut, Env, MessageInfo};\nuse cw_orch::interface;\n\n#[interface]\npub trait CounterContract {\n    type Error = anyhow::Error;\n    type InstantiateMsg = crate::msg::InstantiateMsg;\n    type ExecuteMsg = crate::msg::ExecuteMsg;\n    type QueryMsg = crate::msg::QueryMsg;\n\n    // (Optional) declare helper wrappers, e.g.:\n    fn increment(&self) -> Result<Response, Self::Error>;\n}\n```\n"
+                "tool": "apply_cw_orch_interface_macro",
+                "description": "Annotate the trait in src/interface.rs with cw-orch's #[interface] macro and mark each method with cw-orch attributes such as #[msg(instantiate)], #[msg(exec)], or #[msg(query)] so that cw-orch can derive the contract wrapper type and message wiring."
             },
             {
                 "step": 5,
+                "tool": "wire_interface_types",
+                "description": "Inside src/interface.rs, import the contract's InstantiateMsg, ExecuteMsg, QueryMsg, and response structs, and ensure the interface macro is configured so those types are used for encoding and decoding messages (following the patterns from the cw-orchestrator Juno documentation)."
+            },
+            {
+                "step": 6,
+                "tool": "re_export_interface",
+                "description": "Re-export the generated cw-orch interface type from lib.rs or mod.rs (for example, pub use crate::interface::Counter;) so cw-orch scripts or tests in another crate can construct Counter<Chain> instances."
+            },
+            {
+                "step": 7,
                 "tool": "cargo_check",
-                "description": "Run `cargo check --tests` in the contract crate to ensure the interface compiles and the macro expansion succeeds."
+                "description": "Run `cargo check` or `cargo build` on the contract crate to confirm that cw-orch and interface.rs compile correctly and that macro expansion succeeds."
             }
         ],
         "outcome_checks": [
-            "cargo check finishes with 0 errors.",
-            "`src/interface.rs` exists and the generated trait matches the contract messages."
+            "The contract crate compiles successfully after adding cw-orch and src/interface.rs.",
+            "The generated cw-orch interface type (for example, Counter<Chain>) can be imported from an external Rust binary or test crate.",
+            "A minimal cw-orch script using the interface (e.g. calling upload or a dry-run query) compiles and runs without serialization or type errors."
         ]
     },
     {
-        "intent": "Upload, instantiate, and increment a counter contract using cw-orchestrator",
+        "intent": "Upload, instantiate and increment the counter using cw-orchestrator",
         "workflow": [
             {
                 "step": 1,
-                "tool": "load_env",
-                "description": "Read `.env` for `RPC_ENDPOINT`, `CHAIN_ID`, `DEPLOYER_MNEMONIC` and `GAS_PRICES` so cw-orch can sign and send transactions."
+                "tool": "cw_orch_chain_setup_backend",
+                "description": "In a backend Rust binary or test (not in the frontend), initialize a cw-orch chain handle (e.g. using DaemonBuilder or the chain type recommended in the Juno cw-orchestrator guide) with the target RPC endpoint, chain-id, and a funded signer key or mnemonic."
             },
             {
                 "step": 2,
-                "tool": "optimize_wasm",
-                "description": "Run `cargo wasm && docker run --rm -v $(pwd):/code cosmtrek/wasm:optimizer .` to produce an optimized `.wasm` binary in `artifacts/`."
+                "tool": "instantiate_cw_orch_interface",
+                "description": "Import the generated cw-orch interface type from the contract crate (for example, Counter<Chain>) and construct it with the chain handle so it knows which contract artifact (.wasm) and messages to use."
             },
             {
                 "step": 3,
-                "tool": "cw_orch_store_code",
-                "description": "Inside a Rust script or test, call `deployer.upload_file(\"artifacts/counter.wasm\")?` to broadcast the `StoreCode` tx and retrieve the resulting `code_id`."
+                "tool": "cw_orch_upload",
+                "description": "Call the interface's upload helper (for example, counter.upload()?) from the backend. This should broadcast a store-code transaction to the Juno chain and record the returned code_id within the cw-orch wrapper."
             },
             {
                 "step": 4,
                 "tool": "cw_orch_instantiate",
-                "description": "Use `CounterContract::instantiate(code_id, \"counter\", &InstantiateMsg { start: 0 }, None, &[])?` to create the contract; capture the returned `contract_addr`."
+                "description": "From the backend, call the interface's instantiate helper (for example, counter.instantiate(InstantiateMsg { ... })?) with an appropriate InstantiateMsg. Capture the resulting contract address returned by cw-orch, which is derived from the instantiate transaction response."
             },
             {
                 "step": 5,
-                "tool": "cw_orch_execute",
-                "description": "Execute `CounterContract::increment()` against `contract_addr` and await the tx result."
+                "tool": "cw_orch_execute_increment",
+                "description": "Use the cw-orch interface to execute the increment entry point on the newly instantiated counter contract (for example, counter.increment()?). Ensure the backend waits for the transaction to be included in a block and checks for a successful code in the result."
             },
             {
                 "step": 6,
-                "tool": "cw_orch_query",
-                "description": "Query the contract with `CounterContract::get_count()` (or equivalent) to verify the new counter value."
+                "tool": "lcd_query_smart_count",
+                "description": "Optionally verify on-chain state by issuing an LCD request from the backend: GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{contract_address}/smart/{query_data}, where query_data is the base64-encoded JSON query (e.g. {\"get_count\":{}}). Decode the response and confirm that the counter value has increased compared to its initial value."
             }
         ],
         "outcome_checks": [
-            "StoreCode tx included in a block and a non-zero code_id returned.",
-            "Instantiate tx returns a contract address in `events[\"instantiate\"][\"_contract_address\"]`.",
-            "Query after increment returns `count == 1`."
+            "The cw-orch upload step returns a valid code_id and no transaction errors.",
+            "The cw-orch instantiate step returns a valid contract address (e.g. starting with juno1) and LCD GET /cosmwasm/wasm/v1/contract/{address} responds with contract_info.",
+            "After running the increment execute call, a smart query (either via cw-orch or via the LCD smart-query endpoint) returns a counter value that is exactly one higher than the initial value."
         ]
     },
     {
-        "intent": "Base64-encode the JSON payload {'all_tokens':{}}",
+        "intent": "Base64 encode the JSON payload {'all_tokens':{}}",
         "workflow": [
             {
                 "step": 1,
-                "tool": "serialize_json",
-                "description": "Normalize the payload with no extra whitespace: `{\"all_tokens\":{}}`."
+                "tool": "normalize_json_payload",
+                "description": "Normalize the payload into valid, minified JSON with double quotes and no extra whitespace, resulting in the string {\"all_tokens\":{}}."
             },
             {
                 "step": 2,
-                "tool": "encode_base64",
-                "description": "Run `echo -n '{\"all_tokens\":{}}' | base64` (or use a language helper) to produce the base64 string."
-            }
-        ],
-        "outcome_checks": [
-            "The output equals `eyJhbGxfdG9rZW5zIjp7fX0=` (case-sensitive, no newline)."
-        ]
-    },
-    {
-        "intent": "Set the TXFLAGS environment variable with recommended gas settings",
-        "workflow": [
-            {
-                "step": 1,
-                "tool": "set_environment_variable",
-                "description": "Execute `export TXFLAGS=\"--gas=auto --gas-adjustment 1.3 --gas-prices 0.025uatom\"` in the current shell session (or add it to the user profile)."
-            }
-        ],
-        "outcome_checks": [
-            "`echo $TXFLAGS` prints `--gas=auto --gas-adjustment 1.3 --gas-prices 0.025uatom`.",
-            "Subsequent `junod tx` commands inherit the flags when `$TXFLAGS` is expanded (e.g., `junod tx bank send $TXFLAGS ...`)."
-        ]
-    },
-    {
-        "intent": "Automatically extract the contract address from an instantiate txhash",
-        "workflow": [
-            {
-                "step": 1,
-                "tool": "query_tx_json",
-                "description": "Run `junod query tx <TX_HASH> --output json` to fetch the full transaction result."
-            },
-            {
-                "step": 2,
-                "tool": "parse_event_attribute",
-                "description": "From the JSON result, locate `logs[0].events` array; find the event with `type == \"instantiate\"`; extract the attribute where `key == \"_contract_address\"`."
+                "tool": "utf8_encode",
+                "description": "Convert the JSON string {\"all_tokens\":{}} to a UTF-8 byte array in the backend environment."
             },
             {
                 "step": 3,
-                "tool": "export_to_env",
-                "description": "Optionally set `export CONTRACT_ADDR=<extracted_address>` for downstream commands."
+                "tool": "base64_encode",
+                "description": "Use a standard base64 encoder in the backend (for example, a language library function) to encode the UTF-8 bytes of {\"all_tokens\":{}} into a base64 string suitable for use in CosmWasm smart queries such as /cosmwasm/wasm/v1/contract/{address}/smart/{query_data}."
+            },
+            {
+                "step": 4,
+                "tool": "base64_decode_verify",
+                "description": "Optionally decode the resulting base64 string back to UTF-8 and verify that it matches {\"all_tokens\":{}} exactly to guard against encoding mistakes."
             }
         ],
         "outcome_checks": [
-            "A valid bech32 address starting with the chain\u2019s prefix is returned.",
-            "The address matches the one that appears when querying the contract\u2019s code info (`junod query wasm contract-info <address>`)."
+            "Decoding the produced base64 string yields the exact JSON payload {\"all_tokens\":{}}.",
+            "The base64 string can be used as the query_data path parameter in the LCD smart contract query endpoint without causing decoding errors on the node."
+        ]
+    },
+    {
+        "intent": "Set TXFLAGS environment variable with gas settings",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "lcd_get_minimum_gas_price",
+                "description": "From the backend, query the node configuration via GET https://lcd-archive.junonetwork.io/cosmos/base/node/v1beta1/config and read the minimum_gas_price field to determine an appropriate baseline gas price denomination and amount."
+            },
+            {
+                "step": 2,
+                "tool": "lcd_get_chain_id",
+                "description": "From the backend, query node information via GET https://lcd-archive.junonetwork.io/cosmos/base/tendermint/v1beta1/node_info and read the default_node_info.network field (or use blocks/latest header.chain_id) as the chain-id to embed in the transaction flags."
+            },
+            {
+                "step": 3,
+                "tool": "build_txflags_string",
+                "description": "Construct a transaction flags string in the backend using the node configuration, for example: \"--gas=auto --gas-adjustment={gas_adjustment} --gas-prices={minimum_gas_price} --chain-id={chain_id} --node={rpc_endpoint}\", where gas_adjustment and rpc_endpoint are provided by configuration."
+            },
+            {
+                "step": 4,
+                "tool": "set_env_variable_TXFLAGS",
+                "description": "In the shell environment used to run junod commands, set the TXFLAGS environment variable to the constructed string (for example, export TXFLAGS=\"--gas=auto --gas-adjustment=1.3 --gas-prices=0.025ujuno --chain-id=juno-1 --node=https://rpc.junonetwork.io\"). This should be done by the backend or deployment scripts, not in browser code."
+            },
+            {
+                "step": 5,
+                "tool": "test_junod_tx_with_TXFLAGS",
+                "description": "Execute a harmless junod transaction (for example, a low-value self-send or a dry-run simulate) using the $TXFLAGS variable appended to the command line to verify that gas settings are applied and the transaction is accepted by the node."
+            }
+        ],
+        "outcome_checks": [
+            "Echoing $TXFLAGS in the shell prints the expected gas, gas-adjustment, gas-prices, chain-id, and node values.",
+            "A junod transaction submitted with $TXFLAGS succeeds without gas-related errors and uses gas-prices that are at least equal to the node's minimum_gas_price.",
+            "Changes to gas settings in configuration (e.g. gas_adjustment) propagate to TXFLAGS when the backend re-runs the setup logic."
+        ]
+    },
+    {
+        "intent": "Automatically extract the contract address from instantiate txhash",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "lcd_get_tx_by_hash",
+                "description": "From the backend, request the transaction details for the given instantiate txhash via GET https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs/{hash}. Capture the tx_response object including its logs and events."
+            },
+            {
+                "step": 2,
+                "tool": "parse_tx_logs_for_contract_address",
+                "description": "In backend code, iterate over tx_response.logs[].events[].attributes[] and look for an event corresponding to the CosmWasm instantiate operation. Within that event, search for an attribute whose key is \"_contract_address\" or \"contract_address\" and read its value as the instantiated contract address."
+            },
+            {
+                "step": 3,
+                "tool": "validate_contract_via_LCD",
+                "description": "Verify that the extracted address is a valid CosmWasm contract by calling GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{contract_address}. Ensure the response contains contract_info fields such as code_id and creator and that the HTTP status is successful."
+            },
+            {
+                "step": 4,
+                "tool": "fallback_error_handling",
+                "description": "If no suitable attribute is found in the transaction logs or the contract validation request fails, return a structured error from the backend (e.g. \"CONTRACT_ADDRESS_NOT_FOUND_IN_TX_LOGS\" or \"CONTRACT_NOT_FOUND_ON_CHAIN\") rather than a partial result."
+            },
+            {
+                "step": 5,
+                "tool": "expose_backend_endpoint",
+                "description": "Expose a simple backend API endpoint (for example, /api/contract-address-from-txhash?hash={hash}) that wraps the LCD calls and parsing logic so that frontends or scripts can submit a txhash and receive the validated contract address as a JSON response."
+            }
+        ],
+        "outcome_checks": [
+            "For a known instantiate transaction hash, the backend returns a Bech32 contract address that successfully resolves via GET /cosmwasm/wasm/v1/contract/{address}.",
+            "If the txhash does not correspond to a CosmWasm instantiate or the node has pruned the transaction, the backend returns a clear error code instead of an empty or malformed address.",
+            "Repeated calls with the same txhash return the same contract address, demonstrating deterministic parsing of transaction logs."
         ]
     }
 ]

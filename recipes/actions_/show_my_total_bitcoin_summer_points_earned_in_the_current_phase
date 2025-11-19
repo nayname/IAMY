@@ -1,68 +1,33 @@
 {
-    "tools": [
-        {
-            "step": 1,
-            "label": "frontend",
-            "introduction": "Connects to the user\u2019s browser wallet (Keplr / Leap) and returns the Neutron bech32 address.",
-            "function": "getNeutronAddress()",
-            "usage": "const userAddress = await getNeutronAddress();"
-        },
-        {
-            "step": 2,
-            "label": "backend",
-            "introduction": "No fully-implemented function was found that retrieves the active BTC-Summer campaign phase.",
-            "function": "undef",
-            "usage": "undef"
-        },
-        {
-            "step": 3,
-            "label": "backend",
-            "introduction": "Queries the Points contract with the user address and phase ID to obtain the current-phase point balance.",
-            "function": "query_phase_points(address, phase_id)",
-            "usage": "points_info = query_phase_points(userAddress, currentPhaseId)"
-        },
-        {
-            "step": 4,
-            "label": "frontend",
-            "introduction": "Renders the retrieved point total in the web page for the user.",
-            "function": "displayPoints(points)",
-            "usage": "displayPoints(points_info.points);"
-        }
-    ],
-    "frontend": [
-        "const userAddress = await getNeutronAddress();//step: 1 Tool: get_neutron_address Desciption: Identify the user\u2019s Neutron wallet address.",
-        "displayPoints(points_info.points);//step: 4 Tool: present_result Desciption: Display the returned point total to the user in a readable format."
-    ],
-    "backend": [
-        "undef#step: 2 Tool: fetch_current_campaign_phase Desciption: Query the BTC Summer Campaign contract to discover the active phase ID.",
-        "points_info = query_phase_points(userAddress, currentPhaseId)#step: 3 Tool: query_points_contract Desciption: Call `get_phase_points { address, phase_id }` on the Points contract to retrieve the user\u2019s point balance for the active phase."
-    ],
-    "intent": "Show my total Bitcoin Summer points earned in the current phase",
+    "label": "query_contract",
     "workflow": [
         {
             "step": 1,
-            "tool": "get_neutron_address",
-            "description": "Identify the user\u2019s Neutron wallet address."
+            "label": "frontend",
+            "introduction": "Retrieve the connected user\u2019s Neutron address from a browser wallet (Keplr or Leap).",
+            "code": "export const getNeutronAddress = async () => {\n  const chainId = 'neutron-1';\n\n  // Detect a compatible browser extension\n  const wallet = window.keplr || window.leap;\n  if (!wallet) {\n    throw new Error('No supported Neutron wallet extension (Keplr or Leap) found.');\n  }\n\n  // Request connection to the chain\n  try {\n    await wallet.enable(chainId);\n  } catch (error) {\n    throw new Error(`Wallet connection rejected or chain not supported: ${error.message}`);\n  }\n\n  // Obtain signer and account list\n  const offlineSigner = wallet.getOfflineSigner(chainId);\n  const accounts = await offlineSigner.getAccounts();\n  if (!accounts || accounts.length === 0) {\n    throw new Error('Unable to fetch an account from the wallet signer.');\n  }\n\n  // Return the first available address\n  return accounts[0].address;\n};",
+            "usage": "const address = await getNeutronAddress();"
         },
         {
             "step": 2,
-            "tool": "fetch_current_campaign_phase",
-            "description": "Query the BTC Summer Campaign contract to discover the active phase ID."
+            "label": "backend",
+            "introduction": "Expose an API endpoint that queries the BTC Summer Campaign contract to obtain the current active phase ID.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport requests, base64, json, os\n\napp = FastAPI()\n\n# Replace these with actual values or set them as environment variables\nLCD_ENDPOINT      = os.getenv('LCD_ENDPOINT', 'https://rest-kralum.neutron-1.neutron.org')\nCAMPAIGN_CONTRACT = os.getenv('CAMPAIGN_CONTRACT', 'neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')\n\ndef wasm_query(contract_address: str, query_msg: dict):\n    \"\"\"Utility function that performs a CosmWasm smart-query via the public LCD.\"\"\"\n    try:\n        msg_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()\n        url     = f\"{LCD_ENDPOINT}/cosmwasm/wasm/v1/contract/{contract_address}/smart/{msg_b64}\"\n        resp    = requests.get(url, timeout=10)\n        resp.raise_for_status()\n        return resp.json().get('data', {})\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=f'Smart-query failed: {e}')\n\n@app.get('/api/active_phase')\ndef fetch_current_campaign_phase():\n    \"\"\"Returns the ID of the currently active campaign phase.\"\"\"\n    query_msg = {\"get_current_phase\": {}}\n    data      = wasm_query(CAMPAIGN_CONTRACT, query_msg)\n    if 'phase_id' not in data:\n        raise HTTPException(status_code=500, detail=\"Invalid contract response: 'phase_id' missing\")\n    return {\"phase_id\": data['phase_id']}",
+            "usage": "const { phase_id } = await fetch('/api/active_phase').then(res => res.json());"
         },
         {
             "step": 3,
-            "tool": "query_points_contract",
-            "description": "Call `get_phase_points { address, phase_id }` on the Points contract to retrieve the user\u2019s point balance for the active phase."
+            "label": "backend",
+            "introduction": "Provide an API endpoint that queries the Points contract for a user\u2019s balance in the specified phase.",
+            "code": "from fastapi import FastAPI, HTTPException, Query\nimport requests, base64, json, os\n\napp = FastAPI()\n\nLCD_ENDPOINT   = os.getenv('LCD_ENDPOINT',  'https://rest-kralum.neutron-1.neutron.org')\nPOINTS_CONTRACT = os.getenv('POINTS_CONTRACT', 'neutron1yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy')\n\ndef wasm_query(contract_address: str, query_msg: dict):\n    try:\n        msg_b64 = base64.b64encode(json.dumps(query_msg).encode()).decode()\n        url     = f\"{LCD_ENDPOINT}/cosmwasm/wasm/v1/contract/{contract_address}/smart/{msg_b64}\"\n        resp    = requests.get(url, timeout=10)\n        resp.raise_for_status()\n        return resp.json().get('data', {})\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=f'Smart-query failed: {e}')\n\n@app.get('/api/points')\ndef query_phase_points(address: str = Query(...), phase_id: int = Query(...)):\n    \"\"\"Return the user\u2019s points for a given phase by querying the Points contract.\"\"\"\n    query_msg = {\n        \"get_phase_points\": {\n            \"address\": address,\n            \"phase_id\": phase_id\n        }\n    }\n    data = wasm_query(POINTS_CONTRACT, query_msg)\n    if 'points' not in data:\n        raise HTTPException(status_code=500, detail=\"Invalid contract response: 'points' missing\")\n    return {\n        \"address\": address,\n        \"phase_id\": phase_id,\n        \"points\": data['points']\n    }",
+            "usage": "const { points } = await fetch(`/api/points?address=${address}&phase_id=${phase_id}`).then(res => res.json());"
         },
         {
             "step": 4,
-            "tool": "present_result",
-            "description": "Display the returned point total to the user in a readable format."
+            "label": "frontend",
+            "introduction": "Render the user\u2019s point total in the browser in a user-friendly format.",
+            "code": "export const displayPoints = (points) => {\n  // Locate\u2014or create\u2014the DOM element for displaying points\n  let container = document.getElementById('points-display');\n  if (!container) {\n    container = document.createElement('div');\n    container.id = 'points-display';\n    document.body.appendChild(container);\n  }\n  container.textContent = `You have ${points} point${points === 1 ? '' : 's'} in the current campaign phase.`;\n};",
+            "usage": "const address   = await getNeutronAddress();\nconst { phase_id } = await fetch('/api/active_phase').then(r => r.json());\nconst { points }   = await fetch(`/api/points?address=${address}&phase_id=${phase_id}`).then(r => r.json());\ndisplayPoints(points);"
         }
-    ],
-    "outcome_checks": [
-        "The contract query returns a non-error JSON response.",
-        "The `points` field is a non-negative integer.",
-        "The phase ID in the response matches the active phase ID fetched in Step 2."
     ]
 }

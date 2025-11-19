@@ -1,0 +1,93 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Validates that the supplied string is a non-empty Juno bech32 address and returns it unchanged when valid.",
+            "function": "validate_contract_address_format(contract_address)",
+            "usage": "address = validate_contract_address_format(\"juno1abc...xyz\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Takes a query supplied as a dict or JSON string, confirms it is valid JSON, and serialises it to a compact UTF-8 JSON string.",
+            "function": "build_query_json_string(query)",
+            "usage": "json_query = build_query_json_string({\"get_config\": {}})"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Encodes the JSON query string to base64 and URL-escapes it so it can safely be placed inside an LCD URL.",
+            "function": "encode_query_to_base64(json_query)",
+            "usage": "encoded_query = encode_query_to_base64(json_query)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Performs an HTTP GET request to the Juno LCD smart-query endpoint with the validated address and the encoded query.",
+            "function": "http_get_lcd_smart_query(contract_address, encoded_query)",
+            "usage": "response_json = await http_get_lcd_smart_query(address, encoded_query)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Parses the LCD JSON response and extracts its base64-encoded `data` field.",
+            "function": "parse_lcd_smart_query_response(response_json)",
+            "usage": "data_b64 = parse_lcd_smart_query_response(response_json)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Base64-decodes the `data` field, interprets it as UTF-8 JSON, and returns the decoded contract response object.",
+            "function": "decode_contract_response_data(data_b64)",
+            "usage": "result = decode_contract_response_data(data_b64)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "address = validate_contract_address_format(\"juno1abc...xyz\")#step: 1 Tool: validate_contract_address_format Desciption: Validate that the provided contract address is a bech32 Juno address (prefix `juno` or testnet equivalent like `juno1...`) and is not empty.",
+        "json_query = build_query_json_string({\"get_config\": {}})#step: 2 Tool: build_query_json_string Desciption: Take the high-level query description (for example, `{\"get_config\":{}}` or `{\"current_time\":{}}`), ensure it is valid JSON, and serialize it to a compact UTF-8 JSON string without trailing commas.",
+        "encoded_query = encode_query_to_base64(json_query)#step: 3 Tool: encode_query_to_base64 Desciption: Convert the UTF-8 JSON query string into bytes, then base64-encode those bytes using standard base64 encoding. URL-encode the resulting base64 string so it is safe to place into a URL path segment.",
+        "response_json = await http_get_lcd_smart_query(address, encoded_query)#step: 4 Tool: http_get_lcd_smart_query Desciption: Perform an HTTP GET request to the Juno LCD endpoint `https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{contract_address}/smart/{query_data}` where `{contract_address}` is the validated contract address and `{query_data}` is the URL-safe base64 string from the previous step. Set `Accept: application/json`.",
+        "data_b64 = parse_lcd_smart_query_response(response_json)#step: 5 Tool: parse_lcd_smart_query_response Desciption: Parse the JSON body of the LCD response. Extract the `data` field, which is a base64-encoded blob representing the contract's binary response.",
+        "result = decode_contract_response_data(data_b64)#step: 6 Tool: decode_contract_response_data Desciption: Base64-decode the `data` field from the LCD response into bytes, interpret the bytes as UTF-8 JSON, and parse into a structured object representing the contract\u2019s query response."
+    ],
+    "intent": "Query a CosmWasm smart contract on Juno via REST using a base64-encoded smart query.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_contract_address_format",
+            "description": "Validate that the provided contract address is a bech32 Juno address (prefix `juno` or testnet equivalent like `juno1...`) and is not empty."
+        },
+        {
+            "step": 2,
+            "tool": "build_query_json_string",
+            "description": "Take the high-level query description (for example, `{\"get_config\":{}}` or `{\"current_time\":{}}`), ensure it is valid JSON, and serialize it to a compact UTF-8 JSON string without trailing commas."
+        },
+        {
+            "step": 3,
+            "tool": "encode_query_to_base64",
+            "description": "Convert the UTF-8 JSON query string into bytes, then base64-encode those bytes using standard base64 encoding. URL-encode the resulting base64 string so it is safe to place into a URL path segment."
+        },
+        {
+            "step": 4,
+            "tool": "http_get_lcd_smart_query",
+            "description": "Perform an HTTP GET request to the Juno LCD endpoint `https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{contract_address}/smart/{query_data}` where `{contract_address}` is the validated contract address and `{query_data}` is the URL-safe base64 string from the previous step. Set `Accept: application/json`."
+        },
+        {
+            "step": 5,
+            "tool": "parse_lcd_smart_query_response",
+            "description": "Parse the JSON body of the LCD response. Extract the `data` field, which is a base64-encoded blob representing the contract's binary response."
+        },
+        {
+            "step": 6,
+            "tool": "decode_contract_response_data",
+            "description": "Base64-decode the `data` field from the LCD response into bytes, interpret the bytes as UTF-8 JSON, and parse into a structured object representing the contract\u2019s query response."
+        }
+    ],
+    "outcome_checks": [
+        "The LCD call to `https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{address}/smart/{query_data}` returns HTTP 200 without error.",
+        "The `data` field is present in the response and can be successfully base64-decoded and parsed as JSON.",
+        "The decoded JSON matches the expected shape for the contract\u2019s query (for example, known fields like `count`, `config`, or `time` appear with valid values)."
+    ]
+}

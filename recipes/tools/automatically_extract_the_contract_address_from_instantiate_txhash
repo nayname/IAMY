@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Fetches full tx_response details from the Juno LCD for a supplied transaction hash.",
+            "function": "lcd_get_tx_by_hash(tx_hash)",
+            "usage": "tx_response = await lcd_get_tx_by_hash(txhash)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Scans the transaction logs and returns the instantiated CosmWasm contract address found in the events.",
+            "function": "parse_tx_logs_for_contract_address(tx_response)",
+            "usage": "contract_address = parse_tx_logs_for_contract_address(tx_response)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Confirms that the extracted address is an on-chain CosmWasm contract by querying the LCD contract-info endpoint.",
+            "function": "validate_contract_via_lcd(contract_address)",
+            "usage": "contract_info = await validate_contract_via_lcd(contract_address)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Builds a consistent, structured error payload whenever address extraction or validation fails.",
+            "function": "_build_error_payload(code, details=None)",
+            "usage": "error_json = _build_error_payload(\"CONTRACT_NOT_FOUND_ON_CHAIN\", details=\"No contract info returned\")"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Exposes an HTTP GET endpoint that wraps all previous logic and returns either the contract address or a structured error.",
+            "function": "contract_address_from_txhash_endpoint(txhash)",
+            "usage": "response = await contract_address_from_txhash_endpoint(txhash)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "tx_response = await lcd_get_tx_by_hash(txhash)#step: 1 Tool: lcd_get_tx_by_hash Desciption: From the backend, request the transaction details for the given instantiate txhash via GET https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs/{hash}. Capture the tx_response object including its logs and events.",
+        "contract_address = parse_tx_logs_for_contract_address(tx_response)#step: 2 Tool: parse_tx_logs_for_contract_address Desciption: In backend code, iterate over tx_response.logs[].events[].attributes[] and look for an event corresponding to the CosmWasm instantiate operation. Within that event, search for an attribute whose key is \"_contract_address\" or \"contract_address\" and read its value as the instantiated contract address.",
+        "contract_info = await validate_contract_via_lcd(contract_address)#step: 3 Tool: validate_contract_via_LCD Desciption: Verify that the extracted address is a valid CosmWasm contract by calling GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{contract_address}. Ensure the response contains contract_info fields such as code_id and creator and that the HTTP status is successful.",
+        "error_json = _build_error_payload(\"CONTRACT_NOT_FOUND_ON_CHAIN\", details=\"No contract info returned\")#step: 4 Tool: fallback_error_handling Desciption: If no suitable attribute is found in the transaction logs or the contract validation request fails, return a structured error from the backend (e.g. \"CONTRACT_ADDRESS_NOT_FOUND_IN_TX_LOGS\" or \"CONTRACT_NOT_FOUND_ON_CHAIN\") rather than a partial result.",
+        "response = await contract_address_from_txhash_endpoint(txhash)#step: 5 Tool: expose_backend_endpoint Desciption: Expose a simple backend API endpoint (for example, /api/contract-address-from-txhash?hash={hash}) that wraps the LCD calls and parsing logic so that frontends or scripts can submit a txhash and receive the validated contract address as a JSON response."
+    ],
+    "intent": "Automatically extract the contract address from instantiate txhash",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "lcd_get_tx_by_hash",
+            "description": "From the backend, request the transaction details for the given instantiate txhash via GET https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs/{hash}. Capture the tx_response object including its logs and events."
+        },
+        {
+            "step": 2,
+            "tool": "parse_tx_logs_for_contract_address",
+            "description": "In backend code, iterate over tx_response.logs[].events[].attributes[] and look for an event corresponding to the CosmWasm instantiate operation. Within that event, search for an attribute whose key is \"_contract_address\" or \"contract_address\" and read its value as the instantiated contract address."
+        },
+        {
+            "step": 3,
+            "tool": "validate_contract_via_LCD",
+            "description": "Verify that the extracted address is a valid CosmWasm contract by calling GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{contract_address}. Ensure the response contains contract_info fields such as code_id and creator and that the HTTP status is successful."
+        },
+        {
+            "step": 4,
+            "tool": "fallback_error_handling",
+            "description": "If no suitable attribute is found in the transaction logs or the contract validation request fails, return a structured error from the backend (e.g. \"CONTRACT_ADDRESS_NOT_FOUND_IN_TX_LOGS\" or \"CONTRACT_NOT_FOUND_ON_CHAIN\") rather than a partial result."
+        },
+        {
+            "step": 5,
+            "tool": "expose_backend_endpoint",
+            "description": "Expose a simple backend API endpoint (for example, /api/contract-address-from-txhash?hash={hash}) that wraps the LCD calls and parsing logic so that frontends or scripts can submit a txhash and receive the validated contract address as a JSON response."
+        }
+    ],
+    "outcome_checks": [
+        "For a known instantiate transaction hash, the backend returns a Bech32 contract address that successfully resolves via GET /cosmwasm/wasm/v1/contract/{address}.",
+        "If the txhash does not correspond to a CosmWasm instantiate or the node has pruned the transaction, the backend returns a clear error code instead of an empty or malformed address.",
+        "Repeated calls with the same txhash return the same contract address, demonstrating deterministic parsing of transaction logs."
+    ]
+}

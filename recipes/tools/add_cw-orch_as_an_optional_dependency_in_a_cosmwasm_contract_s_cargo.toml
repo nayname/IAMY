@@ -1,0 +1,67 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Reads and parses the contract workspace's Cargo.toml into a Python dictionary.",
+            "function": "load_cargo_toml(project_root='.')",
+            "usage": "cargo_data = load_cargo_toml('/path/to/contract')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Adds the cw-orch crate as an optional dependency under the [dependencies] section.",
+            "function": "add_cw_orch_optional_dependency(project_root='.', version='0.18.0')",
+            "usage": "add_cw_orch_optional_dependency('/path/to/contract', '0.18.0')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Ensures the [features] table has a cw-orch feature that enables the dependency.",
+            "function": "configure_cw_orch_feature(project_root='.')",
+            "usage": "configure_cw_orch_feature('/path/to/contract')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Runs `cargo <subcommand> --features cw-orch` to confirm the project builds with the feature enabled.",
+            "function": "verify_cargo_with_cw_orch(project_root='.', cargo_subcommand='check')",
+            "usage": "verify_cargo_with_cw_orch('/path/to/contract', 'check')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "cargo_data = load_cargo_toml('/path/to/contract')#step: 1 Tool: open_cargo_toml Desciption: Open the project's Cargo.toml file at the root of the CosmWasm contract workspace.",
+        "add_cw_orch_optional_dependency('/path/to/contract', '0.18.0')#step: 2 Tool: add_cw_orch_optional_dependency Desciption: Under the [dependencies] section, add cw-orch as an optional dependency, using an explicit version placeholder or a chosen version, for example: `cw-orch = { version = \"X.Y.Z\", optional = true }`.",
+        "configure_cw_orch_feature('/path/to/contract')#step: 3 Tool: configure_feature_gate_for_cw_orch Desciption: In the [features] section of Cargo.toml, ensure there is a feature that enables cw-orch, for example:\n`[features]`\n`default = []`\n`cw-orch = [\"dep:cw-orch\"]`.",
+        "verify_cargo_with_cw_orch('/path/to/contract', 'check')#step: 4 Tool: shell_verify_cargo_build_with_feature Desciption: From the project root, run `cargo check --features cw-orch` (or `cargo test --features cw-orch`) to confirm that the project builds successfully with cw-orch enabled."
+    ],
+    "intent": "Add cw-orch as an optional dependency in a CosmWasm contract's Cargo.toml",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "open_cargo_toml",
+            "description": "Open the project's Cargo.toml file at the root of the CosmWasm contract workspace."
+        },
+        {
+            "step": 2,
+            "tool": "add_cw_orch_optional_dependency",
+            "description": "Under the [dependencies] section, add cw-orch as an optional dependency, using an explicit version placeholder or a chosen version, for example: `cw-orch = { version = \"X.Y.Z\", optional = true }`."
+        },
+        {
+            "step": 3,
+            "tool": "configure_feature_gate_for_cw_orch",
+            "description": "In the [features] section of Cargo.toml, ensure there is a feature that enables cw-orch, for example:\n`[features]`\n`default = []`\n`cw-orch = [\"dep:cw-orch\"]`."
+        },
+        {
+            "step": 4,
+            "tool": "shell_verify_cargo_build_with_feature",
+            "description": "From the project root, run `cargo check --features cw-orch` (or `cargo test --features cw-orch`) to confirm that the project builds successfully with cw-orch enabled."
+        }
+    ],
+    "outcome_checks": [
+        "Cargo.toml contains a cw-orch entry in [dependencies] with `optional = true`.",
+        "Cargo.toml defines a feature (for example, `cw-orch`) that correctly references the cw-orch dependency (for example, via `\"dep:cw-orch\"`).",
+        "`cargo check --features cw-orch` completes without dependency resolution or compilation errors."
+    ]
+}

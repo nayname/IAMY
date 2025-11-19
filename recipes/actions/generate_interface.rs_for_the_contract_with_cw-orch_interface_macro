@@ -1,0 +1,54 @@
+{
+    "label": "others",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 shows a typical CosmWasm msg.rs file so you can clearly identify the InstantiateMsg, ExecuteMsg, QueryMsg, and response types your cw-orch interface will wrap.",
+            "code": "// src/msg.rs\n// Message definitions for a simple counter contract.\n// This file is what cw-orch will use (via the interface trait)\n// to encode and decode Instantiate, Execute and Query messages.\n\nuse schemars::JsonSchema;\nuse serde::{Deserialize, Serialize};\n\n/// Instantiate the contract with an initial counter value.\n#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]\npub struct InstantiateMsg {\n    pub count: i32,\n}\n\n/// Executable messages for the counter contract.\n#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]\n#[serde(rename_all = \"snake_case\")]\npub enum ExecuteMsg {\n    /// Increase the counter by 1.\n    Increment {},\n    /// Reset the counter to the provided value.\n    Reset { count: i32 },\n}\n\n/// Query messages supported by the contract.\n#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]\n#[serde(rename_all = \"snake_case\")]\npub enum QueryMsg {\n    /// Get the current counter value.\n    GetCount {},\n}\n\n/// Response type for the `GetCount` query.\n#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]\npub struct CountResponse {\n    pub count: i32,\n}\n",
+            "usage": "Ensure your contract crate exposes equivalent types in `src/msg.rs` (they may already exist). cw-orch will later reference `InstantiateMsg`, `ExecuteMsg`, `QueryMsg`, and `CountResponse` from this module."
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 adds the cw-orch dependency and an `interface` feature in Cargo.toml so the #[interface] macro can be used without bloating the Wasm binary.",
+            "code": "# Cargo.toml (contract crate)\n\n[package]\nname = \"counter\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[lib]\ncrate-type = [\"cdylib\", \"rlib\"]\n\n[dependencies]\ncosmwasm-std = \"1.5.0\"\nschemars = \"0.8\"\nserde = { version = \"1.0\", features = [\"derive\"] }\n\n# cw-orch is added as an optional dependency used only for the\n# Rust interface (it will not be pulled into the compiled Wasm\n# unless you explicitly enable the `interface` feature).\ncw-orch = { version = \"0.23.0\", optional = true, default-features = false, features = [\"interface\"] }\n\n[features]\n# Default features used when building the Wasm contract.\ndefault = []\n\n# When this feature is enabled (e.g. from a test or a host crate),\n# the `src/interface.rs` module will be compiled and cw-orch will\n# be available so the #[interface] macro can run.\ninterface = [\"cw-orch\"]\n",
+            "usage": "Merge this snippet into your contract crate's Cargo.toml. Adjust versions (e.g. of `cw-orch` or `cosmwasm-std`) to match the versions recommended in the cw-orchestrator / Juno docs."
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 creates src/interface.rs with a plain Rust trait that mirrors the Instantiate, Execute, and Query variants using the same argument and response types.",
+            "code": "// src/interface.rs\n// Trait describing the contract's external interface.\n// No cw-orch-specific macros yet; this is a plain Rust trait.\n\nuse crate::msg::CountResponse;\n\n/// High-level Rust interface for the counter contract.\n/// Each method maps to a CosmWasm message.\npub trait Counter {\n    /// Instantiate the contract with an initial count.\n    fn instantiate(&self, count: i32);\n\n    /// Execute `ExecuteMsg::Increment {}`.\n    fn increment(&self);\n\n    /// Execute `ExecuteMsg::Reset { count }`.\n    fn reset(&self, count: i32);\n\n    /// Execute `QueryMsg::GetCount {}` and decode `CountResponse`.\n    fn get_count(&self) -> CountResponse;\n}\n",
+            "usage": "Create a new file `src/interface.rs` in your contract crate with this trait (renaming `Counter` and the method set to match your own Instantiate/Execute/Query messages if your contract is not a counter)."
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 annotates the trait with cw-orch's #[interface] and #[msg(...)] attributes so cw-orch can derive a strongly typed wrapper that knows how to build and decode messages.",
+            "code": "// src/interface.rs\n// Same trait as in step 3, now annotated with cw-orch macros so\n// that a wrapper type is generated automatically.\n\nuse cw_orch::prelude::*;\nuse crate::msg::{CountResponse, ExecuteMsg, InstantiateMsg, QueryMsg};\n\n/// The #[interface] macro tells cw-orch to generate the wrapper\n/// type (e.g. `Counter<Chain>`). The arguments link this trait\n/// to the concrete CosmWasm message enums defined in msg.rs.\n#[interface(InstantiateMsg, ExecuteMsg, QueryMsg)]\npub trait Counter {\n    /// Instantiate the contract with an initial count.\n    #[msg(instantiate)]\n    fn instantiate(&self, count: i32) -> AnyResult<()>;\n\n    /// Execute `ExecuteMsg::Increment {}`.\n    #[msg(exec)]\n    fn increment(&self) -> AnyResult<()>;\n\n    /// Execute `ExecuteMsg::Reset { count }`.\n    #[msg(exec)]\n    fn reset(&self, count: i32) -> AnyResult<()>;\n\n    /// Execute `QueryMsg::GetCount {}` and decode `CountResponse`.\n    #[msg(query)]\n    fn get_count(&self) -> AnyResult<CountResponse>;\n}\n",
+            "usage": "Update `src/interface.rs` from step 3 to import `cw_orch::prelude::*` and your message types, then apply the #[interface(...)] macro to the trait and #[msg(instantiate|exec|query)] on each method as shown. Adjust method names, arguments, and return types to match your real messages."
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Step 5 finalizes wiring by gating the interface behind a Cargo feature, importing the concrete message types, and ensuring cw-orch uses them for encoding/decoding.",
+            "code": "// src/interface.rs\n// Final wired cw-orch interface module.\n//\n// - Imports InstantiateMsg, ExecuteMsg, QueryMsg and CountResponse\n//   from src/msg.rs.\n// - Uses #[interface(..)] + #[msg(..)] so cw-orch can derive the\n//   concrete `Counter<Chain>` wrapper.\n// - Is compiled only when the `interface` feature is enabled so it\n//   never ends up in the Wasm binary.\n\n#![cfg(feature = \"interface\")]\n\nuse cw_orch::prelude::*;\nuse crate::msg::{CountResponse, ExecuteMsg, InstantiateMsg, QueryMsg};\n\n#[interface(InstantiateMsg, ExecuteMsg, QueryMsg)]\npub trait Counter {\n    #[msg(instantiate)]\n    fn instantiate(&self, count: i32) -> AnyResult<()>;\n\n    #[msg(exec)]\n    fn increment(&self) -> AnyResult<()>;\n\n    #[msg(exec)]\n    fn reset(&self, count: i32) -> AnyResult<()>;\n\n    #[msg(query)]\n    fn get_count(&self) -> AnyResult<CountResponse>;\n}\n",
+            "usage": "Replace the contents of `src/interface.rs` with this version once your trait and attributes are correct. The `#![cfg(feature = \"interface\")]` line ensures the cw-orch integration is only compiled when you build with `--features interface` (e.g. from tests or orchestration crates)."
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Step 6 re-exports the generated cw-orch interface type from lib.rs so external crates can construct Counter<Chain> instances directly.",
+            "code": "// src/lib.rs\n// Core contract entry points plus re-export of the cw-orch\n// generated interface type.\n\npub mod msg;\npub mod contract;\n\n// Only compile the cw-orch interface when the `interface` feature\n// is enabled (for tests, scripts, or host crates).\n#[cfg(feature = \"interface\")]\npub mod interface;\n\n// Re-export the generated cw-orch wrapper so other crates can do:\n//   use counter::Counter;\n//   let counter = Counter::new(chain, code_id);\n#[cfg(feature = \"interface\")]\npub use crate::interface::Counter;\n\n// ... existing CosmWasm entry points, for example:\n// pub use crate::contract::{execute, instantiate, query};\n",
+            "usage": "In your contract crate's `src/lib.rs`, add the gated `mod interface;` declaration and the `pub use crate::interface::Counter;` re-export. External cw-orch scripts or tests can then import `Counter` from your crate and instantiate it as `Counter<Chain>`."
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Step 7 provides a small Python helper that runs `cargo check` for the contract crate, with basic error handling, to confirm that cw-orch and interface.rs compile correctly.",
+            "code": "# tools/check_contract_build.py\n\"\"\"\nSmall helper script that runs `cargo check` on the contract crate.\nYou can call this from CI or locally instead of typing the command\nmanually each time.\n\"\"\"\n\nimport subprocess\nimport sys\nfrom pathlib import Path\n\n\ndef run_cargo_check(crate_dir: str | Path = \".\") -> None:\n    \"\"\"\n    Run `cargo check` in the given crate directory.\n\n    Raises a SystemExit with a non-zero code if the command fails.\n    \"\"\"\n    crate_dir = Path(crate_dir)\n\n    if not (crate_dir / \"Cargo.toml\").exists():\n        raise SystemExit(f\"Cargo.toml not found in {crate_dir!s}\")\n\n    try:\n        result = subprocess.run(\n            [\"cargo\", \"check\"],\n            cwd=crate_dir,\n            check=False,\n            capture_output=True,\n            text=True,\n        )\n    except OSError as exc:\n        # Typically raised if `cargo` is not installed or not on PATH.\n        raise SystemExit(f\"Failed to execute `cargo`: {exc}\") from exc\n\n    if result.returncode != 0:\n        # Print stderr/stdout to help debugging and exit with same code.\n        sys.stderr.write(result.stdout)\n        sys.stderr.write(result.stderr)\n        raise SystemExit(result.returncode)\n\n    print(result.stdout or \"`cargo check` completed successfully.\")\n\n\nif __name__ == \"__main__\":\n    # Optionally accept a path to the crate as the first CLI argument.\n    run_cargo_check(sys.argv[1] if len(sys.argv) > 1 else \".\")\n",
+            "usage": "Save this script as `tools/check_contract_build.py` in your workspace, then run `python tools/check_contract_build.py path/to/contract-crate`. It will execute `cargo check`, print compiler output, and exit with a non-zero code if compilation (including cw-orch interface macros) fails."
+        }
+    ]
+}

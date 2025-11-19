@@ -2,67 +2,132 @@
     "tools": [
         {
             "step": 1,
-            "label": "frontend",
-            "introduction": "Builds a CosmWasm MsgExecuteContract object that wraps the raw execute JSON (`{\"increment\":{}}`) and optional funds.",
-            "function": "constructTxWasmExecute(senderAddress, contractAddress, msg, funds = [])",
-            "usage": "const execMsg = constructTxWasmExecute(sender, CONTRACT_ADDRESS, { increment: {} }, [{ denom: 'ujuno', amount: '10' }]);"
+            "label": "backend",
+            "introduction": "Checks via the Juno LCD that the supplied CONTRACT_ADDRESS is an existing CosmWasm contract.",
+            "function": "lcd_verify_contract_exists(contract_address)",
+            "usage": "contract_info = lcd_verify_contract_exists(CONTRACT_ADDRESS)"
         },
         {
             "step": 2,
             "label": "backend",
-            "introduction": "Signs the prepared execute message and broadcasts it to the chain, replicating the `junod tx wasm execute` CLI action.",
-            "function": "sign_and_broadcast_tx__(execute_msg, gas = 350_000)",
-            "usage": "const { tx_hash } = sign_and_broadcast_tx__(execMsg);"
+            "introduction": "Builds the canonical JSON {\"increment\":{}} message and its UTF-8 bytes for the execute call.",
+            "function": "bff_prepare_execute_msg_increment()",
+            "usage": "msg_json, msg_bytes = bff_prepare_execute_msg_increment()"
         },
         {
             "step": 3,
             "label": "backend",
-            "introduction": "Polls the blockchain until the submitted transaction is finalized and committed.",
-            "function": "wait_for_tx_commit(tx_hash, client, timeout = 120, poll = 2.0)",
-            "usage": "const commitInfo = wait_for_tx_commit(tx_hash, client);"
+            "introduction": "Fetches chain-id, account_number and sequence for the sender from the LCD.",
+            "function": "bff_get_chain_and_account_info(address)",
+            "usage": "chain_data = bff_get_chain_and_account_info(SENDER_ADDR)"
         },
         {
             "step": 4,
             "label": "backend",
-            "introduction": "Queries the smart-contract\u2019s `get_count` entry to verify that the counter was incremented.",
-            "function": "query_contract_state(client, contract_address, query_msg)",
-            "usage": "const state = query_contract_state(client, CONTRACT_ADDRESS, { get_count: {} });"
+            "introduction": "Ensures the sender has at least 10 ujuno (plus fees) spendable in their balance.",
+            "function": "lcd_check_spendable_balance_for_ujuno(address, required_ujuno)",
+            "usage": "balance_ok = lcd_check_spendable_balance_for_ujuno(SENDER_ADDR, 10)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Constructs an unsigned MsgExecuteContract transaction that sends 10 ujuno and executes increment.",
+            "function": "bff_construct_execute_contract_tx(sender, contract_address, msg_bytes, funds_ujuno=10)",
+            "usage": "tx_raw = bff_construct_execute_contract_tx(SENDER_ADDR, CONTRACT_ADDRESS, msg_bytes, funds_ujuno=10)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Simulates the unsigned transaction through the LCD to obtain recommended gas and fee.",
+            "function": "lcd_simulate_tx(tx_raw)",
+            "usage": "sim_result = lcd_simulate_tx(tx_raw)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Signs the execute transaction with the backend\u2019s private key, producing ready-to-broadcast bytes.",
+            "function": "bff_sign_execute_tx(unsigned_tx, chain_id, account_number, sequence, fee_amount_ujuno, gas_limit, private_key_hex)",
+            "usage": "signed_bytes = bff_sign_execute_tx(tx_raw, chain_data['chain_id'], chain_data['account_number'], chain_data['sequence'], sim_result['recommended_fee_ujuno'], sim_result['recommended_gas_limit'], PRIVKEY_HEX)"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Broadcasts the signed execute transaction to the Juno network and returns the tx_response.",
+            "function": "lcd_broadcast_tx(tx_bytes, mode='BROADCAST_MODE_BLOCK')",
+            "usage": "tx_response = lcd_broadcast_tx(signed_bytes)"
+        },
+        {
+            "step": 9,
+            "label": "backend",
+            "introduction": "Validates that the execution succeeded and that wasm events indicate the counter increment.",
+            "function": "lcd_verify_execute_effect(contract_address, tx_response)",
+            "usage": "verify_info = lcd_verify_execute_effect(CONTRACT_ADDRESS, tx_response)"
         }
     ],
-    "frontend": [
-        "const execMsg = constructTxWasmExecute(sender, CONTRACT_ADDRESS, { increment: {} }, [{ denom: 'ujuno', amount: '10' }]);//step: 1 Tool: construct_execute_msg Desciption: Prepare the execute JSON: `{\"increment\":{}}`."
-    ],
+    "frontend": [],
     "backend": [
-        "const { tx_hash } = sign_and_broadcast_tx__(execMsg);#step: 2 Tool: junod_tx_wasm_execute Desciption: Run `junod tx wasm execute CONTRACT_ADDRESS '{\"increment\":{}}' --amount 10ujuno --from <key> --chain-id <chain-id> --gas auto --gas-adjustment 1.3 -y`.",
-        "const commitInfo = wait_for_tx_commit(tx_hash, client);#step: 3 Tool: wait_for_tx_commit Desciption: Monitor the transaction until it is finalized.",
-        "const state = query_contract_state(client, CONTRACT_ADDRESS, { get_count: {} });#step: 4 Tool: junod_query_wasm_contract_state Desciption: Query the contract: `junod query wasm contract-state smart CONTRACT_ADDRESS '{\"get_count\":{}}'` to verify the new count."
+        "contract_info = lcd_verify_contract_exists(CONTRACT_ADDRESS)#step: 1 Tool: lcd_verify_contract_exists Desciption: Confirm that CONTRACT_ADDRESS is a valid CosmWasm contract on Juno by calling GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/CONTRACT_ADDRESS and ensuring contract_info is returned without error.",
+        "msg_json, msg_bytes = bff_prepare_execute_msg_increment()#step: 2 Tool: bff_prepare_execute_msg_increment Desciption: Construct the execute JSON message for incrementing the counter, typically {\"increment\":{}}. Normalize it and serialize it to UTF-8 JSON bytes to be used as the msg field in the execute transaction.",
+        "chain_data = bff_get_chain_and_account_info(SENDER_ADDR)#step: 3 Tool: bff_get_chain_and_account_info Desciption: Using the sender\u2019s Juno address, fetch account details as in other flows: GET https://lcd-archive.junonetwork.io/cosmos/base/tendermint/v1beta1/node_info for chain-id and GET https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/{address} for account number and sequence.",
+        "balance_ok = lcd_check_spendable_balance_for_ujuno(SENDER_ADDR, 10)#step: 4 Tool: lcd_check_spendable_balance_for_ujuno Desciption: Verify the sender has at least 10ujuno plus estimated fees by calling GET https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/balances/{address}/by_denom?denom=ujuno and ensuring the returned balance.amount is greater than or equal to 10 plus the expected fee amount.",
+        "tx_raw = bff_construct_execute_contract_tx(SENDER_ADDR, CONTRACT_ADDRESS, msg_bytes, funds_ujuno=10)#step: 5 Tool: bff_construct_execute_contract_tx Desciption: Build a transaction containing a single CosmWasm execute-contract message. Set tx.body.messages[0].type_url to the execute message type (e.g. \"/cosmwasm.wasm.v1.MsgExecuteContract\") and set value to the serialized message with: sender (user address), contract = CONTRACT_ADDRESS, msg = JSON bytes for {\"increment\":{}}, and funds = [{\"denom\":\"ujuno\",\"amount\":\"10\"}]. Configure auth_info with provisional gas_limit and fee in ujuno.",
+        "sim_result = lcd_simulate_tx(tx_raw)#step: 6 Tool: lcd_simulate_tx Desciption: Simulate the execute transaction by POSTing tx_bytes to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate. Use gas_info.gas_used to tune auth_info.fee.gas_limit (e.g. gas_used * 1.3) and recompute fee.amount.",
+        "signed_bytes = bff_sign_execute_tx(tx_raw, chain_data['chain_id'], chain_data['account_number'], chain_data['sequence'], sim_result['recommended_fee_ujuno'], sim_result['recommended_gas_limit'], PRIVKEY_HEX)#step: 7 Tool: bff_sign_execute_tx Desciption: Sign the execute transaction using the backend signer with the sender\u2019s key, filling in signer_infos and signatures based on the latest account number and sequence.",
+        "tx_response = lcd_broadcast_tx(signed_bytes)#step: 8 Tool: lcd_broadcast_tx Desciption: Broadcast the signed transaction via POST https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs with {\"tx_bytes\":\"...\",\"mode\":\"BROADCAST_MODE_BLOCK\"}. Capture txhash, height, and tx_response.code and logs.",
+        "verify_info = lcd_verify_execute_effect(CONTRACT_ADDRESS, tx_response)#step: 9 Tool: lcd_verify_execute_effect Desciption: Confirm that tx_response.code == 0 and that the logs include a wasm event indicating an increment or state change. Optionally, if the contract exposes a counter query, call /cosmwasm/wasm/v1/contract/CONTRACT_ADDRESS/smart/{query_data} before and after the execute to ensure that the counter increased by 1, using a query like {\"get_count\":{}} encoded as base64 for query_data."
     ],
     "intent": "Execute increment on contract address CONTRACT_ADDRESS with 10ujuno",
     "workflow": [
         {
             "step": 1,
-            "tool": "construct_execute_msg",
-            "description": "Prepare the execute JSON: `{\"increment\":{}}`."
+            "tool": "lcd_verify_contract_exists",
+            "description": "Confirm that CONTRACT_ADDRESS is a valid CosmWasm contract on Juno by calling GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/CONTRACT_ADDRESS and ensuring contract_info is returned without error."
         },
         {
             "step": 2,
-            "tool": "junod_tx_wasm_execute",
-            "description": "Run `junod tx wasm execute CONTRACT_ADDRESS '{\"increment\":{}}' --amount 10ujuno --from <key> --chain-id <chain-id> --gas auto --gas-adjustment 1.3 -y`."
+            "tool": "bff_prepare_execute_msg_increment",
+            "description": "Construct the execute JSON message for incrementing the counter, typically {\"increment\":{}}. Normalize it and serialize it to UTF-8 JSON bytes to be used as the msg field in the execute transaction."
         },
         {
             "step": 3,
-            "tool": "wait_for_tx_commit",
-            "description": "Monitor the transaction until it is finalized."
+            "tool": "bff_get_chain_and_account_info",
+            "description": "Using the sender\u2019s Juno address, fetch account details as in other flows: GET https://lcd-archive.junonetwork.io/cosmos/base/tendermint/v1beta1/node_info for chain-id and GET https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/{address} for account number and sequence."
         },
         {
             "step": 4,
-            "tool": "junod_query_wasm_contract_state",
-            "description": "Query the contract: `junod query wasm contract-state smart CONTRACT_ADDRESS '{\"get_count\":{}}'` to verify the new count."
+            "tool": "lcd_check_spendable_balance_for_ujuno",
+            "description": "Verify the sender has at least 10ujuno plus estimated fees by calling GET https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/balances/{address}/by_denom?denom=ujuno and ensuring the returned balance.amount is greater than or equal to 10 plus the expected fee amount."
+        },
+        {
+            "step": 5,
+            "tool": "bff_construct_execute_contract_tx",
+            "description": "Build a transaction containing a single CosmWasm execute-contract message. Set tx.body.messages[0].type_url to the execute message type (e.g. \"/cosmwasm.wasm.v1.MsgExecuteContract\") and set value to the serialized message with: sender (user address), contract = CONTRACT_ADDRESS, msg = JSON bytes for {\"increment\":{}}, and funds = [{\"denom\":\"ujuno\",\"amount\":\"10\"}]. Configure auth_info with provisional gas_limit and fee in ujuno."
+        },
+        {
+            "step": 6,
+            "tool": "lcd_simulate_tx",
+            "description": "Simulate the execute transaction by POSTing tx_bytes to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate. Use gas_info.gas_used to tune auth_info.fee.gas_limit (e.g. gas_used * 1.3) and recompute fee.amount."
+        },
+        {
+            "step": 7,
+            "tool": "bff_sign_execute_tx",
+            "description": "Sign the execute transaction using the backend signer with the sender\u2019s key, filling in signer_infos and signatures based on the latest account number and sequence."
+        },
+        {
+            "step": 8,
+            "tool": "lcd_broadcast_tx",
+            "description": "Broadcast the signed transaction via POST https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs with {\"tx_bytes\":\"...\",\"mode\":\"BROADCAST_MODE_BLOCK\"}. Capture txhash, height, and tx_response.code and logs."
+        },
+        {
+            "step": 9,
+            "tool": "lcd_verify_execute_effect",
+            "description": "Confirm that tx_response.code == 0 and that the logs include a wasm event indicating an increment or state change. Optionally, if the contract exposes a counter query, call /cosmwasm/wasm/v1/contract/CONTRACT_ADDRESS/smart/{query_data} before and after the execute to ensure that the counter increased by 1, using a query like {\"get_count\":{}} encoded as base64 for query_data."
         }
     ],
     "outcome_checks": [
-        "Tx success code 0 and 10ujuno shown in the transaction logs as transferred.",
-        "Returned count value is original +1.",
-        "Contract\u2019s on-chain balance increased by 10ujuno."
+        "GET /cosmwasm/wasm/v1/contract/CONTRACT_ADDRESS returns valid contract_info, confirming the target contract exists.",
+        "The execute transaction broadcast via /cosmos/tx/v1beta1/txs completes with tx_response.code == 0 and no error in raw_log.",
+        "Transaction logs include a wasm-related event for CONTRACT_ADDRESS consistent with an increment action and transfer of 10ujuno as funds, if applicable.",
+        "If a counter query is available, a smart query shows the counter value increased relative to the pre-execution value."
     ]
 }

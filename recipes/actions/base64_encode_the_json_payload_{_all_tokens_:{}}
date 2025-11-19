@@ -1,0 +1,33 @@
+{
+    "label": "query_contract",
+    "workflow": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Step 1 defines a backend helper that normalizes the CosmWasm query payload into a minified JSON string matching {\"all_tokens\":{}} exactly.",
+            "code": "import json\nfrom typing import Any\n\n\ndef normalize_json_payload(payload: Any) -> str:\n    \"\"\"\n    Normalize an input payload into a minified JSON string.\n\n    For this workflow, the payload is expected to represent {\"all_tokens\": {}}.\n    The function validates the structure and returns a compact JSON string\n    with no unnecessary whitespace, suitable for CosmWasm smart queries.\n    \"\"\"\n    try:\n        # If payload is already a JSON string, parse it to ensure validity\n        if isinstance(payload, str):\n            parsed = json.loads(payload)\n        else:\n            parsed = payload\n\n        # Enforce the expected structure for safety\n        if parsed != {\"all_tokens\": {}}:\n            raise ValueError(\n                f\"Unexpected payload structure: {parsed!r}. \"\n                \"Expected {'all_tokens': {}}.\"\n            )\n\n        # Minified JSON: no extra whitespace, double quotes only\n        normalized = json.dumps(parsed, separators=(\",\", \":\"), ensure_ascii=False)\n        return normalized\n    except (TypeError, json.JSONDecodeError) as exc:\n        raise ValueError(f\"Invalid payload, must be JSON-serializable: {exc}\") from exc\n",
+            "usage": "payload = {'all_tokens': {}}\nnormalized_json = normalize_json_payload(payload)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Step 2 converts the normalized JSON string into a UTF-8 byte array in the backend environment.",
+            "code": "def utf8_encode(json_str: str) -> bytes:\n    \"\"\"\n    Convert a JSON string to a UTF-8 encoded byte array.\n\n    Args:\n        json_str: JSON payload string, typically from normalize_json_payload.\n\n    Returns:\n        UTF-8 encoded bytes.\n\n    Raises:\n        ValueError: If input is not a string or encoding fails.\n    \"\"\"\n    if not isinstance(json_str, str):\n        raise ValueError(\"json_str must be a string containing JSON data.\")\n\n    try:\n        return json_str.encode(\"utf-8\")\n    except UnicodeError as exc:\n        raise ValueError(f\"Failed to encode JSON as UTF-8: {exc}\") from exc\n",
+            "usage": "utf8_bytes = utf8_encode(normalized_json)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Step 3 base64-encodes the UTF-8 bytes into a string suitable for the {query_data} parameter of /cosmwasm/wasm/v1/contract/{address}/smart/{query_data}.",
+            "code": "import base64\nfrom typing import Union\n\n\ndef base64_encode_for_smart_query(utf8_bytes: Union[bytes, bytearray]) -> str:\n    \"\"\"\n    Encode a UTF-8 byte array into a base64 string suitable for CosmWasm smart queries.\n\n    The returned string can be used as the `{query_data}` path parameter in:\n    /cosmwasm/wasm/v1/contract/{address}/smart/{query_data}\n    \"\"\"\n    if not isinstance(utf8_bytes, (bytes, bytearray)):\n        raise ValueError(\"utf8_bytes must be bytes or bytearray.\")\n\n    try:\n        # base64.b64encode returns bytes; decode to ASCII string for HTTP usage\n        b64_bytes = base64.b64encode(bytes(utf8_bytes))\n        b64_str = b64_bytes.decode(\"ascii\")\n        return b64_str\n    except Exception as exc:\n        raise ValueError(f\"Failed to base64-encode data: {exc}\") from exc\n",
+            "usage": "query_data = base64_encode_for_smart_query(utf8_bytes)\n# Example LCD URL (replace {address}):\n# https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/{address}/smart/{query_data}"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Step 4 decodes the base64 string back to UTF-8 and verifies that it matches the original JSON exactly, guarding against encoding mistakes.",
+            "code": "import base64\nimport binascii\n\n\ndef base64_decode_and_verify(b64_str: str, expected_json: str) -> bool:\n    \"\"\"\n    Decode a base64 string back to UTF-8 and verify it matches the expected JSON exactly.\n\n    For this workflow, `expected_json` should typically be the output of `normalize_json_payload`,\n    e.g. the string '{\"all_tokens\":{}}'.\n    \"\"\"\n    if not isinstance(b64_str, str):\n        raise ValueError(\"b64_str must be a base64-encoded string.\")\n\n    if not isinstance(expected_json, str):\n        raise ValueError(\"expected_json must be a JSON string.\")\n\n    try:\n        decoded_bytes = base64.b64decode(b64_str, validate=True)\n    except (binascii.Error, ValueError) as exc:\n        raise ValueError(f\"Invalid base64 string: {exc}\") from exc\n\n    try:\n        decoded_text = decoded_bytes.decode(\"utf-8\")\n    except UnicodeError as exc:\n        raise ValueError(f\"Decoded bytes are not valid UTF-8: {exc}\") from exc\n\n    if decoded_text != expected_json:\n        raise ValueError(\n            \"Verification failed: decoded JSON does not match expected value.\\n\"\n            f\"Decoded:   {decoded_text}\\n\"\n            f\"Expected:  {expected_json}\"\n        )\n\n    return True\n",
+            "usage": "is_valid = base64_decode_and_verify(query_data, normalized_json)\n# Raises ValueError if verification fails."
+        }
+    ]
+}

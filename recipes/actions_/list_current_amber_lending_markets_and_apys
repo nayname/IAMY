@@ -1,80 +1,40 @@
 {
-    "tools": [
-        {
-            "step": 1,
-            "label": "backend",
-            "introduction": "Retrieves the Amber Finance controller (lens) contract address for a given network environment.",
-            "function": "get_controller_address(env=\"mainnet\")",
-            "usage": "controller = get_controller_address(\"mainnet\")"
-        },
-        {
-            "step": 2,
-            "label": "backend",
-            "introduction": "Performs a CosmWasm smart-contract query to fetch the list of available lending markets.",
-            "function": "_query_wasm_smart(contract_addr, query_msg)",
-            "usage": "markets = await _query_wasm_smart(controller[\"controller_address\"], {\"markets\": {}})"
-        },
-        {
-            "step": 3,
-            "label": "backend",
-            "introduction": "Queries each individual market to obtain its current supply and borrow rate information.",
-            "function": "_query_wasm_smart(contract_addr, query_msg)",
-            "usage": "state = await _query_wasm_smart(controller[\"controller_address\"], {\"market_state\": {\"market_id\": market_id}})"
-        },
-        {
-            "step": 4,
-            "label": "frontend",
-            "introduction": "Converts a per-second interest rate into an annual percentage yield (APY).",
-            "function": "rateToAPY(ratePerSecond)",
-            "usage": "apy = rateToAPY(state.supply_rate_per_second)"
-        },
-        {
-            "step": 5,
-            "label": "frontend",
-            "introduction": "Renders an HTML table showing each market\u2019s symbol, collateral factor, supply APY and borrow APY.",
-            "function": "MarketTable()",
-            "usage": "<MarketTable />"
-        }
-    ],
-    "frontend": [
-        "apy = rateToAPY(state.supply_rate_per_second)//step: 4 Tool: calculate_apy Desciption: Convert per-block/per-second rates into annual percentage yield (APY) figures for both supply and borrow sides.",
-        "<MarketTable />//step: 5 Tool: display_markets Desciption: Render a table containing market symbol, collateral factor, supply APY, and borrow APY."
-    ],
-    "backend": [
-        "controller = get_controller_address(\"mainnet\")#step: 1 Tool: get_contract_address Desciption: Fetch the Amber protocol \"controller\" or \"lens\" contract address that exposes market data.",
-        "markets = await _query_wasm_smart(controller[\"controller_address\"], {\"markets\": {}})#step: 2 Tool: query_wasm_contract Desciption: Invoke `{ markets: {} }` (or equivalent) to obtain the full list of lending markets.",
-        "state = await _query_wasm_smart(controller[\"controller_address\"], {\"market_state\": {\"market_id\": market_id}})#step: 3 Tool: query_wasm_contract Desciption: For each returned market, call `{ market_state: { market_id: <ID> } }` to fetch supply and borrow rate data."
-    ],
-    "intent": "List current Amber lending markets and APYs",
+    "label": "query_contract",
     "workflow": [
         {
             "step": 1,
-            "tool": "get_contract_address",
-            "description": "Fetch the Amber protocol \"controller\" or \"lens\" contract address that exposes market data."
+            "label": "backend",
+            "introduction": "This backend endpoint exposes the Amber protocol controller/lens contract address for a given environment, reading it from environment variables to keep configuration out of the frontend.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport os\n\napp = FastAPI()\n\n# Environment-specific mapping of Amber controller/lens contract addresses\nAMBER_CONTROLLER_ADDRESSES = {\n    \"mainnet\": os.getenv(\"AMBER_CONTROLLER_MAINNET\", \"neutron1controllerplaceholderxxxxxxxxxxxx\"),\n    \"testnet\": os.getenv(\"AMBER_CONTROLLER_TESTNET\", \"pion1controllerplaceholderxxxxxxxxxxxx\")\n}\n\n@app.get(\"/api/amber/controller-address\")\nasync def get_controller_address(env: str = \"mainnet\"):\n    \"\"\"Return the controller/lens contract address used to query market data.\"\"\"\n    address = AMBER_CONTROLLER_ADDRESSES.get(env)\n    if not address:\n        raise HTTPException(status_code=400, detail=\"Unsupported environment\")\n    return {\"env\": env, \"controller_address\": address}",
+            "usage": "fetch('/api/amber/controller-address?env=mainnet')"
         },
         {
             "step": 2,
-            "tool": "query_wasm_contract",
-            "description": "Invoke `{ markets: {} }` (or equivalent) to obtain the full list of lending markets."
+            "label": "backend",
+            "introduction": "Queries the controller contract for the complete list of lending markets by sending a smart-query `{ markets: {} }` via the LCD REST endpoint.",
+            "code": "import base64, json, os\nimport httpx\nfrom fastapi import HTTPException\n\nLCD_ENDPOINT = os.getenv(\"NEUTRON_LCD_ENDPOINT\", \"https://rest-kralum.neutron-1.neutron.org\")\n\nasync def _query_smart(contract_address: str, query_msg: dict):\n    \"\"\"Helper to perform a CosmWasm smart-query using the LCD REST interface.\"\"\"\n    encoded_msg = base64.b64encode(json.dumps(query_msg).encode()).decode()\n    url = f\"{LCD_ENDPOINT}/cosmwasm/wasm/v1/contract/{contract_address}/smart/{encoded_msg}\"\n    async with httpx.AsyncClient() as client:\n        resp = await client.get(url, timeout=10)\n        try:\n            resp.raise_for_status()\n        except httpx.HTTPStatusError as exc:\n            raise HTTPException(status_code=exc.response.status_code, detail=str(exc))\n        return resp.json().get(\"data\") or resp.json()\n\n@app.get(\"/api/amber/markets\")\nasync def get_markets(env: str = \"mainnet\"):\n    from amber_api import AMBER_CONTROLLER_ADDRESSES  # reuse mapping from step 1\n    controller = AMBER_CONTROLLER_ADDRESSES.get(env)\n    if not controller:\n        raise HTTPException(status_code=400, detail=\"Unsupported environment\")\n    markets = await _query_smart(controller, {\"markets\": {}})\n    return markets",
+            "usage": "fetch('/api/amber/markets?env=mainnet')"
         },
         {
             "step": 3,
-            "tool": "query_wasm_contract",
-            "description": "For each returned market, call `{ market_state: { market_id: <ID> } }` to fetch supply and borrow rate data."
+            "label": "backend",
+            "introduction": "Returns raw supply and borrow rate information for a specific market by executing `{ market_state: { market_id } }` on the Amber controller contract.",
+            "code": "from fastapi import HTTPException\n\n@app.get(\"/api/amber/market-state\")\nasync def get_market_state(market_id: str, env: str = \"mainnet\"):\n    from amber_api import AMBER_CONTROLLER_ADDRESSES\n    controller = AMBER_CONTROLLER_ADDRESSES.get(env)\n    if not controller:\n        raise HTTPException(status_code=400, detail=\"Unsupported environment\")\n    state = await _query_smart(controller, {\"market_state\": {\"market_id\": market_id}})\n    return state",
+            "usage": "fetch('/api/amber/market-state?env=mainnet&market_id=1')"
         },
         {
             "step": 4,
-            "tool": "calculate_apy",
-            "description": "Convert per-block/per-second rates into annual percentage yield (APY) figures for both supply and borrow sides."
+            "label": "frontend",
+            "introduction": "Utility function that converts a per-second interest rate to an annual percentage yield (APY).",
+            "code": "export const SECONDS_PER_YEAR = 60 * 60 * 24 * 365;\n\nexport const rateToAPY = (ratePerSecond) => {\n  const r = Number(ratePerSecond);\n  if (isNaN(r)) {\n    throw new Error('rateToAPY received an invalid number');\n  }\n  const apy = (Math.pow(1 + r, SECONDS_PER_YEAR) - 1) * 100; // convert to %\n  return Number(apy.toFixed(2));\n};",
+            "usage": "const apy = rateToAPY('0.0000000012');"
         },
         {
             "step": 5,
-            "tool": "display_markets",
-            "description": "Render a table containing market symbol, collateral factor, supply APY, and borrow APY."
+            "label": "frontend",
+            "introduction": "React component that orchestrates the previous steps and renders a table showing each market\u2019s collateral factor alongside its supply and borrow APYs.",
+            "code": "import React, { useEffect, useState } from 'react';\nimport { rateToAPY } from './rateToAPY';\n\nconst MarketTable = () => {\n  const [markets, setMarkets] = useState([]);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState(null);\n\n  useEffect(() => {\n    const fetchData = async () => {\n      try {\n        const env = 'mainnet';\n\n        // Step 1: controller address (validates backend availability)\n        const addrRes = await fetch(`/api/amber/controller-address?env=${env}`);\n        if (!addrRes.ok) throw new Error(await addrRes.text());\n        await addrRes.json();\n\n        // Step 2: market list\n        const marketsRes = await fetch(`/api/amber/markets?env=${env}`);\n        if (!marketsRes.ok) throw new Error(await marketsRes.text());\n        const marketList = await marketsRes.json();\n\n        // Step 3: for each market fetch state in parallel\n        const enriched = await Promise.all(\n          marketList.map(async (m) => {\n            const stateRes = await fetch(`/api/amber/market-state?env=${env}&market_id=${m.id}`);\n            if (!stateRes.ok) throw new Error(await stateRes.text());\n            const state = await stateRes.json();\n\n            return {\n              id: m.id,\n              symbol: m.symbol,\n              collateralFactor: Number(m.collateral_factor),\n              supplyAPY: rateToAPY(state.supply_rate_per_second),\n              borrowAPY: rateToAPY(state.borrow_rate_per_second)\n            };\n          })\n        );\n\n        setMarkets(enriched);\n      } catch (e) {\n        console.error(e);\n        setError(e.message || 'Could not load market data');\n      } finally {\n        setLoading(false);\n      }\n    };\n\n    fetchData();\n  }, []);\n\n  if (loading) return <p>Loading markets\u2026</p>;\n  if (error) return <p style={{ color: 'red' }}>{error}</p>;\n\n  return (\n    <table>\n      <thead>\n        <tr>\n          <th>Symbol</th>\n          <th>Collateral Factor</th>\n          <th>Supply APY (%)</th>\n          <th>Borrow APY (%)</th>\n        </tr>\n      </thead>\n      <tbody>\n        {markets.map((m) => (\n          <tr key={m.id}>\n            <td>{m.symbol}</td>\n            <td>{(m.collateralFactor * 100).toFixed(0)}%</td>\n            <td>{m.supplyAPY}</td>\n            <td>{m.borrowAPY}</td>\n          </tr>\n        ))}\n      </tbody>\n    </table>\n  );\n};\n\nexport default MarketTable;",
+            "usage": "Render with <MarketTable /> inside your React tree."
         }
-    ],
-    "outcome_checks": [
-        "Every market row shows a numeric APY value > 0 or explicitly 0%.",
-        "The number of displayed markets matches the length of the `markets` array from Step 2."
     ]
 }

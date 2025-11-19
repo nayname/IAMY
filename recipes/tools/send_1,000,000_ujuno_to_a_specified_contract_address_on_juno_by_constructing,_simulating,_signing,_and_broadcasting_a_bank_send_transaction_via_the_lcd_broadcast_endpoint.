@@ -1,0 +1,172 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Loads the sender\u2019s secp256k1 private key from a backend-only environment variable and derives the Juno bech32 address.",
+            "function": "get_sender_wallet(env_var='JUNO_SENDER_PRIVATE_KEY')",
+            "usage": "sender = await get_sender_wallet()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Checks that CONTRACT_ADDRESS is a valid Juno bech32 string and (optionally) exists on-chain via the LCD auth endpoint.",
+            "function": "validate_contract_address(contract_address, check_on_chain=True)",
+            "usage": "await validate_contract_address(CONTRACT_ADDRESS)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Queries the sender\u2019s ujuno balance and ensures it is large enough to cover the 1 000 000 ujuno transfer plus a fee buffer.",
+            "function": "check_sender_balance(sender_address, required_amount=1_000_000, fee_buffer=200_000)",
+            "usage": "await check_sender_balance(sender['address'])"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Creates a MsgSend protobuf (wrapped in google.protobuf.Any) for sending 1 000 000 ujuno from SENDER_ADDRESS to CONTRACT_ADDRESS.",
+            "function": "construct_msg_send(from_address, to_address, amount=1_000_000)",
+            "usage": "msg_any = construct_msg_send(sender['address'], CONTRACT_ADDRESS)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Wraps the MsgSend in a TxBody/AuthInfo pair with an initial gas limit and without signatures.",
+            "function": "build_unsigned_tx(msg_any, memo='', initial_gas_limit=200_000)",
+            "usage": "tx = build_unsigned_tx(msg_any)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "POSTs the unsigned Tx to /cosmos/tx/v1beta1/simulate, reads gas_used, applies a safety multiplier, and updates tx.auth_info.fee.gas_limit.",
+            "function": "simulate_tx_for_gas(tx, gas_adjustment=1.2)",
+            "usage": "gas_limit = await simulate_tx_for_gas(tx)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Fetches minimum_gas_price from the node config, computes the fee = gas_limit \u00d7 gas_price, and fills tx.auth_info.fee.amount.",
+            "function": "apply_min_gas_price_fee(tx, denom='ujuno')",
+            "usage": "fee_amount = await apply_min_gas_price_fee(tx)"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Retrieves account_number and sequence for the sender by decoding the on-chain BaseAccount protobuf.",
+            "function": "fetch_account_number_and_sequence(address)",
+            "usage": "acct = await fetch_account_number_and_sequence(sender['address'])"
+        },
+        {
+            "step": 9,
+            "label": "backend",
+            "introduction": "Builds a SignDoc, signs it with the sender\u2019s private key, and attaches the signature and signer_info to the Tx.",
+            "function": "sign_tx_with_sender_key(tx, private_key_hex, account_number, sequence, chain_id='juno-1')",
+            "usage": "signed_tx = sign_tx_with_sender_key(tx, sender['private_key_hex'], acct['account_number'], acct['sequence'])"
+        },
+        {
+            "step": 10,
+            "label": "backend",
+            "introduction": "Serializes the signed Tx to bytes and base64-encodes it for the LCD broadcast endpoint.",
+            "function": "encode_tx_to_bytes(tx)",
+            "usage": "tx_bytes_b64 = encode_tx_to_bytes(signed_tx)"
+        },
+        {
+            "step": 11,
+            "label": "backend",
+            "introduction": "Broadcasts the base64-encoded transaction bytes to the LCD /txs endpoint in synchronous or blocking mode.",
+            "function": "broadcast_tx_via_lcd(tx_bytes_b64, mode='BROADCAST_MODE_SYNC')",
+            "usage": "tx_response = await broadcast_tx_via_lcd(tx_bytes_b64, mode='BROADCAST_MODE_BLOCK')"
+        },
+        {
+            "step": 12,
+            "label": "backend",
+            "introduction": "Ensures the broadcast succeeded (HTTP 200 and tx_response.code == 0) and returns a concise summary.",
+            "function": "verify_broadcast_result(tx_response)",
+            "usage": "result = verify_broadcast_result(tx_response)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "sender = await get_sender_wallet()#step: 1 Tool: get_sender_wallet Desciption: Identify and unlock the sender wallet (SENDER_ADDRESS) in a secure backend environment (e.g., keyring, HSM, or KMS). Ensure access to the sender's private key without exposing it to the frontend.",
+        "await validate_contract_address(CONTRACT_ADDRESS)#step: 2 Tool: validate_contract_address Desciption: Validate that CONTRACT_ADDRESS is a well-formed Juno bech32 address with the correct prefix (e.g., \"juno\"). Optionally, perform GET \"https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/CONTRACT_ADDRESS\" to confirm it is a valid on-chain account/contract.",
+        "await check_sender_balance(sender['address'])#step: 3 Tool: check_sender_balance Desciption: Query the sender's ujuno balance using GET \"https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/balances/SENDER_ADDRESS/by_denom?denom=ujuno\" and verify that the spendable amount is at least 1,000,000 ujuno plus an estimated fee buffer. If the balance is insufficient, abort with an informative error.",
+        "msg_any = construct_msg_send(sender['address'], CONTRACT_ADDRESS)#step: 4 Tool: construct_msg_send Desciption: Construct a Cosmos SDK bank send message (type_url \"/cosmos.bank.v1beta1.MsgSend\") with fields: from_address = SENDER_ADDRESS, to_address = CONTRACT_ADDRESS, amount = [{\"denom\": \"ujuno\", \"amount\": \"1000000\"}].",
+        "tx = build_unsigned_tx(msg_any)#step: 5 Tool: build_unsigned_tx Desciption: Create an unsigned Tx object wrapping the MsgSend: set \"body.messages\" to the single MsgSend, provide an optional memo, set an initial \"auth_info.fee.gas_limit\" (a rough guess), and leave \"signatures\" empty. Do NOT include the private key.",
+        "gas_limit = await simulate_tx_for_gas(tx)#step: 6 Tool: simulate_tx_for_gas Desciption: POST to \"https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate\" with a JSON body containing the \"tx\" object (unsigned is acceptable for gas estimation). Read \"gas_info.gas_used\" from the response and compute a final gas limit (e.g., gas_limit = ceil(gas_used * 1.2)). Update the Tx's fee.gas_limit accordingly.",
+        "fee_amount = await apply_min_gas_price_fee(tx)#step: 7 Tool: fetch_min_gas_price Desciption: GET \"https://lcd-archive.junonetwork.io/cosmos/base/node/v1beta1/config\" and parse the \"minimum_gas_price\" string to determine the per-unit gas price (e.g., value like \"0.0025ujuno\"). Compute the fee amount as gas_limit * gas_price and set \"auth_info.fee.amount\" to [{\"denom\": \"ujuno\", \"amount\": computed_fee_amount_string}].",
+        "acct = await fetch_account_number_and_sequence(sender['address'])#step: 8 Tool: fetch_account_number_and_sequence Desciption: GET \"https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/SENDER_ADDRESS\". Decode the returned \"account.value\" protobuf into the appropriate Cosmos account type to extract \"account_number\" and \"sequence\"; these are required for signing.",
+        "signed_tx = sign_tx_with_sender_key(tx, sender['private_key_hex'], acct['account_number'], acct['sequence'])#step: 9 Tool: sign_tx_with_sender_key Desciption: In the backend, construct a SignDoc using the chain_id, account_number, sequence, Tx body bytes, and auth_info bytes. Sign it with the sender's private secp256k1 key to produce a signature. Populate \"auth_info.signer_infos\" with the sender's public key and signing mode, and set the Tx \"signatures\" array to contain the signature bytes.",
+        "tx_bytes_b64 = encode_tx_to_bytes(signed_tx)#step: 10 Tool: encode_tx_to_bytes Desciption: Serialize the fully signed Tx protobuf into binary and then base64-encode it as \"tx_bytes\" to prepare for broadcasting.",
+        "tx_response = await broadcast_tx_via_lcd(tx_bytes_b64, mode='BROADCAST_MODE_BLOCK')#step: 11 Tool: broadcast_tx_via_lcd Desciption: POST to \"https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs\" with JSON body {\"tx_bytes\": \"<BASE64_SIGNED_TX>\", \"mode\": \"BROADCAST_MODE_SYNC\"} (or \"BROADCAST_MODE_BLOCK\" for inclusion confirmation). Capture the returned \"tx_response\".",
+        "result = verify_broadcast_result(tx_response)#step: 12 Tool: verify_broadcast_result Desciption: Check that the broadcast response has HTTP 200 and that \"tx_response.code\" is 0. If not, surface an error including \"tx_response.raw_log\" for debugging. Optionally, record \"tx_response.txhash\" for later tracking."
+    ],
+    "intent": "Send 1,000,000 ujuno to a specified contract address on Juno by constructing, simulating, signing, and broadcasting a bank send transaction via the LCD broadcast endpoint.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "get_sender_wallet",
+            "description": "Identify and unlock the sender wallet (SENDER_ADDRESS) in a secure backend environment (e.g., keyring, HSM, or KMS). Ensure access to the sender's private key without exposing it to the frontend."
+        },
+        {
+            "step": 2,
+            "tool": "validate_contract_address",
+            "description": "Validate that CONTRACT_ADDRESS is a well-formed Juno bech32 address with the correct prefix (e.g., \"juno\"). Optionally, perform GET \"https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/CONTRACT_ADDRESS\" to confirm it is a valid on-chain account/contract."
+        },
+        {
+            "step": 3,
+            "tool": "check_sender_balance",
+            "description": "Query the sender's ujuno balance using GET \"https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/balances/SENDER_ADDRESS/by_denom?denom=ujuno\" and verify that the spendable amount is at least 1,000,000 ujuno plus an estimated fee buffer. If the balance is insufficient, abort with an informative error."
+        },
+        {
+            "step": 4,
+            "tool": "construct_msg_send",
+            "description": "Construct a Cosmos SDK bank send message (type_url \"/cosmos.bank.v1beta1.MsgSend\") with fields: from_address = SENDER_ADDRESS, to_address = CONTRACT_ADDRESS, amount = [{\"denom\": \"ujuno\", \"amount\": \"1000000\"}]."
+        },
+        {
+            "step": 5,
+            "tool": "build_unsigned_tx",
+            "description": "Create an unsigned Tx object wrapping the MsgSend: set \"body.messages\" to the single MsgSend, provide an optional memo, set an initial \"auth_info.fee.gas_limit\" (a rough guess), and leave \"signatures\" empty. Do NOT include the private key."
+        },
+        {
+            "step": 6,
+            "tool": "simulate_tx_for_gas",
+            "description": "POST to \"https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate\" with a JSON body containing the \"tx\" object (unsigned is acceptable for gas estimation). Read \"gas_info.gas_used\" from the response and compute a final gas limit (e.g., gas_limit = ceil(gas_used * 1.2)). Update the Tx's fee.gas_limit accordingly."
+        },
+        {
+            "step": 7,
+            "tool": "fetch_min_gas_price",
+            "description": "GET \"https://lcd-archive.junonetwork.io/cosmos/base/node/v1beta1/config\" and parse the \"minimum_gas_price\" string to determine the per-unit gas price (e.g., value like \"0.0025ujuno\"). Compute the fee amount as gas_limit * gas_price and set \"auth_info.fee.amount\" to [{\"denom\": \"ujuno\", \"amount\": computed_fee_amount_string}]."
+        },
+        {
+            "step": 8,
+            "tool": "fetch_account_number_and_sequence",
+            "description": "GET \"https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/SENDER_ADDRESS\". Decode the returned \"account.value\" protobuf into the appropriate Cosmos account type to extract \"account_number\" and \"sequence\"; these are required for signing."
+        },
+        {
+            "step": 9,
+            "tool": "sign_tx_with_sender_key",
+            "description": "In the backend, construct a SignDoc using the chain_id, account_number, sequence, Tx body bytes, and auth_info bytes. Sign it with the sender's private secp256k1 key to produce a signature. Populate \"auth_info.signer_infos\" with the sender's public key and signing mode, and set the Tx \"signatures\" array to contain the signature bytes."
+        },
+        {
+            "step": 10,
+            "tool": "encode_tx_to_bytes",
+            "description": "Serialize the fully signed Tx protobuf into binary and then base64-encode it as \"tx_bytes\" to prepare for broadcasting."
+        },
+        {
+            "step": 11,
+            "tool": "broadcast_tx_via_lcd",
+            "description": "POST to \"https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs\" with JSON body {\"tx_bytes\": \"<BASE64_SIGNED_TX>\", \"mode\": \"BROADCAST_MODE_SYNC\"} (or \"BROADCAST_MODE_BLOCK\" for inclusion confirmation). Capture the returned \"tx_response\"."
+        },
+        {
+            "step": 12,
+            "tool": "verify_broadcast_result",
+            "description": "Check that the broadcast response has HTTP 200 and that \"tx_response.code\" is 0. If not, surface an error including \"tx_response.raw_log\" for debugging. Optionally, record \"tx_response.txhash\" for later tracking."
+        }
+    ],
+    "outcome_checks": [
+        "The sender's ujuno balance from the bank query is greater than or equal to 1,000,000 ujuno plus the computed fee.",
+        "The simulation endpoint returns a valid gas_used and the final gas_limit is set above this value.",
+        "The broadcast call to /cosmos/tx/v1beta1/txs returns HTTP 200 and tx_response.code == 0.",
+        "A follow-up query to /cosmos/bank/v1beta1/balances for SENDER_ADDRESS and CONTRACT_ADDRESS reflects a 1,000,000 ujuno decrease for the sender and a corresponding increase for the contract (minus fees paid by the sender)."
+    ]
+}

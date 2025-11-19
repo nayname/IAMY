@@ -2,7 +2,44 @@ import json
 import os
 
 """
-Given the lift of functions - remove duplicates (the ones that duplicate the functionality with the same input arguments). Do not consolidate any functions, just remove duplicates. Provide the final file.
+I will provide a list of functions. Please process them as follows:
+
+ 1.  **Literal Porting:** Identify any non-Python code and port it to Python. This must be a **direct translation** of the syntax only; do not 'improve' or 'pythonize' the logic.
+ 2.  **Deduplication:** Compare all functions to find exact duplicates. A duplicate is defined as having **identical inputs and identical logic**.
+ 3.  **Reporting:** List clearly which functions are being removed as duplicates.
+ 4.  **Assembly:** Generate the final Python file with all imports moved to the top.
+
+ **STRICT CONSTRAINTS:**
+ * **NO NEW FUNCTIONS:** Do not invent, add, or hallucinate any helper functions, wrappers, or classes that are not explicitly present in the input text.
+ * **NO REFACTORING:** Do not optimize, clean up, or modernize the code inside the functions. Preserve the original implementation style and variable names exactly as they are.
+ * **VERBATIM PRESERVATION:** If a function is already in Python, do not change a single character of its body (other than indentation adjustments if necessary).
+ * **Output:** Provide only the final valid Python code.
+"""
+
+"""
+"Given the user-provided function library `Backend.py` and the intent descriptions in `intents.txt`, write me a single Python function `async def intents(input_text, req):` that implements *all* the intents using a `match input_text:` statement. The function body for each `case` should execute the sequence of functions specified in the JSON, assigning intermediate results to unique variables (e.g., `output1`, `output2`), and appending descriptive strings to a list named `res` after each function call.
+
+The structure for each case *must* follow this exact pattern:
+
+```python
+case <intent_string>:
+    res = []
+    <output1> = <lib func1>(<args>)
+    res.append(<text describing what was done mentioning received output1>)
+    <output2> = <lib func2(output1)>(<other args>)
+    res.append(<text describing what was done mentioning received output2>)
+    # ... continue for all functions in the intent ...
+    return {"status": "success", "message": "...", "data": ...}
+```
+
+The function should handle all 17 intents defined in `intents.txt`. Since many functions require parameters like `address`, `project_root`, or `txhash`, assume these are available within the input `req: Dict[str, Any]` and extract them at the start of the `intents` function.
+
+Also, compile me a new, minimal library file named `Backend.py` that contains *only* the Python code for the functions actually called within the `intents(input_text, req)` implementation."
+"""
+
+
+"""
+Given the lift of functions - remove duplicates (the ones that duplicate the functionality with the same input arguments). All functions should be in JavaScript (port from othe lanhgs if needed). Do not consolidate any functions, just remove duplicates. Provide the final file. 
 """
 
 """

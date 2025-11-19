@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Queries the Juno LCD node configuration and parses the minimum_gas_price string into amount / denom parts.",
+            "function": "get_minimum_gas_price()",
+            "usage": "mgp = get_minimum_gas_price()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Retrieves the network chain-id from the node_info endpoint (or latest block as a fallback).",
+            "function": "get_chain_id()",
+            "usage": "chain_id = get_chain_id()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Builds a reusable TXFLAGS string that bundles gas, prices, chain-id and RPC endpoint for junod CLI calls.",
+            "function": "build_txflags_string(minimum_gas_price, chain_id, gas_adjustment=1.3, rpc_endpoint)",
+            "usage": "txflags = build_txflags_string(f\"{mgp['amount']}{mgp['denom']}\", chain_id)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Sets the TXFLAGS environment variable in the current process so all subsequent junod commands inherit it.",
+            "function": "set_txflags_env(txflags)",
+            "usage": "set_txflags_env(txflags)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Runs a self-send (or dry-run) junod transaction that includes $TXFLAGS to confirm the flags are accepted.",
+            "function": "test_junod_tx_with_txflags(from_identifier, amount='1', denom='ujuno', simulate_only=True, home=None)",
+            "usage": "test_junod_tx_with_txflags('mywallet', simulate_only=True)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "mgp = get_minimum_gas_price()#step: 1 Tool: lcd_get_minimum_gas_price Desciption: From the backend, query the node configuration via GET https://lcd-archive.junonetwork.io/cosmos/base/node/v1beta1/config and read the minimum_gas_price field to determine an appropriate baseline gas price denomination and amount.",
+        "chain_id = get_chain_id()#step: 2 Tool: lcd_get_chain_id Desciption: From the backend, query node information via GET https://lcd-archive.junonetwork.io/cosmos/base/tendermint/v1beta1/node_info and read the default_node_info.network field (or use blocks/latest header.chain_id) as the chain-id to embed in the transaction flags.",
+        "txflags = build_txflags_string(f\"{mgp['amount']}{mgp['denom']}\", chain_id)#step: 3 Tool: build_txflags_string Desciption: Construct a transaction flags string in the backend using the node configuration, for example: \"--gas=auto --gas-adjustment={gas_adjustment} --gas-prices={minimum_gas_price} --chain-id={chain_id} --node={rpc_endpoint}\", where gas_adjustment and rpc_endpoint are provided by configuration.",
+        "set_txflags_env(txflags)#step: 4 Tool: set_env_variable_TXFLAGS Desciption: In the shell environment used to run junod commands, set the TXFLAGS environment variable to the constructed string (for example, export TXFLAGS=\"--gas=auto --gas-adjustment=1.3 --gas-prices=0.025ujuno --chain-id=juno-1 --node=https://rpc.junonetwork.io\"). This should be done by the backend or deployment scripts, not in browser code.",
+        "test_junod_tx_with_txflags('mywallet', simulate_only=True)#step: 5 Tool: test_junod_tx_with_TXFLAGS Desciption: Execute a harmless junod transaction (for example, a low-value self-send or a dry-run simulate) using the $TXFLAGS variable appended to the command line to verify that gas settings are applied and the transaction is accepted by the node."
+    ],
+    "intent": "Set TXFLAGS environment variable with gas settings",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "lcd_get_minimum_gas_price",
+            "description": "From the backend, query the node configuration via GET https://lcd-archive.junonetwork.io/cosmos/base/node/v1beta1/config and read the minimum_gas_price field to determine an appropriate baseline gas price denomination and amount."
+        },
+        {
+            "step": 2,
+            "tool": "lcd_get_chain_id",
+            "description": "From the backend, query node information via GET https://lcd-archive.junonetwork.io/cosmos/base/tendermint/v1beta1/node_info and read the default_node_info.network field (or use blocks/latest header.chain_id) as the chain-id to embed in the transaction flags."
+        },
+        {
+            "step": 3,
+            "tool": "build_txflags_string",
+            "description": "Construct a transaction flags string in the backend using the node configuration, for example: \"--gas=auto --gas-adjustment={gas_adjustment} --gas-prices={minimum_gas_price} --chain-id={chain_id} --node={rpc_endpoint}\", where gas_adjustment and rpc_endpoint are provided by configuration."
+        },
+        {
+            "step": 4,
+            "tool": "set_env_variable_TXFLAGS",
+            "description": "In the shell environment used to run junod commands, set the TXFLAGS environment variable to the constructed string (for example, export TXFLAGS=\"--gas=auto --gas-adjustment=1.3 --gas-prices=0.025ujuno --chain-id=juno-1 --node=https://rpc.junonetwork.io\"). This should be done by the backend or deployment scripts, not in browser code."
+        },
+        {
+            "step": 5,
+            "tool": "test_junod_tx_with_TXFLAGS",
+            "description": "Execute a harmless junod transaction (for example, a low-value self-send or a dry-run simulate) using the $TXFLAGS variable appended to the command line to verify that gas settings are applied and the transaction is accepted by the node."
+        }
+    ],
+    "outcome_checks": [
+        "Echoing $TXFLAGS in the shell prints the expected gas, gas-adjustment, gas-prices, chain-id, and node values.",
+        "A junod transaction submitted with $TXFLAGS succeeds without gas-related errors and uses gas-prices that are at least equal to the node's minimum_gas_price.",
+        "Changes to gas settings in configuration (e.g. gas_adjustment) propagate to TXFLAGS when the backend re-runs the setup logic."
+    ]
+}

@@ -1,0 +1,120 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Checks that the supplied string is a valid Juno-prefix bech32 address and raises an error if it is not.",
+            "function": "validate_contract_address(contract_address)",
+            "usage": "validated_addr = validate_contract_address(\"juno1abcd...xyz\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Creates and returns a PaginationState object with the chosen page size, empty token list and no start_after pointer.",
+            "function": "initialize_pagination_state(page_limit)",
+            "usage": "state = initialize_pagination_state(page_limit=100)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Builds the JSON body for a CW721 all_tokens smart-query, optionally injecting the start_after value for subsequent pages.",
+            "function": "build_all_tokens_query_json(page_limit, start_after)",
+            "usage": "query_msg = build_all_tokens_query_json(100, start_after)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Serialises the query JSON to UTF-8 and base64-encodes it so it can be embedded in the LCD smart-query URL.",
+            "function": "encode_query_to_base64(query)",
+            "usage": "query_b64 = encode_query_to_base64(query_msg)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Performs the HTTP GET against the Juno LCD smart-contract endpoint using the base64 query and returns the raw JSON response.",
+            "function": "lcd_smart_query_all_tokens(contract_address, query_data_b64)",
+            "usage": "lcd_resp = await lcd_smart_query_all_tokens(validated_addr, query_b64)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Decodes the LCD response\u2019s data field from base64, parses the JSON and extracts the list of token IDs.",
+            "function": "decode_all_tokens_response(lcd_response)",
+            "usage": "page_tokens = decode_all_tokens_response(lcd_resp)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Iteratively queries every page, updating start_after until all tokens have been collected.",
+            "function": "fetch_all_cw721_token_ids(contract_address, page_limit)",
+            "usage": "all_tokens = await fetch_all_cw721_token_ids(validated_addr, page_limit=100)"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Exposes a FastAPI endpoint that returns the full aggregated list of token IDs obtained from the pagination helper.",
+            "function": "get_all_token_ids(contract_address, page_limit)",
+            "usage": "response_dict = await get_all_token_ids(contract_address=validated_addr, page_limit=100)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "validated_addr = validate_contract_address(\"juno1abcd...xyz\")#step: 1 Tool: validate_contract_address Desciption: Validate that CONTRACT_ADDRESS is a correct Juno bech32 address. If the format is invalid, return an error before querying.",
+        "state = initialize_pagination_state(page_limit=100)#step: 2 Tool: initialize_pagination_state Desciption: Choose a page size (e.g., PAGE_LIMIT = 100). Initialize an empty list to collect token IDs and a variable start_after = null to drive pagination through the CW721 all_tokens query.",
+        "query_msg = build_all_tokens_query_json(100, start_after)#step: 3 Tool: build_all_tokens_query_json Desciption: For the first page, construct the CW721 query JSON as {\"all_tokens\": {\"limit\": PAGE_LIMIT}}. For subsequent pages, include \"start_after\": \"<last_token_id_from_previous_page>\" inside the \"all_tokens\" object.",
+        "query_b64 = encode_query_to_base64(query_msg)#step: 4 Tool: encode_query_to_base64 Desciption: Serialize the all_tokens JSON to a UTF-8 string and base64-encode it to obtain QUERY_DATA_B64 suitable for the LCD smart contract endpoint.",
+        "lcd_resp = await lcd_smart_query_all_tokens(validated_addr, query_b64)#step: 5 Tool: lcd_smart_query_all_tokens Desciption: Perform an HTTP GET to \"https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/CONTRACT_ADDRESS/smart/QUERY_DATA_B64\". This calls the contract's smart query interface for the all_tokens query.",
+        "page_tokens = decode_all_tokens_response(lcd_resp)#step: 6 Tool: decode_response_data Desciption: From the LCD response, read the \"data\" field (base64-encoded), decode it from base64 to bytes, then parse as JSON. Extract the list of token IDs from the decoded object (typically under a field like \"tokens\"). Append them to the aggregated token ID list.",
+        "all_tokens = await fetch_all_cw721_token_ids(validated_addr, page_limit=100)#step: 7 Tool: handle_cw721_pagination Desciption: If the number of token IDs returned in this page equals PAGE_LIMIT, set start_after to the last token ID and repeat steps 3\u20136 to fetch the next page. If fewer than PAGE_LIMIT are returned, treat this as the final page and stop.",
+        "response_dict = await get_all_token_ids(contract_address=validated_addr, page_limit=100)#step: 8 Tool: return_all_token_ids Desciption: Return the complete aggregated list of token IDs from all pages as the all_tokens result."
+    ],
+    "intent": "Query the CW721 all_tokens list from a given NFT contract on Juno using CosmWasm smart queries.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_contract_address",
+            "description": "Validate that CONTRACT_ADDRESS is a correct Juno bech32 address. If the format is invalid, return an error before querying."
+        },
+        {
+            "step": 2,
+            "tool": "initialize_pagination_state",
+            "description": "Choose a page size (e.g., PAGE_LIMIT = 100). Initialize an empty list to collect token IDs and a variable start_after = null to drive pagination through the CW721 all_tokens query."
+        },
+        {
+            "step": 3,
+            "tool": "build_all_tokens_query_json",
+            "description": "For the first page, construct the CW721 query JSON as {\"all_tokens\": {\"limit\": PAGE_LIMIT}}. For subsequent pages, include \"start_after\": \"<last_token_id_from_previous_page>\" inside the \"all_tokens\" object."
+        },
+        {
+            "step": 4,
+            "tool": "encode_query_to_base64",
+            "description": "Serialize the all_tokens JSON to a UTF-8 string and base64-encode it to obtain QUERY_DATA_B64 suitable for the LCD smart contract endpoint."
+        },
+        {
+            "step": 5,
+            "tool": "lcd_smart_query_all_tokens",
+            "description": "Perform an HTTP GET to \"https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/CONTRACT_ADDRESS/smart/QUERY_DATA_B64\". This calls the contract's smart query interface for the all_tokens query."
+        },
+        {
+            "step": 6,
+            "tool": "decode_response_data",
+            "description": "From the LCD response, read the \"data\" field (base64-encoded), decode it from base64 to bytes, then parse as JSON. Extract the list of token IDs from the decoded object (typically under a field like \"tokens\"). Append them to the aggregated token ID list."
+        },
+        {
+            "step": 7,
+            "tool": "handle_cw721_pagination",
+            "description": "If the number of token IDs returned in this page equals PAGE_LIMIT, set start_after to the last token ID and repeat steps 3\u20136 to fetch the next page. If fewer than PAGE_LIMIT are returned, treat this as the final page and stop."
+        },
+        {
+            "step": 8,
+            "tool": "return_all_token_ids",
+            "description": "Return the complete aggregated list of token IDs from all pages as the all_tokens result."
+        }
+    ],
+    "outcome_checks": [
+        "Every smart query request to /cosmwasm/wasm/v1/contract/{address}/smart/{query_data} returns HTTP 200.",
+        "Each response's \"data\" field can be successfully base64-decoded and parsed as JSON.",
+        "At least one token ID is retrieved for contracts that are expected to hold NFTs; an empty list is returned cleanly for contracts with no tokens.",
+        "Pagination completes when a page returns fewer than PAGE_LIMIT tokens, and no token IDs are duplicated or omitted in the aggregated result."
+    ]
+}

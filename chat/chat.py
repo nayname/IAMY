@@ -71,7 +71,7 @@ async def to_recipe(query):
     tools_list = []
     with os.scandir("recipes/tools") as entries:
         for entry in entries:
-            if entry.is_file():  # Check if it's a file
+            if entry.is_file() and os.path.exists('recipes/actions/' + entry.name):  # Check if it's a file
                 with open(entry.path, 'r') as f:
                     found_undef = False
                     items = json.load(f)
@@ -84,6 +84,7 @@ async def to_recipe(query):
                             found_undef = True
                     if not found_undef:
                         tools_list.append(i)
+                    print(entry.name, found_undef)
 
     # f = open("generated/test", "a")
     # with open("generated/test", "w") as f:

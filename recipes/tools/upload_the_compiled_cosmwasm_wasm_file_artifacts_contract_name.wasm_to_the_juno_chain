@@ -1,0 +1,133 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Read the compiled wasm file from artifacts/ and verify it is a non-empty, valid WebAssembly binary.",
+            "function": "read_and_validate_wasm_artifact(contract_name, artifacts_dir=\"artifacts\")",
+            "usage": "wasm_bytes = read_and_validate_wasm_artifact(\"my_contract\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Compute the SHA-256 checksum of the local wasm bytes so it can later be compared with the on-chain hash.",
+            "function": "compute_wasm_checksum(wasm_bytes)",
+            "usage": "checksum = compute_wasm_checksum(wasm_bytes)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Query the Juno LCD for chain-id and the sender\u2019s account_number / sequence needed to build and sign the transaction.",
+            "function": "get_chain_and_account_info(address)",
+            "usage": "chain_info = await get_chain_and_account_info(sender_address)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Build an unsigned protobuf Tx that wraps a single MsgStoreCode with the sender address and raw wasm bytes.",
+            "function": "construct_store_code_tx(sender_address, wasm_bytes, gas_limit=2000000, fee_amount=\"500000\", fee_denom=\"ujuno\", memo=\"store wasm code\")",
+            "usage": "tx, _tx_b64 = construct_store_code_tx(sender_address, wasm_bytes)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Call the LCD /simulate endpoint to estimate gas, then update the Tx\u2019s gas_limit and fee based on the result.",
+            "function": "simulate_and_update_fee(tx, lcd_url=\"https://lcd-archive.junonetwork.io\", gas_adjustment=1.3, gas_price_ujuno=Decimal(\"0.075\"), fee_denom=\"ujuno\")",
+            "usage": "tx, gas_used, gas_limit = await simulate_and_update_fee(tx)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Sign the updated MsgStoreCode transaction using the local secp256k1 private key and produce base64 tx bytes.",
+            "function": "sign_store_code_tx(tx, chain_id, account_number, sequence, private_key_hex)",
+            "usage": "signed_tx_b64 = sign_store_code_tx(tx, chain_info.chain_id, chain_info.account_number, chain_info.sequence, PRIVATE_KEY_HEX)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Broadcast the signed transaction to the Juno LCD in BLOCK mode and capture the tx_response object.",
+            "function": "lcd_broadcast_tx(tx_bytes, mode=\"BROADCAST_MODE_BLOCK\")",
+            "usage": "tx_response = lcd_broadcast_tx(base64.b64decode(signed_tx_b64))"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Fetch the committed transaction by hash and parse its events to extract the newly assigned CosmWasm code_id.",
+            "function": "fetch_tx_and_extract_code_id(txhash)",
+            "usage": "code_id = await fetch_tx_and_extract_code_id(tx_response[\"txhash\"])"
+        },
+        {
+            "step": 9,
+            "label": "backend",
+            "introduction": "Query the chain for the stored code\u2019s data_hash and verify it matches the locally computed checksum.",
+            "function": "verify_uploaded_code_hash(code_id, checksum.digest)",
+            "usage": "await verify_uploaded_code_hash(code_id, checksum.digest)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "wasm_bytes = read_and_validate_wasm_artifact(\"my_contract\")#step: 1 Tool: bff_fs_read_and_validate_wasm_artifact Desciption: From the backend, read the file at artifacts/CONTRACT_NAME.wasm, ensure it exists, is non-empty, and is a valid wasm binary (e.g. magic bytes 0x00 0x61 0x73 0x6d). Fail fast if the file is missing or invalid.",
+        "checksum = compute_wasm_checksum(wasm_bytes)#step: 2 Tool: bff_compute_wasm_checksum Desciption: Compute a SHA-256 (or the chain-expected hash) of artifacts/CONTRACT_NAME.wasm and keep it in memory so it can later be compared against code_info.data_hash returned by the chain.",
+        "chain_info = await get_chain_and_account_info(sender_address)#step: 3 Tool: bff_get_chain_and_account_info Desciption: Given the user\u2019s Juno wallet address, query the LCD to fetch chain and account info: (a) GET https://lcd-archive.junonetwork.io/cosmos/base/tendermint/v1beta1/node_info to read the `network` (chain-id), (b) GET https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/{address} to obtain the account number and sequence. Cache these for tx construction.",
+        "tx, _tx_b64 = construct_store_code_tx(sender_address, wasm_bytes)#step: 4 Tool: bff_construct_store_code_tx Desciption: Construct a protobuf transaction that includes a single CosmWasm 'store code' message. Set tx.body.messages[0].type_url to the CosmWasm store-code message type for Juno (e.g. \"/cosmwasm.wasm.v1.MsgStoreCode\") and tx.body.messages[0].value to the serialized message containing: sender (the wallet bech32 address) and wasm_byte_code (the raw bytes of artifacts/CONTRACT_NAME.wasm). Set memo/timeout_height as needed and create an auth_info with placeholder gas_limit and a reasonable fee.",
+        "tx, gas_used, gas_limit = await simulate_and_update_fee(tx)#step: 5 Tool: lcd_simulate_tx Desciption: Simulate the unsigned store-code transaction to estimate gas. Serialize the tx to base64-encoded tx_bytes and POST it to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate with {\"tx_bytes\":\"...\"}. Read gas_info.gas_used from the response and update auth_info.fee.gas_limit to a safety margin (e.g. gas_used * 1.3) and set a suitable fee amount for the Juno fee denom.",
+        "signed_tx_b64 = sign_store_code_tx(tx, chain_info.chain_id, chain_info.account_number, chain_info.sequence, PRIVATE_KEY_HEX)#step: 6 Tool: bff_sign_store_code_tx Desciption: Re-serialize the tx with the updated gas_limit and fee, and sign it using the backend wallet/key management. Populate tx.auth_info.signer_infos and tx.signatures using the account number, sequence, chain-id, and private key.",
+        "tx_response = lcd_broadcast_tx(base64.b64decode(signed_tx_b64))#step: 7 Tool: lcd_broadcast_tx Desciption: Broadcast the signed transaction to Juno by POSTing to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs with {\"tx_bytes\":\"...\",\"mode\":\"BROADCAST_MODE_BLOCK\"}. Capture the returned tx_response.txhash and code.",
+        "code_id = await fetch_tx_and_extract_code_id(tx_response[\"txhash\"])#step: 8 Tool: lcd_fetch_tx_and_extract_code_id Desciption: If tx_response.code == 0, confirm inclusion and parse the emitted events for the stored code id. If necessary, GET https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs/{txhash} and scan tx_response.logs[].events for the CosmWasm store-code event, extracting the code_id attribute. Persist this code_id for later instantiation.",
+        "await verify_uploaded_code_hash(code_id, checksum.digest)#step: 9 Tool: lcd_verify_uploaded_code_hash Desciption: Call GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/code/{code_id}. From the returned code_info.data_hash, decode the base64 hash and verify it matches the locally computed checksum of artifacts/CONTRACT_NAME.wasm to ensure the uploaded code matches the artifact."
+    ],
+    "intent": "Upload the compiled CosmWasm wasm file artifacts/CONTRACT_NAME.wasm to the Juno chain",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "bff_fs_read_and_validate_wasm_artifact",
+            "description": "From the backend, read the file at artifacts/CONTRACT_NAME.wasm, ensure it exists, is non-empty, and is a valid wasm binary (e.g. magic bytes 0x00 0x61 0x73 0x6d). Fail fast if the file is missing or invalid."
+        },
+        {
+            "step": 2,
+            "tool": "bff_compute_wasm_checksum",
+            "description": "Compute a SHA-256 (or the chain-expected hash) of artifacts/CONTRACT_NAME.wasm and keep it in memory so it can later be compared against code_info.data_hash returned by the chain."
+        },
+        {
+            "step": 3,
+            "tool": "bff_get_chain_and_account_info",
+            "description": "Given the user\u2019s Juno wallet address, query the LCD to fetch chain and account info: (a) GET https://lcd-archive.junonetwork.io/cosmos/base/tendermint/v1beta1/node_info to read the `network` (chain-id), (b) GET https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/{address} to obtain the account number and sequence. Cache these for tx construction."
+        },
+        {
+            "step": 4,
+            "tool": "bff_construct_store_code_tx",
+            "description": "Construct a protobuf transaction that includes a single CosmWasm 'store code' message. Set tx.body.messages[0].type_url to the CosmWasm store-code message type for Juno (e.g. \"/cosmwasm.wasm.v1.MsgStoreCode\") and tx.body.messages[0].value to the serialized message containing: sender (the wallet bech32 address) and wasm_byte_code (the raw bytes of artifacts/CONTRACT_NAME.wasm). Set memo/timeout_height as needed and create an auth_info with placeholder gas_limit and a reasonable fee."
+        },
+        {
+            "step": 5,
+            "tool": "lcd_simulate_tx",
+            "description": "Simulate the unsigned store-code transaction to estimate gas. Serialize the tx to base64-encoded tx_bytes and POST it to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate with {\"tx_bytes\":\"...\"}. Read gas_info.gas_used from the response and update auth_info.fee.gas_limit to a safety margin (e.g. gas_used * 1.3) and set a suitable fee amount for the Juno fee denom."
+        },
+        {
+            "step": 6,
+            "tool": "bff_sign_store_code_tx",
+            "description": "Re-serialize the tx with the updated gas_limit and fee, and sign it using the backend wallet/key management. Populate tx.auth_info.signer_infos and tx.signatures using the account number, sequence, chain-id, and private key."
+        },
+        {
+            "step": 7,
+            "tool": "lcd_broadcast_tx",
+            "description": "Broadcast the signed transaction to Juno by POSTing to https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs with {\"tx_bytes\":\"...\",\"mode\":\"BROADCAST_MODE_BLOCK\"}. Capture the returned tx_response.txhash and code."
+        },
+        {
+            "step": 8,
+            "tool": "lcd_fetch_tx_and_extract_code_id",
+            "description": "If tx_response.code == 0, confirm inclusion and parse the emitted events for the stored code id. If necessary, GET https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs/{txhash} and scan tx_response.logs[].events for the CosmWasm store-code event, extracting the code_id attribute. Persist this code_id for later instantiation."
+        },
+        {
+            "step": 9,
+            "tool": "lcd_verify_uploaded_code_hash",
+            "description": "Call GET https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/code/{code_id}. From the returned code_info.data_hash, decode the base64 hash and verify it matches the locally computed checksum of artifacts/CONTRACT_NAME.wasm to ensure the uploaded code matches the artifact."
+        }
+    ],
+    "outcome_checks": [
+        "The broadcast response at /cosmos/tx/v1beta1/txs shows tx_response.code == 0 and a valid txhash.",
+        "The transaction logs contain a CosmWasm store-code event with a non-empty code_id.",
+        "GET /cosmwasm/wasm/v1/code/{code_id} returns code_info where creator matches the sender address.",
+        "code_info.data_hash (after decoding) matches the hash of artifacts/CONTRACT_NAME.wasm computed in the backend."
+    ]
+}

@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Verifies that the junod CLI is installed by invoking `junod version --long` and raising a clear error if it is missing.",
+            "function": "check_junod_installed()",
+            "usage": "info = check_junod_installed()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Configures junod to use the supplied RPC/LCD endpoint with `junod config node NODE_URL`.",
+            "function": "set_junod_node(node_url)",
+            "usage": "set_junod_node(\"http://localhost:26657\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Sets the default chain-id for junod to \"uni-6\" via `junod config chain-id uni-6`.",
+            "function": "set_junod_chain_id(chain_id='uni-6')",
+            "usage": "set_junod_chain_id('uni-6')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Optionally forces junod to emit JSON-formatted output using `junod config output json`.",
+            "function": "set_junod_output_json()",
+            "usage": "set_junod_output_json()"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Checks connectivity to the configured node with `junod status --node NODE_URL` and confirms the reported network equals \"uni-6\".",
+            "function": "test_junod_connectivity(node_url, expected_chain_id='uni-6')",
+            "usage": "test_junod_connectivity(\"http://localhost:26657\", expected_chain_id='uni-6')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "info = check_junod_installed()#step: 1 Tool: shell_check_junod_installed Desciption: Run `junod version --long` on the host system to ensure the junod binary is installed and accessible; abort with an explicit instruction if the command is not found.",
+        "set_junod_node(\"http://localhost:26657\")#step: 2 Tool: shell_set_junod_node Desciption: Execute `junod config node NODE_URL`, replacing NODE_URL with the provided RPC/LCD endpoint (for example, http://localhost:26657 or a remote RPC URL).",
+        "set_junod_chain_id('uni-6')#step: 3 Tool: shell_set_junod_chain_id Desciption: Execute `junod config chain-id uni-6` to set the chain-id for subsequent junod commands.",
+        "set_junod_output_json()#step: 4 Tool: shell_optional_output_format Desciption: Optionally run `junod config output json` to ensure future command output is machine-readable.",
+        "test_junod_connectivity(\"http://localhost:26657\", expected_chain_id='uni-6')#step: 5 Tool: shell_test_junod_connectivity Desciption: Run `junod status --node NODE_URL` and parse the JSON output to confirm that the CLI can reach NODE_URL and that the reported node_info.network (or chain_id equivalent) matches \"uni-6\"."
+    ],
+    "intent": "Configure the junod CLI to use node NODE_URL and chain-id uni-6",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "shell_check_junod_installed",
+            "description": "Run `junod version --long` on the host system to ensure the junod binary is installed and accessible; abort with an explicit instruction if the command is not found."
+        },
+        {
+            "step": 2,
+            "tool": "shell_set_junod_node",
+            "description": "Execute `junod config node NODE_URL`, replacing NODE_URL with the provided RPC/LCD endpoint (for example, http://localhost:26657 or a remote RPC URL)."
+        },
+        {
+            "step": 3,
+            "tool": "shell_set_junod_chain_id",
+            "description": "Execute `junod config chain-id uni-6` to set the chain-id for subsequent junod commands."
+        },
+        {
+            "step": 4,
+            "tool": "shell_optional_output_format",
+            "description": "Optionally run `junod config output json` to ensure future command output is machine-readable."
+        },
+        {
+            "step": 5,
+            "tool": "shell_test_junod_connectivity",
+            "description": "Run `junod status --node NODE_URL` and parse the JSON output to confirm that the CLI can reach NODE_URL and that the reported node_info.network (or chain_id equivalent) matches \"uni-6\"."
+        }
+    ],
+    "outcome_checks": [
+        "`junod version --long` runs successfully and prints version information.",
+        "`junod status --node NODE_URL` returns without error and its network/chain_id field equals \"uni-6\".",
+        "Subsequent junod queries (e.g., `junod query bank total`) succeed without node/chain-id configuration errors."
+    ]
+}

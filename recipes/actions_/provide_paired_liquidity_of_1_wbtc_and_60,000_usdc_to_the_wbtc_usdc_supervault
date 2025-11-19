@@ -1,80 +1,40 @@
 {
-    "tools": [
-        {
-            "step": 1,
-            "label": "frontend",
-            "introduction": "Connects to the browser wallet, enabling Neutron and returning both the signer object and the provider\u2019s bech32 address.",
-            "function": "getOfflineSignerAndAddress(chainId = 'neutron-1')",
-            "usage": "const { address, signer } = await getOfflineSignerAndAddress();"
-        },
-        {
-            "step": 2,
-            "label": "backend",
-            "introduction": "Checks that the chosen address holds at least 1 WBTC and 60 000 USDC on Neutron, returning a sufficiency report.",
-            "function": "check_token_balance(address, wbtc_needed = 1, usdc_needed = 60000)",
-            "usage": "const balanceCheck = await check_token_balance(address, 1, 60000);"
-        },
-        {
-            "step": 3,
-            "label": "backend",
-            "introduction": "Retrieves the WBTC/USDC Supervault contract address together with its accepted token denoms.",
-            "function": "query_supervault_details()",
-            "usage": "const vaultInfo = await query_supervault_details();"
-        },
-        {
-            "step": 4,
-            "label": "backend",
-            "introduction": "Creates an unsigned CosmWasm deposit transaction for exactly 1 WBTC and 60 000 USDC targeting the Supervault contract.",
-            "function": "construct_supervault_deposit_tx(req)",
-            "usage": "const unsignedTx = construct_supervault_deposit_tx({ address, wbtc_amount: 100000000, usdc_amount: 60000000000 });"
-        },
-        {
-            "step": 5,
-            "label": "frontend",
-            "introduction": "Uses the user\u2019s wallet to sign the prepared transaction and broadcasts it to the Neutron network.",
-            "function": "signAndBroadcast(signer, senderAddress, messages, fee, memo = '')",
-            "usage": "const txHash = await signAndBroadcast(signer, address, [unsignedTx], 'auto');"
-        }
-    ],
-    "frontend": [
-        "const { address, signer } = await getOfflineSignerAndAddress();//step: 1 Tool: get_sender_address Desciption: Determine which wallet the user wants to use as the liquidity provider.",
-        "const txHash = await signAndBroadcast(signer, address, [unsignedTx], 'auto');//step: 5 Tool: sign_and_broadcast_tx Desciption: Sign the deposit transaction with the user\u2019s wallet and broadcast it to the Neutron network."
-    ],
-    "backend": [
-        "const balanceCheck = await check_token_balance(address, 1, 60000);#step: 2 Tool: check_token_balance Desciption: Verify the wallet holds at least 1 WBTC and 60,000 USDC on Neutron. If balances are insufficient, prompt the user to bridge or swap for the required tokens first.",
-        "const vaultInfo = await query_supervault_details();#step: 3 Tool: query_supervault_details Desciption: Fetch the contract address (or vault ID) and required token denominations for the WBTC/USDC Supervault to ensure the tokens match the vault\u2019s configuration.",
-        "const unsignedTx = construct_supervault_deposit_tx({ address, wbtc_amount: 100000000, usdc_amount: 60000000000 });#step: 4 Tool: construct_supervault_deposit_tx Desciption: Build the deposit transaction containing (1 WBTC, 60,000 USDC) as a dual-asset liquidity add, referencing the Supervault contract from step 3."
-    ],
-    "intent": "Provide paired liquidity of 1 WBTC and 60,000 USDC to the WBTC/USDC Supervault",
+    "label": "execute",
     "workflow": [
         {
             "step": 1,
-            "tool": "get_sender_address",
-            "description": "Determine which wallet the user wants to use as the liquidity provider."
+            "label": "frontend",
+            "introduction": "Connects to the user\u2019s Keplr wallet and returns the Neutron address that will act as the liquidity provider.",
+            "code": "export const getSenderAddress = async () => {\n  const chainId = 'neutron-1';\n\n  // Check that Keplr is installed\n  if (!window.keplr) {\n    throw new Error('Keplr wallet is not installed.');\n  }\n\n  // Ask Keplr to enable the chain\n  await window.keplr.enable(chainId);\n\n  // Get an OfflineSigner to access the user\u2019s account(s)\n  const offlineSigner = window.getOfflineSigner(chainId);\n  const accounts = await offlineSigner.getAccounts();\n\n  if (!accounts || accounts.length === 0) {\n    throw new Error('No accounts found in the connected wallet.');\n  }\n\n  // Return the first account (default behaviour for most dApps)\n  return accounts[0].address;\n};",
+            "usage": "const lpAddress = await getSenderAddress();"
         },
         {
             "step": 2,
-            "tool": "check_token_balance",
-            "description": "Verify the wallet holds at least 1 WBTC and 60,000 USDC on Neutron. If balances are insufficient, prompt the user to bridge or swap for the required tokens first."
+            "label": "backend",
+            "introduction": "FastAPI endpoint that verifies the wallet holds at least 1 WBTC and 60 000 USDC on Neutron. Returns the raw balances and a boolean flag indicating sufficiency.",
+            "code": "from fastapi import FastAPI, HTTPException\nimport httpx\n\napp = FastAPI()\n\n# --- Constants -------------------------------------------------------------\nREST_ENDPOINT = \"https://rest.neutron.org\"  # Replace with a trusted REST endpoint\nWBTC_DENOM   = \"ibc/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"  # \u2190 real IBC denom for WBTC\nUSDC_DENOM   = \"uusdc\"  # \u2190 real denom for native USDC on Neutron\n\n# --- Helpers ---------------------------------------------------------------\nasync def _fetch_balance(address: str, denom: str) -> int:\n    \"\"\"Query /cosmos/bank/v1beta1/balances/{address}/{denom}\"\"\"\n    url = f\"{REST_ENDPOINT}/cosmos/bank/v1beta1/balances/{address}/{denom}\"\n    async with httpx.AsyncClient(timeout=10) as client:\n        resp = await client.get(url)\n    if resp.status_code != 200:\n        raise HTTPException(status_code=resp.status_code, detail=\"Bank API error\")\n    amount = int(resp.json().get(\"balance\", {}).get(\"amount\", 0))\n    return amount\n\n# --- Route -----------------------------------------------------------------\n@app.get(\"/api/check-balance\")\nasync def check_token_balance(address: str, wbtc_needed: int = 1, usdc_needed: int = 60000):\n    \"\"\"Verify that the provided address owns \u2265 required WBTC & USDC.\"\"\"\n    wbtc_balance = await _fetch_balance(address, WBTC_DENOM)\n    usdc_balance = await _fetch_balance(address, USDC_DENOM)\n\n    sufficient = (wbtc_balance >= wbtc_needed) and (usdc_balance >= usdc_needed)\n\n    return {\n        \"address\": address,\n        \"wbtc_balance\": wbtc_balance,\n        \"usdc_balance\": usdc_balance,\n        \"sufficient\": sufficient\n    }",
+            "usage": "fetch(`/api/check-balance?address=${lpAddress}`)\n  .then(r => r.json())\n  .then(console.log);"
         },
         {
             "step": 3,
-            "tool": "query_supervault_details",
-            "description": "Fetch the contract address (or vault ID) and required token denominations for the WBTC/USDC Supervault to ensure the tokens match the vault\u2019s configuration."
+            "label": "backend",
+            "introduction": "Returns the WBTC/USDC Supervault contract address and its accepted token denominations. In a real system this might come from on-chain contract storage or a configuration DB; here it\u2019s read from environment variables for simplicity.",
+            "code": "import os\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\nSUPER_VAULT_CONTRACT_ADDRESS = os.getenv(\"SUPER_VAULT_CONTRACT_ADDRESS\", \"neutron1vaultxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\")\nWBTC_DENOM = os.getenv(\"WBTC_DENOM\", \"ibc/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\")\nUSDC_DENOM = os.getenv(\"USDC_DENOM\", \"uusdc\")\n\n@app.get(\"/api/supervault-details\")\nasync def query_supervault_details():\n    return {\n        \"contract_address\": SUPER_VAULT_CONTRACT_ADDRESS,\n        \"tokens\": [\n            {\"denom\": WBTC_DENOM, \"symbol\": \"WBTC\"},\n            {\"denom\": USDC_DENOM, \"symbol\": \"USDC\"}\n        ]\n    }",
+            "usage": "const superVault = await (await fetch('/api/supervault-details')).json();"
         },
         {
             "step": 4,
-            "tool": "construct_supervault_deposit_tx",
-            "description": "Build the deposit transaction containing (1 WBTC, 60,000 USDC) as a dual-asset liquidity add, referencing the Supervault contract from step 3."
+            "label": "backend",
+            "introduction": "Builds (but does not sign) a MsgExecuteContract that deposits 1 WBTC + 60 000 USDC into the Supervault. Returns the unsigned transaction bytes (base64) and the estimated gas so the next step can sign & broadcast.",
+            "code": "import os, base64\nfrom fastapi import FastAPI, HTTPException, Body\nfrom pydantic import BaseModel\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.tx import Transaction\n\napp = FastAPI()\n\n# -------- Configuration ----------------------------------------------------\nRPC_ENDPOINT = os.getenv(\"NEUTRON_RPC\", \"https://rpc.neutron.org\")\nCHAIN_ID     = os.getenv(\"NEUTRON_CHAIN_ID\", \"neutron-1\")\nnetwork_cfg  = NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT)\nledger       = LedgerClient(network_cfg)\nSUPER_VAULT_CONTRACT = os.getenv(\"SUPER_VAULT_CONTRACT_ADDRESS\", \"neutron1vaultxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\")\nWBTC_DENOM = os.getenv(\"WBTC_DENOM\", \"ibc/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\")\nUSDC_DENOM = os.getenv(\"USDC_DENOM\", \"uusdc\")\n\n# -------- Request model ----------------------------------------------------\nclass ConstructTxRequest(BaseModel):\n    address: str           # Liquidity provider address (sender)\n    wbtc_amount: int       # 1 WBTC  (use the correct micro-denom units)\n    usdc_amount: int       # 60 000 USDC in micro-denom units\n\n# -------- Route ------------------------------------------------------------\n@app.post(\"/api/construct-deposit-tx\")\nasync def construct_supervault_deposit_tx(req: ConstructTxRequest = Body(...)):\n    # 1. Compose execute message expected by Supervault contract\n    exec_msg = {\n        \"deposit\": {\n            \"assets\": [\n                {\n                    \"info\": {\"native_token\": {\"denom\": WBTC_DENOM}},\n                    \"amount\": str(req.wbtc_amount)\n                },\n                {\n                    \"info\": {\"native_token\": {\"denom\": USDC_DENOM}},\n                    \"amount\": str(req.usdc_amount)\n                }\n            ]\n        }\n    }\n\n    # 2. Create Tx object\n    tx = Transaction()\n    tx.add_message(\n        ledger.execute_contract(\n            sender=req.address,\n            contract_address=SUPER_VAULT_CONTRACT,\n            msg=exec_msg,\n            funds=[]  # Contract pulls tokens from user\u2019s balance; no explicit Coin[] required\n        )\n    )\n\n    # 3. Gas estimate (rough \u2013 add a safety buffer client-side if needed)\n    gas_estimate = ledger.estimate_gas(tx)\n    tx.set_gas(gas_estimate)\n\n    # 4. Return unsigned tx bytes for the next step\n    unsigned_bytes = tx.serialize()\n    return {\n        \"tx_base64\": base64.b64encode(unsigned_bytes).decode(),\n        \"gas_estimate\": gas_estimate\n    }",
+            "usage": "const buildRes = await fetch('/api/construct-deposit-tx', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({\n    address: lpAddress,\n    wbtc_amount: 1_000_000,   // example: 1 WBTC = 1,000,000 micro-WBTC\n    usdc_amount: 60_000_000   // example: 60,000 USDC = 60,000,000 micro-USDC\n  })\n}).then(r => r.json());"
         },
         {
             "step": 5,
-            "tool": "sign_and_broadcast_tx",
-            "description": "Sign the deposit transaction with the user\u2019s wallet and broadcast it to the Neutron network."
+            "label": "backend",
+            "introduction": "Signs the unsigned Supervault deposit transaction with a backend-managed mnemonic (\u2757 demo-only) and broadcasts it to the Neutron network. Returns the resulting transaction hash.",
+            "code": "import os, base64\nfrom fastapi import FastAPI, HTTPException, Body\nfrom pydantic import BaseModel\nfrom cosmpy.aerial.client import LedgerClient, NetworkConfig\nfrom cosmpy.aerial.wallet import LocalWallet\nfrom cosmpy.aerial.tx import Transaction\n\napp = FastAPI()\n\n# --- Ledger ----------------------------------------------------------------\nRPC_ENDPOINT = os.getenv(\"NEUTRON_RPC\", \"https://rpc.neutron.org\")\nCHAIN_ID     = os.getenv(\"NEUTRON_CHAIN_ID\", \"neutron-1\")\nledger       = LedgerClient(NetworkConfig(chain_id=CHAIN_ID, url=RPC_ENDPOINT))\n\n# --- Security warning ------------------------------------------------------\n# Keeping private keys on a server is NOT recommended for production.\n# Instead, sign on the client or use an HSM/KMS solution.\nMNEMONIC = os.getenv(\"LP_MNEMONIC\")\nif MNEMONIC is None:\n    raise RuntimeError(\"LP_MNEMONIC environment variable must be set for backend signing demo.\")\n\nwallet = LocalWallet.from_mnemonic(MNEMONIC)\n\n# --- Request model ---------------------------------------------------------\nclass SignBroadcastRequest(BaseModel):\n    tx_base64: str\n\n# --- Route -----------------------------------------------------------------\n@app.post(\"/api/sign-and-broadcast\")\nasync def sign_and_broadcast_tx(req: SignBroadcastRequest = Body(...)):\n    try:\n        # 1. Deserialize unsigned transaction\n        unsigned_bytes = base64.b64decode(req.tx_base64)\n        tx = Transaction.deserialize(unsigned_bytes)\n\n        # 2. Sign with backend wallet\n        tx.sign(wallet)\n\n        # 3. Broadcast (waitUntil=\"sync\")\n        result = ledger.broadcast_block(tx)\n\n        if result.is_tx_error():\n            raise HTTPException(status_code=400, detail=f\"Tx failed: {result.raw_log}\")\n\n        return {\"txhash\": result.tx_hash}\n\n    except Exception as e:\n        raise HTTPException(status_code=500, detail=str(e))",
+            "usage": "const broadcastRes = await fetch('/api/sign-and-broadcast', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ tx_base64: buildRes.tx_base64 })\n}).then(r => r.json());\nconsole.log('Broadcast result:', broadcastRes);"
         }
-    ],
-    "outcome_checks": [
-        "Confirm the transaction hash was included in a finalized block.",
-        "Query the Supervault to verify that new LP shares were minted to the sender\u2019s address and correspond to the supplied amounts."
     ]
 }

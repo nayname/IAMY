@@ -3,38 +3,65 @@
         {
             "step": 1,
             "label": "backend",
-            "introduction": "Compiles a CosmWasm contract (running the optimisation step) and returns the path to the produced .wasm binary.",
-            "function": "compile_wasm_contract(contract_dir)",
-            "usage": "optimized_wasm = compile_wasm_contract(\"./contracts/counter\")"
+            "introduction": "detect_workspace_root() walks upward from a starting directory until it finds a Cargo.toml that defines a [workspace] section, returning that directory as the workspace root.",
+            "function": "detect_workspace_root(start_dir=None)",
+            "usage": "root_info = detect_workspace_root()"
         },
         {
             "step": 2,
             "label": "backend",
-            "introduction": "Verifies that a generated .wasm file exists and is within the permitted size limit.",
-            "function": "ensure_wasm_file(path)",
-            "usage": "ensure_wasm_file(\"./artifacts/counter.optimized.wasm\")"
+            "introduction": "list_workspace_members() parses the workspace\u2019s Cargo.toml and validates each member contract, returning lists of valid and invalid members.",
+            "function": "list_workspace_members(workspace_root=None)",
+            "usage": "members_info = list_workspace_members('/path/to/workspace')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "run_workspace_optimizer() invokes the CosmWasm workspace-optimizer Docker image against the workspace root to build all member contracts.",
+            "function": "run_workspace_optimizer(workspace_root=None, optimizer_image='cosmwasm/workspace-optimizer:0.13.0', timeout=1800)",
+            "usage": "opt_result = run_workspace_optimizer('/path/to/workspace')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "collect_and_verify_wasm_outputs() scans the artifacts directory for each workspace member, checks that the produced .wasm files exist and are valid, and reports successes or failures.",
+            "function": "collect_and_verify_wasm_outputs(workspace_root=None, members=None, artifacts_dir_name='artifacts')",
+            "usage": "verification = collect_and_verify_wasm_outputs('/path/to/workspace', members=members_info['valid_members'])"
         }
     ],
     "frontend": [],
     "backend": [
-        "optimized_wasm = compile_wasm_contract(\"./contracts/counter\")#step: 1 Tool: docker_run_workspace_optimizer Desciption: Execute `docker run --rm -it -v $(pwd):/code --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/workspace-optimizer:0.12.11` at the repository root.",
-        "ensure_wasm_file(\"./artifacts/counter.optimized.wasm\")#step: 2 Tool: verify_workspace_artifacts Desciption: Check that ./artifacts now contains a .wasm file for each contract in the Cargo workspace."
+        "root_info = detect_workspace_root()#step: 1 Tool: bff_detect_workspace_root Desciption: From the backend, locate the Cargo workspace root (directory containing a Cargo.toml with a [workspace] section) so that all member contracts can be built together.",
+        "members_info = list_workspace_members('/path/to/workspace')#step: 2 Tool: bff_list_workspace_members Desciption: Parse the workspace Cargo.toml to list all member contract packages that should be compiled. Validate that each member has its own Cargo.toml and is a valid CosmWasm contract (contains appropriate crate-type settings).",
+        "opt_result = run_workspace_optimizer('/path/to/workspace')#step: 3 Tool: bff_run_workspace_optimizer Desciption: Run the CosmWasm workspace-optimizer in the backend (e.g. using the official workspace-optimizer Docker image or equivalent tooling). Mount the workspace root and build all member contracts, producing optimized artifacts typically under artifacts/CONTRACT_NAME.wasm for each member.",
+        "verification = collect_and_verify_wasm_outputs('/path/to/workspace', members=members_info['valid_members'])#step: 4 Tool: bff_collect_and_verify_wasm_outputs Desciption: For each workspace member, confirm that a corresponding wasm artifact exists in the artifacts/ directory (e.g. artifacts/MEMBER_NAME.wasm), is non-empty, and passes basic wasm validation. Aggregate the list of successfully built contract artifacts and surface any failed ones."
     ],
     "intent": "Compile all workspace contracts with workspace-optimizer",
     "workflow": [
         {
             "step": 1,
-            "tool": "docker_run_workspace_optimizer",
-            "description": "Execute `docker run --rm -it -v $(pwd):/code --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry cosmwasm/workspace-optimizer:0.12.11` at the repository root."
+            "tool": "bff_detect_workspace_root",
+            "description": "From the backend, locate the Cargo workspace root (directory containing a Cargo.toml with a [workspace] section) so that all member contracts can be built together."
         },
         {
             "step": 2,
-            "tool": "verify_workspace_artifacts",
-            "description": "Check that ./artifacts now contains a .wasm file for each contract in the Cargo workspace."
+            "tool": "bff_list_workspace_members",
+            "description": "Parse the workspace Cargo.toml to list all member contract packages that should be compiled. Validate that each member has its own Cargo.toml and is a valid CosmWasm contract (contains appropriate crate-type settings)."
+        },
+        {
+            "step": 3,
+            "tool": "bff_run_workspace_optimizer",
+            "description": "Run the CosmWasm workspace-optimizer in the backend (e.g. using the official workspace-optimizer Docker image or equivalent tooling). Mount the workspace root and build all member contracts, producing optimized artifacts typically under artifacts/CONTRACT_NAME.wasm for each member."
+        },
+        {
+            "step": 4,
+            "tool": "bff_collect_and_verify_wasm_outputs",
+            "description": "For each workspace member, confirm that a corresponding wasm artifact exists in the artifacts/ directory (e.g. artifacts/MEMBER_NAME.wasm), is non-empty, and passes basic wasm validation. Aggregate the list of successfully built contract artifacts and surface any failed ones."
         }
     ],
     "outcome_checks": [
-        "No build errors reported by workspace-optimizer.",
-        "A .wasm artifact is produced for every Cargo.toml member and each file size is > 0 bytes."
+        "The workspace-optimizer process completes with a zero exit code and without compilation errors.",
+        "Each workspace member contract has a corresponding optimized wasm artifact in the artifacts/ directory with non-zero size.",
+        "Optional wasm validation checks pass for all produced artifacts, confirming they are valid CosmWasm binaries ready for upload to Juno."
     ]
 }

@@ -1,80 +1,40 @@
 {
-    "tools": [
-        {
-            "step": 1,
-            "label": "frontend",
-            "introduction": "getUserAddress connects to the Keplr (or Leap) wallet, enables the Neutron chain, and returns the user\u2019s address (and signer).",
-            "function": "getUserAddress(chainId = 'neutron-1')",
-            "usage": "const { address } = await getUserAddress();"
-        },
-        {
-            "step": 2,
-            "label": "backend",
-            "introduction": "query_position_status queries Amber\u2019s smart-contract for the caller\u2019s current position data (ID, collateral, debt, etc.).",
-            "function": "query_position_status(address: str)",
-            "usage": "position_info = await query_position_status(user_address)"
-        },
-        {
-            "step": 3,
-            "label": "backend",
-            "introduction": "close_position_sign_doc builds a close-position MsgExecuteContract and returns a base-64 encoded SignDoc ready for wallet signing.",
-            "function": "close_position_sign_doc(req)",
-            "usage": "sign_doc_payload = await close_position_sign_doc({ address: user_address, position_id: pos.id, gas_limit: 250000, fee_amount: '5000', fee_denom: 'untrn', chain_id: 'neutron-1' });"
-        },
-        {
-            "step": 4,
-            "label": "frontend",
-            "introduction": "signAndBroadcastClosePosition gets the SignDoc signed by Keplr and relays the signed bytes to the backend for broadcasting.",
-            "function": "signAndBroadcastClosePosition({ chainId, signDocBase64, backendBroadcastUrl })",
-            "usage": "const txResult = await signAndBroadcastClosePosition({ chainId: 'neutron-1', signDocBase64: sign_doc_payload.sign_doc });"
-        },
-        {
-            "step": 5,
-            "label": "backend",
-            "introduction": "query_position_status is called again to verify that the position is now closed (zero debt / no active position).",
-            "function": "query_position_status(address: str)",
-            "usage": "const confirmation = await query_position_status(user_address);"
-        }
-    ],
-    "frontend": [
-        "const { address } = await getUserAddress();//step: 1 Tool: get_user_address Desciption: Identify the wallet that owns the Amber position.",
-        "const txResult = await signAndBroadcastClosePosition({ chainId: 'neutron-1', signDocBase64: sign_doc_payload.sign_doc });//step: 4 Tool: sign_and_broadcast_tx Desciption: Sign the close-position transaction and broadcast it."
-    ],
-    "backend": [
-        "position_info = await query_position_status(user_address)#step: 2 Tool: query_position_status Desciption: Retrieve the active position ID, outstanding debt, and collateral details.",
-        "sign_doc_payload = await close_position_sign_doc({ address: user_address, position_id: pos.id, gas_limit: 250000, fee_amount: '5000', fee_denom: 'untrn', chain_id: 'neutron-1' });#step: 3 Tool: construct_close_position_msg Desciption: Build an Amber `close_position` execute message (or `repay_and_withdraw`) targeting the retrieved position ID.",
-        "const confirmation = await query_position_status(user_address);#step: 5 Tool: query_position_status Desciption: Re-query Amber to confirm the position no longer exists (or shows zero debt)."
-    ],
-    "intent": "Close my leveraged loop position on Amber",
+    "label": "execute",
     "workflow": [
         {
             "step": 1,
-            "tool": "get_user_address",
-            "description": "Identify the wallet that owns the Amber position."
+            "label": "frontend",
+            "introduction": "Step 1 gets the connected wallet\u2019s Neutron address from Keplr.",
+            "code": "export const getUserAddress = async (chainId = 'neutron-1') => {\n  try {\n    // Make sure Keplr is installed\n    if (!window.keplr) {\n      throw new Error('Keplr wallet is not installed.');\n    }\n\n    // Ask Keplr to enable the selected chain\n    await window.keplr.enable(chainId);\n\n    // Obtain the OfflineSigner and read the account\n    const offlineSigner = window.getOfflineSigner(chainId);\n    const accounts = await offlineSigner.getAccounts();\n\n    if (!accounts || accounts.length === 0) {\n      throw new Error('No account found in Keplr.');\n    }\n\n    return accounts[0].address; // <- Neutron bech32 address\n  } catch (err) {\n    console.error('[getUserAddress] error:', err);\n    throw err;\n  }\n};",
+            "usage": "const address = await getUserAddress('neutron-1');"
         },
         {
             "step": 2,
-            "tool": "query_position_status",
-            "description": "Retrieve the active position ID, outstanding debt, and collateral details."
+            "label": "backend",
+            "introduction": "Step 2 exposes an endpoint that queries the Amber contract for the caller\u2019s open position.",
+            "code": "# File: backend/routes/amber.py\nimport os\nimport json\nfrom fastapi import APIRouter, HTTPException\nfrom cosmpy.aio.client import LedgerClient\n\nrouter = APIRouter()\n\nRPC_ENDPOINT = os.getenv(\"RPC_ENDPOINT\", \"https://rpc-palvus.neutron-1.neutron.org\")\nAMBER_CONTRACT = os.getenv(\"AMBER_CONTRACT\", \"neutron1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\")\n\n@router.get(\"/api/amber/position_status/{address}\")\nasync def query_position_status(address: str):\n    \"\"\"Returns the address\u2019 Amber position (if any).\"\"\"\n    try:\n        async with LedgerClient(RPC_ENDPOINT) as client:\n            query_msg = {\"position_status\": {\"address\": address}}\n            # Amber is a CosmWasm contract; `wasm_query` expects bytes\n            result = await client.wasm_query(\n                AMBER_CONTRACT,\n                json.dumps(query_msg).encode()\n            )\n            return result\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=f\"Position query failed: {exc}\")",
+            "usage": "const pos = await fetch(`/api/amber/position_status/${address}`).then(res => res.json());"
         },
         {
             "step": 3,
-            "tool": "construct_close_position_msg",
-            "description": "Build an Amber `close_position` execute message (or `repay_and_withdraw`) targeting the retrieved position ID."
+            "label": "backend",
+            "introduction": "Step 3 builds a `close_position` execute message and returns a base-64 SignDoc that the frontend can sign with Keplr.",
+            "code": "# File: backend/routes/amber.py (continued)\nimport base64\nfrom typing import Optional\nfrom pydantic import BaseModel\nfrom cosmpy.aio.tx import Transaction\nfrom cosmpy.aio.msg import MsgExecuteContract\n\nclass ClosePosRequest(BaseModel):\n    address: str\n    position_id: int\n    chain_id: str = \"neutron-1\"\n    gas_limit: Optional[int] = 200000\n    fee_amount: Optional[str] = \"200000\"  # in micro-denom (untrn)\n    fee_denom: Optional[str] = \"untrn\"\n\n@router.post(\"/api/amber/close_position_sign_doc\")\nasync def close_position_sign_doc(req: ClosePosRequest):\n    \"\"\"Returns `sign_doc`, `body_bytes`, and `auth_info_bytes` (all base-64) for Keplr\u2019s signDirect.\"\"\"\n    try:\n        async with LedgerClient(RPC_ENDPOINT) as client:\n            # Look-up account info (account number & sequence)\n            acct = await client.query_auth_account(req.address)\n            acct = acct[\"base_account\"] if \"base_account\" in acct else acct\n            account_number = int(acct[\"account_number\"])\n            sequence       = int(acct[\"sequence\"])\n\n            # Build the execute message\n            close_msg = {\"close_position\": {\"id\": req.position_id}}\n            exec_msg  = MsgExecuteContract(\n                sender   = req.address,\n                contract = AMBER_CONTRACT,\n                msg      = close_msg,\n                funds    = []\n            )\n\n            # Prepare the Tx\n            tx = Transaction()\n            tx.add_message(exec_msg)\n            tx.with_gas(req.gas_limit)\n            tx.with_fee(req.fee_amount, req.fee_denom)\n            tx.with_chain_id(req.chain_id)\n            tx.with_memo(\"close Amber position\")\n\n            sign_doc = tx.get_sign_doc(account_number, sequence)\n\n            return {\n                \"sign_doc\":        base64.b64encode(sign_doc.SerializeToString()).decode(),\n                \"body_bytes\":      base64.b64encode(tx.body.SerializeToString()).decode(),\n                \"auth_info_bytes\": base64.b64encode(tx.auth_info.SerializeToString()).decode()\n            }\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=f\"Failed to build sign-doc: {exc}\")",
+            "usage": "const signDocPayload = await fetch('/api/amber/close_position_sign_doc', {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/json' },\n  body: JSON.stringify({ address, position_id: pos.id })\n}).then(r => r.json());"
         },
         {
             "step": 4,
-            "tool": "sign_and_broadcast_tx",
-            "description": "Sign the close-position transaction and broadcast it."
+            "label": "frontend",
+            "introduction": "Step 4 asks Keplr to sign the SignDoc, then calls the backend to broadcast the signed transaction.",
+            "code": "// File: src/utils/amber.js\nimport { getUserAddress } from './wallet';\n\n// Helper \u2014 base64 \u2192 Uint8Array\nconst b64ToUint8 = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));\n\nexport const signAndBroadcastClosePosition = async ({\n  chainId           = 'neutron-1',\n  signDocBase64,               // from step 3\n  backendBroadcastUrl = '/api/amber/broadcast_signed_tx'\n}) => {\n  try {\n    const address     = await getUserAddress(chainId);\n    const signDocBytes = b64ToUint8(signDocBase64);\n\n    // Keplr \u2014 sign the SignDoc using signDirect\n    const { signed, signature } = await window.keplr.signDirect(\n      chainId,\n      address,\n      { typeUrl: '/cosmos.tx.v1beta1.SignDoc', value: signDocBytes }\n    );\n\n    // Convert binary blobs \u2192 base64 so they can be sent over HTTP\n    const bodyB64       = btoa(String.fromCharCode(...signed.bodyBytes));\n    const authInfoB64   = btoa(String.fromCharCode(...signed.authInfoBytes));\n    const sigB64        = btoa(String.fromCharCode(...signature.signature));\n\n    const res = await fetch(backendBroadcastUrl, {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({\n        body_bytes: bodyB64,\n        auth_info_bytes: authInfoB64,\n        signatures: [sigB64]\n      })\n    });\n\n    if (!res.ok) {\n      const err = await res.json();\n      throw new Error(err.detail || 'Broadcast failed');\n    }\n\n    return await res.json(); // { txhash, height, ... }\n  } catch (err) {\n    console.error('[signAndBroadcastClosePosition] error:', err);\n    throw err;\n  }\n};",
+            "usage": "const txResult = await signAndBroadcastClosePosition({\n  chainId: 'neutron-1',\n  signDocBase64: signDocPayload.sign_doc\n});"
         },
         {
             "step": 5,
-            "tool": "query_position_status",
-            "description": "Re-query Amber to confirm the position no longer exists (or shows zero debt)."
+            "label": "backend",
+            "introduction": "Step 5 re-queries the Amber contract to confirm that the position is fully closed.",
+            "code": "# File: backend/routes/amber.py (continued)\n@router.get(\"/api/amber/position_status_confirm/{address}\")\nasync def confirm_position_closed(address: str):\n    \"\"\"Returns `{closed: true}` once the address has no outstanding debt.\"\"\"\n    try:\n        data = await query_position_status(address)\n        debt = data.get(\"position\", {}).get(\"debt\", 0)\n        return {\"closed\": int(debt) == 0, \"raw\": data}\n    except Exception as exc:\n        raise HTTPException(status_code=500, detail=f\"Confirmation failed: {exc}\")",
+            "usage": "const isClosed = await fetch(`/api/amber/position_status_confirm/${address}`).then(r => r.json());"
         }
-    ],
-    "outcome_checks": [
-        "Transaction finalized without errors.",
-        "User\u2019s collateral (maxBTC) returned minus any fees, and the Amber position list shows no open positions."
     ]
 }

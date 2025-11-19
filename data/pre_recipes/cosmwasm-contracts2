@@ -1,142 +1,252 @@
 [
     {
-        "intent": "Fetch the code ID from a given transaction hash",
+        "intent": "Look up a Juno transaction by hash and extract the CosmWasm code_id from its events.",
         "workflow": [
             {
                 "step": 1,
-                "tool": "query_tx_by_hash",
-                "description": "Retrieve the full JSON details of transaction 38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085 from the Juno RPC or LCD endpoint."
+                "tool": "validate_tx_hash",
+                "description": "Validate that the provided transaction hash \"38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085\" is a 64-character hex string (case-insensitive). If the format is invalid, stop and return a clear error."
             },
             {
                 "step": 2,
-                "tool": "parse_code_id_from_tx",
-                "description": "Scan the returned transaction logs/events for an attribute named \"code_id\" and capture its numeric value."
-            }
-        ],
-        "outcome_checks": [
-            "Ensure a positive integer code_id was extracted.",
-            "Confirm the transaction contains a MsgStoreCode or MsgInstantiateContract message (where code_id is expected)."
-        ]
-    },
-    {
-        "intent": "Send 1,000,000 ujuno to a CosmWasm contract via an execute endpoint",
-        "workflow": [
-            {
-                "step": 1,
-                "tool": "get_sender_address",
-                "description": "Identify the user\u2019s wallet address that holds at least 1,000,000 ujuno."
-            },
-            {
-                "step": 2,
-                "tool": "validate_contract_address",
-                "description": "Verify that CONTRACT_ADDRESS is a valid Juno bech32 address for a smart contract."
+                "tool": "lcd_get_tx_by_hash",
+                "description": "Perform an HTTP GET to \"https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs/38330E909CD219B80927009DA37FD69D334D19B2AD4EC47456A24E85034F0085\" to fetch the transaction and its \"tx_response\"."
             },
             {
                 "step": 3,
-                "tool": "construct_execute_msg",
-                "description": "Build the JSON payload for the contract call (e.g., {\"some_endpoint\": {}})."
+                "tool": "check_tx_found_and_success",
+                "description": "Verify the LCD call returned HTTP 200 and that \"tx_response.code\" equals 0. If the transaction is not found or the code is non-zero, return an error including \"tx_response.raw_log\" when available."
             },
             {
                 "step": 4,
-                "tool": "construct_tx_wasm_execute",
-                "description": "Create a MsgExecuteContract that targets CONTRACT_ADDRESS, attaches 1,000,000ujuno as funds, and embeds the JSON payload."
+                "tool": "extract_code_id_from_events",
+                "description": "Iterate over \"tx_response.logs[*].events[*].attributes[*]\" and collect any attribute where the event type is \"store_code\" or \"instantiate\" and the attribute key is \"code_id\". Record the corresponding \"value\" fields as candidate code IDs."
             },
             {
                 "step": 5,
-                "tool": "sign_and_broadcast_tx",
-                "description": "Sign the transaction with the sender\u2019s key and broadcast it to the network."
+                "tool": "fallback_parse_raw_log_for_code_id",
+                "description": "If no \"code_id\" attribute is found in structured logs, parse \"tx_response.raw_log\" as text and search for a pattern where \"code_id\" is followed by an integer (e.g., using a regular expression like \"code_id\\\"?: ?\\\"?(\\\\d+)\\\"?\"). Extract that integer as a fallback code_id."
+            },
+            {
+                "step": 6,
+                "tool": "return_code_id",
+                "description": "If exactly one code_id was found, return it as the result. If multiple distinct code IDs are found (e.g., multiple store_code or instantiate events), return the list of code IDs along with minimal context (event type and index). If none are found, return an explicit error stating that this transaction does not include a CosmWasm store_code or instantiate event exposing a code_id."
             }
         ],
         "outcome_checks": [
-            "Verify the transaction is included in a block with success status.",
-            "Check the logs for a transfer event showing 1,000,000ujuno sent to the contract."
+            "The GET request to /cosmos/tx/v1beta1/txs/{hash} succeeds with HTTP 200.",
+            "\"tx_response.code\" is 0, meaning the transaction executed successfully on-chain.",
+            "At least one code_id value is found either in structured events or by parsing raw_log.",
+            "The final output clearly exposes one or more code_id values as plain strings/integers that can be used in subsequent CosmWasm queries (e.g., /cosmwasm/wasm/v1/code/{code_id})."
         ]
     },
     {
-        "intent": "Query the all_tokens list from an NFT contract",
+        "intent": "Send 1,000,000 ujuno to a specified contract address on Juno by constructing, simulating, signing, and broadcasting a bank send transaction via the LCD broadcast endpoint.",
         "workflow": [
             {
                 "step": 1,
-                "tool": "validate_contract_address",
-                "description": "Ensure CONTRACT_ADDRESS is a valid CW721 contract address."
+                "tool": "get_sender_wallet",
+                "description": "Identify and unlock the sender wallet (SENDER_ADDRESS) in a secure backend environment (e.g., keyring, HSM, or KMS). Ensure access to the sender's private key without exposing it to the frontend."
             },
             {
                 "step": 2,
-                "tool": "build_query_json",
-                "description": "Prepare the query JSON: {\"all_tokens\": {}}."
-            },
-            {
-                "step": 3,
-                "tool": "wasm_smart_query",
-                "description": "Execute a smart query against CONTRACT_ADDRESS with the prepared JSON."
-            },
-            {
-                "step": 4,
-                "tool": "parse_tokens_list",
-                "description": "Extract and return the array of token IDs from the query response."
-            }
-        ],
-        "outcome_checks": [
-            "Confirm the response contains a \"tokens\" field that is an array.",
-            "If a limit is provided, ensure the number of tokens returned does not exceed that limit."
-        ]
-    },
-    {
-        "intent": "Query nft_info for token ID 8 from an NFT contract",
-        "workflow": [
-            {
-                "step": 1,
                 "tool": "validate_contract_address",
-                "description": "Verify that CONTRACT_ADDRESS is a valid CW721 contract address."
-            },
-            {
-                "step": 2,
-                "tool": "validate_token_id",
-                "description": "Ensure the provided token ID (8) is a non-negative integer or valid string identifier."
+                "description": "Validate that CONTRACT_ADDRESS is a well-formed Juno bech32 address with the correct prefix (e.g., \"juno\"). Optionally, perform GET \"https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/CONTRACT_ADDRESS\" to confirm it is a valid on-chain account/contract."
             },
             {
                 "step": 3,
-                "tool": "build_query_json",
-                "description": "Create the query JSON: {\"nft_info\": {\"token_id\": \"8\"}}."
+                "tool": "check_sender_balance",
+                "description": "Query the sender's ujuno balance using GET \"https://lcd-archive.junonetwork.io/cosmos/bank/v1beta1/balances/SENDER_ADDRESS/by_denom?denom=ujuno\" and verify that the spendable amount is at least 1,000,000 ujuno plus an estimated fee buffer. If the balance is insufficient, abort with an informative error."
             },
             {
                 "step": 4,
-                "tool": "wasm_smart_query",
-                "description": "Execute the smart query against CONTRACT_ADDRESS with the constructed JSON."
+                "tool": "construct_msg_send",
+                "description": "Construct a Cosmos SDK bank send message (type_url \"/cosmos.bank.v1beta1.MsgSend\") with fields: from_address = SENDER_ADDRESS, to_address = CONTRACT_ADDRESS, amount = [{\"denom\": \"ujuno\", \"amount\": \"1000000\"}]."
             },
             {
                 "step": 5,
-                "tool": "parse_nft_info",
-                "description": "Parse the response to obtain metadata fields such as owner, name, and token_uri."
+                "tool": "build_unsigned_tx",
+                "description": "Create an unsigned Tx object wrapping the MsgSend: set \"body.messages\" to the single MsgSend, provide an optional memo, set an initial \"auth_info.fee.gas_limit\" (a rough guess), and leave \"signatures\" empty. Do NOT include the private key."
+            },
+            {
+                "step": 6,
+                "tool": "simulate_tx_for_gas",
+                "description": "POST to \"https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/simulate\" with a JSON body containing the \"tx\" object (unsigned is acceptable for gas estimation). Read \"gas_info.gas_used\" from the response and compute a final gas limit (e.g., gas_limit = ceil(gas_used * 1.2)). Update the Tx's fee.gas_limit accordingly."
+            },
+            {
+                "step": 7,
+                "tool": "fetch_min_gas_price",
+                "description": "GET \"https://lcd-archive.junonetwork.io/cosmos/base/node/v1beta1/config\" and parse the \"minimum_gas_price\" string to determine the per-unit gas price (e.g., value like \"0.0025ujuno\"). Compute the fee amount as gas_limit * gas_price and set \"auth_info.fee.amount\" to [{\"denom\": \"ujuno\", \"amount\": computed_fee_amount_string}]."
+            },
+            {
+                "step": 8,
+                "tool": "fetch_account_number_and_sequence",
+                "description": "GET \"https://lcd-archive.junonetwork.io/cosmos/auth/v1beta1/accounts/SENDER_ADDRESS\". Decode the returned \"account.value\" protobuf into the appropriate Cosmos account type to extract \"account_number\" and \"sequence\"; these are required for signing."
+            },
+            {
+                "step": 9,
+                "tool": "sign_tx_with_sender_key",
+                "description": "In the backend, construct a SignDoc using the chain_id, account_number, sequence, Tx body bytes, and auth_info bytes. Sign it with the sender's private secp256k1 key to produce a signature. Populate \"auth_info.signer_infos\" with the sender's public key and signing mode, and set the Tx \"signatures\" array to contain the signature bytes."
+            },
+            {
+                "step": 10,
+                "tool": "encode_tx_to_bytes",
+                "description": "Serialize the fully signed Tx protobuf into binary and then base64-encode it as \"tx_bytes\" to prepare for broadcasting."
+            },
+            {
+                "step": 11,
+                "tool": "broadcast_tx_via_lcd",
+                "description": "POST to \"https://lcd-archive.junonetwork.io/cosmos/tx/v1beta1/txs\" with JSON body {\"tx_bytes\": \"<BASE64_SIGNED_TX>\", \"mode\": \"BROADCAST_MODE_SYNC\"} (or \"BROADCAST_MODE_BLOCK\" for inclusion confirmation). Capture the returned \"tx_response\"."
+            },
+            {
+                "step": 12,
+                "tool": "verify_broadcast_result",
+                "description": "Check that the broadcast response has HTTP 200 and that \"tx_response.code\" is 0. If not, surface an error including \"tx_response.raw_log\" for debugging. Optionally, record \"tx_response.txhash\" for later tracking."
             }
         ],
         "outcome_checks": [
-            "Verify the response includes owner, token_uri, and any extension data.",
-            "Ensure the returned token_id matches \"8\"."
+            "The sender's ujuno balance from the bank query is greater than or equal to 1,000,000 ujuno plus the computed fee.",
+            "The simulation endpoint returns a valid gas_used and the final gas_limit is set above this value.",
+            "The broadcast call to /cosmos/tx/v1beta1/txs returns HTTP 200 and tx_response.code == 0.",
+            "A follow-up query to /cosmos/bank/v1beta1/balances for SENDER_ADDRESS and CONTRACT_ADDRESS reflects a 1,000,000 ujuno decrease for the sender and a corresponding increase for the contract (minus fees paid by the sender)."
         ]
     },
     {
-        "intent": "Create a new Juno wallet named MyWalletName",
+        "intent": "Query the CW721 all_tokens list from a given NFT contract on Juno using CosmWasm smart queries.",
         "workflow": [
             {
                 "step": 1,
-                "tool": "create_wallet",
-                "description": "Generate a new key in the local keyring with the name MyWalletName (e.g., via `junod keys add MyWalletName`)."
+                "tool": "validate_contract_address",
+                "description": "Validate that CONTRACT_ADDRESS is a correct Juno bech32 address. If the format is invalid, return an error before querying."
             },
             {
                 "step": 2,
-                "tool": "store_mnemonic_securely",
-                "description": "Display the mnemonic once, prompt the user to back it up, and never store it in plaintext after confirmation."
+                "tool": "initialize_pagination_state",
+                "description": "Choose a page size (e.g., PAGE_LIMIT = 100). Initialize an empty list to collect token IDs and a variable start_after = null to drive pagination through the CW721 all_tokens query."
             },
             {
                 "step": 3,
-                "tool": "show_wallet_address",
-                "description": "Return the bech32 address associated with MyWalletName so it can receive funds."
+                "tool": "build_all_tokens_query_json",
+                "description": "For the first page, construct the CW721 query JSON as {\"all_tokens\": {\"limit\": PAGE_LIMIT}}. For subsequent pages, include \"start_after\": \"<last_token_id_from_previous_page>\" inside the \"all_tokens\" object."
+            },
+            {
+                "step": 4,
+                "tool": "encode_query_to_base64",
+                "description": "Serialize the all_tokens JSON to a UTF-8 string and base64-encode it to obtain QUERY_DATA_B64 suitable for the LCD smart contract endpoint."
+            },
+            {
+                "step": 5,
+                "tool": "lcd_smart_query_all_tokens",
+                "description": "Perform an HTTP GET to \"https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/CONTRACT_ADDRESS/smart/QUERY_DATA_B64\". This calls the contract's smart query interface for the all_tokens query."
+            },
+            {
+                "step": 6,
+                "tool": "decode_response_data",
+                "description": "From the LCD response, read the \"data\" field (base64-encoded), decode it from base64 to bytes, then parse as JSON. Extract the list of token IDs from the decoded object (typically under a field like \"tokens\"). Append them to the aggregated token ID list."
+            },
+            {
+                "step": 7,
+                "tool": "handle_cw721_pagination",
+                "description": "If the number of token IDs returned in this page equals PAGE_LIMIT, set start_after to the last token ID and repeat steps 3\u20136 to fetch the next page. If fewer than PAGE_LIMIT are returned, treat this as the final page and stop."
+            },
+            {
+                "step": 8,
+                "tool": "return_all_token_ids",
+                "description": "Return the complete aggregated list of token IDs from all pages as the all_tokens result."
             }
         ],
         "outcome_checks": [
-            "Ensure the key list now contains an entry named MyWalletName.",
-            "Validate that the generated address starts with the correct Juno prefix (\"juno1\")."
+            "Every smart query request to /cosmwasm/wasm/v1/contract/{address}/smart/{query_data} returns HTTP 200.",
+            "Each response's \"data\" field can be successfully base64-decoded and parsed as JSON.",
+            "At least one token ID is retrieved for contracts that are expected to hold NFTs; an empty list is returned cleanly for contracts with no tokens.",
+            "Pagination completes when a page returns fewer than PAGE_LIMIT tokens, and no token IDs are duplicated or omitted in the aggregated result."
+        ]
+    },
+    {
+        "intent": "Query detailed CW721 nft_info for token ID 8 from a given NFT contract on Juno using a CosmWasm smart query.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_contract_and_token",
+                "description": "Validate that CONTRACT_ADDRESS is a valid Juno bech32 address and that the token ID \"8\" is represented as the correct string type expected by the contract (e.g., \"8\")."
+            },
+            {
+                "step": 2,
+                "tool": "build_nft_info_query_json",
+                "description": "Construct the CW721 nft_info query JSON object: {\"nft_info\": {\"token_id\": \"8\"}}."
+            },
+            {
+                "step": 3,
+                "tool": "encode_query_to_base64",
+                "description": "Serialize the nft_info JSON to UTF-8 and base64-encode it to produce QUERY_DATA_B64 for the LCD smart contract endpoint."
+            },
+            {
+                "step": 4,
+                "tool": "lcd_smart_query_nft_info",
+                "description": "Perform an HTTP GET to \"https://lcd-archive.junonetwork.io/cosmwasm/wasm/v1/contract/CONTRACT_ADDRESS/smart/QUERY_DATA_B64\" to query the contract's nft_info for token ID 8."
+            },
+            {
+                "step": 5,
+                "tool": "decode_response_data",
+                "description": "Read the \"data\" field from the LCD response, decode it from base64 to bytes, and parse the result as JSON. This JSON should contain fields such as token_uri and extension as defined by the CW721 standard or the contract's schema."
+            },
+            {
+                "step": 6,
+                "tool": "return_nft_metadata",
+                "description": "Return the parsed nft_info object (including token_uri and any metadata extension fields) as the result. If the contract signals that the token does not exist (e.g., by returning an error), surface a clear not-found error."
+            }
+        ],
+        "outcome_checks": [
+            "The GET request to /cosmwasm/wasm/v1/contract/{address}/smart/{query_data} returns HTTP 200 for valid tokens, or a clear error message for nonexistent tokens.",
+            "The \"data\" field from the response can be base64-decoded and parsed as JSON without errors.",
+            "The resulting JSON object includes the expected nft_info fields (for example, token_uri and extension) that correspond to token ID \"8\".",
+            "If token 8 does not exist, the error is reported explicitly rather than returning malformed or empty metadata."
+        ]
+    },
+    {
+        "intent": "Create a new Juno wallet named \"MyWalletName\" by generating a mnemonic and deriving a Juno-compatible address.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "select_chain_key_params",
+                "description": "Set chain-specific key parameters for Juno: use BIP-44 coin type 118 (Cosmos), a standard derivation path like m/44'/118'/0'/0/0, and bech32 prefix \"juno\" for addresses."
+            },
+            {
+                "step": 2,
+                "tool": "generate_bip39_mnemonic",
+                "description": "In a secure backend environment, generate a new BIP-39 mnemonic (12 or 24 words) using a cryptographically secure random number generator. Display or return this mnemonic only to the end user and never log it in plaintext."
+            },
+            {
+                "step": 3,
+                "tool": "derive_hd_key_from_mnemonic",
+                "description": "Convert the mnemonic to a seed using the BIP-39 standard, then derive the hierarchical deterministic (HD) private key using the chosen path (e.g., m/44'/118'/0'/0/0) with BIP-32/BIP-44 logic."
+            },
+            {
+                "step": 4,
+                "tool": "derive_public_key_and_address",
+                "description": "Derive the secp256k1 public key from the private key. Then compute the Juno address by taking the public key, applying the standard Cosmos address derivation (SHA-256 then RIPEMD-160), and encoding the result as a bech32 string with prefix \"juno\"."
+            },
+            {
+                "step": 5,
+                "tool": "persist_wallet_metadata",
+                "description": "Create a wallet record labeled \"MyWalletName\" in the backend key management system or keyring. Store the Juno address and public key, and securely store the private key (for example, encrypted at rest). Do not store the mnemonic in plaintext unless explicitly required and protected."
+            },
+            {
+                "step": 6,
+                "tool": "optional_verify_address_on_chain",
+                "description": "Optionally, verify basic network information via GET \"https://lcd-archive.junonetwork.io/cosmos/base/tendermint/v1beta1/node_info\" to confirm you are connected to a Juno network. The new address will not appear in on-chain account queries until it receives its first funds, which is expected."
+            },
+            {
+                "step": 7,
+                "tool": "return_wallet_details",
+                "description": "Return to the caller the wallet name (\"MyWalletName\"), the new Juno address, and the mnemonic (only once, over a secure channel). Advise the user to back up the mnemonic offline, as it is required for recovery."
+            }
+        ],
+        "outcome_checks": [
+            "The generated mnemonic is valid under the BIP-39 wordlist and checksum rules.",
+            "The derived address correctly decodes as a bech32 string with prefix \"juno\" and passes library-level validation.",
+            "The wallet record labeled \"MyWalletName\" is stored in the backend keyring or KMS and can be used to sign Juno transactions.",
+            "The mnemonic is only exposed to the user once and is not logged or transmitted to untrusted systems."
         ]
     }
 ]
