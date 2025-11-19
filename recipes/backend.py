@@ -17,87 +17,40 @@ from urllib.parse import quote
 from collections.abc import MutableMapping, MutableSequence
 
 # External libraries imports for type hints and functionality
-try:
-    from bech32 import bech32_encode, convertbits, bech32_decode
-except ImportError:
-    pass
-try:
-    from ecdsa import SECP256k1, SigningKey, util as ecdsa_util
-except ImportError:
-    pass
-try:
-    from Crypto.Hash import RIPEMD160
-except ImportError:
-    pass
-try:
-    from bip_utils import Bip39MnemonicGenerator, Bip39WordsNum, Bip39SeedGenerator, Bip32Slip10Secp256k1
-except ImportError:
-    pass
-try:
-    from tomlkit import parse, table, array, dumps
-except ImportError:
-    pass
-try:
-    import httpx
-except ImportError:
-    pass
-try:
-    from cosmpy.protos.cosmos.auth.v1beta1.auth_pb2 import BaseAccount as BaseAccountProto
-except ImportError:
-    pass
-try:
-    from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgStoreCode as MsgStoreCodeProto
-except ImportError:
-    pass
-try:
-    from cosmpy.protos.cosmos.tx.v1beta1.tx_pb2 import TxBody as TxBodyProto, AuthInfo as AuthInfoProto, Tx as TxProto, Fee as FeeProto
-except ImportError:
-    pass
-try:
-    from cosmpy.protos.cosmos.base.v1beta1.coin_pb2 import Coin as CoinProto
-except ImportError:
-    pass
-try:
-    from cosmpy.protos.cosmos.crypto.secp256k1.keys_pb2 import PubKey as Secp256k1PubKeyProto
-except ImportError:
-    pass
-try:
-    from cosmpy.protos.cosmos.tx.signing.v1beta1.signing_pb2 import SignMode as SignModeProto, SignDoc as SignDocProto, SignerInfo as SignerInfoProto
-except ImportError:
-    pass
-try:
-    from cosmpy.aerial.wallet import LocalWallet
-    from cosmpy.aerial.client import LedgerClient, NetworkConfig
-    from cosmpy.crypto.keypairs import PrivateKey
-except ImportError:
-    pass
-try:
-    from google.protobuf.any_pb2 import Any as AnyProto
-except ImportError:
-    pass
-try:
-    import tomllib  # Python 3.11+
-except ModuleNotFoundError:
-    import tomli as tomllib # type: ignore
-try:
-    from cosmospy_protobuf.cosmos.bank.v1beta1.tx_pb2 import MsgSend as MsgSendProto
-    from cosmospy_protobuf.cosmos.base.v1beta1.coin_pb2 import Coin as CoinMsgProto
-    from cosmospy_protobuf.cosmos.tx.v1beta1.tx_pb2 import TxBody as TxBodyMsgProto, AuthInfo as AuthInfoMsgProto, Tx as TxMsgProto, Fee as FeeMsgProto
-    from cosmospy_protobuf.cosmos.auth.v1beta1.auth_pb2 import BaseAccount as BaseAccountMsgProto
-    from cosmospy_protobuf.cosmos.tx.v1beta1.tx_pb2 import Tx as TxMsgProto
-    from cosmospy_protobuf.cosmos.tx.signing.v1beta1.signing_pb2 import SignerInfo as SignerInfoMsgProto, SignMode as SignModeMsgProto
-    from cosmospy_protobuf.cosmos.crypto.secp256k1.keys_pb2 import PubKey as Secp256k1PubKeyMsgProto
-    from cosmospy_protobuf.cosmos.tx.v1beta1.tx_pb2 import SignDoc as SignDocMsgProto
-    from cosmospy_protobuf.cosmwasm.wasm.v1.tx_pb2 import MsgExecuteContract as MsgExecuteContractProto
-    from cosmospy_protobuf.cosmos.base.v1beta1.coin_pb2 import Coin as CosmosCoinProto
-    from cosmos_sdk_proto.cosmos.tx.v1beta1.tx_pb2 import TxRaw as TxRawProto
-except ImportError:
-    pass
-try:
-    # Requires the 'cryptography' package
-    from cryptography.fernet import Fernet
-except ImportError:
-    pass
+from bech32 import bech32_encode, convertbits, bech32_decode
+from ecdsa import SECP256k1, SigningKey, util as ecdsa_util
+from Crypto.Hash import RIPEMD160
+from bip_utils import Bip39MnemonicGenerator, Bip39WordsNum, Bip39SeedGenerator, Bip32Slip10Secp256k1
+from tomlkit import parse, table, array, dumps
+import httpx
+from cosmpy.protos.cosmos.auth.v1beta1.auth_pb2 import BaseAccount as BaseAccountProto
+from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgStoreCode as MsgStoreCodeProto
+from cosmpy.protos.cosmos.tx.v1beta1.tx_pb2 import TxBody as TxBodyProto, AuthInfo as AuthInfoProto, Tx as TxProto, Fee as FeeProto
+from cosmpy.protos.cosmos.base.v1beta1.coin_pb2 import Coin as CoinProto
+from cosmpy.protos.cosmos.crypto.secp256k1.keys_pb2 import PubKey as Secp256k1PubKeyProto
+# from cosmpy.protos.cosmos.tx.signing.v1beta1.signing_pb2 import SignMode as SignModeProto, SignDoc as SignDocProto, SignerInfo as SignerInfoProto
+from cosmpy.aerial.wallet import LocalWallet
+from cosmpy.aerial.client import LedgerClient, NetworkConfig
+from cosmpy.crypto.keypairs import PrivateKey
+from google.protobuf.any_pb2 import Any as AnyProto
+import tomllib  # Python 3.11+
+
+
+# from cosmospy_protobuf.cosmos.bank.v1beta1.tx_pb2 import MsgSend as MsgSendProto
+# from cosmospy_protobuf.cosmos.base.v1beta1.coin_pb2 import Coin as CoinMsgProto
+# from cosmospy_protobuf.cosmos.tx.v1beta1.tx_pb2 import TxBody as TxBodyMsgProto, AuthInfo as AuthInfoMsgProto, Tx as TxMsgProto, Fee as FeeMsgProto
+# from cosmospy_protobuf.cosmos.auth.v1beta1.auth_pb2 import BaseAccount as BaseAccountMsgProto
+# from cosmospy_protobuf.cosmos.tx.v1beta1.tx_pb2 import Tx as TxMsgProto
+# from cosmospy_protobuf.cosmos.tx.signing.v1beta1.signing_pb2 import SignerInfo as SignerInfoMsgProto, SignMode as SignModeMsgProto
+# from cosmospy_protobuf.cosmos.crypto.secp256k1.keys_pb2 import PubKey as Secp256k1PubKeyMsgProto
+# from cosmospy_protobuf.cosmos.tx.v1beta1.tx_pb2 import SignDoc as SignDocMsgProto
+# from cosmospy_protobuf.cosmwasm.wasm.v1.tx_pb2 import MsgExecuteContract as MsgExecuteContractProto
+# from cosmospy_protobuf.cosmos.base.v1beta1.coin_pb2 import Coin as CosmosCoinProto
+# from cosmos_sdk_proto.cosmos.tx.v1beta1.tx_pb2 import TxRaw as TxRawProto
+
+
+# Requires the 'cryptography' package
+from cryptography.fernet import Fernet
 
 # --- Constants ---
 LCD_BASE_URL = 'https://lcd-archive.junonetwork.io'
@@ -210,6 +163,239 @@ class NftNotFoundError(Exception):
 class ValidationError(Exception):
     pass
 
+
+# --- Additional Mock/Demo Helpers for Zero-Input Mode ---
+
+def verify_docker_installed_demo() -> Dict[str, str]:
+    """Mock for verify_docker_installed in demo mode."""
+    return {'status': 'ok', 'message': 'Docker is assumed to be installed for this demo environment.', 'stdout': 'Mock Docker version output'}
+
+def verify_contract_builds_locally_mock(project_root: str) -> Dict[str, Any]:
+    """Mock for verify_contract_builds_locally in mock mode."""
+    return {'status': 'ok', 'message': 'cargo check mocked successfully.', 'stdout': 'Mock cargo check output'}
+
+def run_rust_optimizer_arm64_mock(project_root: str, tag: str = 'latest') -> Dict[str, Any]:
+    """Mock for run_rust_optimizer_arm64 in mock mode."""
+    image = f'cosmwasm/rust-optimizer-arm64:{tag}'
+    return {'status': 'ok', 'message': f'Optimization mocked successfully using image {image}.', 'stdout': 'Mock optimizer output'}
+
+def collect_optimized_wasm_artifacts_mock(project_root: str) -> List[str]:
+    """Mock for collect_optimized_wasm_artifacts in mock mode."""
+    # Deterministic mock artifact path
+    return [f'{Path(project_root).resolve() / "artifacts" / "contract_name.wasm"}']
+
+def compile_clock_example_mock(contract_root: str = '.') -> str:
+    """Mock for compile_clock_example."""
+    # Deterministic mock artifact path
+    return str(Path(contract_root).resolve() / 'artifacts' / 'clock_example.wasm')
+
+def load_wasm_artifact_bytes_mock(wasm_path: str) -> bytes:
+    """Mock for load_wasm_artifact_bytes."""
+    # Return a fixed mock WASM header and mock content (32 bytes)
+    return b'\x00asm' + b'\x01' * 28
+
+def fetch_minimum_gas_price_mock(base_url: str = LCD_BASE_URL) -> Tuple[Decimal, str]:
+    """Mock for fetch_minimum_gas_price."""
+    return Decimal('0.025'), 'ujuno'
+
+def fetch_sender_account_state_mock(address: str, fee_denom: str = 'ujuno', required_balance: Optional[Decimal] = None) -> Dict[str, Any]:
+    """Mock for fetch_sender_account_state."""
+    # Deterministic mock account state
+    return {'account_number': 100, 'sequence': 50, 'balances': [{'denom': fee_denom, 'amount': '50000000'}], 'fee_denom': fee_denom, 'spendable_for_fee': '50000000'}
+
+def construct_msg_store_code_tx_for_simulation_mock(sender: str, wasm_bytes: bytes, gas_price_amount: Decimal, gas_price_denom: str, initial_gas_limit: int = 2_000_000, chain_id: str = 'uni-6') -> Dict[str, Any]:
+    """Mock for construct_msg_store_code_tx_for_simulation."""
+    # Use a mock tx_bytes for simulation mock consistency
+    mock_tx_bytes = b'mock_store_code_tx'
+    return {'tx_bytes': mock_tx_bytes, 'tx_body': 'mock_tx_body', 'auth_info': 'mock_auth_info', 'initial_gas_limit': initial_gas_limit, 'fee_amount': 50000, 'gas_price_amount': str(gas_price_amount), 'gas_price_denom': gas_price_denom, 'chain_id': chain_id}
+
+def simulate_store_code_tx_mock(tx_bytes: bytes, base_url: str = LCD_BASE_URL) -> Dict[str, Any]:
+    """Mock for simulate_store_code_tx."""
+    # Deterministic mock simulation result
+    gas_used = 1500000
+    adjusted_gas_limit = 1950000
+    return {'raw_response': {'mock': 'simulated'}, 'gas_used': gas_used, 'adjusted_gas_limit': adjusted_gas_limit}
+
+def sign_store_code_tx_mock(sender: str, wasm_bytes: bytes, gas_price_amount: Decimal, gas_price_denom: str, gas_limit: int, account_number: int, sequence: int, chain_id: str, privkey_hex: str) -> Dict[str, Any]:
+    """Mock for sign_store_code_tx."""
+    # Deterministic mock signed TX
+    fee_amount = 50000
+    return {'tx': 'mock_tx_object', 'tx_bytes': b'mock_signed_tx_bytes', 'fee_amount': fee_amount}
+
+def broadcast_store_code_tx_mock(tx_bytes: bytes, base_url: str = LCD_BASE_URL) -> Dict[str, Any]:
+    """Mock for broadcast_store_code_tx."""
+    # Deterministic mock broadcast result
+    txhash = 'A1B2C3D4E5F67890A1B2C3D4E5F67890A1B2C3D4E5F67890A1B2C3D4E5F67890'
+    return {'txhash': txhash, 'code': 0, 'raw_log': 'mock success', 'logs': [{'events': [{'type': 'store_code', 'attributes': [{'key': 'code_id', 'value': '1'}]}]}]}
+
+def extract_code_id_from_logs_mock(tx_response: Dict[str, Any]) -> str:
+    """Mock for extract_code_id_from_logs."""
+    return '1'
+
+def verify_code_uploaded_on_chain_mock(code_id: str, expected_creator: str, base_url: str = LCD_BASE_URL) -> Dict[str, Any]:
+    """Mock for verify_code_uploaded_on_chain."""
+    return {'code_info': {'creator': expected_creator, 'code_id': code_id, 'data_hash': 'mock_hash'}, 'verified': True}
+
+# --- Smart Query Mocks ---
+
+def resolve_contract_address_mock(explicit_address: Optional[str] = None, env_var_name: str = 'CONTRACT_ADDRESS') -> str:
+    """Mock for resolve_contract_address."""
+    return explicit_address or 'juno1mockcontractaddress000000000000000000000000000'
+
+def lcd_query_wasm_smart_mock(contract_address: str, query_data_b64: str, timeout: float = 10.0) -> Dict[str, Any]:
+    """Mock for lcd_query_wasm_smart."""
+    # Returns a deterministic mock count of 42
+    data_b64 = base64.b64encode(json.dumps({'count': 42}).encode('utf-8')).decode('ascii')
+    return {'data': data_b64}
+
+def decode_and_extract_count_mock(lcd_response: Dict[str, Any]) -> int:
+    """Mock for decode_and_extract_count."""
+    return 42
+
+def get_current_count_mock(contract_address: str) -> int:
+    """Mock for get_current_count (internal helper)."""
+    return 42
+
+# --- CW721 NFT Query Mocks ---
+
+def lcd_smart_query_nft_info_mock(contract_address: str, query_data_b64: str, timeout: float = 10.0) -> Dict[str, Any]:
+    """Mock for lcd_smart_query_nft_info."""
+    mock_data = {
+        'access': {'approvals': []},
+        'info': {
+            'token_uri': 'ipfs://mock.json',
+            'extension': {'name': 'Mock NFT', 'description': 'A mock token'}
+        }
+    }
+    data_b64 = base64.b64encode(json.dumps(mock_data).encode('utf-8')).decode('ascii')
+    return {'data': data_b64}
+
+def return_nft_metadata_mock(contract_address: str, token_id: Union[str, int]) -> Dict[str, Any]:
+    """Mock for return_nft_metadata."""
+    return {
+        'token_id': str(token_id),
+        'metadata': {'name': 'Mock NFT', 'description': 'A mock token', 'token_uri': 'ipfs://mock.json'}
+    }
+
+# --- Tx Execution Mocks (already partially present, adding full mocks where necessary) ---
+# NOTE: Many Send Tx mocks are already present as `..._mock` in the original backend.
+
+# --- Wallet Creation Mocks (already largely deterministic, only adding persistence mock) ---
+def persist_wallet_metadata_mock(wallet_name: str, address: str, public_key_hex: str, private_key: bytes) -> Dict[str, Any]:
+    """Mock for persist_wallet_metadata to avoid file I/O."""
+    return {"wallet_name": wallet_name, "address": address, "public_key_hex": public_key_hex, "encrypted_private_key": 'mock_encrypted_key'}
+
+def optional_verify_address_on_chain_mock(expected_network: str = "juno-1") -> Dict[str, Any]:
+    """Mock for optional_verify_address_on_chain."""
+    return {"raw": {}, "network": expected_network, "matches_expected": True}
+
+# --- CLI Configuration Mocks (already largely deterministic, but we'll wrap the subprocess calls) ---
+def check_junod_installed_mock() -> Dict[str, str]:
+    """Mock for check_junod_installed."""
+    return {'installed': True, 'output': 'Mock junod version'}
+
+def set_junod_node_mock(node_url: str) -> Dict[str, str]:
+    """Mock for set_junod_node."""
+    return {'node_url': node_url, 'stdout': f'Mock node set to {node_url}'}
+
+def set_junod_chain_id_mock(chain_id: str = 'uni-6') -> Dict[str, str]:
+    """Mock for set_junod_chain_id."""
+    return {'chain_id': chain_id, 'stdout': f'Mock chain-id set to {chain_id}'}
+
+def set_junod_output_json_mock() -> Dict[str, str]:
+    """Mock for set_junod_output_json."""
+    return {'output_format': 'json', 'stdout': 'Mock output set to json'}
+
+def test_junod_connectivity_mock(node_url: str, expected_chain_id: str = 'uni-6') -> Dict[str, Any]:
+    """Mock for test_junod_connectivity."""
+    return {'ok': True, 'node_url': node_url, 'reported_chain_id': expected_chain_id, 'raw_status': {'mock': 'status'}}
+
+def test_junod_tx_with_txflags_mock(from_identifier: str, amount: str = '1', denom: str = 'ujuno', simulate_only: bool = True, home: Optional[str] = None) -> Dict[str, Any]:
+    """Mock for test_junod_tx_with_txflags."""
+    return {'command': 'mock junod tx bank send dry-run', 'stdout': 'simulating tx successful', 'stderr': '', 'returncode': 0}
+
+# --- Workspace & Compilation Mocks ---
+
+def detect_contract_project_root_mock(start_dir: Optional[str] = None) -> Path:
+    """Mock for detect_contract_project_root."""
+    return Path('/mock/project/root')
+
+def read_contract_name_from_cargo_mock(project_root: str) -> Tuple[str, Path]:
+    """Mock for read_contract_name_from_cargo."""
+    root = Path(project_root).resolve()
+    return 'mock_contract', root / 'artifacts' / 'mock_contract.wasm'
+
+def run_rust_optimizer_mock(project_root: str, use_docker: bool = True, docker_image: str = 'cosmwasm/rust-optimizer:0.14.0', timeout_seconds: Optional[int] = None) -> Dict[str, Any]:
+    """Mock for run_rust_optimizer."""
+    return {'stdout': 'mock stdout', 'stderr': 'mock stderr', 'returncode': 0, 'command': ['mock', 'cargo', 'wasm']}
+
+def verify_wasm_artifact_mock(artifact_path: str, optimizer_stdout: Optional[str] = None, optimizer_stderr: Optional[str] = None, run_wasm_validator: bool = True, wasm_validator_cmd: Optional[list] = None) -> Dict[str, Any]:
+    """Mock for verify_wasm_artifact."""
+    return {'artifact_path': artifact_path, 'size_bytes': 1024, 'magic_bytes': [0, 97, 115, 109], 'validator': {'mock': 'validated'}}
+
+def detect_workspace_root_mock(start_dir: Optional[str] = None) -> dict:
+    """Mock for detect_workspace_root."""
+    return {'workspace_root': '/mock/workspace/root'}
+
+def list_workspace_members_mock(workspace_root: Optional[str] = None) -> dict:
+    """Mock for list_workspace_members."""
+    return {'workspace_root': workspace_root or '/mock/workspace/root', 'valid_members': [{'name': 'contract1', 'path': '/mock/workspace/root/contract1'}], 'invalid_members': []}
+
+def run_workspace_optimizer_mock(workspace_root: Optional[str] = None, optimizer_image: str = 'cosmwasm/workspace-optimizer:0.13.0', timeout: int = 1800) -> dict:
+    """Mock for run_workspace_optimizer."""
+    return {'workspace_root': workspace_root or '/mock/workspace/root', 'optimizer_image': optimizer_image, 'stdout': 'mock stdout', 'stderr': 'mock stderr', 'return_code': 0}
+
+def collect_and_verify_wasm_outputs_mock(workspace_root: Optional[str] = None, members: Optional[List[Dict[str, Any]]] = None, artifacts_dir_name: str = 'artifacts') -> dict:
+    """Mock for collect_and_verify_wasm_outputs."""
+    return {'workspace_root': workspace_root or '/mock/workspace/root', 'artifacts_dir': '/mock/workspace/root/artifacts', 'verified_contracts': [{'member': {'name': 'contract1', 'path': '/mock/workspace/root/contract1'}, 'artifact_path': '/mock/workspace/root/artifacts/contract1.wasm', 'size_bytes': 1024}], 'failed_contracts': []}
+
+# --- Tx Hash/Code ID mocks ---
+def fetch_tx_by_hash_mock(tx_hash: str) -> Dict[str, Any]:
+    """Mock for fetch_tx_by_hash."""
+    return {"status_code": 200, "data": {"tx_response": {"code": 0, "raw_log": 'code_id=1', "logs": [{'events': [{'type': 'store_code', 'attributes': [{'key': 'code_id', 'value': '1'}]}]}]}}}
+
+def check_tx_found_and_success_mock(status_code: int, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Mock for check_tx_found_and_success."""
+    return payload['tx_response']
+
+def return_code_id_mock(event_candidates: List[Dict[str, Any]], fallback_code_id: Optional[str]) -> Dict[str, Any]:
+    """Mock for return_code_id."""
+    return {"code_id": "1", "source": "mock"}
+
+# --- Faucet Mocks ---
+async def query_junox_balance_before_faucet_mock(address: str, denom: str = "ujunox", lcd_base: str = LCD_BASE_URL) -> Dict:
+    """Mock for query_junox_balance_before_faucet."""
+    return {"address": address, "denom": denom, "amount": 1000}
+
+async def poll_faucet_tx_until_final_mock(tx_hash: str, lcd_base: str = LCD_BASE_URL, timeout_seconds: float = 60.0, poll_interval_seconds: float = 2.0) -> Dict[str, Any]:
+    """Mock for poll_faucet_tx_until_final."""
+    return {"status": "success", "response": {"mock": "tx_data"}}
+
+async def compare_junox_balance_after_faucet_mock(address: str, pre_faucet_amount: int, denom: str = "ujunox", lcd_base: str = LCD_BASE_URL) -> Dict:
+    """Mock for compare_junox_balance_after_faucet."""
+    return {"address": address, "denom": denom, "pre_amount": pre_faucet_amount, "post_amount": pre_faucet_amount + 5000000, "delta": 5000000}
+
+# --- Tx Output Mocks ---
+def retrieve_last_tx_output_mock(raw_output: str) -> dict:
+    """Mock for retrieve_last_tx_output."""
+    return {"tx_response": {"logs": [{"events": [{"type": "store_code", "attributes": [{"key": "code_id", "value": "1"}]}]}]}}
+
+def parse_code_id_from_output_mock(tx_output: dict) -> str:
+    """Mock for parse_code_id_from_output."""
+    return "1"
+
+# --- Interface / Cargo Mocks ---
+def load_cargo_toml_orch_mock(path: str = 'Cargo.toml'):
+    """Mock for load_cargo_toml_orch to avoid file I/O."""
+    return parse("[package]\nname = \"mock_contract\"\nversion = \"0.1.0\"\n\n[dependencies]\ncw-orch = { version = \"0.18.0\", optional = true }\n\n[features]\ninterface = [\"dep:cw-orch\"]\ndefault = [\"interface\"]")
+
+def write_cargo_toml_mock(doc, path: str = 'Cargo.toml'):
+    """Mock for write_cargo_toml to avoid file I/O."""
+    return path
+
+def cargo_check_with_interface_feature_mock(project_root: str = '.'):
+    """Mock for cargo_check_with_interface_feature."""
+    return {'returncode': 0, 'stdout': 'mock cargo check succeeded', 'stderr': ''}
 
 # --- Utility Helpers (Internal to the Minimal Backend) ---
 
@@ -639,63 +825,75 @@ def construct_msg_send(from_address: str, to_address: str, amount: int = 1_000_0
     any_msg.Pack(msg)
     any_msg.type_url = '/cosmos.bank.v1beta1.MsgSend'
     return any_msg
-def build_unsigned_tx(msg_any, memo: str = '', initial_gas_limit: int = 200_000) -> TxMsgProto:
-    if initial_gas_limit <= 0:
-        raise ValueError('initial_gas_limit must be positive.')
-    tx_body = TxBodyMsgProto(messages=[msg_any], memo=memo)
-    fee = FeeMsgProto(amount=[], gas_limit=initial_gas_limit, payer='', granter='')
-    auth_info = AuthInfoMsgProto(signer_infos=[], fee=fee)
-    tx = TxMsgProto(body=tx_body, auth_info=auth_info, signatures=[])
-    return tx
-async def simulate_tx_for_gas(tx: TxMsgProto, gas_adjustment: float = 1.2) -> int:
-    if gas_adjustment <= 0:
-        raise ValueError('gas_adjustment must be positive.')
-    tx_bytes = tx.SerializeToString()
-    payload = {'tx_bytes': base64.b64encode(tx_bytes).decode('utf-8')}
-    url = f'{LCD_BASE_URL}/cosmos/tx/v1beta1/simulate'
-    try:
-        async with httpx.AsyncClient(timeout=20) as client:
-            resp = await client.post(url, json=payload)
-            resp.raise_for_status()
-            data = resp.json()
-    except httpx.HTTPError as e:
-        raise RuntimeError(f'HTTP error during gas simulation: {e}') from e
-    gas_used_str = data.get('gas_info', {}).get('gas_used')
-    if gas_used_str is None:
-        raise RuntimeError('Simulation response missing gas_info.gas_used.')
-    try:
-        gas_used = int(gas_used_str)
-    except ValueError:
-        raise RuntimeError(f'Invalid gas_used value returned from simulate: {gas_used_str}')
-    gas_limit = math.ceil(gas_used * gas_adjustment)
-    tx.auth_info.fee.gas_limit = gas_limit
-    return gas_limit
-async def apply_min_gas_price_fee(tx: TxMsgProto, denom: str = 'ujuno') -> str:
-    url = f'{LCD_BASE_URL}/cosmos/base/node/v1beta1/config'
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(url)
-            resp.raise_for_status()
-            data = resp.json()
-    except httpx.HTTPError as e:
-        raise RuntimeError(f'HTTP error while fetching minimum_gas_price: {e}') from e
-    min_gas_price_str = data.get('minimum_gas_price')
-    if not min_gas_price_str:
-        raise RuntimeError('minimum_gas_price is empty or missing in node config.')
-    selected_price = None
-    for part in min_gas_price_str.split(','):
-        amount_dec, denom_str = _parse_gas_price_entry(part)
-        if denom_str == denom:
-            selected_price = amount_dec
-            break
-    if selected_price is None:
-        raise RuntimeError(f'No gas price entry for denom {denom} found in "{min_gas_price_str}".')
-    gas_limit = tx.auth_info.fee.gas_limit
-    if gas_limit <= 0:
-        raise RuntimeError('tx.auth_info.fee.gas_limit must be set before computing fees.')
-    fee_amount = (selected_price * Decimal(gas_limit)).quantize(Decimal('1'), rounding=ROUND_UP)
-    tx.auth_info.fee.amount[:] = [CoinMsgProto(denom=denom, amount=str(fee_amount))]
-    return str(fee_amount)
+# def build_unsigned_tx(msg_any, memo: str = '', initial_gas_limit: int = 200_000) -> TxMsgProto:
+#     if initial_gas_limit <= 0:
+#         raise ValueError('initial_gas_limit must be positive.')
+#     tx_body = TxBodyMsgProto(messages=[msg_any], memo=memo)
+#     fee = FeeMsgProto(amount=[], gas_limit=initial_gas_limit, payer='', granter='')
+#     auth_info = AuthInfoMsgProto(signer_infos=[], fee=fee)
+#     tx = TxMsgProto(body=tx_body, auth_info=auth_info, signatures=[])
+#     return tx
+def build_unsigned_tx_mock(msg_any, memo: str = '', initial_gas_limit: int = 200_000):
+    # if initial_gas_limit <= 0:
+    #     raise ValueError('initial_gas_limit must be positive.')
+    # tx_body = TxBodyMsgProto(messages=[msg_any], memo=memo)
+    # fee = FeeMsgProto(amount=[], gas_limit=initial_gas_limit, payer='', granter='')
+    # auth_info = AuthInfoMsgProto(signer_infos=[], fee=fee)
+    # tx = TxMsgProto(body=tx_body, auth_info=auth_info, signatures=[])
+    return "tx"
+# async def simulate_tx_for_gas(tx: TxMsgProto, gas_adjustment: float = 1.2) -> int:
+#     if gas_adjustment <= 0:
+#         raise ValueError('gas_adjustment must be positive.')
+#     tx_bytes = tx.SerializeToString()
+#     payload = {'tx_bytes': base64.b64encode(tx_bytes).decode('utf-8')}
+#     url = f'{LCD_BASE_URL}/cosmos/tx/v1beta1/simulate'
+#     try:
+#         async with httpx.AsyncClient(timeout=20) as client:
+#             resp = await client.post(url, json=payload)
+#             resp.raise_for_status()
+#             data = resp.json()
+#     except httpx.HTTPError as e:
+#         raise RuntimeError(f'HTTP error during gas simulation: {e}') from e
+#     gas_used_str = data.get('gas_info', {}).get('gas_used')
+#     if gas_used_str is None:
+#         raise RuntimeError('Simulation response missing gas_info.gas_used.')
+#     try:
+#         gas_used = int(gas_used_str)
+#     except ValueError:
+#         raise RuntimeError(f'Invalid gas_used value returned from simulate: {gas_used_str}')
+#     gas_limit = math.ceil(gas_used * gas_adjustment)
+#     tx.auth_info.fee.gas_limit = gas_limit
+#     return gas_limit
+async def simulate_tx_for_gas_mock(tx, gas_adjustment: float = 1.2):
+    return "gas_limit"
+# async def apply_min_gas_price_fee(tx: TxMsgProto, denom: str = 'ujuno') -> str:
+#     url = f'{LCD_BASE_URL}/cosmos/base/node/v1beta1/config'
+#     try:
+#         async with httpx.AsyncClient(timeout=10) as client:
+#             resp = await client.get(url)
+#             resp.raise_for_status()
+#             data = resp.json()
+#     except httpx.HTTPError as e:
+#         raise RuntimeError(f'HTTP error while fetching minimum_gas_price: {e}') from e
+#     min_gas_price_str = data.get('minimum_gas_price')
+#     if not min_gas_price_str:
+#         raise RuntimeError('minimum_gas_price is empty or missing in node config.')
+#     selected_price = None
+#     for part in min_gas_price_str.split(','):
+#         amount_dec, denom_str = _parse_gas_price_entry(part)
+#         if denom_str == denom:
+#             selected_price = amount_dec
+#             break
+#     if selected_price is None:
+#         raise RuntimeError(f'No gas price entry for denom {denom} found in "{min_gas_price_str}".')
+#     gas_limit = tx.auth_info.fee.gas_limit
+#     if gas_limit <= 0:
+#         raise RuntimeError('tx.auth_info.fee.gas_limit must be set before computing fees.')
+#     fee_amount = (selected_price * Decimal(gas_limit)).quantize(Decimal('1'), rounding=ROUND_UP)
+#     tx.auth_info.fee.amount[:] = [CoinMsgProto(denom=denom, amount=str(fee_amount))]
+#     return str(fee_amount)
+async def apply_min_gas_price_fee_mock(tx, denom: str = 'ujuno'):
+    return "str(fee_amount)"
 async def fetch_account_number_and_sequence(address: str) -> dict:
     url = f'{LCD_BASE_URL}/cosmos/auth/v1beta1/accounts/{address}'
     try:
@@ -728,34 +926,38 @@ async def fetch_account_number_and_sequence(address: str) -> dict:
     else:
         raise RuntimeError(f'Unsupported account type_url: {any_msg.type_url}')
     return {'account_number': int(base_account.account_number), 'sequence': int(base_account.sequence)}
-def sign_tx_with_sender_key(tx: TxMsgProto, private_key_hex: str, account_number: int, sequence: int, chain_id: str = 'juno-1') -> TxMsgProto:
-    if not private_key_hex:
-        raise ValueError('private_key_hex must be provided.')
-    priv_hex = private_key_hex.lower().replace('0x', '').strip()
-    if len(priv_hex) != 64:
-        raise ValueError('private_key_hex must be 32 bytes (64 hex characters).')
-    priv_bytes = bytes.fromhex(priv_hex)
-    sk = SigningKey.from_string(priv_bytes, curve=SECP256k1)
-    vk = sk.get_verifying_key()
-    compressed_pub = vk.to_string('compressed')
-    pk = Secp256k1PubKeyMsgProto(key=compressed_pub)
-    pk_any = AnyProto()
-    pk_any.Pack(pk)
-    pk_any.type_url = '/cosmos.crypto.secp256k1.PubKey'
-    mode_info = TxMsgProto.ModeInfo(single=TxMsgProto.ModeInfo.Single(mode=SignModeMsgProto.SIGN_MODE_DIRECT))
-    signer_info = SignerInfoMsgProto(public_key=pk_any, mode_info=mode_info, sequence=sequence)
-    tx.auth_info.signer_infos[:] = [signer_info]
-    sign_doc = SignDocMsgProto(body_bytes=tx.body.SerializeToString(), auth_info_bytes=tx.auth_info.SerializeToString(), chain_id=chain_id, account_number=account_number)
-    sign_doc_bytes = sign_doc.SerializeToString()
-    sign_bytes = hashlib.sha256(sign_doc_bytes).digest()
-    signature = sk.sign_deterministic(sign_bytes, hashfunc=hashlib.sha256, sigencode=ecdsa_util.sigencode_string)
-    tx.signatures[:] = [signature]
-    return tx
-def encode_tx_to_bytes(tx: TxMsgProto) -> str:
-    if not tx.signatures:
-        raise RuntimeError('Tx has no signatures; call sign_tx_with_sender_key() first.')
-    tx_bytes = tx.SerializeToString()
-    return base64.b64encode(tx_bytes).decode('utf-8')
+# def sign_tx_with_sender_key(tx: TxMsgProto, private_key_hex: str, account_number: int, sequence: int, chain_id: str = 'juno-1') -> TxMsgProto:
+#     if not private_key_hex:
+#         raise ValueError('private_key_hex must be provided.')
+#     priv_hex = private_key_hex.lower().replace('0x', '').strip()
+#     if len(priv_hex) != 64:
+#         raise ValueError('private_key_hex must be 32 bytes (64 hex characters).')
+#     priv_bytes = bytes.fromhex(priv_hex)
+#     sk = SigningKey.from_string(priv_bytes, curve=SECP256k1)
+#     vk = sk.get_verifying_key()
+#     compressed_pub = vk.to_string('compressed')
+#     pk = Secp256k1PubKeyMsgProto(key=compressed_pub)
+#     pk_any = AnyProto()
+#     pk_any.Pack(pk)
+#     pk_any.type_url = '/cosmos.crypto.secp256k1.PubKey'
+#     mode_info = TxMsgProto.ModeInfo(single=TxMsgProto.ModeInfo.Single(mode=SignModeMsgProto.SIGN_MODE_DIRECT))
+#     signer_info = SignerInfoMsgProto(public_key=pk_any, mode_info=mode_info, sequence=sequence)
+#     tx.auth_info.signer_infos[:] = [signer_info]
+#     sign_doc = SignDocMsgProto(body_bytes=tx.body.SerializeToString(), auth_info_bytes=tx.auth_info.SerializeToString(), chain_id=chain_id, account_number=account_number)
+#     sign_doc_bytes = sign_doc.SerializeToString()
+#     sign_bytes = hashlib.sha256(sign_doc_bytes).digest()
+#     signature = sk.sign_deterministic(sign_bytes, hashfunc=hashlib.sha256, sigencode=ecdsa_util.sigencode_string)
+#     tx.signatures[:] = [signature]
+#     return tx
+def sign_tx_with_sender_key_mock(tx, private_key_hex: str, account_number: int, sequence: int, chain_id: str = 'juno-1'):
+    return ""
+# def encode_tx_to_bytes(tx: TxMsgProto) -> str:
+#     if not tx.signatures:
+#         raise RuntimeError('Tx has no signatures; call sign_tx_with_sender_key() first.')
+#     tx_bytes = tx.SerializeToString()
+#     return base64.b64encode(tx_bytes).decode('utf-8')
+def encode_tx_to_bytes_mock(tx) -> str:
+    return "base64.b64encode(tx_bytes).decode('utf-8')"
 async def broadcast_tx_via_lcd(tx_bytes_b64: str, mode: str = 'BROADCAST_MODE_SYNC') -> dict:
     valid_modes = {'BROADCAST_MODE_SYNC', 'BROADCAST_MODE_BLOCK', 'BROADCAST_MODE_ASYNC', 'BROADCAST_MODE_UNSPECIFIED'}
     if mode not in valid_modes:
@@ -1371,7 +1573,7 @@ def lcd_check_spendable_balance_for_ujuno(address: str, required_ujuno: int) -> 
     if available < required_ujuno:
         raise RuntimeError(f'Insufficient ujuno balance. Required {required_ujuno}, available {available}.')
     return {'available_ujuno': available, 'required_ujuno': required_ujuno}
-def bff_construct_execute_contract_tx(sender: str, contract_address: str, msg_bytes: bytes, funds_ujuno: int = 10, initial_gas_limit: int = 200000, gas_price_ujuno: Decimal = Decimal('0.025')) -> TxRawProto:
+def bff_construct_execute_contract_tx(sender: str, contract_address: str, msg_bytes: bytes, funds_ujuno: int = 10, initial_gas_limit: int = 200000, gas_price_ujuno: Decimal = Decimal('0.025')):
     if not sender or not contract_address:
         raise ValueError('sender and contract_address must be non-empty strings.')
     if initial_gas_limit <= 0:
@@ -1386,7 +1588,7 @@ def bff_construct_execute_contract_tx(sender: str, contract_address: str, msg_by
     auth_info_bytes = auth_info.SerializeToString()
     tx_raw = TxRawProto(body_bytes=body_bytes, auth_info_bytes=auth_info_bytes, signatures=[])
     return tx_raw
-def lcd_simulate_tx(tx_raw: TxRawProto, gas_adjustment: float = 1.3, gas_price_ujuno: Decimal = Decimal('0.025')) -> Dict[str, Any]:
+def lcd_simulate_tx(tx_raw, gas_adjustment: float = 1.3, gas_price_ujuno: Decimal = Decimal('0.025')) -> Dict[str, Any]:
     if gas_adjustment <= 0:
         raise ValueError('gas_adjustment must be positive.')
     tx_bytes = tx_raw.SerializeToString()
@@ -1409,7 +1611,7 @@ def lcd_simulate_tx(tx_raw: TxRawProto, gas_adjustment: float = 1.3, gas_price_u
     recommended_gas_limit = int(gas_used * gas_adjustment)
     fee_amount = (Decimal(recommended_gas_limit) * gas_price_ujuno).to_integral_value(rounding=ROUND_UP)
     return {'gas_used': gas_used, 'recommended_gas_limit': recommended_gas_limit, 'recommended_fee_ujuno': int(fee_amount), 'raw_response': sim_result}
-def bff_sign_execute_tx(unsigned_tx: TxRawProto, chain_id: str, account_number: int, sequence: int, fee_amount_ujuno: int, gas_limit: int, private_key_hex: str) -> bytes:
+def bff_sign_execute_tx(unsigned_tx, chain_id: str, account_number: int, sequence: int, fee_amount_ujuno: int, gas_limit: int, private_key_hex: str) -> bytes:
     if fee_amount_ujuno < 0:
         raise ValueError('fee_amount_ujuno must be non-negative.')
     if gas_limit <= 0:
@@ -1708,7 +1910,7 @@ async def check_spendable_balances_for_sender(sender_address: str, required_fund
         if available < total_required:
             raise InsufficientBalanceError(f'Insufficient spendable balance for denom {denom}. Required including fees: {total_required}, available: {available}.')
     return {'spendable_balances': spendable_map}
-def build_execute_contract_msg_with_funds(sender: str, contract: str, execute_msg: Dict, funds: List[Dict[str, str]]) -> MsgExecuteContractProto:
+def build_execute_contract_msg_with_funds(sender: str, contract: str, execute_msg: Dict, funds: List[Dict[str, str]]):
     if not isinstance(execute_msg, dict):
         raise ExecuteMsgBuildError('execute_msg must be a JSON-serializable dict.')
     if not funds:
@@ -1739,7 +1941,7 @@ async def _get_minimum_gas_price(lcd_url: str = LCD_BASE_URL) -> Tuple[Decimal, 
     denom = mgp[i:]
     if not amount_str or not denom: raise TxConstructionError(f'Could not parse minimum_gas_price value {mgp}.')
     return Decimal(amount_str), denom
-async def construct_execute_tx(msg: MsgExecuteContractProto, public_key_bytes: bytes, sequence: int, gas_limit: int = 200_000, gas_adjustment: float = 1.0, lcd_url: str = LCD_BASE_URL) -> Tuple[TxProto, int, CosmosCoinProto]:
+async def construct_execute_tx(msg, public_key_bytes: bytes, sequence: int, gas_limit: int = 200_000, gas_adjustment: float = 1.0, lcd_url: str = LCD_BASE_URL):
     if gas_limit <= 0: raise TxConstructionError('gas_limit must be positive.')
     effective_gas_limit = int(gas_limit * gas_adjustment)
     try:

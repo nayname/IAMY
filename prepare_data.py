@@ -376,8 +376,6 @@ async def pick_tools(session, config):
 
 
 async def pick_intent(query, tools):
-    print(tools)
-    die
     config = {"configurable": {"thread_id": 1234}}
 
     async with stdio_client(server_params) as (read, write):

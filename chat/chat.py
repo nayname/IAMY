@@ -4,7 +4,6 @@ import markdown
 
 from starlette.responses import JSONResponse
 
-# from api import tamples_recipes
 from prepare_data import escape, pick_intent
 from rag.retrieve import retrieve, explain_workflow
 
@@ -84,7 +83,6 @@ async def to_recipe(query):
                             found_undef = True
                     if not found_undef:
                         tools_list.append(i)
-                    print(entry.name, found_undef)
 
     # f = open("generated/test", "a")
     # with open("generated/test", "w") as f:
@@ -95,20 +93,26 @@ async def to_recipe(query):
     # query["balance"] = "0"
 
 
-def get_code(tool, functions):
+def get_code(function, functions):
+    print("!!!", function)
     for key, value in functions.items():
-        if (tool["function"] in key or key in tool["function"]) and (
-                "def " + tool["function"][:tool["function"].find("(")] + "(" in value
-                or "export const " + tool["function"][:tool["function"].find("(")] in value):
+        if (function in key or key in function) and (
+                "def " + function + "(" in value
+                or "export const " + function in value):
             return value
     return None
 
 
-def get_function(step, actions):
-    for action in actions:
-        if step == action["step"]:
-            return action
-    return None
+def get_function(key):
+    if key['label'] == 'backend':
+        if "await" in key['function']:
+            function = key['function'][key['function'].find("await "):]
+            return function[6:function.find("(")].strip()
+        else:
+            return key['function'][0:key['function'].find("(")].strip()
+    else:
+        function = key['code'][key['code'].find("export const "):]
+        return function[13:function.find("=")].strip()
 
 
 def make_workflow(query):
@@ -124,15 +128,13 @@ def make_workflow(query):
     with open("recipes/functions.json", 'r') as f:
         functions = json.load(f)
 
-    for s in steps["workflow"]:
-        function = get_function(s["step"], steps["tools"])
-        query["workflow"].append({"tool":s["tool"], "code":get_code(function, functions),
-                          "function":function["function"], "type":function["label"], "description":s["description"]})
+    for s in steps["tools"]:
+        function = get_function(s)
+        query["workflow"].append({"tool":function, "code":get_code(function, functions),
+                          "function":s["function"], "type":s["label"], "description":s["introduction"]})
 
 
-async def response(request_data, quadrant_client, embedding_model):
-    req = await request_data.json()
-    input_text = req["query"]
+async def response(req, input_text, quadrant_client, embedding_model):
     print("QUERY: " + input_text)
 
     query = {"query":input_text,

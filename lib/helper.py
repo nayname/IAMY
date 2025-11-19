@@ -17,6 +17,35 @@ I will provide a list of functions. Please process them as follows:
 """
 
 """
+Role: You are an expert Python Backend Developer specializing in blockchain interactions and automation scripts.
+
+Context: I have a Python function named tamples_recipes that handles various "intents" (user actions) such as compiling contracts, sending tokens, or querying balances. Currently, the code expects parameters to be passed in a req dictionary, but it lacks a robust way to handle cases where the user wants to run a "demo" version without providing any inputs.
+
+The Challenge:
+I need to support two execution modes for a Chat UI:
+
+Default / One-Click Mode: The user clicks a button (e.g., "Check Balance") without providing details. The script must detect this and use pre-configured "Safe Defaults" (e.g., a demo wallet address, a specific testnet contract) to execute a successful demonstration immediately.
+
+Custom / Full Mode: The user provides specific details (e.g., a specific wallet address). The script must use these details, overriding any defaults.
+
+Your Task:
+Refactor the provided code to implement this "Dual Mode" logic.
+
+Specific Requirements:
+
+Configuration Map: Create a dictionary named DEFAULT_SCENARIOS at the top of the file. Keys should be the exact input_text strings from the case statements. Values should be a dictionary of valid default parameters (e.g., {'address': 'juno1...', 'chain_id': 'uni-6'}) necessary to run that specific intent successfully.
+
+Merge Logic: At the start of the function, implement logic to merge the DEFAULT_SCENARIOS for the given intent with the user's req data. User data must always take precedence over defaults.
+
+Mocking Dependencies (CRITICAL): The original code calls many external functions (e.g., verify_docker_installed, construct_msg_send, broadcast_tx). You must generate mock/stub implementations for ALL of these missing functions. The mocks should return realistic dummy data (like {"txhash": "A1B2..."}) so the code is fully runnable and testable immediately without a blockchain connection.
+
+Error Handling: Ensure the code doesn't crash if req is None.
+
+Input Code:
+[Paste the content of function.txt here]
+"""
+
+"""
 "Given the user-provided function library `Backend.py` and the intent descriptions in `intents.txt`, write me a single Python function `async def intents(input_text, req):` that implements *all* the intents using a `match input_text:` statement. The function body for each `case` should execute the sequence of functions specified in the JSON, assigning intermediate results to unique variables (e.g., `output1`, `output2`), and appending descriptive strings to a list named `res` after each function call.
 
 The structure for each case *must* follow this exact pattern:
@@ -127,8 +156,9 @@ def create_actions():
                                 f.write("\n\n\n")
 
 def create_functions_json():
-    with open("../recipes/functions.json", 'r') as f:
-        functions = json.load(f)
+    # with open("../recipes/functions.json", 'r') as f:
+    #     functions = json.load(f)
+    functions = {'backend':{}, 'frontend':{},}
         
     with os.scandir("../recipes/actions") as entries:
         for entry in entries:
@@ -158,4 +188,4 @@ def create_functions_json():
 
 
 if __name__ == "__main__":
-    create_actions()
+    create_functions_json()
