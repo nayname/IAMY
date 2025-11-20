@@ -499,7 +499,6 @@ async def handle_chat(request_data: Request):
     req = await request_data.json()
     input_text = req["query"]
 
-    print("RESPONSE:", await tamples_recipes("Query a CosmWasm smart contract on Juno via REST using a base64-encoded smart query.", req))
     return await response(req, input_text, quadrant_client, embedding_model)
 
 @app.post("/mock_execute")
@@ -1647,7 +1646,7 @@ async def tamples_recipes(input_text, req):
                 res.append(f"Balances formatted into {len(output5)} human-readable entries.")
 
             return {"status": "success", "message": f"Balance check completed for address {output1}.",
-                    "data": {"balances": output5}}
+                    "data": {"balances": output5}, "steps":res, "required": ['address']}
 
         case _:
             return {"status": "error", "message": "Unknown intent."}
@@ -1665,11 +1664,11 @@ async def handle_generate(request_data: Request):
     """
     # Get the text from the request body
     req = await request_data.json()
-    input_text = req["text"]
+    input_text = req["query"]
     print("QUERY: "+input_text)
 
     response = await tamples_recipes(input_text, req)
-
+    print(response)
     if response:
         return JSONResponse(content=response)
     else:
