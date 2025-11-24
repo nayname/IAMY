@@ -1,0 +1,222 @@
+[
+    {
+        "intent": "Show REP balance and staking status for a specific Republic address",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_republic_account_address",
+                "description": "Confirm that the provided {address} is a well-formed Republic account address and normalize it to a canonical format."
+            },
+            {
+                "step": 2,
+                "tool": "republic_query_bank_balances",
+                "description": "Query the Republic chain (via RPC/gRPC or CLI wrapper) for all bank balances associated with {address}, and extract the REP balance in base units."
+            },
+            {
+                "step": 3,
+                "tool": "republic_query_staking_delegations",
+                "description": "Fetch all active staking delegations for {address}, including each validator and the corresponding amount of staked REP."
+            },
+            {
+                "step": 4,
+                "tool": "republic_query_unbonding_and_redelegations",
+                "description": "Fetch all unbonding delegations and ongoing redelegations for {address} to capture REP that is in transition (leaving or moving between validators)."
+            },
+            {
+                "step": 5,
+                "tool": "republic_query_distribution_delegation_rewards",
+                "description": "Query the distribution subsystem for any unclaimed REP rewards (staking, compute performance, and job completion rewards) currently claimable by {address}."
+            },
+            {
+                "step": 6,
+                "tool": "compute_balance_and_staking_breakdown",
+                "description": "Aggregate REP amounts into categories\u2014liquid (bank balance), staked (active delegations), unbonding/redelegating, and claimable rewards\u2014and convert all values from base units to human-readable REP."
+            },
+            {
+                "step": 7,
+                "tool": "format_balance_and_staking_status_output",
+                "description": "Format a structured response summarizing total REP and the per-category amounts, including percentage breakdown of liquid versus staked REP for {address}."
+            }
+        ],
+        "outcome_checks": [
+            "Verify that all REP amounts are non-negative and use a consistent decimal precision.",
+            "Confirm that liquid + staked + unbonding/redelegating REP is consistent with the total holdings for {address} without double counting transitional states.",
+            "If no REP balances or staking data exist for {address}, return a clear 'no REP found for this address' result instead of an error."
+        ]
+    },
+    {
+        "intent": "Show how much REP is currently staked versus unstaked for the current Republic user",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "resolve_current_republic_user_address",
+                "description": "Obtain the Republic account address for the currently authenticated user from the request context or session."
+            },
+            {
+                "step": 2,
+                "tool": "validate_republic_account_address",
+                "description": "Validate the resolved user address format and normalize it."
+            },
+            {
+                "step": 3,
+                "tool": "republic_query_bank_balances",
+                "description": "Query bank balances for the user address and extract the liquid REP balance in base units (spendable amount)."
+            },
+            {
+                "step": 4,
+                "tool": "republic_query_staking_delegations",
+                "description": "Fetch all active staking delegations for the user address and sum the total amount of staked REP across validators."
+            },
+            {
+                "step": 5,
+                "tool": "republic_query_unbonding_and_redelegations",
+                "description": "Fetch unbonding delegations and ongoing redelegations for the user address to identify REP that is not currently earning staking rewards but also not liquid yet."
+            },
+            {
+                "step": 6,
+                "tool": "compute_staked_vs_unstaked_totals",
+                "description": "Compute staked REP as the sum of all active delegations and unstaked REP as the liquid bank balance; optionally track a separate 'in unbonding' category, and convert all values to human-readable REP."
+            },
+            {
+                "step": 7,
+                "tool": "format_staked_vs_unstaked_summary",
+                "description": "Return a concise summary showing staked REP, unstaked (liquid) REP, and, if available, REP in unbonding, along with percentage breakdowns."
+            }
+        ],
+        "outcome_checks": [
+            "Ensure staked and unstaked REP values are non-negative and denominated in the same unit.",
+            "Confirm that staked + unstaked (+ unbonding, if included) is consistent with the total REP associated with the user address without double counting.",
+            "If the user holds no REP, present a zeroed summary rather than an error."
+        ]
+    },
+    {
+        "intent": "Show REP staking, compute performance, and job completion rewards earned by a validator over the last 7 days",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_republic_validator_address",
+                "description": "Confirm that the provided {address} is a well-formed Republic validator (operator) address and normalize it."
+            },
+            {
+                "step": 2,
+                "tool": "get_chain_time_window",
+                "description": "Query the latest block time and compute the timestamp and/or block height corresponding to 7 days ago to define the [start, end] window."
+            },
+            {
+                "step": 3,
+                "tool": "republic_query_validator_staking_rewards_in_range",
+                "description": "Use a chain indexer or analytics service to aggregate all staking-related REP rewards (commissions and self-delegation rewards) credited to validator {address} within the last 7 days."
+            },
+            {
+                "step": 4,
+                "tool": "republic_query_compute_performance_rewards_in_range",
+                "description": "Query Republic\u2019s compute validation subsystem or indexed events to collect all REP rewards paid to validator {address} for benchmarked compute performance over the last 7 days."
+            },
+            {
+                "step": 5,
+                "tool": "republic_query_job_completion_rewards_in_range",
+                "description": "Query the job scheduling/compute module or indexer to aggregate all REP job completion bonuses earned by validator {address} over the last 7 days."
+            },
+            {
+                "step": 6,
+                "tool": "aggregate_validator_rewards_by_type",
+                "description": "Normalize all reward amounts to base units, group them by category (staking, compute performance, job completion), sum totals per category, and convert to human-readable REP."
+            },
+            {
+                "step": 7,
+                "tool": "compute_7d_reward_statistics",
+                "description": "Derive optional statistics such as average daily rewards per category and overall 7-day total REP earned by validator {address}."
+            },
+            {
+                "step": 8,
+                "tool": "format_validator_rewards_7d_report",
+                "description": "Return a structured report for validator {address} showing 7-day totals and daily averages for staking rewards, compute performance rewards, and job completion rewards."
+            }
+        ],
+        "outcome_checks": [
+            "Verify that the sum of category-level rewards matches the total REP rewards identified for validator {address} in the 7-day window.",
+            "Ensure no reward event is double-counted across staking, compute performance, and job completion categories.",
+            "If the validator has no rewards in the last 7 days, return a valid empty report indicating zero rewards in each category."
+        ]
+    },
+    {
+        "intent": "Estimate expected REP rewards for delegating a specified amount of REP to a given validator",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_delegation_estimate_inputs",
+                "description": "Validate that {amount} is a positive numeric value, normalize it into base units of REP, and confirm {address} is a valid Republic validator address."
+            },
+            {
+                "step": 2,
+                "tool": "republic_query_validator_yield_parameters",
+                "description": "Fetch current parameters relevant to validator {address}, including total stake, commission rate, current reward rate, and, if available, recent reputation and compute quality metrics that influence rewards."
+            },
+            {
+                "step": 3,
+                "tool": "republic_query_validator_historical_rewards",
+                "description": "Retrieve historical total rewards (staking, compute performance, and job completion) earned by validator {address} and distributed to delegators over a recent reference period (for example, the last 30 days)."
+            },
+            {
+                "step": 4,
+                "tool": "compute_effective_validator_yield",
+                "description": "Compute the validator\u2019s effective net yield to delegators over the reference period by dividing net delegator rewards by the average delegated stake, taking commission into account, and annualizing to an approximate APR."
+            },
+            {
+                "step": 5,
+                "tool": "project_delegation_rewards_for_amount",
+                "description": "Using the effective yield, estimate the expected REP rewards that a delegation of {amount} REP to validator {address} would earn over standard horizons (e.g., 7 days, 30 days, and 365 days), breaking out approximate contributions from staking vs compute/job rewards if possible."
+            },
+            {
+                "step": 6,
+                "tool": "format_delegation_reward_estimate_output",
+                "description": "Return an estimate summarizing projected rewards for {amount} REP (by time horizon), implied APR, and any caveats such as short validator history or volatile reward rates."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm that projected net rewards are non-negative and scaled correctly with respect to {amount}.",
+            "If the validator has limited historical data, clearly mark the estimate as low-confidence and, if used, document any fallback to network-average yields.",
+            "Ensure that all reported values are expressed in REP with consistent decimal precision and clearly labeled time horizons."
+        ]
+    },
+    {
+        "intent": "Show history of REP rewards and slashes for a specific delegator address on Republic",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_republic_account_address",
+                "description": "Validate that the provided {address} is a well-formed Republic delegator account address and normalize it."
+            },
+            {
+                "step": 2,
+                "tool": "republic_query_delegator_reward_events",
+                "description": "Use an indexer or distribution-module history API to fetch all REP reward events (including staking, compute performance, and job completion distributions) credited to delegator {address}, capturing timestamps, validator, and amount."
+            },
+            {
+                "step": 3,
+                "tool": "republic_query_delegator_slash_events",
+                "description": "Query the slashing subsystem or an indexed history service for all slashing events that reduced the stake of delegator {address}, recording time, responsible validator, reason, and REP amount lost."
+            },
+            {
+                "step": 4,
+                "tool": "merge_and_sort_reward_slash_events",
+                "description": "Merge reward and slash events into a single chronological sequence, tagging each entry as a reward or slash and normalizing all amounts to base units."
+            },
+            {
+                "step": 5,
+                "tool": "compute_delegator_reward_and_slash_totals",
+                "description": "Aggregate lifetime totals and optionally per-validator subtotals for both rewards earned and REP lost to slashing, converting to human-readable REP."
+            },
+            {
+                "step": 6,
+                "tool": "format_delegator_history_report",
+                "description": "Return a structured history for {address}, including an event timeline and summary totals of REP rewards and REP slashed, with validators and reasons where available."
+            }
+        ],
+        "outcome_checks": [
+            "Verify that aggregated reward and slash totals equal the sum of the underlying events with no duplicates.",
+            "Ensure the combined event history for {address} is strictly ordered by time and correctly labeled by type (reward vs slash).",
+            "If there are no events for {address}, return a clear indication that no rewards or slashes have been recorded, rather than an error."
+        ]
+    }
+]

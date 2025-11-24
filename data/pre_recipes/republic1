@@ -1,0 +1,237 @@
+[
+    {
+        "intent": "List all Republic validators with their delegated stake, compute benchmark scores, and reputation.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "resolve_network_from_label",
+                "description": "Map the 'republic' label to the correct chain configuration (chain ID, RPC/REST endpoints, indexer URLs) so subsequent calls are routed to the Republic network."
+            },
+            {
+                "step": 2,
+                "tool": "query_republic_validators",
+                "description": "Fetch the full active validator set from the Republic staking/consensus module, including operator addresses and core metadata. Handle pagination until all validators are retrieved."
+            },
+            {
+                "step": 3,
+                "tool": "query_republic_validator_stake_totals",
+                "description": "For each validator, query the staking data to compute total delegated stake in REP (self-bond plus all delegations) and attach this value to the validator record."
+            },
+            {
+                "step": 4,
+                "tool": "query_republic_compute_benchmarks",
+                "description": "For each validator, retrieve the latest compute validation benchmarks from the Republic compute module or benchmark registry, including throughput, inference, and achieved FLOPs scores."
+            },
+            {
+                "step": 5,
+                "tool": "query_republic_reputation_scores",
+                "description": "Fetch the current reputation score for each validator from the Republic reputation module or index, reflecting their historical performance, benchmark results, and any penalties."
+            },
+            {
+                "step": 6,
+                "tool": "merge_validator_datasets",
+                "description": "Join the staking, compute benchmark, and reputation datasets into a unified list of validators, ensuring each validator entry includes delegated stake, compute benchmarks, and reputation."
+            },
+            {
+                "step": 7,
+                "tool": "format_validator_list_response",
+                "description": "Format the aggregated validator list into an API/UI-friendly structure, with clear fields for operator address, moniker, total delegated stake, benchmark scores, and reputation. Apply any basic ordering (e.g., by operator address) if required."
+            }
+        ],
+        "outcome_checks": [
+            "Verify that the number of validators in the final list matches the count reported by the underlying staking module or indexer.",
+            "Ensure each validator entry includes non-null values for operator address, total delegated stake, at least one compute benchmark score, and a reputation score.",
+            "Confirm that pagination (if used) has been fully exhausted and that no validators are missing or duplicated in the final output."
+        ]
+    },
+    {
+        "intent": "Show detailed Republic validator profile for a given validator address, including stake, benchmarks, reputation, and slashing history.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "resolve_network_from_label",
+                "description": "Map the 'republic' label to the correct chain configuration (chain ID, RPC/REST endpoints, indexer URLs) for the Republic network."
+            },
+            {
+                "step": 2,
+                "tool": "validate_validator_address_format",
+                "description": "Validate that the provided {address} is a well-formed Republic validator operator address (correct prefix, length, and checksum). Normalize it to a canonical representation if necessary."
+            },
+            {
+                "step": 3,
+                "tool": "query_republic_validator_details",
+                "description": "Query the Republic staking/consensus module for core validator information for {address}, including moniker, operator address, consensus public key, status, commission, self-bond, and total tokens."
+            },
+            {
+                "step": 4,
+                "tool": "query_republic_validator_stake_totals",
+                "description": "Compute and attach detailed stake metrics for this validator, including total delegated stake in REP, self-delegation amount, and number of delegators if available."
+            },
+            {
+                "step": 5,
+                "tool": "query_republic_compute_benchmarks",
+                "description": "Fetch this validator's most recent compute benchmark results from the compute validation registry, including throughput, inference performance, and achieved FLOPs, and attach them to the profile."
+            },
+            {
+                "step": 6,
+                "tool": "query_republic_reputation_scores",
+                "description": "Retrieve the current reputation score for this validator, along with any available breakdown (e.g., contribution from benchmarks, job completion rate, and slashing history)."
+            },
+            {
+                "step": 7,
+                "tool": "query_republic_slashing_history",
+                "description": "Query the slashing module or indexed event logs for all slashing events involving this validator, including height/timestamp, reason (e.g., downtime, incorrect computation), and amount slashed."
+            },
+            {
+                "step": 8,
+                "tool": "assemble_validator_profile",
+                "description": "Combine the basic validator info, stake metrics, compute benchmarks, reputation score, and slashing history into a single structured profile object suitable for API or UI presentation."
+            }
+        ],
+        "outcome_checks": [
+            "If the provided address does not correspond to an existing validator, return a clear, structured error instead of an empty or partial profile.",
+            "Ensure the final profile object contains all requested sections: core metadata, stake details, compute benchmark results, reputation, and slashing history.",
+            "Verify that all slashing events in the profile are associated with the target validator and sorted in chronological order (e.g., by block height or timestamp)."
+        ]
+    },
+    {
+        "intent": "Sort Republic validators by reputation score.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "resolve_network_from_label",
+                "description": "Map the 'republic' label to the appropriate Republic chain configuration so that validator and reputation queries are routed correctly."
+            },
+            {
+                "step": 2,
+                "tool": "query_republic_validators",
+                "description": "Fetch the full set of active validators from the Republic staking/consensus module, including operator addresses. Handle pagination if needed."
+            },
+            {
+                "step": 3,
+                "tool": "query_republic_reputation_scores",
+                "description": "For each validator, retrieve the current reputation score from the Republic reputation module or index and attach it to the validator record."
+            },
+            {
+                "step": 4,
+                "tool": "sort_validators",
+                "description": "Sort the validator list in descending order of reputation score. If multiple validators share the same reputation score, apply a deterministic tie-breaker (e.g., operator address in ascending lexicographic order)."
+            },
+            {
+                "step": 5,
+                "tool": "format_validator_list_response",
+                "description": "Format the sorted list into an API/UI-friendly structure, ensuring each validator entry includes at minimum operator address, moniker (if available), and reputation score, with optional additional metadata."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm that every validator in the final list has a non-null reputation score attached.",
+            "Verify that the list is strictly ordered by descending reputation score, with no out-of-order pairs when comparing adjacent entries.",
+            "Ensure that the sorted list includes all validators returned by the initial staking query, with no missing or duplicated validators."
+        ]
+    },
+    {
+        "intent": "Sort Republic validators by delegated stake and verified compute performance.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "resolve_network_from_label",
+                "description": "Map the 'republic' label to the Republic chain configuration (RPC/REST endpoints and indexer) to support staking and compute benchmark queries."
+            },
+            {
+                "step": 2,
+                "tool": "query_republic_validators",
+                "description": "Retrieve the complete set of active validators from the Republic staking/consensus module, including operator addresses and base metadata. Use pagination as needed."
+            },
+            {
+                "step": 3,
+                "tool": "query_republic_validator_stake_totals",
+                "description": "For each validator, query staking data to compute total delegated stake in REP (self-bond plus delegations) and attach this total stake to the validator record."
+            },
+            {
+                "step": 4,
+                "tool": "query_republic_compute_benchmarks",
+                "description": "Fetch each validator's latest compute benchmark results (throughput, inference, achieved FLOPs) from the Republic compute validation or benchmark registry."
+            },
+            {
+                "step": 5,
+                "tool": "compute_validator_compute_score",
+                "description": "Aggregate the raw benchmark metrics for each validator into a single verified compute performance score. For example, normalize throughput, inference, and FLOPs across validators and compute a weighted average to produce a scalar compute_performance_score."
+            },
+            {
+                "step": 6,
+                "tool": "sort_validators",
+                "description": "Sort validators primarily by total delegated stake in descending order and secondarily by compute_performance_score in descending order, with a deterministic tie-breaker such as operator address in ascending lexicographic order."
+            },
+            {
+                "step": 7,
+                "tool": "format_validator_list_response",
+                "description": "Format the sorted list into an API/UI-ready response that includes operator address, moniker, total delegated stake, individual benchmark metrics, and the aggregated compute_performance_score."
+            }
+        ],
+        "outcome_checks": [
+            "Ensure that every validator has both total delegated stake and compute_performance_score populated before sorting.",
+            "Verify that the final ordering respects the multi-key sort: higher delegated stake first, and among equal-stake validators, higher compute_performance_score first.",
+            "Confirm that the number of validators in the output matches the number retrieved from the staking module, with no omissions or duplicates."
+        ]
+    },
+    {
+        "intent": "Show Republic validators sorted by a combined score of stake, compute performance, and reputation.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "resolve_network_from_label",
+                "description": "Map the 'republic' label to the correct Republic chain configuration so that staking, compute, and reputation queries are all routed properly."
+            },
+            {
+                "step": 2,
+                "tool": "query_republic_validators",
+                "description": "Fetch the full active validator set from the Republic staking/consensus module, including operator addresses and base metadata, handling pagination as needed."
+            },
+            {
+                "step": 3,
+                "tool": "query_republic_validator_stake_totals",
+                "description": "For each validator, compute total delegated stake in REP (self-bond plus external delegations) and attach this value to the validator record."
+            },
+            {
+                "step": 4,
+                "tool": "query_republic_compute_benchmarks",
+                "description": "Retrieve the latest compute validation benchmarks for each validator, including throughput, inference performance, and achieved FLOPs, from the Republic compute validation or benchmark registry."
+            },
+            {
+                "step": 5,
+                "tool": "compute_validator_compute_score",
+                "description": "Aggregate the raw compute benchmark metrics into a single compute_performance_score per validator, for example by normalizing throughput, inference, and FLOPs across validators and computing a weighted average."
+            },
+            {
+                "step": 6,
+                "tool": "query_republic_reputation_scores",
+                "description": "Fetch the current reputation score for each validator from the Republic reputation module or index and attach it to the corresponding validator record."
+            },
+            {
+                "step": 7,
+                "tool": "normalize_validator_metrics",
+                "description": "Normalize each validator's total delegated stake, compute_performance_score, and reputation score onto a common 0\u20131 scale (e.g., via min\u2013max normalization across all validators), handling edge cases where all values in a dimension are equal."
+            },
+            {
+                "step": 8,
+                "tool": "compute_combined_validator_score",
+                "description": "For each validator, compute a combined_score that reflects stake, compute performance, and reputation. For example, use combined_score = 0.4 * norm_stake + 0.4 * norm_compute + 0.2 * norm_reputation, aligning with Republic's emphasis on both stake and verified compute quality with reputation as a supporting factor."
+            },
+            {
+                "step": 9,
+                "tool": "sort_validators",
+                "description": "Sort the validators in descending order of combined_score. For validators with identical combined_score, apply a deterministic tie-breaker (e.g., higher norm_compute first, then lexicographic operator address)."
+            },
+            {
+                "step": 10,
+                "tool": "format_validator_list_response",
+                "description": "Format the sorted validator list into an API/UI-friendly response that includes operator address, moniker, total delegated stake, compute benchmarks, reputation score, normalized metrics, and the final combined_score used for sorting."
+            }
+        ],
+        "outcome_checks": [
+            "Verify that each validator in the final list includes the raw metrics (stake, compute benchmarks, reputation), the normalized metrics, and the computed combined_score.",
+            "Ensure that normalization does not produce invalid values (NaN or infinity), particularly in cases where all validators have identical values for a given metric.",
+            "Confirm that the final list is strictly ordered by descending combined_score and that the number of validators matches the initial validator set, with no additions, omissions, or duplicates."
+        ]
+    }
+]

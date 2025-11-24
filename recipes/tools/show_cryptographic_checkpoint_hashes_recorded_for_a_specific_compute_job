@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Validates a raw job_id against Republic\u2019s format and returns a canonical 'job_<64-hex>' string safe for backend use.",
+            "function": "validate_and_normalize_job_id(job_id: str)",
+            "usage": "canonical_job_id = validate_and_normalize_job_id(raw_job_id)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Fetches PoME metadata for the given job_id from the registry, including root_hash, expected_checkpoint_count, and checkpoint_storage info.",
+            "function": "fetch_pome_metadata_for_job(job_id: str)",
+            "usage": "pome_metadata = fetch_pome_metadata_for_job(canonical_job_id)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Interprets the checkpoint_storage section of PoME metadata and produces a concrete fetch plan describing where and how to load checkpoint hashes.",
+            "function": "resolve_checkpoint_storage_location(pome_metadata: Dict[str, Any])",
+            "usage": "fetch_plan = resolve_checkpoint_storage_location(pome_metadata)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Executes the fetch plan (on-chain, indexer, or object store) to retrieve and sort the list of checkpoint hashes for the job.",
+            "function": "fetch_checkpoint_hashes_for_job(fetch_plan: Dict[str, Any])",
+            "usage": "checkpoints = fetch_checkpoint_hashes_for_job(fetch_plan)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Aggregates the ordered checkpoint hashes using the HashedModel-style scheme and compares the computed root to the PoME root_hash, returning verification details.",
+            "function": "verify_checkpoint_hash_chain(root_hash: str, expected_checkpoint_count: int, checkpoints: List[Dict[str, Any]])",
+            "usage": "verification = verify_checkpoint_hash_chain(pome_metadata['root_hash'], pome_metadata['expected_checkpoint_count'], checkpoints)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Builds the final API response for a compute job, including checkpoint list, counts, root_hash, and verification status summary.",
+            "function": "construct_checkpoint_hashes_response(job_id: str, pome_metadata: Dict[str, Any], checkpoints: List[Dict[str, Any]], verification_result: Dict[str, Any])",
+            "usage": "response = construct_checkpoint_hashes_response(canonical_job_id, pome_metadata, checkpoints, verification)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "canonical_job_id = validate_and_normalize_job_id(raw_job_id)#step: 1 Tool: validate_and_normalize_job_id Desciption: Validate and canonicalize the provided {job_id} according to Republic\u2019s job identifier format to ensure it is safe to use in backend queries.",
+        "pome_metadata = fetch_pome_metadata_for_job(canonical_job_id)#step: 2 Tool: fetch_pome_metadata_for_job Desciption: Query the PoME or compute-proof registry for this job_id to retrieve metadata such as root_hash, expected checkpoint_count, and information about where checkpoint hashes are stored (on-chain field, indexer table, or off-chain storage URI).",
+        "fetch_plan = resolve_checkpoint_storage_location(pome_metadata)#step: 3 Tool: resolve_checkpoint_storage_location Desciption: Interpret the storage information from metadata to produce a concrete plan for fetching checkpoint hashes, determining whether to read from an on-chain proof field, an indexer database, or an external object store (e.g., IPFS, S3-style storage) and constructing the appropriate query or URL.",
+        "checkpoints = fetch_checkpoint_hashes_for_job(fetch_plan)#step: 4 Tool: fetch_checkpoint_hashes_for_job Desciption: Execute the resolved fetch plan to obtain the ordered list of checkpoint hashes for the job, returning an array of records including at least checkpoint_index and hash, and optionally per-checkpoint timestamps or segment identifiers.",
+        "verification = verify_checkpoint_hash_chain(pome_metadata['root_hash'], pome_metadata['expected_checkpoint_count'], checkpoints)#step: 5 Tool: verify_checkpoint_hash_chain Desciption: Using the fetched checkpoint hashes and the HashedModel aggregation scheme, recompute the root hash and compare it to the stored root_hash from PoME metadata; annotate the result with a boolean flags such as checkpoints_match_root and any discrepancy details.",
+        "response = construct_checkpoint_hashes_response(canonical_job_id, pome_metadata, checkpoints, verification)#step: 6 Tool: construct_checkpoint_hashes_response Desciption: Build the final response object containing job_id, root_hash, expected_checkpoint_count, actual_checkpoint_count, ordered list of {index, hash} pairs, and the verification result (e.g., MATCHES_ROOT, MISMATCH_WITH_ROOT, or CHECKPOINTS_NOT_AVAILABLE if none were recorded)."
+    ],
+    "intent": "Show cryptographic checkpoint hashes recorded for a specific compute job",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_and_normalize_job_id",
+            "description": "Validate and canonicalize the provided {job_id} according to Republic\u2019s job identifier format to ensure it is safe to use in backend queries."
+        },
+        {
+            "step": 2,
+            "tool": "fetch_pome_metadata_for_job",
+            "description": "Query the PoME or compute-proof registry for this job_id to retrieve metadata such as root_hash, expected checkpoint_count, and information about where checkpoint hashes are stored (on-chain field, indexer table, or off-chain storage URI)."
+        },
+        {
+            "step": 3,
+            "tool": "resolve_checkpoint_storage_location",
+            "description": "Interpret the storage information from metadata to produce a concrete plan for fetching checkpoint hashes, determining whether to read from an on-chain proof field, an indexer database, or an external object store (e.g., IPFS, S3-style storage) and constructing the appropriate query or URL."
+        },
+        {
+            "step": 4,
+            "tool": "fetch_checkpoint_hashes_for_job",
+            "description": "Execute the resolved fetch plan to obtain the ordered list of checkpoint hashes for the job, returning an array of records including at least checkpoint_index and hash, and optionally per-checkpoint timestamps or segment identifiers."
+        },
+        {
+            "step": 5,
+            "tool": "verify_checkpoint_hash_chain",
+            "description": "Using the fetched checkpoint hashes and the HashedModel aggregation scheme, recompute the root hash and compare it to the stored root_hash from PoME metadata; annotate the result with a boolean flags such as checkpoints_match_root and any discrepancy details."
+        },
+        {
+            "step": 6,
+            "tool": "construct_checkpoint_hashes_response",
+            "description": "Build the final response object containing job_id, root_hash, expected_checkpoint_count, actual_checkpoint_count, ordered list of {index, hash} pairs, and the verification result (e.g., MATCHES_ROOT, MISMATCH_WITH_ROOT, or CHECKPOINTS_NOT_AVAILABLE if none were recorded)."
+        }
+    ],
+    "outcome_checks": [
+        "If metadata reports a positive checkpoint_count, verify that the number of fetched checkpoint hashes equals this count; if not, flag a partial_data error.",
+        "Validate that each checkpoint hash is in the expected cryptographic format and that indexes are strictly increasing with no gaps or duplicates.",
+        "If checkpoints are available, recomputing the root hash from them must either match the stored root_hash (checkpoints_match_root=true) or, on mismatch, cause the response to surface a verification_failure state rather than silently succeeding.",
+        "Ensure that only cryptographic hashes and non-sensitive metadata are returned (no raw model parameters or private input data)."
+    ]
+}

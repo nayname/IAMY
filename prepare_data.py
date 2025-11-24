@@ -43,7 +43,8 @@ pages = {
     # ***
     # COSMOS
     # ***
-    "cosmwasm-contracts": "data/pages/cosmwasm-contracts",
+    # "cosmwasm-contracts": "data/pages/cosmwasm-contracts",
+    "republic": "data/pages/republic",
     # "ToolingResources": "data/pages/ToolingResources",
     # "EthereumJSON_RPC": "data/pages/EthereumJSON_RPC",
     # "Learn": "data/pages/Learn",
@@ -58,9 +59,15 @@ synthesize_playground = open("prompts/synthesize_playground").read()
 synthesize_picking_functions = open("prompts/synthesize_picking_functions").read()
 synthesize_classified_intent = open("prompts/synthesize_classified_intent").read()
 
+# server_params = StdioServerParameters(
+#     command="node",
+#     args=["/root/neutron/juno/mcp/mcp-server.js"],
+#     env=None,
+# )
+
 server_params = StdioServerParameters(
     command="node",
-    args=["/root/neutron/juno/mcp/mcp-server.js"],
+    args=["/root/neutron/cosmos-docs_/docs/mcp/mcp-server.js"],
     env=None,
 )
 
@@ -130,7 +137,18 @@ async def create_intents(session, config):
             file_object = open(filepath, "r")
             content = file_object.read()
 
-            agent = await create_graph(session, synthesize_query_intents, "OpenAI", "o3")
+            agent = await create_graph(session, synthesize_query_intents
+               # .replace("***NAME***","\"Cosmos Documentation\"")
+               # .replace("***EXECUTION***", "**executes user intents as Cosmos blockchain actions**"), "OpenAI", "o3")
+                .replace("***NAME***",
+     "Explorer UI for Cosmos SDK chains (with EVM support) backed by the Yaci indexer. yaci is a command-line tool that connects to a gRPC server and extracts blockchain data.")
+                .replace("***EXECUTION***", """
+                * Auto-detects chain ID, denoms, and message types from the chain
+                * Cosmos + EVM transactions, live block updates, unified search
+                * IBC denom resolution (optional REST endpoint), cached in-browser
+                * Analytics: chain stats, gas efficiency, volume, top message types
+                * Built with React Router 7, TypeScript, Tailwind/shadcn, TanStack Query, Vite
+                """))
             response = await agent.ainvoke({"messages": content}, config=config)
             print(response["messages"][-1].content)
 
@@ -173,9 +191,41 @@ async def create_pre_recipe(session, config):
 
     for batch in create_batch(pages, 5):
         if not os.path.exists('data/pre_recipes/' + batch[0]['label'] + str(count)):
-            apis = open('data/res.json').read().replace("{", "{{").replace("}", "}}")
+            # apis = open('data/res.json').read().replace("{", "{{").replace("}", "}}")
 
-            agent = await create_graph(session, synthesize_recipes+apis)
+            # agent = await create_graph(session, synthesize_recipes.replace("***KNOWLEDGE_DB***",             """
+            #     * The **Cosmos Documentation** MCP source
+            #     * The **API Schema** provided at the end of this prompt
+            #     """).replace("***EXECUTION_REQS***", """"
+            #     #### **Use Verified Endpoints**
+            #
+            #     The provided API schema contains trusted and working LCD endpoints.
+            #     Always prioritize these for:
+            #
+            #     * Queries
+            #     * State validation
+            #     * Simulation
+            #     * Broadcasting
+            #
+            #     **Base URL:** `https://lcd-archive.junonetwork.io`
+            #
+            #
+            #     ❗ **Do NOT invent endpoints, objects, or fields.**
+            #
+            #     If something is not covered in the schema, fall back to Cosmos Documentation patterns.""")
+            #    .replace("***ADDIT***", "**Begin processing the user input based on the API Schema provided below:**")+apis)
+            protocol = open('data/pages/protocol').read()
+
+            agent = await create_graph(session, synthesize_recipes.replace("***KNOWLEDGE_DB***", """
+                * The **Cosmos Documentation** MCP source
+                * Description of Republic project, provided at the end of this prompt
+                """).replace("***EXECUTION_REQS***", """"
+                #### **Use Republic doc to construct the execution process**
+
+                As Republic API for now mostly not implemented, construct execution process based on the Description of Republic
+                 project and your knowledge of how the systems of those type works.""")
+                                       .replace("***ADDIT***",
+                                                "**Begin processing the user input based on the Description of Republic project provided below:**") + protocol)
             langchain.verbose = True
             response = await agent.ainvoke({"messages": json.dumps(batch)}, config=config)
             print(response["messages"][-1].content)
@@ -253,9 +303,21 @@ async def create_actions(session, config):
                             workflow = key['workflow']
 
                             if workflow and not os.path.exists('recipes/actions/' + escape(key['intent'])):
-                                apis = open('data/res.json').read().replace("{", "{{").replace("}", "}}")
+                                # apis = open('data/res.json').read().replace("{", "{{").replace("}", "}}")
+                                #
+                                # agent = await create_graph(session, synthesize_cosmwasm+apis)
+                                protocol = open('data/pages/protocol').read()
 
-                                agent = await create_graph(session, synthesize_cosmwasm+apis)
+                                agent = await create_graph(session, synthesize_cosmwasm.replace("***KNOWLEDGE_DB***", """
+                                                * The **Cosmos Documentation** MCP source
+                                                * Description of Republic project, provided at the end of this prompt
+                                                """).replace("***EXECUTION_REQS***", """"
+                                                #### **Use Republic doc to construct the execution process**
+
+                                                As Republic API for now mostly not implemented, construct execution process based on the Description of Republic
+                                                 project and your knowledge of how the systems of those type works.""")
+                                                           .replace("***ADDIT***",
+                                                                    "**Begin processing the user input based on the Description of Republic project provided below:**") + protocol)
                                 response = await agent.ainvoke({"messages": json.dumps(workflow)}, config=config)
                                 print(response["messages"][-1].content)
 
@@ -343,7 +405,7 @@ async def pick_tools(session, config):
                                                                .replace("*#*INPUT_JSON*#*",
                                                                         json.dumps(key['workflow'])).replace("{", "{{")
                                                                .replace("}", "}}").replace("*#*INTENT*#*",
-                                                                                           key['intent']), "OpenAI", "o3")
+                                                                                           key['intent']))
                                     response = await agent.ainvoke({
                                         "messages": "FILE: frontend.jsx Content: " + frontend_tools + "\n\n\n FILE: backend.py Content: " + backend_tools},
                                         config=config)
@@ -376,6 +438,32 @@ async def pick_tools(session, config):
 
 
 async def pick_intent(query, tools):
+    config = {"configurable": {"thread_id": 1234}}
+
+    async with stdio_client(server_params) as (read, write):
+        # async with streamablehttp_client(MCP_ENDPOINT) as (read, write, _):
+        async with ClientSession(read, write) as session:
+            # Handshake
+            await session.initialize()
+
+            # with open("/root/neutron/IAMY/generated/test", "r") as f:
+            #     tools = f.read()
+
+            try:
+                agent = await create_graph(session, synthesize_classified_intent
+                                           .replace("*#*INPUT_JSON*#*", json.dumps(tools))
+                                           .replace("{", "{{").replace("}", "}}"), "OpenAI", "o3")
+                response = await agent.ainvoke({
+                    "messages": query},
+                    config=config)
+
+                print(json.loads(response["messages"][-1].content)['recipe'], response["messages"][-1].content)
+                return json.loads(response["messages"][-1].content)['recipe']
+            except Exception as e:
+                return "none"
+
+
+async def parse_params_for_recipe(query, tools):
     config = {"configurable": {"thread_id": 1234}}
 
     async with stdio_client(server_params) as (read, write):

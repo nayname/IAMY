@@ -1,0 +1,106 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "resolve_network_from_label maps a human-readable network label like 'republic' to a concrete Republic NetworkConfig with chain ID and REST/RPC/indexer URLs used for subsequent calls.",
+            "function": "resolve_network_from_label(network_label)",
+            "usage": "cfg = resolve_network_from_label('republic')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "query_republic_validators fetches the full active validator set from the Republic staking module over REST, following pagination until all validators are retrieved.",
+            "function": "query_republic_validators(cfg, status='BOND_STATUS_BONDED')",
+            "usage": "validators = await query_republic_validators(cfg, status='BOND_STATUS_BONDED')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "query_republic_validator_stake_totals enriches each validator record with its total delegated stake in REP by interpreting the staking module's tokens field.",
+            "function": "query_republic_validator_stake_totals(validators)",
+            "usage": "validators_with_stake = query_republic_validator_stake_totals(validators)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "query_republic_compute_benchmarks retrieves the latest compute benchmark metrics for each validator from the Republic compute registry and returns them keyed by operator address.",
+            "function": "query_republic_compute_benchmarks(cfg, validators, concurrency=10)",
+            "usage": "benchmarks_by_operator = await query_republic_compute_benchmarks(cfg, validators_with_stake)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "query_republic_reputation_scores fetches the current reputation score payload for each validator from the Republic reputation module, keyed by operator address.",
+            "function": "query_republic_reputation_scores(cfg, validators, concurrency=10)",
+            "usage": "reputation_by_operator = await query_republic_reputation_scores(cfg, validators_with_stake)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "merge_validator_datasets joins the stake-enriched validator list with the per-operator benchmark and reputation maps into a unified validator dataset.",
+            "function": "merge_validator_datasets(validators_with_stake, benchmarks_by_operator, reputation_by_operator)",
+            "usage": "merged_validators = merge_validator_datasets(validators_with_stake, benchmarks_by_operator, reputation_by_operator)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "format_validator_list_response converts the merged validator dataset into an API-friendly structure with operator address, moniker, delegated stake, benchmarks, and reputation, ordered as requested.",
+            "function": "format_validator_list_response(merged_validators, order_by='operator_address')",
+            "usage": "response_payload = format_validator_list_response(merged_validators, order_by='operator_address')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "cfg = resolve_network_from_label('republic')#step: 1 Tool: resolve_network_from_label Desciption: Map the 'republic' label to the correct chain configuration (chain ID, RPC/REST endpoints, indexer URLs) so subsequent calls are routed to the Republic network.",
+        "validators = await query_republic_validators(cfg, status='BOND_STATUS_BONDED')#step: 2 Tool: query_republic_validators Desciption: Fetch the full active validator set from the Republic staking/consensus module, including operator addresses and core metadata. Handle pagination until all validators are retrieved.",
+        "validators_with_stake = query_republic_validator_stake_totals(validators)#step: 3 Tool: query_republic_validator_stake_totals Desciption: For each validator, query the staking data to compute total delegated stake in REP (self-bond plus all delegations) and attach this value to the validator record.",
+        "benchmarks_by_operator = await query_republic_compute_benchmarks(cfg, validators_with_stake)#step: 4 Tool: query_republic_compute_benchmarks Desciption: For each validator, retrieve the latest compute validation benchmarks from the Republic compute module or benchmark registry, including throughput, inference, and achieved FLOPs scores.",
+        "reputation_by_operator = await query_republic_reputation_scores(cfg, validators_with_stake)#step: 5 Tool: query_republic_reputation_scores Desciption: Fetch the current reputation score for each validator from the Republic reputation module or index, reflecting their historical performance, benchmark results, and any penalties.",
+        "merged_validators = merge_validator_datasets(validators_with_stake, benchmarks_by_operator, reputation_by_operator)#step: 6 Tool: merge_validator_datasets Desciption: Join the staking, compute benchmark, and reputation datasets into a unified list of validators, ensuring each validator entry includes delegated stake, compute benchmarks, and reputation.",
+        "response_payload = format_validator_list_response(merged_validators, order_by='operator_address')#step: 7 Tool: format_validator_list_response Desciption: Format the aggregated validator list into an API/UI-friendly structure, with clear fields for operator address, moniker, total delegated stake, benchmark scores, and reputation. Apply any basic ordering (e.g., by operator address) if required."
+    ],
+    "intent": "List all Republic validators with their delegated stake, compute benchmark scores, and reputation.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "resolve_network_from_label",
+            "description": "Map the 'republic' label to the correct chain configuration (chain ID, RPC/REST endpoints, indexer URLs) so subsequent calls are routed to the Republic network."
+        },
+        {
+            "step": 2,
+            "tool": "query_republic_validators",
+            "description": "Fetch the full active validator set from the Republic staking/consensus module, including operator addresses and core metadata. Handle pagination until all validators are retrieved."
+        },
+        {
+            "step": 3,
+            "tool": "query_republic_validator_stake_totals",
+            "description": "For each validator, query the staking data to compute total delegated stake in REP (self-bond plus all delegations) and attach this value to the validator record."
+        },
+        {
+            "step": 4,
+            "tool": "query_republic_compute_benchmarks",
+            "description": "For each validator, retrieve the latest compute validation benchmarks from the Republic compute module or benchmark registry, including throughput, inference, and achieved FLOPs scores."
+        },
+        {
+            "step": 5,
+            "tool": "query_republic_reputation_scores",
+            "description": "Fetch the current reputation score for each validator from the Republic reputation module or index, reflecting their historical performance, benchmark results, and any penalties."
+        },
+        {
+            "step": 6,
+            "tool": "merge_validator_datasets",
+            "description": "Join the staking, compute benchmark, and reputation datasets into a unified list of validators, ensuring each validator entry includes delegated stake, compute benchmarks, and reputation."
+        },
+        {
+            "step": 7,
+            "tool": "format_validator_list_response",
+            "description": "Format the aggregated validator list into an API/UI-friendly structure, with clear fields for operator address, moniker, total delegated stake, benchmark scores, and reputation. Apply any basic ordering (e.g., by operator address) if required."
+        }
+    ],
+    "outcome_checks": [
+        "Verify that the number of validators in the final list matches the count reported by the underlying staking module or indexer.",
+        "Ensure each validator entry includes non-null values for operator address, total delegated stake, at least one compute benchmark score, and a reputation score.",
+        "Confirm that pagination (if used) has been fully exhausted and that no validators are missing or duplicated in the final output."
+    ]
+}

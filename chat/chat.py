@@ -134,15 +134,47 @@ def make_workflow(query):
                           "function":s["function"], "type":s["label"], "description":s["introduction"]})
 
 
+    # print("REQ: ", req)
+    #
+    # if "workflows" in req.keys() and len(req["workflows"]) > 0:
+    #     recipe = req["workflows"][0]
+    # else:
+    #     query = {"query":input_text,
+    #              "intent_type": get_intent_type(input_text)}
+    #
+    #     await to_recipe(query)
+    #     if query["recipe"] != "none" and query["recipe"] != "None":
+    #         make_workflow(query)
+    #
+    #     query["answer"] = get_answer(input_text, quadrant_client, embedding_model, query)
+    # return formate_response(query)
+
+
+def get_recipe(req, query):
+    if "workflows" in req.keys() and len(req["workflows"]) > 0:
+        query['recipe'] = req["workflows"][0]
+
+
+def no_recipe(query):
+    return "recipe" not in query.keys() or not query["recipe"] \
+        or query["recipe"] == "none" or query["recipe"] == "None"
+
+
 async def response(req, input_text, quadrant_client, embedding_model):
-    print("QUERY: " + input_text)
+    print("REQ: ", req)
 
     query = {"query":input_text,
              "intent_type": get_intent_type(input_text)}
 
-    await to_recipe(query)
-    if query["recipe"] != "none" and query["recipe"] != "None":
+    get_recipe(req, query)
+
+    if no_recipe(query):
+        await to_recipe(query)
+    # else:
+    #     parse_params_for_recipe(req, query)
+
+    if not no_recipe(query):
         make_workflow(query)
-        
+
     query["answer"] = get_answer(input_text, quadrant_client, embedding_model, query)
     return formate_response(query)

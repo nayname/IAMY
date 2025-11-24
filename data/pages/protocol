@@ -1,0 +1,245 @@
+Introduction to Republic
+Republic is a decentralized blockchain platform designed to securely coordinate a network of compute providers—called validators—who supply verifiable computational resources to power next-generation decentralized applications.
+
+Unlike traditional blockchains that rely solely on transaction validation, Republic elevates compute to a first-class network asset, enabling the permissionless exchange and validation of high-performance compute power. This integration facilitates a novel cryptoeconomic marketplace where computational work is measured, validated, and rewarded transparently.
+
+Protocol Overview
+At its core, Republic combines a Delegated Proof-of-Stake (DPoS) consensus mechanism with a rigorous compute validation protocol. Validators are selected based on a hybrid metric of delegated stake and verified compute quality, ensuring the network’s security and scalability depend both on economic commitment and demonstrated computational reliability.
+
+Validators execute assigned compute jobs and submit proofs of correct execution based on standardized benchmarks. These benchmarks measure throughput, inference capability, and achieved FLOPS, providing objective metrics that feed into validator reputation and reward calculations.
+
+Cryptoeconomic Model
+The Republic economic design aligns incentives to foster network integrity and performance. Validators stake the native token, REP, to participate in consensus and compute provisioning. In return, they earn rewards proportional to their validated compute contributions and stake.
+
+The system enforces slashing penalties for validator misbehavior, such as producing incorrect results or exhibiting downtime, reducing their staked tokens and reputation scores. Reputation acts as a persistent measure of validator trustworthiness, influencing future committee selection and rewards.
+
+Key Concepts
+Validators: Network participants who provide compute resources, stake tokens, and secure the network.
+Native Token (REP): Utility token used for staking, paying for compute, and distributing rewards.
+Compute Validation: A set of verifiable benchmarks and proofs ensuring that submitted compute results are correct and performant.
+Delegated Proof-of-Stake (DPoS): Consensus protocol where token holders elect validators weighted by stake and compute quality.
+Slashing and Reputation: Mechanisms to penalize misbehavior and track validator reliability over time.
+Document Structure
+This documentation provides a comprehensive understanding of Republic’s architecture and operation, divided into:
+
+General Documentation: Protocol design, compute validation, consensus, incentives, and security.
+Validator Documentation: Tools, best practices, and workflows for validator operation. (Coming soon)
+Client Documentation: APIs and user guides for submitting compute jobs and interacting with the network. (Coming soon)
+This documentation aims to serve as a reference for developers, validators, researchers, and stakeholders engaged in the Republic ecosystem.
+
+Compute Validation Overview
+Introduction
+The Republic compute validation protocol establishes a robust and verifiable mechanism for confirming that computational tasks are performed honestly and efficiently by network validators. Unlike traditional blockchains, which primarily focus on transactional consensus, Republic places compute at the core of its consensus and economic incentives, making the quality and integrity of computation a first-class concern.
+
+This protocol enables the network to:
+
+Schedule computational jobs securely and transparently.
+Validate the results of these jobs through cryptographic proofs and benchmarks.
+Incentivize reliable and performant compute providers via economic rewards and reputation.
+Protect the network against fraud and degraded performance using slashing and quality controls.
+The following sections provide an in-depth examination of the components, flow, and cryptoeconomic mechanisms that comprise the compute validation protocol.
+
+Job Scheduling and Execution
+At the heart of the protocol is the process by which computational tasks (jobs) are scheduled and executed by validators.
+
+Job Definition: Each job specifies a computational workload, such as matrix multiplication benchmarks or neural network inference tasks.
+Scheduling: Jobs are delegated to validators through a decentralized scheduler that considers stake, past performance, and compute quality.
+Execution: Validators run the assigned computations within predefined time constraints and generate outputs alongside cryptographic proofs of execution.
+This process ensures that computation is timely, traceable, and attributable to specific validators.
+
+Cryptographic Proofs of Computation
+To guarantee the authenticity of computation, Republic employs cryptographic proofs tied to the execution of models.
+
+HashedModel Framework: Validators run computations using a HashedModel that generates intermediate checkpoint hashes reflecting the model’s internal state during execution.
+Root Hash Generation: These checkpoint hashes are aggregated into a root hash, uniquely identifying the entire computation.
+Verification: Validators submit this root hash alongside outputs; verifiers re-execute the computation to reproduce checkpoints and confirm hash correctness.
+This proof mechanism binds the computation’s correctness and integrity cryptographically, preventing forgery or shortcuts.
+
+Benchmarking for Quality and Performance
+Republic leverages three complementary benchmarks to objectively measure compute quality:
+
+Throughput Benchmark: Measures the validator's ability to perform large-scale matrix multiplications accurately and rapidly.
+Inference Benchmark: Tests the validator’s execution of transformer-based sequence inference models to assess realistic model execution capacity.
+Achieved FLOPs Benchmark: Calculates effective floating-point operations per second (FLOPS) by timing a fixed-complexity model execution, providing a real-world performance metric.
+Validators’ benchmark results determine their reputation and influence their eligibility to participate in consensus committees.
+
+Reputation and Economic Incentives
+The protocol links compute quality to economic incentives:
+
+Reputation Scores: Computed from benchmark results and job performance, representing the validator’s reliability and efficiency.
+Token Rewards: Validators earn native tokens (REP) proportionally to their reputation and successful job completion.
+Slashing: Validators who submit incorrect or delayed computations risk token slashing, disincentivizing dishonest or poor-quality work.
+This framework encourages validators to maintain high standards of compute integrity and throughput.
+
+Validator Selection and Consensus Participation
+Validator reputation and compute benchmarks feed directly into the consensus mechanism:
+
+Validators with higher reputation and benchmark scores have increased probability to be selected for consensus committees.
+This ensures that blocks and state transitions are secured by participants demonstrating both economic stake and verifiable compute power.
+The protocol thereby aligns network security with genuine compute contribution.
+Fraud Prevention and Quality Assurance
+To safeguard the network, the protocol implements multiple layers of fraud detection:
+
+Re-execution Verification: Validators’ submitted results and hashes are independently re-executed by verifiers to detect discrepancies.
+Slashing Conditions: Failures in correctness, timing, or proof submission trigger automatic slashing penalties.
+Ongoing Benchmark Validation: Validators undergo periodic re-benchmarking to prevent performance degradation over time.
+Together, these measures preserve the network’s integrity and trustworthiness.
+
+Proof of Model Execution
+Concept
+Proof of Model Execution (PoME) is the cryptographic mechanism by which Republic verifies that a validator has correctly executed a computational task. This proof is built around a specialized structure called the HashedModel, which captures the state of the model at multiple checkpoints during execution.
+
+HashedModel and Checkpoints
+The HashedModel enhances a neural network model to:
+
+Produce deterministic intermediate checkpoints during inference or computation.
+Compute cryptographic hashes of these checkpoint states.
+Aggregate these checkpoint hashes into a single root hash that uniquely represents the full model execution.
+Verification Process
+To verify a proof, verifiers re-execute the model on the provided inputs, computing the checkpoint hashes at each step.
+By reproducing these hashes and combining them, verifiers reconstruct the root hash.
+The computed root hash is then compared with the submitted proof hash to confirm correctness.
+This re-execution step is essential; it ensures that the proof corresponds precisely to the computation performed, preventing fraudulent claims without actual compute.
+
+Current Status and Future Work
+At present, the protocol primarily relies on benchmark timing and output correctness for validation. Integration of full checkpoint-based proof verification is planned, which will enable distributed, scalable validation through partial checkpoint verification by multiple parties.
+
+Benefits
+Cryptographic integrity: The root hash binds the computation’s entire execution history.
+Reproducibility: Verification through re-execution ensures computations are deterministic and honest.
+Scalability potential: Checkpoint hashes can be distributed for parallel verification.
+
+Protocol Overview
+Introduction
+The Republic protocol is architected to securely and efficiently coordinate a decentralized network of validators that provide high-quality compute resources. At its core, the protocol combines a Delegated Proof-of-Stake (DPoS) consensus mechanism with cryptoeconomic incentives and robust validation techniques, enabling a scalable and trustworthy compute marketplace.
+
+This section provides a comprehensive overview of the core protocol components, governance structure, and security mechanisms that underpin the network's operation.
+
+Core Components
+Delegated Proof-of-Stake (DPoS)
+Republic utilizes a Delegated Proof-of-Stake consensus protocol in which token holders elect a committee of validators responsible for producing blocks, validating transactions, and securing the network. This design balances decentralization with high throughput and fast finality, ensuring the network can scale while remaining secure.
+
+Validators are selected based on a combination of their delegated stake and verified compute performance, linking economic commitment with demonstrated computational reliability.
+
+Validator Roles and Responsibilities
+Validators serve as the backbone of the Republic network, performing critical tasks including:
+
+Validating and proposing new blocks
+Executing and verifying compute jobs submitted by clients
+Participating in consensus committees
+Maintaining up-to-date software and hardware to meet performance benchmarks
+Their effective operation directly impacts network security, performance, and user trust.
+
+Slashing and Accountability
+To safeguard the network against misbehavior and negligence, the protocol incorporates slashing mechanisms that penalize validators for infractions such as downtime, incorrect computations, or equivocation. Slashed tokens are burned or redistributed, ensuring economic consequences for harmful actions.
+
+The slashing process is complemented by a reputation system that tracks validator reliability over time, influencing future committee selections and reward allocations.
+
+Reputation System
+The reputation system quantifies validator trustworthiness and performance history, aggregating benchmark scores, job success rates, and slashing records. Validators with higher reputation scores gain preferential treatment in consensus participation and reward distribution, incentivizing sustained excellence.
+
+Cryptoeconomic Incentives
+Republic's economic design aligns validator interests with network health through staking rewards, compute performance bonuses, and job completion incentives. These mechanisms encourage validators to invest in superior infrastructure and operate honestly, fostering a competitive yet cooperative ecosystem.
+
+Security and Resilience
+Republic is designed with layered security features to resist common blockchain attacks and ensure continuous operation, including:
+
+Cryptographic proof of compute correctness
+Validator selection diversity
+Penalties for misbehavior
+Checkpointing and finality guarantees
+These elements collectively maintain network integrity and user confidence.
+
+Concensus Mechanism
+Overview
+Republic employs a Delegated Proof of Stake (DPoS) consensus mechanism to secure the network, finalize blocks, and select validators responsible for consensus committees. This consensus protocol balances security, scalability, and decentralization through token-weighted voting and cryptoeconomic incentives.
+
+Token Holder Delegation
+Token holders participate indirectly in consensus by delegating their staking power to trusted validators:
+
+Delegators select validators based on past performance, reputation, and service quality.
+Voting power is weighted proportionally to the amount of stake delegated.
+Validator sets are dynamically updated each epoch based on accumulated stake.
+This delegation system enables a scalable and efficient validator election process, preserving decentralization without sacrificing throughput.
+
+Validator Roles and Responsibilities
+Validators in Republic perform critical functions including:
+
+Proposing new blocks and transactions.
+Voting on block validity and network state transitions.
+Participating in cryptographic randomness generation.
+Executing and verifying computational tasks where required.
+Validators are expected to maintain high uptime, honest behavior, and quality service to earn rewards and maintain their reputation.
+
+Consensus Committees and Epochs
+Epoch selection diagram
+
+The validator set is partitioned into consensus committees:
+
+Committees are reshuffled periodically (each epoch) to prevent collusion.
+Each committee validates blocks and finalizes state transitions.
+Validator selection within committees considers both stake and verified compute quality.
+Epoch transitions are marked by checkpoint blocks that record committee composition and stake distributions.
+
+Finality and Security Guarantees
+Republic’s DPoS consensus provides probabilistic finality with strong security assumptions:
+
+Fault tolerance threshold ensures system safety unless a majority of stake is malicious.
+Slashing conditions penalize malicious or negligent validators, deterring attacks.
+Checkpointing and consensus rounds ensure network progress and prevent forks.
+The consensus design prioritizes liveness and consistency under adversarial conditions.
+
+Summary
+The DPoS consensus mechanism empowers Republic to maintain a secure, scalable, and decentralized network by combining stake-based voting with compute-weighted validator selection. It underpins the network’s cryptoeconomic security model and aligns incentives for honest participation.
+
+Validator Incentives
+Overview
+Republic’s validator incentives are designed to motivate honest, high-quality participation while fostering a competitive yet cooperative environment. These incentives align validator economic interests with the network’s long-term security, performance, and decentralization objectives.
+
+Validators earn rewards for contributing compute resources, securing consensus, and providing reliable service, while being subject to penalties for misbehavior.
+
+Reward Components
+1. Staking Rewards
+Validators receive staking rewards proportional to their delegated stake and reputation. This traditional proof-of-stake reward compensates validators for staking tokens and securing the network.
+
+Staking rewards serve as a baseline incentive, encouraging sustained participation.
+
+2. Compute Performance Rewards
+A core innovation of Republic is its compute validation protocol, which objectively measures a validator’s computational contributions through rigorous benchmarks. Validators with superior performance earn rewards scaled by:
+
+Throughput benchmark scores
+Inference benchmark accuracy
+Achieved FLOPs during jobs
+This performance-based reward ensures that validators are compensated commensurate with the quality and quantity of compute they deliver, incentivizing investment in better hardware and optimization.
+
+3. Consensus Participation Rewards
+Validators actively involved in consensus committees receive rewards based on their effective participation, including timely voting and proposal submission.
+
+This mechanism encourages validators to maintain high availability and responsiveness during consensus rounds, directly impacting network reliability.
+
+4. Job Completion Bonuses
+Validators executing client compute jobs successfully and within the required time frames are awarded additional bonuses. This component promotes timely and accurate compute task fulfillment, critical for client satisfaction and network utility.
+
+Economic Model and Token Flow
+Validators must stake the native token, REP, to participate. Rewards are distributed in REP tokens, creating a positive feedback loop that encourages continued engagement and token utility.
+
+Economic parameters such as reward rates, slashing amounts, and job fees are periodically reviewed and can be adjusted via governance to maintain optimal incentive alignment.
+
+Balancing Incentives and Penalties
+While rewards motivate honest behavior, penalties (including slashing and reputation degradation) ensure accountability. This dual system maintains validator discipline and deters attacks or negligence.
+
+Validators must balance risk and reward by maintaining high performance and adhering to protocol rules.
+
+Long-Term Incentive Effects
+The combined incentive structure aims to:
+
+Promote hardware and software investment for better compute quality
+Encourage long-term commitment through stake and reputation accumulation
+Foster a secure and decentralized network resistant to centralization pressures
+Enable a thriving marketplace where compute resources are reliably provisioned and compensated
+
+CLI Overview
+Republic core utils are the internal tooling used to request and execute benchmarks, jobs, etc. for the Republic network. It supports job scheduling and validation, benchmarking, config editing, and more.
+
+Use republic --help to verify installation and get a summary of available commands. The CLI is automatically installed when you install the republic application for validators or clients on your platform.
+

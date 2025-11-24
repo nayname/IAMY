@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Parses raw user filter input into a normalized LatencyFilter object with a sensible default time window and validator/job-type constraints.",
+            "function": "parse_latency_distribution_filters(raw_filters: Optional[Dict[str, Any]] = None) -> LatencyFilter",
+            "usage": "filters = parse_latency_distribution_filters({'start_time': '2025-01-01T00:00:00Z', 'end_time': '2025-01-02T00:00:00Z', 'job_types': 'inference,training'})"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Fetches compute job records from the analytics backend using the filters and converts them into structured JobEvent objects.",
+            "function": "fetch_job_assignment_and_completion_events(db_client: JobAnalyticsClient, filters: LatencyFilter) -> List[JobEvent]",
+            "usage": "events = await fetch_job_assignment_and_completion_events(db_client, filters)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Computes per-job latency in seconds from assignment and completion timestamps while tracking incomplete or malformed jobs separately.",
+            "function": "compute_per_job_latency(events: List[JobEvent]) -> Tuple[List[JobLatencySample], List[SkippedJobSample]]",
+            "usage": "job_latencies, skipped_jobs = compute_per_job_latency(events)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Aggregates the per-job latency samples into global and per-validator statistics and builds histogram buckets for distribution analysis.",
+            "function": "aggregate_latency_statistics(samples: List[JobLatencySample], bucket_count: int = 20) -> LatencyAggregates",
+            "usage": "aggregates = aggregate_latency_statistics(job_latencies, bucket_count=30)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Removes negative or excessively large latency values as outliers, recomputes statistics, and records data quality issues.",
+            "function": "clean_and_clip_latency_outliers(samples: List[JobLatencySample], max_latency_seconds: float = 3600.0, bucket_count: int = 20) -> Tuple[LatencyAggregates, OutlierInfo]",
+            "usage": "cleaned_aggregates, outlier_info = clean_and_clip_latency_outliers(job_latencies, max_latency_seconds=1800.0, bucket_count=40)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Runs the full latency analysis pipeline and returns a structured response with filters, stats, histograms, and outlier/skipped-job summaries.",
+            "function": "construct_latency_distribution_response(db_client: JobAnalyticsClient, raw_filters: Optional[Dict[str, Any]] = None, max_latency_seconds: float = 3600.0, bucket_count: int = 20) -> Dict[str, Any]",
+            "usage": "response = await construct_latency_distribution_response(db_client, {'validator_ids': 'val1,val2', 'include_only_successful': False}, max_latency_seconds=7200.0, bucket_count=50)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "filters = parse_latency_distribution_filters({'start_time': '2025-01-01T00:00:00Z', 'end_time': '2025-01-02T00:00:00Z', 'job_types': 'inference,training'})#step: 1 Tool: parse_latency_distribution_filters Desciption: Parse any user-provided filters for the latency analysis (e.g., time range, job_type, subset of validators, only successful jobs vs. all jobs); if no filters are provided, default to a recent time window and include all validators.",
+        "events = await fetch_job_assignment_and_completion_events(db_client, filters)#step: 2 Tool: fetch_job_assignment_and_completion_events Desciption: From the Republic job scheduler and compute modules (via indexer or analytics DB), fetch all compute jobs matching the filters, including at least job_id, validator_id, assignment_time, completion_time (if any), and final job status.",
+        "job_latencies, skipped_jobs = compute_per_job_latency(events)#step: 3 Tool: compute_per_job_latency Desciption: For each job that has a valid completion_time and assignment_time, compute latency = completion_time - assignment_time; skip or separately track jobs without completion_time (e.g., timed out or cancelled).",
+        "aggregates = aggregate_latency_statistics(job_latencies, bucket_count=30)#step: 4 Tool: aggregate_latency_statistics Desciption: Aggregate the computed per-job latencies into global and per-validator statistics, calculating metrics such as count, min, max, mean, median, and selected percentiles (e.g., p90, p95), and constructing histogram buckets suitable for plotting a latency distribution.",
+        "cleaned_aggregates, outlier_info = clean_and_clip_latency_outliers(job_latencies, max_latency_seconds=1800.0, bucket_count=40)#step: 5 Tool: clean_and_clip_latency_outliers Desciption: Detect and handle anomalous latency values (e.g., negative latencies or outliers beyond a configurable maximum) by excluding them from statistical calculations or placing them into a dedicated 'outliers' bucket, and record any data_quality_issues encountered.",
+        "response = await construct_latency_distribution_response(db_client, {'validator_ids': 'val1,val2', 'include_only_successful': False}, max_latency_seconds=7200.0, bucket_count=50)#step: 6 Tool: construct_latency_distribution_response Desciption: Return a structured response containing the filters used, the total number of jobs considered, global latency statistics, per-validator aggregates, histogram data (bucket boundaries and counts), and a summary of excluded or anomalous samples if applicable."
+    ],
+    "intent": "Show latency distribution for compute job completion times across validators",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "parse_latency_distribution_filters",
+            "description": "Parse any user-provided filters for the latency analysis (e.g., time range, job_type, subset of validators, only successful jobs vs. all jobs); if no filters are provided, default to a recent time window and include all validators."
+        },
+        {
+            "step": 2,
+            "tool": "fetch_job_assignment_and_completion_events",
+            "description": "From the Republic job scheduler and compute modules (via indexer or analytics DB), fetch all compute jobs matching the filters, including at least job_id, validator_id, assignment_time, completion_time (if any), and final job status."
+        },
+        {
+            "step": 3,
+            "tool": "compute_per_job_latency",
+            "description": "For each job that has a valid completion_time and assignment_time, compute latency = completion_time - assignment_time; skip or separately track jobs without completion_time (e.g., timed out or cancelled)."
+        },
+        {
+            "step": 4,
+            "tool": "aggregate_latency_statistics",
+            "description": "Aggregate the computed per-job latencies into global and per-validator statistics, calculating metrics such as count, min, max, mean, median, and selected percentiles (e.g., p90, p95), and constructing histogram buckets suitable for plotting a latency distribution."
+        },
+        {
+            "step": 5,
+            "tool": "clean_and_clip_latency_outliers",
+            "description": "Detect and handle anomalous latency values (e.g., negative latencies or outliers beyond a configurable maximum) by excluding them from statistical calculations or placing them into a dedicated 'outliers' bucket, and record any data_quality_issues encountered."
+        },
+        {
+            "step": 6,
+            "tool": "construct_latency_distribution_response",
+            "description": "Return a structured response containing the filters used, the total number of jobs considered, global latency statistics, per-validator aggregates, histogram data (bucket boundaries and counts), and a summary of excluded or anomalous samples if applicable."
+        }
+    ],
+    "outcome_checks": [
+        "Verify that no negative latency values are used in the final statistics; any such records should either be corrected (if due to known clock skew) or excluded and reported as data_quality_issues.",
+        "Confirm that the sum of all histogram bucket counts equals the number of latency samples actually included in the analysis.",
+        "Ensure that the reported sample_size matches the number of jobs that contributed to the distribution (after filtering and outlier handling).",
+        "If the result set is very small (e.g., below a minimum threshold), flag that the latency distribution may not be statistically meaningful."
+    ]
+}

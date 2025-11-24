@@ -1,0 +1,202 @@
+[
+    {
+        "intent": "Display time-series charts of network-wide REP rewards paid for compute performance",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "bff_parse_time_range_and_granularity",
+                "description": "Parse the user\u2019s requested time range (e.g., last 7/30/90 days or specific start/end timestamps) and desired aggregation granularity (per-epoch, per-day, per-hour). If unspecified, default to a reasonable window such as the last 30 days with per-epoch buckets."
+            },
+            {
+                "step": 2,
+                "tool": "bff_fetch_compute_performance_rewards",
+                "description": "Query the Republic rewards indexer or analytics API for all reward distribution events whose type is classified as compute performance rewards (as distinct from baseline staking or other reward categories) over the requested time window, returning timestamp, amount, denomination, validator, and reward type fields."
+            },
+            {
+                "step": 3,
+                "tool": "bff_bucket_rewards_into_timeseries",
+                "description": "Aggregate raw reward events into regular time buckets based on the selected granularity (e.g., by epoch index or by day), summing REP amounts per bucket and, if needed, keeping separate series for network total vs. per-category subtotals of compute rewards."
+            },
+            {
+                "step": 4,
+                "tool": "bff_normalize_reward_amounts",
+                "description": "Normalize rewards by converting on-chain integer amounts into human-readable REP (applying the correct decimal scaling), verify that all entries use the REP denomination, and insert zero-valued buckets for periods with no compute rewards so that the time series is continuous."
+            },
+            {
+                "step": 5,
+                "tool": "bff_build_rewards_chart_config",
+                "description": "Construct a chart configuration object for a time-series line or area chart where the x-axis is time or epoch index and the y-axis is total REP paid for compute performance, including labels, units, legend entries, and optional secondary metrics such as average reward per validator."
+            },
+            {
+                "step": 6,
+                "tool": "frontend_render_rewards_chart",
+                "description": "Render the chart in the frontend using the provided configuration (for example via a charting library), enabling interactive tooltips, zooming, and optional export of the underlying timeseries as CSV or JSON."
+            }
+        ],
+        "outcome_checks": [
+            "The fetched dataset includes only rewards explicitly tagged as compute performance rewards and excludes other reward types.",
+            "The sum of REP amounts across all rendered time buckets equals the sum of the raw compute reward events returned by the indexer for the same time range.",
+            "The chart\u2019s time axis spans exactly the requested interval and the bucket boundaries align with epoch or calendar boundaries according to the chosen granularity.",
+            "No negative reward values appear and periods with no compute rewards are represented as zero-valued points rather than gaps in the chart."
+        ]
+    },
+    {
+        "intent": "Display recent governance proposals that changed incentive or slashing parameters",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "bff_parse_governance_query_filters",
+                "description": "Parse user preferences for how many proposals to show, optional time window (e.g., last 60 days), and which proposal statuses to include (e.g., passed only, or passed and pending). Use sensible defaults such as the last 50 proposals including all statuses if not specified."
+            },
+            {
+                "step": 2,
+                "tool": "bff_fetch_recent_governance_proposals",
+                "description": "Query the Republic governance indexer or node API for recent proposals within the requested range, returning metadata such as proposal ID, title, description, type, status, submit time, voting end time, and the encoded parameter changes or messages."
+            },
+            {
+                "step": 3,
+                "tool": "bff_filter_incentive_and_slashing_changes",
+                "description": "Filter the fetched proposals to those that modify incentive-related or slashing-related parameters by inspecting each proposal\u2019s content: proposal type (e.g., ParameterChangeProposal), affected modules (rewards, incentives, distribution, slashing), and changed parameter keys (e.g., reward rates, compute reward multipliers, slashing fractions, downtime windows, penalty amounts). Optionally also use keyword matching on titles and descriptions for terms like 'incentive', 'reward', 'slashing', 'slash', or 'penalty'."
+            },
+            {
+                "step": 4,
+                "tool": "bff_enrich_proposals_with_param_diffs",
+                "description": "For each filtered proposal, query chain state or configuration snapshots at the block height before and after proposal execution to obtain the previous and new values of each affected parameter, and compute a structured diff summarizing the change (e.g., old_value \u2192 new_value)."
+            },
+            {
+                "step": 5,
+                "tool": "bff_format_governance_proposal_list",
+                "description": "Transform the filtered and enriched proposals into concise summaries including proposal ID, title, status, execution height or time (if passed), the list of modified incentive or slashing parameters with before/after values, and a brief human-readable explanation of the impact where possible."
+            },
+            {
+                "step": 6,
+                "tool": "frontend_render_governance_changes_view",
+                "description": "Display the formatted proposals in the UI as a sortable and filterable list, allowing users to expand each proposal to see detailed parameter diffs and to navigate to a full proposal page or external explorer when available."
+            }
+        ],
+        "outcome_checks": [
+            "Every displayed proposal is verified to have modified at least one incentive- or slashing-related parameter based on the parameter diff, not just on keyword matches.",
+            "Within the queried range, no proposal that changed incentive or slashing parameters is omitted from the results.",
+            "For each proposal, the reported 'before' and 'after' parameter values match the actual chain state at the blocks immediately before and after the proposal\u2019s execution height.",
+            "Proposal statuses (e.g., Passed, Rejected, VotingPeriod) in the UI are consistent with the governance module\u2019s on-chain records."
+        ]
+    },
+    {
+        "intent": "Show epochs where consensus committee composition changed significantly",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "bff_parse_epoch_range_and_thresholds",
+                "description": "Parse the requested epoch range (e.g., last N epochs or between explicit epoch indices) and significance thresholds, such as minimum percentage of committee membership turnover or voting power shift required to consider an epoch change 'significant'. If not specified, use default thresholds such as at least 20% new committee members or at least 15% aggregate voting power reallocated."
+            },
+            {
+                "step": 2,
+                "tool": "bff_fetch_epoch_committee_snapshots",
+                "description": "For each epoch in the target range, query Republic\u2019s consensus/indexer service for the full consensus committee snapshot: validator identifiers, delegated stake, verified compute/reputation metrics, and resulting voting power weights at the epoch\u2019s checkpoint block."
+            },
+            {
+                "step": 3,
+                "tool": "bff_compute_epoch_to_epoch_deltas",
+                "description": "Compute differences between consecutive epochs\u2019 committees, including metrics such as percentage of validators entering and leaving, Jaccard similarity of membership sets, per-validator changes in voting power, changes in aggregate voting power of top-N validators, and shifts in average or total compute quality scores."
+            },
+            {
+                "step": 4,
+                "tool": "bff_select_significant_committee_changes",
+                "description": "Apply the configured significance thresholds to the computed deltas to identify epochs where committee composition or voting power distribution changed markedly, tagging each flagged epoch with the specific reasons it was considered significant (e.g., high membership turnover, large stake migration, major reputation shifts)."
+            },
+            {
+                "step": 5,
+                "tool": "bff_build_epoch_change_summaries",
+                "description": "For each flagged epoch, construct a summary containing the epoch index, a concise description of the change (such as percentage of new members and net voting power delta), and lists of the most affected validators (largest gains/losses in voting power or committee entry/exit)."
+            },
+            {
+                "step": 6,
+                "tool": "frontend_render_epoch_change_report",
+                "description": "Render the results in the UI as a report or timeline view showing flagged epochs, allowing users to sort by magnitude of change and drill down into per-epoch validator-level details, such as which validators were added, removed, or heavily reweighted."
+            }
+        ],
+        "outcome_checks": [
+            "For each epoch marked as significant, at least one of the configured thresholds (e.g., membership turnover or voting power shift) is exceeded based on the underlying committee data.",
+            "All committee snapshots used in calculations match the canonical validator sets recorded at the corresponding epoch checkpoint blocks on-chain.",
+            "No epoch whose computed metrics exceed the configured thresholds is omitted from the flagged list.",
+            "Within each epoch summary, validator voting power shares are non-negative and their totals per epoch are consistent with 100% of active committee voting power within an acceptable numerical tolerance."
+        ]
+    },
+    {
+        "intent": "Display CLI help information for running Republic core utils benchmarks",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "backend_check_republic_cli_installed",
+                "description": "On the backend, check whether the 'republic' CLI binary is installed and accessible by attempting to run a lightweight command such as 'republic --version' or locating it on the PATH; capture any errors without surfacing raw system messages to the user."
+            },
+            {
+                "step": 2,
+                "tool": "backend_fetch_benchmarks_help_text",
+                "description": "If the CLI is available, execute the benchmarks help command (for example, 'republic benchmarks --help' or the configured equivalent for core utils benchmarks) and capture its standard output so that available benchmark subcommands (throughput, inference, FLOPs) and flags are retrieved directly from the installed tool."
+            },
+            {
+                "step": 3,
+                "tool": "backend_fallback_fetch_benchmarks_docs",
+                "description": "If the CLI is not installed or the help command fails, fall back to retrieving benchmark-related documentation from a static Republic docs source, configuration bundle, or API that contains up-to-date descriptions of core utils benchmarking commands and options."
+            },
+            {
+                "step": 4,
+                "tool": "bff_parse_and_structure_benchmarks_help",
+                "description": "Parse whichever help source is available (CLI output or static docs) into a structured representation: a list of benchmark commands (e.g., run throughput, run inference, run flops), their required and optional flags (such as validator address, duration, output format), and one or more example invocations focused on benchmarking."
+            },
+            {
+                "step": 5,
+                "tool": "frontend_render_benchmarks_help_view",
+                "description": "Render the structured benchmark help information in the frontend as human-readable documentation, including code blocks for example commands and clear grouping for different benchmark types, so users can quickly identify how to invoke Republic core utils benchmarks from the CLI."
+            }
+        ],
+        "outcome_checks": [
+            "If the 'republic' CLI is installed, the displayed help content accurately reflects the live CLI output for benchmark-related commands.",
+            "If the CLI is not installed, the user is informed that static documentation is being shown and given guidance on how to install the 'republic' binary rather than seeing a raw system error.",
+            "At least one concrete example command for running a benchmark (e.g., a throughput benchmark) is visible in the rendered help view.",
+            "All benchmark subcommands and flags shown in the UI correspond to entries parsed from either the CLI help text or the authoritative documentation source without modification."
+        ]
+    },
+    {
+        "intent": "Generate the CLI command to run a throughput benchmark on my validator node",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "bff_load_validator_local_config",
+                "description": "Inspect the local Republic configuration on the backend (for example, config files, environment variables, or keyring metadata) to determine the default chain-id, RPC endpoint, keyring backend, and validator operator address associated with this node; if multiple validators or profiles exist, select the default or the one matching any provided hints."
+            },
+            {
+                "step": 2,
+                "tool": "bff_validate_validator_identity",
+                "description": "Use the Republic node or indexer API to confirm that the discovered validator operator address is active on the target network and corresponds to a local key that can sign operations, failing gracefully if no valid validator identity can be confirmed."
+            },
+            {
+                "step": 3,
+                "tool": "bff_select_throughput_benchmark_options",
+                "description": "Determine safe and sensible defaults for the throughput benchmark options, such as benchmark profile or job size, duration, output format (e.g., JSON), and any hardware-selection flags, while allowing overrides if the calling context has specified custom parameters."
+            },
+            {
+                "step": 4,
+                "tool": "bff_construct_throughput_benchmark_cli_command",
+                "description": "Construct a single-shell CLI command string that runs a throughput benchmark via the Republic core utils, for example: 'republic benchmarks run throughput --validator <valoper_address> --chain-id <chain_id> --node <rpc_endpoint> --duration 300s --output json', substituting real values from the validated configuration where available."
+            },
+            {
+                "step": 5,
+                "tool": "backend_dry_run_validate_benchmark_command",
+                "description": "If supported by the CLI, execute the constructed command in a dry-run or '--help' validation mode (without starting an actual heavy benchmark) to verify that the syntax is correct and that all required flags and environment settings are present."
+            },
+            {
+                "step": 6,
+                "tool": "frontend_present_benchmark_command",
+                "description": "Present the final benchmark command to the user in the UI, clearly indicating any placeholders that still need to be filled and, where possible, annotating each flag with a short explanation so the user understands what the command will do when executed on their validator node."
+            }
+        ],
+        "outcome_checks": [
+            "The generated command uses the 'republic' binary with the correct benchmark subcommands for throughput (for example, 'benchmarks run throughput').",
+            "All required parameters such as chain-id, RPC endpoint, and validator operator address are either populated from verified configuration or clearly marked as placeholders that the user must fill before running the command.",
+            "Any optional dry-run validation of the command completes successfully, indicating that the CLI recognizes the command and options without starting the actual throughput benchmark.",
+            "When executed with real values in a suitable environment, the command initiates a throughput benchmark on the target validator node rather than a different benchmark type."
+        ]
+    }
+]

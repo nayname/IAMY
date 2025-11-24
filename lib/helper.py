@@ -188,4 +188,4 @@ def create_functions_json():
 
 
 if __name__ == "__main__":
-    create_functions_json()
+    create_actions()

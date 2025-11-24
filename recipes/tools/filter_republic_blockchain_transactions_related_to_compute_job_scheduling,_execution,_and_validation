@@ -1,0 +1,93 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Loads the Republic chain configuration for the given label, including RPC, gRPC, REST and indexer endpoints plus compute/staking/rewards module prefixes.",
+            "function": "load_chain_config_for_label(label: str)",
+            "usage": "chain_cfg = load_chain_config_for_label('republic')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Normalizes raw request or UI parameters into a ComputeTxFilter object for compute-related transaction queries.",
+            "function": "normalize_compute_tx_filter_params(raw_params: Dict[str, Any])",
+            "usage": "filt = normalize_compute_tx_filter_params({'address': some_addr, 'page': 1, 'page_size': 50})"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Builds a TxSearchQuery payload targeting Republic compute-job message types based on the normalized filter and chain config.",
+            "function": "build_compute_tx_search_query(config: ChainConfig, filt: ComputeTxFilter)",
+            "usage": "search_query = build_compute_tx_search_query(chain_cfg, filt)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Executes the constructed TxSearchQuery against the Republic transaction indexer and returns the raw JSON response with pagination.",
+            "function": "query_transaction_index(search_query: TxSearchQuery, timeout: float = 10.0)",
+            "usage": "raw_response = await query_transaction_index(search_query)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Filters the raw indexer results down to compute job scheduling/execution/validation transactions and extracts structured fields per tx.",
+            "function": "postprocess_compute_transactions(raw_response: Dict[str, Any])",
+            "usage": "compute_txs = postprocess_compute_transactions(raw_response)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Wraps the processed compute-related transactions together with pagination metadata into a clean response object for API callers.",
+            "function": "format_paginated_tx_response(items: List[Dict[str, Any]], raw_response: Dict[str, Any])",
+            "usage": "response_body = format_paginated_tx_response(compute_txs, raw_response)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "chain_cfg = load_chain_config_for_label('republic')#step: 1 Tool: load_chain_config_for_label Desciption: Given the 'republic' label, load RPC/gRPC and indexer endpoints plus relevant module names (compute, staking, rewards) needed to query transactions.",
+        "filt = normalize_compute_tx_filter_params({'address': some_addr, 'page': 1, 'page_size': 50})#step: 2 Tool: normalize_compute_tx_filter_params Desciption: From the caller\u2019s request or UI form, build a normalized filter object for compute-related activity (e.g., optional address, job_id, validator_address, height or time range, and pagination settings).",
+        "search_query = build_compute_tx_search_query(chain_cfg, filt)#step: 3 Tool: build_compute_tx_search_query Desciption: Translate the normalized filter into a transaction search query that targets compute-job-related messages and events (e.g., job scheduling, assignment, result submission, and validation/proof submission) in the Republic transaction index.",
+        "raw_response = await query_transaction_index(search_query)#step: 4 Tool: query_transaction_index Desciption: Execute the built query against the Republic transaction indexer or /cosmos/tx gRPC API, retrieving matching transactions and their events with server-side pagination.",
+        "compute_txs = postprocess_compute_transactions(raw_response)#step: 5 Tool: postprocess_compute_transactions Desciption: From the raw transaction results, keep only those that contain compute job scheduling or validation messages; extract structured fields such as tx_hash, block_height, timestamp, message type (e.g., schedule_job, submit_job_result, validate_job), job_id, sender, and validator.",
+        "response_body = format_paginated_tx_response(compute_txs, raw_response)#step: 6 Tool: format_paginated_tx_response Desciption: Assemble a paginated response object that contains the filtered compute-related transactions, along with pagination cursors or next-page tokens for the caller."
+    ],
+    "intent": "Filter Republic blockchain transactions related to compute job scheduling, execution, and validation",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "load_chain_config_for_label",
+            "description": "Given the 'republic' label, load RPC/gRPC and indexer endpoints plus relevant module names (compute, staking, rewards) needed to query transactions."
+        },
+        {
+            "step": 2,
+            "tool": "normalize_compute_tx_filter_params",
+            "description": "From the caller\u2019s request or UI form, build a normalized filter object for compute-related activity (e.g., optional address, job_id, validator_address, height or time range, and pagination settings)."
+        },
+        {
+            "step": 3,
+            "tool": "build_compute_tx_search_query",
+            "description": "Translate the normalized filter into a transaction search query that targets compute-job-related messages and events (e.g., job scheduling, assignment, result submission, and validation/proof submission) in the Republic transaction index."
+        },
+        {
+            "step": 4,
+            "tool": "query_transaction_index",
+            "description": "Execute the built query against the Republic transaction indexer or /cosmos/tx gRPC API, retrieving matching transactions and their events with server-side pagination."
+        },
+        {
+            "step": 5,
+            "tool": "postprocess_compute_transactions",
+            "description": "From the raw transaction results, keep only those that contain compute job scheduling or validation messages; extract structured fields such as tx_hash, block_height, timestamp, message type (e.g., schedule_job, submit_job_result, validate_job), job_id, sender, and validator."
+        },
+        {
+            "step": 6,
+            "tool": "format_paginated_tx_response",
+            "description": "Assemble a paginated response object that contains the filtered compute-related transactions, along with pagination cursors or next-page tokens for the caller."
+        }
+    ],
+    "outcome_checks": [
+        "Every returned transaction contains at least one compute-module message or event related to job scheduling, execution, or validation.",
+        "Each transaction entry exposes tx_hash, block_height, timestamp, and any discovered job_id and validator_address fields.",
+        "Pagination information (such as total count, page size, or next-page cursor) is present so the caller can request additional results as needed."
+    ]
+}

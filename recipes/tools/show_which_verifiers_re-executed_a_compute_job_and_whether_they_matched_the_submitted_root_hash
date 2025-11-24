@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Normalize a raw Republic job_id (UUID, hash, or alias) into the canonical job identifier used by backend PoME and verification APIs.",
+            "function": "validate_and_normalize_job_id(job_id: str)",
+            "usage": "normalized = await validate_and_normalize_job_id(raw_job_id)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Fetch the canonical PoME root_hash for a job from the compute-proof registry so it can be used as the reference value for verifier comparisons.",
+            "function": "fetch_canonical_pome_root_hash(job_id: str)",
+            "usage": "pome_info = await fetch_canonical_pome_root_hash(normalized['canonical_job_id'])"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Retrieve all verifier execution records for the job from the verification indexer, including verifier_address, local_root_hash, reported_match_flag, block_height, and timestamp.",
+            "function": "fetch_verifier_execution_records(job_id: str)",
+            "usage": "records = await fetch_verifier_execution_records(normalized['canonical_job_id'])"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Enrich each verifier execution record with optional validator metadata (such as moniker, reputation_score, and total_stake) from the validator registry.",
+            "function": "enrich_verifier_metadata(records: List[Dict[str, Any]])",
+            "usage": "enriched_records = await enrich_verifier_metadata(records)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Cross-check each verifier's local_root_hash against the canonical root_hash, compare with the stored reported_match_flag, and annotate records with matched and consistency_status fields.",
+            "function": "cross_check_verifier_match_flags(records: List[Dict[str, Any]], canonical_root_hash: str)",
+            "usage": "checked_records = cross_check_verifier_match_flags(enriched_records, pome_info['canonical_root_hash'])"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Construct a sorted summary of verifier matches for the job, including per-verifier details and aggregate counts of matches, mismatches, and inconsistencies.",
+            "function": "construct_verifier_match_summary(job_id: str, canonical_root_hash: str, records: List[Dict[str, Any]])",
+            "usage": "summary = construct_verifier_match_summary(normalized['canonical_job_id'], pome_info['canonical_root_hash'], checked_records)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "normalized = await validate_and_normalize_job_id(raw_job_id)#step: 1 Tool: validate_and_normalize_job_id Desciption: Validate the provided {job_id} and normalize it to the canonical form expected by Republic backend services.",
+        "pome_info = await fetch_canonical_pome_root_hash(normalized['canonical_job_id'])#step: 2 Tool: fetch_canonical_pome_root_hash Desciption: Retrieve the canonical PoME root_hash for this job from the compute-proof registry to use as the reference value for verifier comparison.",
+        "records = await fetch_verifier_execution_records(normalized['canonical_job_id'])#step: 3 Tool: fetch_verifier_execution_records Desciption: Query the verification module or indexer for all verification_result records associated with job_id, retrieving for each: verifier_address, local_root_hash (recomputed by the verifier), reported_match_flag, block_height, and timestamp.",
+        "enriched_records = await enrich_verifier_metadata(records)#step: 4 Tool: enrich_verifier_metadata Desciption: For each verifier_address that appears in the records, optionally fetch validator metadata (e.g., moniker, reputation_score, total_stake) from the validator registry to include contextual information in the response.",
+        "checked_records = cross_check_verifier_match_flags(enriched_records, pome_info['canonical_root_hash'])#step: 5 Tool: cross_check_verifier_match_flags Desciption: For each verification record, recompute whether local_root_hash equals the canonical root_hash and compare this to the stored reported_match_flag; mark each record as consistent or inconsistent and derive a normalized matched boolean field.",
+        "summary = construct_verifier_match_summary(normalized['canonical_job_id'], pome_info['canonical_root_hash'], checked_records)#step: 6 Tool: construct_verifier_match_summary Desciption: Build a response that includes a list of verifiers sorted by verification timestamp, each entry containing verifier_address, optional validator metadata, local_root_hash, matched flag (based on canonical comparison), consistency_status, and timestamp, along with aggregate counts of matches, mismatches, and inconsistencies."
+    ],
+    "intent": "Show which verifiers re-executed a compute job and whether they matched the submitted root hash",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_and_normalize_job_id",
+            "description": "Validate the provided {job_id} and normalize it to the canonical form expected by Republic backend services."
+        },
+        {
+            "step": 2,
+            "tool": "fetch_canonical_pome_root_hash",
+            "description": "Retrieve the canonical PoME root_hash for this job from the compute-proof registry to use as the reference value for verifier comparison."
+        },
+        {
+            "step": 3,
+            "tool": "fetch_verifier_execution_records",
+            "description": "Query the verification module or indexer for all verification_result records associated with job_id, retrieving for each: verifier_address, local_root_hash (recomputed by the verifier), reported_match_flag, block_height, and timestamp."
+        },
+        {
+            "step": 4,
+            "tool": "enrich_verifier_metadata",
+            "description": "For each verifier_address that appears in the records, optionally fetch validator metadata (e.g., moniker, reputation_score, total_stake) from the validator registry to include contextual information in the response."
+        },
+        {
+            "step": 5,
+            "tool": "cross_check_verifier_match_flags",
+            "description": "For each verification record, recompute whether local_root_hash equals the canonical root_hash and compare this to the stored reported_match_flag; mark each record as consistent or inconsistent and derive a normalized matched boolean field."
+        },
+        {
+            "step": 6,
+            "tool": "construct_verifier_match_summary",
+            "description": "Build a response that includes a list of verifiers sorted by verification timestamp, each entry containing verifier_address, optional validator metadata, local_root_hash, matched flag (based on canonical comparison), consistency_status, and timestamp, along with aggregate counts of matches, mismatches, and inconsistencies."
+        }
+    ],
+    "outcome_checks": [
+        "Ensure that for every record where matched is reported true, local_root_hash exactly equals the canonical root_hash; otherwise, mark the record as inconsistent and do not treat it as a successful match.",
+        "If there are mismatching verifiers, check whether corresponding slashing or dispute events exist for the responsible validator addresses and surface this linkage where available.",
+        "If the job is marked COMPLETED and has a PoME root_hash but zero verifier records, return an explicit verification_status of UNVERIFIED instead of implying success.",
+        "Confirm that the sum of per-verifier match and mismatch counts equals the total number of verification records returned for the job."
+    ]
+}

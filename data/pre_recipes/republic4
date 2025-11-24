@@ -1,0 +1,252 @@
+[
+    {
+        "label": "republic",
+        "intent": "List recent Republic slashing events with categorized reasons such as downtime or incorrect computations",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "resolve_republic_network_config",
+                "description": "Load the default Republic chain configuration (network ID, RPC, REST/indexer endpoints) for the target environment (e.g., mainnet vs testnet)."
+            },
+            {
+                "step": 2,
+                "tool": "determine_slashing_time_window",
+                "description": "Interpret 'recent' as a configurable time window (for example, the last 7 days by default), compute start and end timestamps, and map them to block height ranges using the chain's block metadata."
+            },
+            {
+                "step": 3,
+                "tool": "query_republic_slashing_events",
+                "description": "Query the Republic slashing module or indexer for all slashing events within the computed time window, retrieving fields such as validator address, block height, timestamp, reason code (e.g., DOWNTIME, INCORRECT_COMPUTATION, EQUIVOCATION), and REP amount slashed."
+            },
+            {
+                "step": 4,
+                "tool": "enrich_slashing_with_compute_context",
+                "description": "For events tagged with incorrect-computation-related reasons, query the compute validation/job modules to attach related metadata such as job ID, benchmark type (throughput, inference, FLOPs), and whether the slash was triggered by failed proof verification or benchmark failure."
+            },
+            {
+                "step": 5,
+                "tool": "normalize_and_categorize_slashing_reasons",
+                "description": "Normalize raw reason codes and messages into user-friendly categories like 'downtime', 'incorrect computation', 'double-signing', or 'other', ensuring consistent labeling across all events."
+            },
+            {
+                "step": 6,
+                "tool": "sort_and_limit_slashing_events",
+                "description": "Sort the enriched slashing events by timestamp descending and apply a configurable limit (for example, the most recent 100 events) to keep the response size manageable."
+            },
+            {
+                "step": 7,
+                "tool": "format_slashing_events_for_output",
+                "description": "Format the resulting events into a structured representation suitable for display or API responses, including validator moniker, address, reason category, detailed reason, slashed REP amount, block height, timestamp, and any associated job or benchmark identifiers."
+            }
+        ],
+        "outcome_checks": [
+            "All returned records fall within the intended 'recent' time window.",
+            "Each event includes a clearly categorized reason (e.g., downtime vs incorrect computation).",
+            "Slashed REP amounts and block heights match the on-chain data or indexer records.",
+            "If no recent slashing events exist, the workflow cleanly returns an empty list with no errors."
+        ]
+    },
+    {
+        "label": "republic",
+        "intent": "Show Republic fraud-detection alerts and related slashing events for incorrect computation proofs",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "resolve_republic_network_config",
+                "description": "Load Republic network configuration (RPC, REST/indexer URLs, network ID) required to query compute validation and slashing data."
+            },
+            {
+                "step": 2,
+                "tool": "determine_fraud_query_scope",
+                "description": "Define the query scope for fraud detection (e.g., entire history with pagination or a recent time window such as the last 30 days), specifying maximum records per page."
+            },
+            {
+                "step": 3,
+                "tool": "query_compute_fraud_detection_events",
+                "description": "Query the compute validation or PoME-related modules/indexer for fraud-detection events where computation proofs failed verification (e.g., mismatched root hash, failed re-execution, invalid benchmark outputs), retrieving job ID, validator address, benchmark type, and timestamps."
+            },
+            {
+                "step": 4,
+                "tool": "query_related_incorrect_computation_slashes",
+                "description": "For each fraud-detection event, query the slashing module or indexer for slashing events involving the same validator and (when available) the same job ID or closely matching time window, filtering specifically for incorrect-computation-related reasons."
+            },
+            {
+                "step": 5,
+                "tool": "join_fraud_events_with_slashing",
+                "description": "Join fraud-detection events with their corresponding slashing events into unified records keyed by validator and job ID, marking whether each fraud incident resulted in slashing and the magnitude of the penalty."
+            },
+            {
+                "step": 6,
+                "tool": "classify_fraud_event_severity",
+                "description": "Classify each fraud incident by severity (e.g., minor benchmark deviation vs fully incorrect proof) based on protocol rules and any attached metadata, and annotate the joined records with these severity levels."
+            },
+            {
+                "step": 7,
+                "tool": "format_fraud_and_slashing_report",
+                "description": "Format the final joined dataset into a report-style structure listing, for each incident, the validator moniker, address, job ID, benchmark type, detection reason, severity, timestamp, whether slashed, REP slashed, and any reputation impact indicators."
+            }
+        ],
+        "outcome_checks": [
+            "All included fraud events explicitly relate to incorrect or unverifiable computation proofs (not general slashing causes like downtime alone).",
+            "Whenever a fraud event resulted in slashing, the linked slashing record correctly matches the validator and job context.",
+            "Fraud incidents with no associated slashes are clearly indicated as 'not slashed' or 'pending'.",
+            "Pagination or time-window limits are respected so that large histories do not cause timeouts or incomplete joins without notice."
+        ]
+    },
+    {
+        "label": "republic",
+        "intent": "List Republic validators that have recently failed benchmarks or experienced a decrease in reputation",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "resolve_republic_network_config",
+                "description": "Load Republic chain configuration and endpoints for accessing benchmark and reputation data."
+            },
+            {
+                "step": 2,
+                "tool": "define_recent_performance_period",
+                "description": "Define the 'recent' period for performance evaluation (for example, the last epoch or the last N days), computing start and end block heights or timestamps."
+            },
+            {
+                "step": 3,
+                "tool": "query_benchmark_results_for_period",
+                "description": "Query the compute validation/benchmarking module or indexer for all validator benchmark runs (throughput, inference, FLOPs) in the specified period, retrieving results, scores, and pass/fail status for each run."
+            },
+            {
+                "step": 4,
+                "tool": "identify_failed_or_underperforming_benchmarks",
+                "description": "Apply protocol-defined thresholds and status flags to the benchmark results to flag validators with failed benchmarks or significantly degraded scores within the period."
+            },
+            {
+                "step": 5,
+                "tool": "query_reputation_snapshots",
+                "description": "Fetch per-validator reputation scores at the start and end of the period from the reputation module or indexer, ensuring consistent scoring scales."
+            },
+            {
+                "step": 6,
+                "tool": "compute_reputation_deltas",
+                "description": "Compute the change in reputation (delta) for each validator over the defined period, marking validators whose reputation decreased by any amount or by more than a configurable threshold."
+            },
+            {
+                "step": 7,
+                "tool": "combine_benchmark_and_reputation_flags",
+                "description": "Combine the sets of validators with failed benchmarks and those with negative reputation deltas, deduplicating and labeling each validator with the specific issues observed (failed benchmarks, reputation drop, or both)."
+            },
+            {
+                "step": 8,
+                "tool": "enrich_validators_with_metadata",
+                "description": "Attach additional metadata for each flagged validator, such as moniker, operator address, total stake, commission rate, and current status (active, jailed, etc.) from the staking module."
+            },
+            {
+                "step": 9,
+                "tool": "format_validator_performance_list",
+                "description": "Format the final list into a structured representation showing each validator's identifiers, benchmark issues, reputation delta, and key metadata for operator or delegator review."
+            }
+        ],
+        "outcome_checks": [
+            "The defined 'recent' period is clearly documented in the output (e.g., block range or timestamps).",
+            "Validators are only classified as having failed benchmarks when their results truly violate configured thresholds or are explicitly marked as failures.",
+            "Reputation deltas are computed correctly (end score minus start score) and negative values are reliably detected.",
+            "If no validators meet the failure or reputation-drop criteria, the workflow returns an empty or explicitly 'none found' result without error."
+        ]
+    },
+    {
+        "label": "republic",
+        "intent": "List Republic validators with downtime incidents in the last 24 hours",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "resolve_republic_network_config",
+                "description": "Load the Republic network configuration and endpoints required to query validator uptime, slashing, and staking data."
+            },
+            {
+                "step": 2,
+                "tool": "compute_last_24h_window",
+                "description": "Determine the time window covering the last 24 hours relative to the current chain time, converting it into the corresponding block height range."
+            },
+            {
+                "step": 3,
+                "tool": "query_downtime_and_missed_block_events",
+                "description": "Query the slashing/uptime module or indexer for downtime-related events within the 24-hour window, including missed-block events, downtime thresholds being crossed, jailing events, and any associated metadata per validator."
+            },
+            {
+                "step": 4,
+                "tool": "aggregate_downtime_by_validator",
+                "description": "Aggregate downtime metrics per validator over the 24-hour window (e.g., total missed blocks, number of distinct downtime incidents, total duration offline) using the raw events."
+            },
+            {
+                "step": 5,
+                "tool": "attach_slashing_and_status_context",
+                "description": "For each validator with downtime, attach whether downtime led to jailing or slashing in the same period and include current validator status and jailing state from the staking and slashing modules."
+            },
+            {
+                "step": 6,
+                "tool": "enrich_with_validator_metadata",
+                "description": "Enrich each validator entry with human-readable metadata such as moniker, operator address, consensus address, total stake, and commission from the staking module."
+            },
+            {
+                "step": 7,
+                "tool": "format_downtime_incident_list",
+                "description": "Format the aggregated data into a structured list showing, for each validator, downtime statistics in the last 24 hours, any related slashing/jailing, and key metadata for operational review."
+            }
+        ],
+        "outcome_checks": [
+            "All incidents in the output occurred within the last 24 hours based on chain time.",
+            "Downtime counts and missed-block totals per validator are consistent with the underlying event data.",
+            "Validators with no downtime in the last 24 hours do not appear in the list.",
+            "Any associated slashing or jailing events are correctly linked to the corresponding downtime incidents."
+        ]
+    },
+    {
+        "label": "republic",
+        "intent": "List Republic validators that have never been slashed and rank them by long-term reputation",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "resolve_republic_network_config",
+                "description": "Load Republic chain configuration and endpoints necessary to query staking, slashing, and reputation modules."
+            },
+            {
+                "step": 2,
+                "tool": "query_all_active_and_historical_validators",
+                "description": "Query the staking module or indexer for the full set of validators (active and, if desired, historical), retrieving their operator addresses, monikers, and basic metadata."
+            },
+            {
+                "step": 3,
+                "tool": "query_slashing_history_for_validators",
+                "description": "For each validator (or via an indexer-level query), retrieve all historical slashing events, including reason codes and amounts, to determine whether the validator has ever been slashed."
+            },
+            {
+                "step": 4,
+                "tool": "filter_never_slashed_validators",
+                "description": "Filter the validator set down to only those validators for which no slashing events are found in their entire history, marking them as 'never slashed'."
+            },
+            {
+                "step": 5,
+                "tool": "query_long_term_reputation_scores",
+                "description": "Query the reputation module or indexer for long-horizon reputation metrics for each never-slashed validator (e.g., multi-epoch average or time-weighted reputation), ensuring consistent scoring units across validators."
+            },
+            {
+                "step": 6,
+                "tool": "rank_validators_by_reputation",
+                "description": "Sort the never-slashed validators in descending order of long-term reputation and apply a configurable limit (for example, top 10 or top 50) for the final output."
+            },
+            {
+                "step": 7,
+                "tool": "enrich_top_validators_with_metadata",
+                "description": "For the top-ranked validators, attach additional metadata including total stake, commission rate, current status (active/jailed), and any relevant performance indicators (e.g., recent benchmark scores)."
+            },
+            {
+                "step": 8,
+                "tool": "format_high_reputation_validator_list",
+                "description": "Format the resulting ranked list into a structured output emphasizing that these validators have zero slashing history and high long-term reputation, suitable for delegator dashboards or risk-averse operator selection tools."
+            }
+        ],
+        "outcome_checks": [
+            "Every validator in the final list has a verified empty slashing history according to on-chain data or indexer records.",
+            "Long-term reputation scores are consistently sourced and comparable across validators.",
+            "The list is correctly sorted in descending order of long-term reputation.",
+            "If fewer validators meet the 'never slashed' criterion than the requested limit, the workflow gracefully returns the smaller set without error."
+        ]
+    }
+]

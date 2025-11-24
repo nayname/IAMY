@@ -1,0 +1,177 @@
+[
+    {
+        "intent": "Retrieve the consensus committee composition for a specific epoch.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "parse_and_validate_epoch_id",
+                "description": "Extract the epoch_id value from the user request (e.g., from a path parameter or query string) and validate that it is a positive integer. If the request uses a template like `epoch {epoch_id}`, parse out the numeric ID."
+            },
+            {
+                "step": 2,
+                "tool": "backend_republic_get_epoch_committee",
+                "description": "From a backend service, query the Republic node or indexer for the consensus committee in the specified epoch_id. Return the list of validators in the committee along with their operator addresses, voting power/stake, and any available reputation or compute quality metrics. Use appropriate RPC/REST or CLI calls (e.g., via `republic` core utils) and never from the frontend directly."
+            },
+            {
+                "step": 3,
+                "tool": "backend_republic_enrich_validator_metadata",
+                "description": "For each validator in the committee, fetch additional metadata such as moniker, identity, commission rate, and current reputation score, by querying the staking/validator registry on the Republic chain or an indexer."
+            },
+            {
+                "step": 4,
+                "tool": "format_epoch_committee_response",
+                "description": "Aggregate and format the committee composition into a structured response. Include the epoch_id, total committee size, total voting power, and a list of validators with fields like {validator_address, moniker, stake_share, reputation, compute_benchmarks_if_available}. Sort validators by stake or reputation as appropriate and present the result as JSON suitable for direct rendering."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm that the provided epoch_id exists on-chain (e.g., is not greater than the latest epoch and is non-negative).",
+            "Verify that a non-empty committee list was returned for the given epoch_id.",
+            "Ensure each committee member record includes at least an operator address and voting power/stake value.",
+            "If enrichment is enabled, confirm that metadata lookups did not silently drop any validators (counts match between raw committee and enriched list)."
+        ]
+    },
+    {
+        "intent": "List epochs and their checkpoint blocks with committee composition and stake distribution.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "derive_epoch_range_from_request",
+                "description": "Interpret the user\u2019s request to determine which epochs to show. If explicit bounds (e.g., start_epoch, end_epoch) or a count (e.g., `last N epochs`) are provided, use them. Otherwise, default to a sensible window such as the most recent 10\u201350 epochs, enforcing an upper bound for performance."
+            },
+            {
+                "step": 2,
+                "tool": "backend_republic_get_epochs_with_checkpoints",
+                "description": "From a backend service, query the Republic node or indexer for each epoch in the requested range. For each epoch, retrieve: the epoch_id, checkpoint block height/hash, checkpoint timestamp, and the consensus committee for that epoch. Use efficient pagination or batch queries where possible instead of per-epoch RPC calls."
+            },
+            {
+                "step": 3,
+                "tool": "backend_republic_get_stake_distribution_for_epochs",
+                "description": "For the same set of epochs, fetch the stake distribution associated with each epoch\u2019s committee. This includes each committee validator\u2019s stake or voting power at that epoch and optionally their reputation/compute scores. Use historical state or indexer snapshots tied to checkpoint blocks where available."
+            },
+            {
+                "step": 4,
+                "tool": "assemble_epoch_committee_stake_timeline",
+                "description": "Combine checkpoint metadata, committee composition, and stake distribution into a chronological timeline. For each epoch, produce an object including epoch_id, checkpoint_block_height, committee_size, total_stake, and a breakdown of validators with their stake share and any available quality metrics."
+            },
+            {
+                "step": 5,
+                "tool": "format_epochs_overview_response",
+                "description": "Format the aggregated data into a compact, consumer-friendly structure. Optionally support summary views (e.g., only epoch-level aggregates) and detailed expansion (per-validator breakdown). Ensure the response can be paginated or filtered by epoch range if requested by the caller."
+            }
+        ],
+        "outcome_checks": [
+            "Verify that at least one epoch in the requested range exists and has a corresponding checkpoint block.",
+            "Confirm that each epoch entry includes a non-empty committee list and total stake value.",
+            "Ensure the reported stake distribution for each epoch sums closely to the total stake recorded for that committee (within expected rounding error).",
+            "Check that epochs are ordered consistently (ascending or descending) and that pagination or range limits are correctly enforced."
+        ]
+    },
+    {
+        "intent": "Explain how a specific validator\u2019s benchmark scores affect their probability of being selected for consensus committees.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "parse_and_validate_validator_address",
+                "description": "Extract the validator identifier from the request (e.g., `{address}`) and validate its format according to Republic\u2019s validator address scheme. If a delegator or account address is provided instead, resolve or map it to the corresponding validator operator address where possible."
+            },
+            {
+                "step": 2,
+                "tool": "backend_republic_get_validator_profile",
+                "description": "From a backend service, query the Republic chain or indexer for the validator\u2019s core data: operator address, current stake (including delegated stake), reputation score, and status (active/jailed). Fail gracefully if the validator does not exist or is not currently part of the active set."
+            },
+            {
+                "step": 3,
+                "tool": "backend_republic_get_validator_benchmark_scores",
+                "description": "Fetch the validator\u2019s latest benchmark results from the compute validation subsystem: throughput benchmark, inference benchmark, and achieved FLOPs metrics. Include timestamps and any normalized composite compute quality score used in committee selection."
+            },
+            {
+                "step": 4,
+                "tool": "backend_republic_get_selection_weight_params",
+                "description": "Query current protocol parameters that govern committee selection, such as the relative weights of stake, compute quality, and reputation in the selection formula (e.g., stake_weight, compute_weight, reputation_weight) and any caps or minimum thresholds."
+            },
+            {
+                "step": 5,
+                "tool": "compute_validator_committee_selection_weight",
+                "description": "Using the validator\u2019s stake, benchmark-derived compute quality, and reputation, along with the selection parameters, compute the validator\u2019s effective selection weight. Normalize this weight against network-wide totals (which may require cached or separately maintained aggregates) to estimate the validator\u2019s probability of being chosen for a committee slot in a typical epoch."
+            },
+            {
+                "step": 6,
+                "tool": "generate_probability_explanation",
+                "description": "Generate a human-readable explanation showing how each component (stake, benchmarks/compute quality, reputation) contributes to the validator\u2019s overall committee selection probability. Include examples or sensitivity analysis such as how increasing a particular benchmark score or stake would change their relative selection probability, assuming network conditions remain constant."
+            }
+        ],
+        "outcome_checks": [
+            "Confirm that the provided validator address maps to a valid, known validator on the Republic network.",
+            "Verify that benchmark scores and reputation data were successfully retrieved; if not, clearly indicate missing metrics in the explanation.",
+            "Ensure the computed selection weight is non-negative and that normalization against network totals yields a probability between 0 and 1.",
+            "Validate that the explanation text accurately reflects the underlying formula and parameter values used in the weight computation."
+        ]
+    },
+    {
+        "intent": "Analyze the correlation between validator reputation scores and their frequency of consensus committee selection.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "derive_analysis_window_from_request",
+                "description": "Determine the time or epoch range over which to measure committee selection frequency. If the user does not specify, default to a recent window (e.g., last 500\u20131000 epochs) while enforcing an upper bound for performance and data availability."
+            },
+            {
+                "step": 2,
+                "tool": "backend_republic_get_committees_with_reputation_history",
+                "description": "From a backend analytics or indexer service, fetch for each epoch in the analysis window: the committee membership and each validator\u2019s reputation score at or near that epoch (e.g., at the checkpoint block). Construct a dataset containing (epoch_id, validator_id, in_committee_flag, reputation_score)."
+            },
+            {
+                "step": 3,
+                "tool": "aggregate_validator_selection_frequencies",
+                "description": "Aggregate the raw per-epoch data by validator to compute, for each validator: total_epochs_in_sample, epochs_in_committee, selection_frequency = epochs_in_committee / total_epochs_in_sample, and an average or median reputation score across the window."
+            },
+            {
+                "step": 4,
+                "tool": "compute_reputation_selection_correlation",
+                "description": "Using the aggregated per-validator dataset, compute statistical measures of correlation between reputation_score and selection_frequency (e.g., Pearson and/or Spearman correlation coefficients). Optionally segment validators into reputation buckets and compute average selection frequencies by bucket for robustness checks."
+            },
+            {
+                "step": 5,
+                "tool": "generate_correlation_summary",
+                "description": "Produce a summary that reports the computed correlation metrics, describes the analysis window and sample size (number of validators and epochs), and highlights key trends (e.g., higher-reputation validators appearing significantly more often in committees). Optionally include data tables or chart-ready structures for frontends."
+            }
+        ],
+        "outcome_checks": [
+            "Ensure the analysis window includes a sufficient number of epochs and validators to yield meaningful statistics.",
+            "Verify that each validator in the dataset has both a defined reputation score and a calculable selection frequency.",
+            "Confirm that computed correlation coefficients fall within the valid range [-1, 1].",
+            "Check that the summary clearly states assumptions and any limitations (e.g., missing historical reputation snapshots) that might affect interpretation."
+        ]
+    },
+    {
+        "intent": "Retrieve the current protocol parameters for reward rates, slashing amounts, and job fees on the Republic network.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "backend_republic_get_staking_and_reward_params",
+                "description": "From a backend service, query the Republic chain\u2019s parameter modules or governance state for staking and reward configuration. This includes base staking reward rates (e.g., annualized APR or per-block rate), any reward multipliers tied to reputation or compute performance, and consensus participation bonuses."
+            },
+            {
+                "step": 2,
+                "tool": "backend_republic_get_slashing_params",
+                "description": "Query the slashing/penalty-related parameters, including slashing fractions for double-signing, downtime, and incorrect or delayed compute submissions, as well as unbonding and jail durations and any thresholds that trigger penalties."
+            },
+            {
+                "step": 3,
+                "tool": "backend_republic_get_job_fee_params",
+                "description": "Fetch parameters governing job fees and compute marketplace economics: base fee per job or per unit of compute (e.g., per FLOP or per benchmark unit), minimum job fee, fee splitting rules between validators, delegators, and protocol treasury, and any dynamic fee adjustment parameters."
+            },
+            {
+                "step": 4,
+                "tool": "normalize_and_format_economic_params",
+                "description": "Normalize raw on-chain parameter values (e.g., convert from base units such as micro-REP to REP, and from decimal rates to human-readable percentages). Organize the data into clear sections: Staking & Rewards, Slashing & Penalties, and Job Fees & Compute Rewards. Include the network/chain ID and parameter revision height or hash for reference."
+            }
+        ],
+        "outcome_checks": [
+            "Verify that all three parameter categories\u2014rewards, slashing, and job fees\u2014were successfully retrieved or explicitly marked as unavailable.",
+            "Confirm unit normalization is correct (e.g., token amounts and percentages match expected scales and do not exceed plausible bounds).",
+            "Ensure the final response structure is self-contained, specifying the chain/network and block height or epoch at which the parameters were read.",
+            "Check that any missing or defaulted parameters are clearly indicated in the formatted output rather than silently omitted."
+        ]
+    }
+]

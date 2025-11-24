@@ -1,0 +1,201 @@
+[
+    {
+        "intent": "Show the current configuration of Republic compute validation benchmarks and thresholds.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "resolve_network_context",
+                "description": "Determine which Republic network (e.g., mainnet or testnet) and which RPC/indexer endpoint the backend should use, based on the caller's configuration or explicit input."
+            },
+            {
+                "step": 2,
+                "tool": "query_compute_benchmark_module_config",
+                "description": "From a backend service, query a Republic node or indexing API (for example via a CLI call like `republic benchmarks config` or an equivalent gRPC/REST method) to fetch the on-chain configuration for compute validation benchmarks, including enabled benchmark types, required run frequency, score thresholds, timeouts, and any associated slashing or reward parameters."
+            },
+            {
+                "step": 3,
+                "tool": "normalize_benchmark_config_response",
+                "description": "Parse the raw configuration response into a normalized structure keyed by benchmark type (e.g., `throughput`, `inference`, `achieved_flops`), capturing fields such as minimum acceptable score, target interval between runs, maximum allowed lateness, and how each metric feeds into reputation and rewards."
+            },
+            {
+                "step": 4,
+                "tool": "format_benchmark_config_for_display",
+                "description": "Produce a user-facing object or table summarizing the benchmark configuration: for each benchmark type, show thresholds, cadence requirements, enforcement/slashing rules, and any performance multipliers, along with metadata such as block height and network ID."
+            }
+        ],
+        "outcome_checks": [
+            "The result includes all currently enabled benchmark types (for example throughput, inference, and achieved FLOPs) with their respective thresholds and timing requirements.",
+            "Configuration includes any relevant slashing or reward parameters tied to benchmark performance.",
+            "The response is tagged with the network identifier and block height from which the configuration was read."
+        ]
+    },
+    {
+        "intent": "Show ongoing and historical compute benchmark runs for a specific Republic validator address.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_validator_address",
+                "description": "Validate the provided `validator_address` string (e.g., check Bech32 format and expected Republic validator prefix) and fail fast with a clear error if the address is invalid."
+            },
+            {
+                "step": 2,
+                "tool": "resolve_network_context",
+                "description": "Determine the target Republic network and available RPC/indexer endpoints to query benchmark run data."
+            },
+            {
+                "step": 3,
+                "tool": "build_benchmark_run_query_filters",
+                "description": "Construct backend query filters scoped to the given `validator_address`, requesting both ongoing runs (e.g., statuses like `pending`, `scheduled`, `running`) and historical runs (e.g., `completed`, `failed`, `slashed`). Include sensible pagination defaults (for example, most recent runs first, limited page size) unless the caller supplies explicit pagination parameters."
+            },
+            {
+                "step": 4,
+                "tool": "query_validator_benchmark_runs",
+                "description": "From a backend service, query the Republic compute validation or benchmarks module (via CLI like `republic benchmarks runs --validator <address>` or an equivalent gRPC/REST/indexer call) to retrieve all benchmark runs matching the filters, including run ID, benchmark type, status, score, start time, end time, and any error/slashing metadata."
+            },
+            {
+                "step": 5,
+                "tool": "partition_and_sort_benchmark_runs",
+                "description": "Partition the returned runs into two collections: `ongoing` (non-final statuses) and `historical` (finalized statuses). Within each collection, sort runs by start time descending so the most recent runs appear first."
+            },
+            {
+                "step": 6,
+                "tool": "format_benchmark_runs_for_display",
+                "description": "Format the `ongoing` and `historical` runs for presentation, ensuring each entry includes at least run ID, benchmark type, current/final status, timestamps, scores, and any associated penalties or rewards, plus pagination cursors if more results are available."
+            }
+        ],
+        "outcome_checks": [
+            "If the validator has any benchmark runs, both ongoing and historical runs are returned, correctly partitioned by status.",
+            "Each run entry contains benchmark type, status, start time, and for completed runs, end time and final score.",
+            "If no runs exist for the validator, the response clearly indicates an empty result without error.",
+            "Pagination cursors or indicators are present when the total number of runs exceeds the default page size."
+        ]
+    },
+    {
+        "intent": "Show compute validation status and benchmark timing for a specific Republic validator address.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "validate_validator_address",
+                "description": "Validate the provided `validator_address` (format, prefix, and length) and return an explicit error if the address is not a valid Republic validator address."
+            },
+            {
+                "step": 2,
+                "tool": "resolve_network_context",
+                "description": "Determine the target Republic network and endpoints needed to fetch validator compute status, reputation, and benchmark timing information."
+            },
+            {
+                "step": 3,
+                "tool": "query_validator_compute_status",
+                "description": "From a backend service, query the Republic compute validation module for the validator's current compute status, including latest benchmark results per benchmark type, whether the validator is currently considered compliant, and any active penalties related to compute performance."
+            },
+            {
+                "step": 4,
+                "tool": "query_validator_benchmark_schedule",
+                "description": "Query the benchmarks module or scheduler for timing data for the given `validator_address`, such as the timestamp or block height of the last successful run for each benchmark type and the deadline or target time for the next required run."
+            },
+            {
+                "step": 5,
+                "tool": "query_validator_reputation_and_slashing_state",
+                "description": "Optionally (if supported by the network), query the reputation and slashing modules to retrieve the validator's current reputation score, recent slashing events related to compute validation, and how reputation integrates with compute benchmarks."
+            },
+            {
+                "step": 6,
+                "tool": "aggregate_compute_status_summary",
+                "description": "Combine compute status, benchmark timing, and reputation/slashing data into a single summary per benchmark type, including: last run time and score, next required run time or deadline, whether the validator is currently in good standing for that metric, and any pending risk of slashing for missing or failing upcoming benchmarks."
+            },
+            {
+                "step": 7,
+                "tool": "format_compute_status_for_display",
+                "description": "Format the aggregated status into a concise, user-facing structure that clearly indicates overall compute health (e.g., compliant/non-compliant), last and next benchmark timings for each metric, and any notable warnings or penalties."
+            }
+        ],
+        "outcome_checks": [
+            "The response includes, for each benchmark type, the last successful run time (or an indication that no run has occurred yet) and the next required run time or deadline.",
+            "The validator's overall compute compliance status is clearly indicated (for example, compliant, at-risk, or non-compliant).",
+            "If available, current reputation and any recent compute-related slashing events are included or explicitly marked as unavailable.",
+            "If the validator is missing required benchmarks or is late, the response highlights these conditions."
+        ]
+    },
+    {
+        "intent": "Search for transactions involving REP staking or unstaking activity.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "resolve_network_context",
+                "description": "Determine the Republic network and the transaction indexing source (node RPC, gRPC, or external indexer) that will be used for transaction search."
+            },
+            {
+                "step": 2,
+                "tool": "build_staking_tx_search_filters",
+                "description": "Construct backend search filters for REP staking-related transactions, targeting staking module messages such as delegations and undelegations (for example, actions analogous to `delegate`, `undelegate`, `begin_unbonding`, or `redelegate`). Optionally apply caller-supplied filters such as account address, validator address, time range, or pagination; otherwise default to a reasonable time window (e.g., the last 30 days) and page size."
+            },
+            {
+                "step": 3,
+                "tool": "execute_staking_tx_search",
+                "description": "From a backend service, query the transaction index via REST/gRPC or an indexer API using the constructed filters to retrieve all matching transactions involving REP staking or unstaking. Ensure the search includes both successful and failed transactions where relevant."
+            },
+            {
+                "step": 4,
+                "tool": "filter_for_rep_denom",
+                "description": "From the matched transactions, filter and normalize events to include only those where the token denomination corresponds to REP (or its base denom) to avoid including unrelated staking denoms if the chain supports multiple tokens."
+            },
+            {
+                "step": 5,
+                "tool": "extract_staking_tx_details",
+                "description": "For each remaining transaction, extract key details including tx hash, block height, timestamp, message type (e.g., stake, unstake, redelegate), delegator address, validator address(es), amount and denom, and transaction status (success/failure)."
+            },
+            {
+                "step": 6,
+                "tool": "format_staking_tx_results_for_display",
+                "description": "Format the resulting list into a user-facing structure, such as a chronologically sorted list with metadata and pagination information to allow the caller to request additional pages if needed."
+            }
+        ],
+        "outcome_checks": [
+            "All returned transactions involve staking-related message types and the REP token denomination (or its base unit).",
+            "Each transaction entry contains at least tx hash, timestamp, message type, involved addresses, amount, and status.",
+            "If no transactions match the filters, the response clearly indicates an empty result instead of failing.",
+            "Pagination information or cursors are included when the result set exceeds the default page size."
+        ]
+    },
+    {
+        "intent": "Search for transactions where validators registered or updated their compute benchmark results on Republic.",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "resolve_network_context",
+                "description": "Determine the target Republic network and the transaction indexing method (node RPC/gRPC or external indexer) to query for compute-related governance or benchmark messages."
+            },
+            {
+                "step": 2,
+                "tool": "build_benchmark_tx_search_filters",
+                "description": "Construct backend search filters targeting compute benchmark registration and update messages, such as message types analogous to `MsgSubmitBenchmarkResult`, `MsgRegisterValidatorBenchmarkProfile`, or `MsgUpdateBenchmarkConfig`. Optionally scope the search by `validator_address`, time range, or benchmark type if the caller supplies filters; otherwise apply a default time window and pagination."
+            },
+            {
+                "step": 3,
+                "tool": "execute_benchmark_tx_search",
+                "description": "From a backend service, query the transaction index using the constructed filters to retrieve all transactions where validators have submitted, registered, or updated benchmark results or profiles."
+            },
+            {
+                "step": 4,
+                "tool": "extract_benchmark_tx_details",
+                "description": "For each matched transaction, extract relevant details such as tx hash, block height, timestamp, validator address, benchmark type(s) affected, submitted scores or performance metrics (if present), and whether the transaction succeeded or failed."
+            },
+            {
+                "step": 5,
+                "tool": "group_benchmark_txs_by_validator_and_type",
+                "description": "Optionally group or tag the results by validator address and benchmark type to make it easier to see the history of benchmark registrations and updates per validator and per benchmark metric."
+            },
+            {
+                "step": 6,
+                "tool": "format_benchmark_tx_results_for_display",
+                "description": "Format the results into a user-facing list or structured object that clearly indicates, for each transaction, what benchmark data was registered or updated, by which validator, at what time, and with what outcome, including pagination metadata where applicable."
+            }
+        ],
+        "outcome_checks": [
+            "All returned transactions involve compute benchmark registration, submission, or update message types.",
+            "Each transaction entry includes at least tx hash, timestamp, validator address, and a description of which benchmark types or results were affected.",
+            "If the search is scoped to a specific validator, only transactions involving that validator are included.",
+            "The response includes pagination data when more results are available beyond the current page."
+        ]
+    }
+]

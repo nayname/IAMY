@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Validates the raw job_id and normalizes it to the canonical hex/UUID form used by Republic backend queries.",
+            "function": "validate_and_normalize_job_id(job_id)",
+            "usage": "normalized_job_id = validate_and_normalize_job_id(raw_job_id)"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Fetches core job metadata such as validator, client, type, timestamps, and status from the Republic job registry.",
+            "function": "fetch_job_metadata(job_id, client=None)",
+            "usage": "job_metadata = await fetch_job_metadata(normalized_job_id)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Retrieves the PoME root_hash and related proof metadata for the specified job from the PoME store.",
+            "function": "fetch_pome_root_hash(job_id, client=None)",
+            "usage": "pome_proof = await fetch_pome_root_hash(normalized_job_id)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Queries the verification indexer for all verifier re-execution records associated with the job_id.",
+            "function": "fetch_verification_results_for_job(job_id, client=None)",
+            "usage": "verifications = await fetch_verification_results_for_job(normalized_job_id)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Aggregates per-verifier outcomes into an overall verification status (VERIFIED, DISPUTED, FAILED, or PENDING) for the job.",
+            "function": "compute_overall_verification_status(job_id, recorded_root_hash, verifications, min_matching_verifiers=2, min_matching_ratio=0.66)",
+            "usage": "verification_summary = compute_overall_verification_status(normalized_job_id, pome_proof.get('root_hash') if pome_proof else None, verifications)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Builds the final PoME status response object combining job metadata, root_hash, proof metadata, and aggregated verification results.",
+            "function": "construct_pome_status_response(job_id, normalized_job_id, job_metadata, pome_proof, verification_summary)",
+            "usage": "response = construct_pome_status_response(raw_job_id, normalized_job_id, job_metadata, pome_proof, verification_summary)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "normalized_job_id = validate_and_normalize_job_id(raw_job_id)#step: 1 Tool: validate_and_normalize_job_id Desciption: Validate that the provided {job_id} is non-empty and matches the expected Republic job identifier format (e.g., hex string or UUID); normalize it to the canonical representation used by backend queries.",
+        "job_metadata = await fetch_job_metadata(normalized_job_id)#step: 2 Tool: fetch_job_metadata Desciption: Query the Republic job registry or indexer by job_id to confirm the job exists and retrieve basic metadata (validator_id, client_id, job type, assigned_time, completion_time, current status).",
+        "pome_proof = await fetch_pome_root_hash(normalized_job_id)#step: 3 Tool: fetch_pome_root_hash Desciption: Query the Proof of Model Execution (PoME) or compute-proof storage for this job_id to retrieve the recorded root_hash and associated proof metadata (e.g., checkpoint_count, proof_version, submission_block_height, submission_timestamp).",
+        "verifications = await fetch_verification_results_for_job(normalized_job_id)#step: 4 Tool: fetch_verification_results_for_job Desciption: Query the verification module/indexer for all verifier re-execution records referencing this job_id, collecting per-verifier fields such as verifier_address, local_root_hash, verification_outcome (match/mismatch), and timestamps.",
+        "verification_summary = compute_overall_verification_status(normalized_job_id, pome_proof.get('root_hash') if pome_proof else None, verifications)#step: 5 Tool: compute_overall_verification_status Desciption: Aggregate the per-verifier results to derive an overall verification status for the job (e.g., VERIFIED if all verifiers match the submitted root_hash and threshold is met; DISPUTED if there are mixed match/mismatch results; FAILED if consensus is that the root_hash is incorrect; PENDING if insufficient or no verifications).",
+        "response = construct_pome_status_response(raw_job_id, normalized_job_id, job_metadata, pome_proof, verification_summary)#step: 6 Tool: construct_pome_status_response Desciption: Assemble a response object that includes job_id, root_hash, proof metadata, overall_verification_status, number_of_verifiers, number_of_matches, number_of_mismatches, last_verified_at, and any links to associated slashing or dispute records."
+    ],
+    "intent": "Show Proof of Model Execution root hash and verification status for a specific compute job",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "validate_and_normalize_job_id",
+            "description": "Validate that the provided {job_id} is non-empty and matches the expected Republic job identifier format (e.g., hex string or UUID); normalize it to the canonical representation used by backend queries."
+        },
+        {
+            "step": 2,
+            "tool": "fetch_job_metadata",
+            "description": "Query the Republic job registry or indexer by job_id to confirm the job exists and retrieve basic metadata (validator_id, client_id, job type, assigned_time, completion_time, current status)."
+        },
+        {
+            "step": 3,
+            "tool": "fetch_pome_root_hash",
+            "description": "Query the Proof of Model Execution (PoME) or compute-proof storage for this job_id to retrieve the recorded root_hash and associated proof metadata (e.g., checkpoint_count, proof_version, submission_block_height, submission_timestamp)."
+        },
+        {
+            "step": 4,
+            "tool": "fetch_verification_results_for_job",
+            "description": "Query the verification module/indexer for all verifier re-execution records referencing this job_id, collecting per-verifier fields such as verifier_address, local_root_hash, verification_outcome (match/mismatch), and timestamps."
+        },
+        {
+            "step": 5,
+            "tool": "compute_overall_verification_status",
+            "description": "Aggregate the per-verifier results to derive an overall verification status for the job (e.g., VERIFIED if all verifiers match the submitted root_hash and threshold is met; DISPUTED if there are mixed match/mismatch results; FAILED if consensus is that the root_hash is incorrect; PENDING if insufficient or no verifications)."
+        },
+        {
+            "step": 6,
+            "tool": "construct_pome_status_response",
+            "description": "Assemble a response object that includes job_id, root_hash, proof metadata, overall_verification_status, number_of_verifiers, number_of_matches, number_of_mismatches, last_verified_at, and any links to associated slashing or dispute records."
+        }
+    ],
+    "outcome_checks": [
+        "Confirm that a root_hash is present for the job and that it conforms to the expected format (e.g., a fixed-length hex string representing the cryptographic hash).",
+        "If overall_verification_status is VERIFIED, ensure that the number_of_mismatches is zero and that the number_of_matches satisfies the minimum verification threshold configured by the protocol.",
+        "If the job is marked COMPLETED in metadata but no PoME record exists, flag an inconsistency between job_status and proof availability.",
+        "If any verifier record reports match=true but its local_root_hash differs from the stored root_hash, flag a data_integrity error and do not report the job as VERIFIED."
+    ]
+}

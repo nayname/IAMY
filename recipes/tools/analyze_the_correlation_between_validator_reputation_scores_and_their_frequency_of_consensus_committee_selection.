@@ -1,0 +1,81 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Derives the epoch analysis window (start, end, span) from user-supplied parameters, defaulting and clamping as needed.",
+            "function": "derive_analysis_window_from_request(params)",
+            "usage": "window_info = await derive_analysis_window_from_request({\"start_epoch\": 1000, \"end_epoch\": 1500, \"window_size_epochs\": 500})"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Fetches per-epoch validator snapshots, including committee membership and reputation scores, across the chosen analysis window.",
+            "function": "backend_republic_get_committees_with_reputation_history(start_epoch, end_epoch)",
+            "usage": "epoch_rows = await backend_republic_get_committees_with_reputation_history(window_info[\"start_epoch\"], window_info[\"end_epoch\"])"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Aggregates per-epoch validator data into per-validator selection frequencies and average/median reputation scores.",
+            "function": "aggregate_validator_selection_frequencies(epoch_rows)",
+            "usage": "validator_stats = aggregate_validator_selection_frequencies(epoch_rows)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Computes Pearson and Spearman correlation metrics, and optional reputation buckets, between reputation and selection frequency.",
+            "function": "compute_reputation_selection_correlation(validator_stats, num_buckets)",
+            "usage": "correlation = compute_reputation_selection_correlation(validator_stats, num_buckets=4)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Builds a summary payload describing the analysis window, sample size, correlation metrics, and chart-ready data.",
+            "function": "generate_correlation_summary(window_info, validator_stats, correlation)",
+            "usage": "summary = generate_correlation_summary(window_info, validator_stats, correlation)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "window_info = await derive_analysis_window_from_request({\"start_epoch\": 1000, \"end_epoch\": 1500, \"window_size_epochs\": 500})#step: 1 Tool: derive_analysis_window_from_request Desciption: Determine the time or epoch range over which to measure committee selection frequency. If the user does not specify, default to a recent window (e.g., last 500\u20131000 epochs) while enforcing an upper bound for performance and data availability.",
+        "epoch_rows = await backend_republic_get_committees_with_reputation_history(window_info[\"start_epoch\"], window_info[\"end_epoch\"])#step: 2 Tool: backend_republic_get_committees_with_reputation_history Desciption: From a backend analytics or indexer service, fetch for each epoch in the analysis window: the committee membership and each validator\u2019s reputation score at or near that epoch (e.g., at the checkpoint block). Construct a dataset containing (epoch_id, validator_id, in_committee_flag, reputation_score).",
+        "validator_stats = aggregate_validator_selection_frequencies(epoch_rows)#step: 3 Tool: aggregate_validator_selection_frequencies Desciption: Aggregate the raw per-epoch data by validator to compute, for each validator: total_epochs_in_sample, epochs_in_committee, selection_frequency = epochs_in_committee / total_epochs_in_sample, and an average or median reputation score across the window.",
+        "correlation = compute_reputation_selection_correlation(validator_stats, num_buckets=4)#step: 4 Tool: compute_reputation_selection_correlation Desciption: Using the aggregated per-validator dataset, compute statistical measures of correlation between reputation_score and selection_frequency (e.g., Pearson and/or Spearman correlation coefficients). Optionally segment validators into reputation buckets and compute average selection frequencies by bucket for robustness checks.",
+        "summary = generate_correlation_summary(window_info, validator_stats, correlation)#step: 5 Tool: generate_correlation_summary Desciption: Produce a summary that reports the computed correlation metrics, describes the analysis window and sample size (number of validators and epochs), and highlights key trends (e.g., higher-reputation validators appearing significantly more often in committees). Optionally include data tables or chart-ready structures for frontends."
+    ],
+    "intent": "Analyze the correlation between validator reputation scores and their frequency of consensus committee selection.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "derive_analysis_window_from_request",
+            "description": "Determine the time or epoch range over which to measure committee selection frequency. If the user does not specify, default to a recent window (e.g., last 500\u20131000 epochs) while enforcing an upper bound for performance and data availability."
+        },
+        {
+            "step": 2,
+            "tool": "backend_republic_get_committees_with_reputation_history",
+            "description": "From a backend analytics or indexer service, fetch for each epoch in the analysis window: the committee membership and each validator\u2019s reputation score at or near that epoch (e.g., at the checkpoint block). Construct a dataset containing (epoch_id, validator_id, in_committee_flag, reputation_score)."
+        },
+        {
+            "step": 3,
+            "tool": "aggregate_validator_selection_frequencies",
+            "description": "Aggregate the raw per-epoch data by validator to compute, for each validator: total_epochs_in_sample, epochs_in_committee, selection_frequency = epochs_in_committee / total_epochs_in_sample, and an average or median reputation score across the window."
+        },
+        {
+            "step": 4,
+            "tool": "compute_reputation_selection_correlation",
+            "description": "Using the aggregated per-validator dataset, compute statistical measures of correlation between reputation_score and selection_frequency (e.g., Pearson and/or Spearman correlation coefficients). Optionally segment validators into reputation buckets and compute average selection frequencies by bucket for robustness checks."
+        },
+        {
+            "step": 5,
+            "tool": "generate_correlation_summary",
+            "description": "Produce a summary that reports the computed correlation metrics, describes the analysis window and sample size (number of validators and epochs), and highlights key trends (e.g., higher-reputation validators appearing significantly more often in committees). Optionally include data tables or chart-ready structures for frontends."
+        }
+    ],
+    "outcome_checks": [
+        "Ensure the analysis window includes a sufficient number of epochs and validators to yield meaningful statistics.",
+        "Verify that each validator in the dataset has both a defined reputation score and a calculable selection frequency.",
+        "Confirm that computed correlation coefficients fall within the valid range [-1, 1].",
+        "Check that the summary clearly states assumptions and any limitations (e.g., missing historical reputation snapshots) that might affect interpretation."
+    ]
+}

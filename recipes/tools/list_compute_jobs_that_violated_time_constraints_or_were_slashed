@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Parses raw query parameters into a normalized JobListFilters object with default time window and pagination for listing compute job violations.",
+            "function": "parse_list_jobs_filters(raw_filters: Mapping[str, str])",
+            "usage": "filters = parse_list_jobs_filters(dict(request.query_params))"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Queries the Republic job indexer for jobs that violated time constraints within the given filters.",
+            "function": "fetch_time_violated_jobs(filters: JobListFilters)",
+            "usage": "time_violated_jobs = await fetch_time_violated_jobs(filters)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Queries the Republic slashing indexer for compute-related slashing events in the filtered time window and validator scope.",
+            "function": "fetch_compute_slashing_events(filters: JobListFilters)",
+            "usage": "slashing_events = await fetch_compute_slashing_events(filters)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Joins time-violated jobs with related slashing events by job_id and validator_id, tagging each with time_violation/slashed flags and a combined violation_reason.",
+            "function": "join_jobs_with_slashing_events(time_violated_jobs: List[Dict[str, Any]], slashing_events: List[Dict[str, Any]])",
+            "usage": "joined_records = join_jobs_with_slashing_events(time_violated_jobs, slashing_events)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Enriches each unified job violation record with optional validator and job metadata from the Republic indexer.",
+            "function": "enrich_job_violation_records(violation_records: Iterable[Dict[str, Any]])",
+            "usage": "enriched_records = await enrich_job_violation_records(joined_records)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Sorts violation records by most recent violation_timestamp in descending order and applies limit/offset pagination for the response payload.",
+            "function": "sort_and_paginate_job_violations(violation_records: List[Dict[str, Any]], limit: int, offset: int = 0)",
+            "usage": "paginated = sort_and_paginate_job_violations(enriched_records, limit=filters.limit, offset=filters.offset)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "filters = parse_list_jobs_filters(dict(request.query_params))#step: 1 Tool: parse_list_jobs_filters Desciption: Parse and normalize any user-provided filters (e.g., validator address, client address, time range, job type, pagination) for listing compute jobs; if no filters are provided, default to a reasonable recent time window (e.g., last N days or blocks).",
+        "time_violated_jobs = await fetch_time_violated_jobs(filters)#step: 2 Tool: fetch_time_violated_jobs Desciption: Query the Republic compute job registry or indexer for jobs whose execution exceeded predefined time constraints (e.g., status in {TIMED_OUT, LATE_COMPLETION} or deadline_exceeded=true), using the normalized filters.",
+        "slashing_events = await fetch_compute_slashing_events(filters)#step: 3 Tool: fetch_compute_slashing_events Desciption: Query the Republic slashing or penalty module (via RPC/indexer) for slashing events where the reason is tied to compute misbehavior (e.g., incorrect results, missed deadlines), returning at minimum job_id, validator_id, reason_code, and timestamps.",
+        "joined_records = join_jobs_with_slashing_events(time_violated_jobs, slashing_events)#step: 4 Tool: join_jobs_with_slashing_events Desciption: Join the time-violated job list with slashing events by job_id and validator_id to produce a unified set of jobs that either violated time constraints, were slashed due to compute issues, or both; annotate each job with flags such as time_violation, slashed, and a combined violation_reason.",
+        "enriched_records = await enrich_job_violation_records(joined_records)#step: 5 Tool: enrich_job_violation_records Desciption: Optionally enrich each job record with additional metadata pulled from the job registry or validator set (e.g., validator moniker, validator reputation score, client identifier, job type, block heights), without altering the violation filters.",
+        "paginated = sort_and_paginate_job_violations(enriched_records, limit=filters.limit, offset=filters.offset)#step: 6 Tool: sort_and_paginate_job_violations Desciption: Sort the unified job list by most recent violation timestamp (e.g., max of deadline_time, completion_time, or slash_time) in descending order, then apply pagination (limit/offset or cursor) to prepare the final response payload."
+    ],
+    "intent": "List compute jobs that violated time constraints or were slashed",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "parse_list_jobs_filters",
+            "description": "Parse and normalize any user-provided filters (e.g., validator address, client address, time range, job type, pagination) for listing compute jobs; if no filters are provided, default to a reasonable recent time window (e.g., last N days or blocks)."
+        },
+        {
+            "step": 2,
+            "tool": "fetch_time_violated_jobs",
+            "description": "Query the Republic compute job registry or indexer for jobs whose execution exceeded predefined time constraints (e.g., status in {TIMED_OUT, LATE_COMPLETION} or deadline_exceeded=true), using the normalized filters."
+        },
+        {
+            "step": 3,
+            "tool": "fetch_compute_slashing_events",
+            "description": "Query the Republic slashing or penalty module (via RPC/indexer) for slashing events where the reason is tied to compute misbehavior (e.g., incorrect results, missed deadlines), returning at minimum job_id, validator_id, reason_code, and timestamps."
+        },
+        {
+            "step": 4,
+            "tool": "join_jobs_with_slashing_events",
+            "description": "Join the time-violated job list with slashing events by job_id and validator_id to produce a unified set of jobs that either violated time constraints, were slashed due to compute issues, or both; annotate each job with flags such as time_violation, slashed, and a combined violation_reason."
+        },
+        {
+            "step": 5,
+            "tool": "enrich_job_violation_records",
+            "description": "Optionally enrich each job record with additional metadata pulled from the job registry or validator set (e.g., validator moniker, validator reputation score, client identifier, job type, block heights), without altering the violation filters."
+        },
+        {
+            "step": 6,
+            "tool": "sort_and_paginate_job_violations",
+            "description": "Sort the unified job list by most recent violation timestamp (e.g., max of deadline_time, completion_time, or slash_time) in descending order, then apply pagination (limit/offset or cursor) to prepare the final response payload."
+        }
+    ],
+    "outcome_checks": [
+        "Verify that every returned job has either a time_violation flag set or at least one associated compute slashing event (or both).",
+        "Confirm that no jobs outside the requested filter range (time window, validator, client, job type) are present in the result.",
+        "Ensure that sorting is correct (e.g., violation_time is monotonically non-increasing across the returned list).",
+        "If the query span includes known violations (e.g., as cross-checked against a reference indexer), confirm that they appear in the output; otherwise surface a data_consistency warning."
+    ]
+}

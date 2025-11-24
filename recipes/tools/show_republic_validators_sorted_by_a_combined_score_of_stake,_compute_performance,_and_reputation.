@@ -1,0 +1,145 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Resolve the human-friendly 'republic' label into a RepublicNetworkConfig containing REST/RPC endpoints and denom metadata for subsequent staking, compute, and reputation queries.",
+            "function": "resolve_network_from_label(label: str) -> RepublicNetworkConfig",
+            "usage": "cfg = resolve_network_from_label('republic')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Query the Republic staking module over REST to retrieve the full active validator set for the chosen network configuration, handling pagination.",
+            "function": "query_republic_validators(cfg: RepublicNetworkConfig, status: str = 'BOND_STATUS_BONDED')",
+            "usage": "validators = await query_republic_validators(cfg)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "For each validator, sum all delegations in the native stake denom and attach both micro-denom and REP totals to the validator records.",
+            "function": "query_republic_validator_stake_totals(cfg: RepublicNetworkConfig, validators: list[dict], max_concurrency: int = 10)",
+            "usage": "validators_with_stake = await query_republic_validator_stake_totals(cfg, validators)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Fetch the latest compute benchmark metrics (throughput, inference score, achieved FLOPs) for each validator from the Republic compute registry and attach them to the validator records.",
+            "function": "query_republic_compute_benchmarks(cfg: RepublicNetworkConfig, validators: list[dict], max_concurrency: int = 10)",
+            "usage": "validators_with_benchmarks = await query_republic_compute_benchmarks(cfg, validators_with_stake)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Normalize per-metric compute benchmarks across validators and aggregate them into a single compute_performance_score for each validator.",
+            "function": "compute_validator_compute_score(validators: list[dict], weights: dict[str, float] | None = None)",
+            "usage": "validators_with_compute_score = compute_validator_compute_score(validators_with_benchmarks)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Query the Republic reputation module for each validator and attach a numeric reputation_score and detailed reputation metadata.",
+            "function": "query_republic_reputation_scores(cfg: RepublicNetworkConfig, validators: list[dict], max_concurrency: int = 10)",
+            "usage": "validators_with_reputation = await query_republic_reputation_scores(cfg, validators_with_compute_score)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Min\u2013max normalize each validator\u2019s total stake, compute_performance_score, and reputation_score onto 0\u20131 scales for fair combination.",
+            "function": "normalize_validator_metrics(validators: list[dict])",
+            "usage": "normalized_validators = normalize_validator_metrics(validators_with_reputation)"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Compute a weighted combined_score per validator from normalized stake, compute, and reputation metrics (defaults 0.4/0.4/0.2).",
+            "function": "compute_combined_validator_score(validators: list[dict], weights: dict[str, float] | None = None)",
+            "usage": "scored_validators = compute_combined_validator_score(normalized_validators)"
+        },
+        {
+            "step": 9,
+            "label": "backend",
+            "introduction": "Sort validators in descending order of combined_score with ties broken by higher norm_compute and then operator_address.",
+            "function": "sort_validators(validators: list[dict])",
+            "usage": "sorted_validators = sort_validators(scored_validators)"
+        },
+        {
+            "step": 10,
+            "label": "backend",
+            "introduction": "Format the sorted validators into an API-ready response including stake, compute benchmarks, reputation, normalized metrics, and combined_score.",
+            "function": "format_validator_list_response(validators: list[dict]) -> dict",
+            "usage": "response_payload = format_validator_list_response(sorted_validators)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "cfg = resolve_network_from_label('republic')#step: 1 Tool: resolve_network_from_label Desciption: Map the 'republic' label to the correct Republic chain configuration so that staking, compute, and reputation queries are all routed properly.",
+        "validators = await query_republic_validators(cfg)#step: 2 Tool: query_republic_validators Desciption: Fetch the full active validator set from the Republic staking/consensus module, including operator addresses and base metadata, handling pagination as needed.",
+        "validators_with_stake = await query_republic_validator_stake_totals(cfg, validators)#step: 3 Tool: query_republic_validator_stake_totals Desciption: For each validator, compute total delegated stake in REP (self-bond plus external delegations) and attach this value to the validator record.",
+        "validators_with_benchmarks = await query_republic_compute_benchmarks(cfg, validators_with_stake)#step: 4 Tool: query_republic_compute_benchmarks Desciption: Retrieve the latest compute validation benchmarks for each validator, including throughput, inference performance, and achieved FLOPs, from the Republic compute validation or benchmark registry.",
+        "validators_with_compute_score = compute_validator_compute_score(validators_with_benchmarks)#step: 5 Tool: compute_validator_compute_score Desciption: Aggregate the raw compute benchmark metrics into a single compute_performance_score per validator, for example by normalizing throughput, inference, and FLOPs across validators and computing a weighted average.",
+        "validators_with_reputation = await query_republic_reputation_scores(cfg, validators_with_compute_score)#step: 6 Tool: query_republic_reputation_scores Desciption: Fetch the current reputation score for each validator from the Republic reputation module or index and attach it to the corresponding validator record.",
+        "normalized_validators = normalize_validator_metrics(validators_with_reputation)#step: 7 Tool: normalize_validator_metrics Desciption: Normalize each validator's total delegated stake, compute_performance_score, and reputation score onto a common 0\u20131 scale (e.g., via min\u2013max normalization across all validators), handling edge cases where all values in a dimension are equal.",
+        "scored_validators = compute_combined_validator_score(normalized_validators)#step: 8 Tool: compute_combined_validator_score Desciption: For each validator, compute a combined_score that reflects stake, compute performance, and reputation. For example, use combined_score = 0.4 * norm_stake + 0.4 * norm_compute + 0.2 * norm_reputation, aligning with Republic's emphasis on both stake and verified compute quality with reputation as a supporting factor.",
+        "sorted_validators = sort_validators(scored_validators)#step: 9 Tool: sort_validators Desciption: Sort the validators in descending order of combined_score. For validators with identical combined_score, apply a deterministic tie-breaker (e.g., higher norm_compute first, then lexicographic operator address).",
+        "response_payload = format_validator_list_response(sorted_validators)#step: 10 Tool: format_validator_list_response Desciption: Format the sorted validator list into an API/UI-friendly response that includes operator address, moniker, total delegated stake, compute benchmarks, reputation score, normalized metrics, and the final combined_score used for sorting."
+    ],
+    "intent": "Show Republic validators sorted by a combined score of stake, compute performance, and reputation.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "resolve_network_from_label",
+            "description": "Map the 'republic' label to the correct Republic chain configuration so that staking, compute, and reputation queries are all routed properly."
+        },
+        {
+            "step": 2,
+            "tool": "query_republic_validators",
+            "description": "Fetch the full active validator set from the Republic staking/consensus module, including operator addresses and base metadata, handling pagination as needed."
+        },
+        {
+            "step": 3,
+            "tool": "query_republic_validator_stake_totals",
+            "description": "For each validator, compute total delegated stake in REP (self-bond plus external delegations) and attach this value to the validator record."
+        },
+        {
+            "step": 4,
+            "tool": "query_republic_compute_benchmarks",
+            "description": "Retrieve the latest compute validation benchmarks for each validator, including throughput, inference performance, and achieved FLOPs, from the Republic compute validation or benchmark registry."
+        },
+        {
+            "step": 5,
+            "tool": "compute_validator_compute_score",
+            "description": "Aggregate the raw compute benchmark metrics into a single compute_performance_score per validator, for example by normalizing throughput, inference, and FLOPs across validators and computing a weighted average."
+        },
+        {
+            "step": 6,
+            "tool": "query_republic_reputation_scores",
+            "description": "Fetch the current reputation score for each validator from the Republic reputation module or index and attach it to the corresponding validator record."
+        },
+        {
+            "step": 7,
+            "tool": "normalize_validator_metrics",
+            "description": "Normalize each validator's total delegated stake, compute_performance_score, and reputation score onto a common 0\u20131 scale (e.g., via min\u2013max normalization across all validators), handling edge cases where all values in a dimension are equal."
+        },
+        {
+            "step": 8,
+            "tool": "compute_combined_validator_score",
+            "description": "For each validator, compute a combined_score that reflects stake, compute performance, and reputation. For example, use combined_score = 0.4 * norm_stake + 0.4 * norm_compute + 0.2 * norm_reputation, aligning with Republic's emphasis on both stake and verified compute quality with reputation as a supporting factor."
+        },
+        {
+            "step": 9,
+            "tool": "sort_validators",
+            "description": "Sort the validators in descending order of combined_score. For validators with identical combined_score, apply a deterministic tie-breaker (e.g., higher norm_compute first, then lexicographic operator address)."
+        },
+        {
+            "step": 10,
+            "tool": "format_validator_list_response",
+            "description": "Format the sorted validator list into an API/UI-friendly response that includes operator address, moniker, total delegated stake, compute benchmarks, reputation score, normalized metrics, and the final combined_score used for sorting."
+        }
+    ],
+    "outcome_checks": [
+        "Verify that each validator in the final list includes the raw metrics (stake, compute benchmarks, reputation), the normalized metrics, and the computed combined_score.",
+        "Ensure that normalization does not produce invalid values (NaN or infinity), particularly in cases where all validators have identical values for a given metric.",
+        "Confirm that the final list is strictly ordered by descending combined_score and that the number of validators matches the initial validator set, with no additions, omissions, or duplicates."
+    ]
+}

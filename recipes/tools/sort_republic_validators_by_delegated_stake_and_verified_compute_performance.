@@ -1,0 +1,106 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Resolves a human-friendly label like 'republic' into a NetworkConfig containing chain ID and REST/RPC/indexer endpoints used by later queries.",
+            "function": "resolve_network_from_label(label: str) -> NetworkConfig",
+            "usage": "network_cfg = resolve_network_from_label(\"republic\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Retrieves the complete set of bonded Republic validators from the staking REST endpoint, following pagination until all validators are loaded.",
+            "function": "query_republic_validators(network: NetworkConfig, status: str = 'BOND_STATUS_BONDED', page_size: int = 100)",
+            "usage": "validators = await query_republic_validators(network_cfg)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "For each validator, queries its delegations to compute total delegated stake in urep and attaches this as total_stake_urep on the validator record.",
+            "function": "attach_validator_stake_totals(network: NetworkConfig, validators: list[dict], page_size: int = 100)",
+            "usage": "validators_with_stake = await attach_validator_stake_totals(network_cfg, validators)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Queries the Republic compute registry for each validator's latest benchmarks and attaches throughput, inference, and achieved_flops under a benchmarks key.",
+            "function": "attach_compute_benchmarks(network: NetworkConfig, validators: list[dict])",
+            "usage": "validators_with_benchmarks = await attach_compute_benchmarks(network_cfg, validators_with_stake)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Normalizes each validator's benchmark metrics across the set and aggregates them into a single compute_performance_score field.",
+            "function": "compute_validator_compute_score(validators: list[dict], weights: dict[str, float] | None = None)",
+            "usage": "scored_validators = compute_validator_compute_score(validators_with_benchmarks)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Orders validators primarily by total_stake_urep descending, then by compute_performance_score descending, and finally by operator address for tie-breaking.",
+            "function": "sort_validators(validators: list[dict]) -> list[dict]",
+            "usage": "sorted_validators = sort_validators(scored_validators)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Formats the sorted validators plus network metadata into an API-friendly response including operator_address, moniker, stake, benchmarks, and compute_performance_score.",
+            "function": "format_validator_list_response(network: NetworkConfig, validators: list[dict]) -> dict",
+            "usage": "response_payload = format_validator_list_response(network_cfg, sorted_validators)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "network_cfg = resolve_network_from_label(\"republic\")#step: 1 Tool: resolve_network_from_label Desciption: Map the 'republic' label to the Republic chain configuration (RPC/REST endpoints and indexer) to support staking and compute benchmark queries.",
+        "validators = await query_republic_validators(network_cfg)#step: 2 Tool: query_republic_validators Desciption: Retrieve the complete set of active validators from the Republic staking/consensus module, including operator addresses and base metadata. Use pagination as needed.",
+        "validators_with_stake = await attach_validator_stake_totals(network_cfg, validators)#step: 3 Tool: query_republic_validator_stake_totals Desciption: For each validator, query staking data to compute total delegated stake in REP (self-bond plus delegations) and attach this total stake to the validator record.",
+        "validators_with_benchmarks = await attach_compute_benchmarks(network_cfg, validators_with_stake)#step: 4 Tool: query_republic_compute_benchmarks Desciption: Fetch each validator's latest compute benchmark results (throughput, inference, achieved FLOPs) from the Republic compute validation or benchmark registry.",
+        "scored_validators = compute_validator_compute_score(validators_with_benchmarks)#step: 5 Tool: compute_validator_compute_score Desciption: Aggregate the raw benchmark metrics for each validator into a single verified compute performance score. For example, normalize throughput, inference, and FLOPs across validators and compute a weighted average to produce a scalar compute_performance_score.",
+        "sorted_validators = sort_validators(scored_validators)#step: 6 Tool: sort_validators Desciption: Sort validators primarily by total delegated stake in descending order and secondarily by compute_performance_score in descending order, with a deterministic tie-breaker such as operator address in ascending lexicographic order.",
+        "response_payload = format_validator_list_response(network_cfg, sorted_validators)#step: 7 Tool: format_validator_list_response Desciption: Format the sorted list into an API/UI-ready response that includes operator address, moniker, total delegated stake, individual benchmark metrics, and the aggregated compute_performance_score."
+    ],
+    "intent": "Sort Republic validators by delegated stake and verified compute performance.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "resolve_network_from_label",
+            "description": "Map the 'republic' label to the Republic chain configuration (RPC/REST endpoints and indexer) to support staking and compute benchmark queries."
+        },
+        {
+            "step": 2,
+            "tool": "query_republic_validators",
+            "description": "Retrieve the complete set of active validators from the Republic staking/consensus module, including operator addresses and base metadata. Use pagination as needed."
+        },
+        {
+            "step": 3,
+            "tool": "query_republic_validator_stake_totals",
+            "description": "For each validator, query staking data to compute total delegated stake in REP (self-bond plus delegations) and attach this total stake to the validator record."
+        },
+        {
+            "step": 4,
+            "tool": "query_republic_compute_benchmarks",
+            "description": "Fetch each validator's latest compute benchmark results (throughput, inference, achieved FLOPs) from the Republic compute validation or benchmark registry."
+        },
+        {
+            "step": 5,
+            "tool": "compute_validator_compute_score",
+            "description": "Aggregate the raw benchmark metrics for each validator into a single verified compute performance score. For example, normalize throughput, inference, and FLOPs across validators and compute a weighted average to produce a scalar compute_performance_score."
+        },
+        {
+            "step": 6,
+            "tool": "sort_validators",
+            "description": "Sort validators primarily by total delegated stake in descending order and secondarily by compute_performance_score in descending order, with a deterministic tie-breaker such as operator address in ascending lexicographic order."
+        },
+        {
+            "step": 7,
+            "tool": "format_validator_list_response",
+            "description": "Format the sorted list into an API/UI-ready response that includes operator address, moniker, total delegated stake, individual benchmark metrics, and the aggregated compute_performance_score."
+        }
+    ],
+    "outcome_checks": [
+        "Ensure that every validator has both total delegated stake and compute_performance_score populated before sorting.",
+        "Verify that the final ordering respects the multi-key sort: higher delegated stake first, and among equal-stake validators, higher compute_performance_score first.",
+        "Confirm that the number of validators in the output matches the number retrieved from the staking module, with no omissions or duplicates."
+    ]
+}

@@ -1,0 +1,68 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Calls the Republic LCD to retrieve raw staking, mint, and compute reward parameters that define base reward rates and multipliers.",
+            "function": "backend_republic_get_staking_and_reward_params()",
+            "usage": "staking_reward_params = await backend_republic_get_staking_and_reward_params()"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Fetches raw slashing, unbonding, and compute-slashing parameter sets from the Republic LCD for penalty configuration.",
+            "function": "backend_republic_get_slashing_params()",
+            "usage": "slashing_params = await backend_republic_get_slashing_params()"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Retrieves raw job fee and compute marketplace economics parameters from the Republic LCD, including base and dynamic fee settings.",
+            "function": "backend_republic_get_job_fee_params()",
+            "usage": "job_fee_params = await backend_republic_get_job_fee_params()"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Normalizes the raw staking/reward, slashing, and job-fee payloads into human-readable REP units and percentages, grouped by economic section and tagged with chain metadata.",
+            "function": "normalize_and_format_economic_params(staking_and_rewards_raw, slashing_raw, job_fees_raw, chain_id, revision_height=None, revision_hash=None)",
+            "usage": "summary = normalize_and_format_economic_params(staking_reward_params, slashing_params, job_fee_params, chain_id=\"republic-1\")"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "staking_reward_params = await backend_republic_get_staking_and_reward_params()#step: 1 Tool: backend_republic_get_staking_and_reward_params Desciption: From a backend service, query the Republic chain\u2019s parameter modules or governance state for staking and reward configuration. This includes base staking reward rates (e.g., annualized APR or per-block rate), any reward multipliers tied to reputation or compute performance, and consensus participation bonuses.",
+        "slashing_params = await backend_republic_get_slashing_params()#step: 2 Tool: backend_republic_get_slashing_params Desciption: Query the slashing/penalty-related parameters, including slashing fractions for double-signing, downtime, and incorrect or delayed compute submissions, as well as unbonding and jail durations and any thresholds that trigger penalties.",
+        "job_fee_params = await backend_republic_get_job_fee_params()#step: 3 Tool: backend_republic_get_job_fee_params Desciption: Fetch parameters governing job fees and compute marketplace economics: base fee per job or per unit of compute (e.g., per FLOP or per benchmark unit), minimum job fee, fee splitting rules between validators, delegators, and protocol treasury, and any dynamic fee adjustment parameters.",
+        "summary = normalize_and_format_economic_params(staking_reward_params, slashing_params, job_fee_params, chain_id=\"republic-1\")#step: 4 Tool: normalize_and_format_economic_params Desciption: Normalize raw on-chain parameter values (e.g., convert from base units such as micro-REP to REP, and from decimal rates to human-readable percentages). Organize the data into clear sections: Staking & Rewards, Slashing & Penalties, and Job Fees & Compute Rewards. Include the network/chain ID and parameter revision height or hash for reference."
+    ],
+    "intent": "Retrieve the current protocol parameters for reward rates, slashing amounts, and job fees on the Republic network.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "backend_republic_get_staking_and_reward_params",
+            "description": "From a backend service, query the Republic chain\u2019s parameter modules or governance state for staking and reward configuration. This includes base staking reward rates (e.g., annualized APR or per-block rate), any reward multipliers tied to reputation or compute performance, and consensus participation bonuses."
+        },
+        {
+            "step": 2,
+            "tool": "backend_republic_get_slashing_params",
+            "description": "Query the slashing/penalty-related parameters, including slashing fractions for double-signing, downtime, and incorrect or delayed compute submissions, as well as unbonding and jail durations and any thresholds that trigger penalties."
+        },
+        {
+            "step": 3,
+            "tool": "backend_republic_get_job_fee_params",
+            "description": "Fetch parameters governing job fees and compute marketplace economics: base fee per job or per unit of compute (e.g., per FLOP or per benchmark unit), minimum job fee, fee splitting rules between validators, delegators, and protocol treasury, and any dynamic fee adjustment parameters."
+        },
+        {
+            "step": 4,
+            "tool": "normalize_and_format_economic_params",
+            "description": "Normalize raw on-chain parameter values (e.g., convert from base units such as micro-REP to REP, and from decimal rates to human-readable percentages). Organize the data into clear sections: Staking & Rewards, Slashing & Penalties, and Job Fees & Compute Rewards. Include the network/chain ID and parameter revision height or hash for reference."
+        }
+    ],
+    "outcome_checks": [
+        "Verify that all three parameter categories\u2014rewards, slashing, and job fees\u2014were successfully retrieved or explicitly marked as unavailable.",
+        "Confirm unit normalization is correct (e.g., token amounts and percentages match expected scales and do not exceed plausible bounds).",
+        "Ensure the final response structure is self-contained, specifying the chain/network and block height or epoch at which the parameters were read.",
+        "Check that any missing or defaulted parameters are clearly indicated in the formatted output rather than silently omitted."
+    ]
+}

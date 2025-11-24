@@ -215,7 +215,8 @@ from recipes.backend import (
     cargo_check_with_interface_feature_mock, query_junox_balance_before_faucet_mock, poll_faucet_tx_until_final_mock,
     compare_junox_balance_after_faucet_mock, poll_faucet_tx_until_final, retrieve_last_tx_output_mock,
     parse_code_id_from_output_mock, persist_wallet_metadata_mock, optional_verify_address_on_chain_mock,
-    test_junod_tx_with_txflags_mock,
+    test_junod_tx_with_txflags_mock, resolve_network_from_label_dict, query_republic_validators_dict,
+    attach_republic_reputation_scores, format_validator_list_response_reputation, sort_validators_by_reputation,
 )
 
 # --- FastAPI App Setup ---
@@ -229,6 +230,8 @@ origins = [
    "https://neutron.thousandmonkeystypewriter.org",
    "http://88.198.17.207",
    "http://88.198.17.207:4000",
+   "http://88.198.17.207:3001",
+   "http://88.198.17.207:3000",
 ]
 
 SUPER_VAULT_CONTRACT_ADDRESS = os.getenv("SUPER_VAULT_CONTRACT_ADDRESS", "neutron1vaultxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
@@ -633,6 +636,7 @@ async def tamples_recipes(input_text, req):
     wallet_name = req.get("wallet_name", "MyWalletName")
     node_url = req.get("node_url", "http://localhost:26657")
     chain_id = req.get("chain_id", "uni-6")
+    network_label = "test_id"
 
     page_limit = req.get("page_limit", 100)
     raw_output = req.get("raw_output", "")
@@ -678,6 +682,142 @@ async def tamples_recipes(input_text, req):
     # --- Match statement to handle intents ---
 
     match input_text:
+        case "Sort Republic validators by reputation score.":
+            res = []
+            output1 = resolve_network_from_label_dict(network_label)
+            res.append(f"Resolved network config for label {network_label}")
+
+            output2 = await query_republic_validators_dict(network_label, status='BOND_STATUS_BONDED', timeout=10.0)
+            res.append(f"Queried {len(output2)} active validators from Republic staking module")
+
+            output3 = await attach_republic_reputation_scores(output2, network_label, timeout=10.0)
+            res.append("Attached reputation scores to validator records")
+
+            output4 = sort_validators_by_reputation(output3)
+            res.append("Sorted validators by descending reputation score")
+
+            output5 = format_validator_list_response_reputation(output4, limit=None)
+            res.append("Formatted validator list response")
+
+            return {"status": "success", "message": "\n".join(res), "data": output5}
+        case "Show detailed Republic validator profile for a given validator address, including stake, benchmarks, reputation, and slashing history.":
+            res = []
+            output1 = resolve_network_from_label_dict(network_label)
+            res.append("Resolved network configuration")
+
+            output2 = validate_validator_address_format(validator_address, output1)
+            res.append(f"Validated validator address {output2}")
+
+            output3 = await query_republic_validator_details(output1, output2)
+            res.append("Queried core validator details")
+
+            output4 = await query_republic_validator_stake_totals_dict(output1, output2)
+            res.append("Computed stake totals from delegations")
+
+            output5 = await query_republic_compute_benchmarks_dict(output1, output2)
+            res.append("Fetched compute benchmarks")
+
+            output6 = await query_republic_reputation_scores_dict(output1, output2)
+            res.append("Retrieved reputation scores")
+
+            output7 = await query_republic_slashing_history(output1, output2)
+            res.append("Queried slashing history")
+
+            output8 = await assemble_validator_profile(network_label, validator_address)
+            res.append("Assembled full validator profile")
+
+            return {"status": "success", "message": "\n".join(res), "data": output8}
+        case "Retrieve the current protocol parameters for reward rates, slashing amounts, and job fees on the Republic network.":
+            res = []
+            output1 = await backend_republic_get_staking_and_reward_params()
+            res.append("Fetched staking and reward params")
+
+            output2 = await backend_republic_get_slashing_params()
+            res.append("Fetched slashing params")
+
+            output3 = await backend_republic_get_job_fee_params()
+            res.append("Fetched job fee params")
+
+            output4 = normalize_and_format_economic_params(output1, output2, output3, 'republic-1')
+            res.append("Normalized and formatted economic parameters")
+
+            return {"status": "success", "message": "\n".join(res), "data": output4}
+        case "Explain how a specific validator’s benchmark scores affect their probability of being selected for consensus committees.":
+            res = []
+            output1 = await parse_and_validate_validator_address(validator_address)
+            res.append(f"Resolved address: {output1}")
+
+            output2 = await backend_republic_get_validator_profile(output1)
+            res.append("Fetched validator profile")
+
+            output3 = await backend_republic_get_validator_benchmark_scores(output1)
+            res.append("Fetched benchmark scores")
+
+            output4 = await backend_republic_get_selection_weight_params()
+            res.append("Fetched selection weight params")
+
+            # Assuming network totals are fetched internally or mocked here
+            output5 = compute_validator_committee_selection_weight(output2, output3, output4, None)
+            res.append("Computed selection weight")
+
+            output6 = generate_probability_explanation(output5)
+            res.append("Generated probability explanation")
+
+            return {"status": "success", "message": "\n".join(res), "data": output6}
+        case "Show Republic validators sorted by a combined score of stake, compute performance, and reputation.":
+            res = []
+            output1 = resolve_network_from_label_struct(network_label)
+            res.append("Resolved network config")
+
+            output2 = await query_republic_validators_struct(output1)
+            res.append(f"Queried {len(output2)} validators")
+
+            output3 = await query_republic_validator_stake_totals(output1, output2)
+            res.append("Queried validator stake totals")
+
+            output4 = await query_republic_compute_benchmarks(output1, output2)
+            res.append("Queried compute benchmarks")
+
+            output5 = compute_validator_compute_score(output2)  # Using enriched output implicitly
+            res.append("Computed validator compute scores")
+
+            output6 = await query_republic_reputation_scores(output1, output2)
+            res.append("Queried reputation scores")
+
+            output7 = normalize_validator_metrics(output2)
+            res.append("Normalized validator metrics")
+
+            output8 = compute_combined_validator_score(output2)
+            res.append("Computed combined scores")
+
+            output9 = sort_validators(output2)
+            res.append("Sorted validators")
+
+            output10 = format_validator_list_response_merged(output9)
+            res.append("Formatted response")
+
+            return {"status": "success", "message": "\n".join(res), "data": output10}
+        case "Filter Republic blockchain transactions related to compute job scheduling, execution, and validation":
+            res = []
+            output1 = load_chain_config_for_label(network_label)
+            res.append("Loaded chain config")
+
+            output2 = normalize_compute_tx_filter_params(req)
+            res.append("Normalized filter params")
+
+            output3 = build_compute_tx_search_query(output1, output2)
+            res.append("Built search query")
+
+            output4 = await query_transaction_index(output3)
+            res.append("Queried transaction index")
+
+            output5 = postprocess_compute_transactions(output4)
+            res.append(f"Post-processed {len(output5)} transactions")
+
+            output6 = format_paginated_tx_response(output5, output4)
+            res.append("Formatted paginated response")
+
+            return {"status": "success", "message": "\n".join(res), "data": output6}
         case "Compile a CosmWasm contract for ARM64 using the rust-optimizer-arm64 Docker image":
             res = []
 
@@ -1664,7 +1804,9 @@ async def handle_generate(request_data: Request):
     """
     # Get the text from the request body
     req = await request_data.json()
-    input_text = req["query"]
+    # with open("log", "w") as f:  # opening a file handler to create new file
+    #     json.dump(req, f)  # writing content to file
+    input_text = req["context"][0]["recipe"]
     print("QUERY: "+input_text)
 
     response = await tamples_recipes(input_text, req)

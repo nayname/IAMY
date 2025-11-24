@@ -1,0 +1,80 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "resolve_network_from_label maps a human-readable Republic network label like 'republic' to a concrete chain configuration including REST/RPC endpoints and the reputation API URL.",
+            "function": "resolve_network_from_label(label)",
+            "usage": "chain_cfg = resolve_network_from_label('republic')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "query_republic_validators resolves the given Republic network label and fetches all active staking validators from its REST endpoint, handling pagination.",
+            "function": "query_republic_validators(network_label, status='BOND_STATUS_BONDED', timeout=10.0)",
+            "usage": "validators = await query_republic_validators('republic')"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "attach_republic_reputation_scores calls the Republic reputation API in batches and attaches a numeric reputation_score to each validator record.",
+            "function": "attach_republic_reputation_scores(validators, network_label, timeout=10.0)",
+            "usage": "validators_with_reputation = await attach_republic_reputation_scores(validators, 'republic')"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "sort_validators_by_reputation sorts the validator list by descending reputation_score, breaking ties by operator address in ascending lexicographic order.",
+            "function": "sort_validators_by_reputation(validators)",
+            "usage": "sorted_validators = sort_validators_by_reputation(validators_with_reputation)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "format_validator_list_response trims and reshapes the sorted validator list into an API-friendly payload including rank, operator_address, moniker, and reputation_score.",
+            "function": "format_validator_list_response(validators, limit=None)",
+            "usage": "response_payload = format_validator_list_response(sorted_validators, limit=50)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "chain_cfg = resolve_network_from_label('republic')#step: 1 Tool: resolve_network_from_label Desciption: Map the 'republic' label to the appropriate Republic chain configuration so that validator and reputation queries are routed correctly.",
+        "validators = await query_republic_validators('republic')#step: 2 Tool: query_republic_validators Desciption: Fetch the full set of active validators from the Republic staking/consensus module, including operator addresses. Handle pagination if needed.",
+        "validators_with_reputation = await attach_republic_reputation_scores(validators, 'republic')#step: 3 Tool: query_republic_reputation_scores Desciption: For each validator, retrieve the current reputation score from the Republic reputation module or index and attach it to the validator record.",
+        "sorted_validators = sort_validators_by_reputation(validators_with_reputation)#step: 4 Tool: sort_validators Desciption: Sort the validator list in descending order of reputation score. If multiple validators share the same reputation score, apply a deterministic tie-breaker (e.g., operator address in ascending lexicographic order).",
+        "response_payload = format_validator_list_response(sorted_validators, limit=50)#step: 5 Tool: format_validator_list_response Desciption: Format the sorted list into an API/UI-friendly structure, ensuring each validator entry includes at minimum operator address, moniker (if available), and reputation score, with optional additional metadata."
+    ],
+    "intent": "Sort Republic validators by reputation score.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "resolve_network_from_label",
+            "description": "Map the 'republic' label to the appropriate Republic chain configuration so that validator and reputation queries are routed correctly."
+        },
+        {
+            "step": 2,
+            "tool": "query_republic_validators",
+            "description": "Fetch the full set of active validators from the Republic staking/consensus module, including operator addresses. Handle pagination if needed."
+        },
+        {
+            "step": 3,
+            "tool": "query_republic_reputation_scores",
+            "description": "For each validator, retrieve the current reputation score from the Republic reputation module or index and attach it to the validator record."
+        },
+        {
+            "step": 4,
+            "tool": "sort_validators",
+            "description": "Sort the validator list in descending order of reputation score. If multiple validators share the same reputation score, apply a deterministic tie-breaker (e.g., operator address in ascending lexicographic order)."
+        },
+        {
+            "step": 5,
+            "tool": "format_validator_list_response",
+            "description": "Format the sorted list into an API/UI-friendly structure, ensuring each validator entry includes at minimum operator address, moniker (if available), and reputation score, with optional additional metadata."
+        }
+    ],
+    "outcome_checks": [
+        "Confirm that every validator in the final list has a non-null reputation score attached.",
+        "Verify that the list is strictly ordered by descending reputation score, with no out-of-order pairs when comparing adjacent entries.",
+        "Ensure that the sorted list includes all validators returned by the initial staking query, with no missing or duplicated validators."
+    ]
+}

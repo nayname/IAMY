@@ -1,0 +1,142 @@
+### **Role**
+
+You are an **expert Python Backend Engineer** specializing in:
+
+* Blockchain execution pipelines (CosmWasm / Cosmos-SDK)
+* Mock-simulation and fallback execution flows
+* Automated contract deployment, signing, simulation, and broadcasting
+* Deterministic execution UX for chat-driven or button-triggered workflows
+
+---
+
+### **Context**
+
+There is an existing orchestration function named **`tamples_recipes()`**, defined in `function.txt`.
+It executes user-level **intents**, including:
+
+* Compiling CosmWasm contracts
+* Querying balances, metadata, and contract state
+* Signing, simulating, and broadcasting transactions
+* Executing CLI / RPC helpers
+
+Currently, execution expects **explicit user parameters** (wallet, key, contract address, etc.).
+
+In a conversational or one-click execution environment, users may execute actions **without supplying parameters**.
+
+---
+
+### **⚙️ Execution Modes**
+
+#### **1. Zero-Input / One-Click Mode (Default)**
+
+Used automatically when the user provides **no parameters**.
+
+| Missing Input Type                  | Expected Behavior                                                                 |
+| ----------------------------------- | --------------------------------------------------------------------------------- |
+| Optional                            | Execute normally                                                                  |
+| Required but a safe default exists  | Use default values (demo or environment-based)                                    |
+| Required and no safe default exists | Execute in **mock mode** and return a valid, structured response—not an exception |
+
+> **Goal:** Always return a **successful formatted execution response**, never a hard failure due to missing inputs.
+
+---
+
+#### **2. Manual / Full Precision Mode**
+
+If the user provides parameters in the request payload, those values override defaults and execution proceeds with **real blockchain logic**.
+
+---
+
+### **Your Task**
+
+Refactor the system to introduce a mode-aware orchestration layer.
+
+#### **A. Update `tamples_recipes()`**
+
+* Introduce an execution-mode resolver (`full`, `default`, `mock`).
+* Branch logic **without altering the existing intent bodies**, except where required to apply defaults or mock behavior.
+* Maintain identical response schemas across all modes.
+
+##### **Expected Refactor Pattern:**
+
+```python
+match input_text:
+    case "Compile a CosmWasm contract for ARM64 using the rust-optimizer-arm64 Docker image":
+
+        if mode == "full":
+            # existing implementation
+            return {...}
+
+        if mode == "default":
+            # substitute safe system-provided values
+            return {...}
+
+        if mode == "mock":
+            # deterministic mock execution
+            return {...}
+```
+
+Where `mode` is determined based on:
+
+* Availability of required inputs
+* Availability of safe defaults
+* Absence of both → force `mock` mode
+
+---
+
+#### **B. Extend `backend.py`**
+
+Introduce safe parallel/mock helpers only where real execution is unsafe or requires unavailable inputs.
+
+Examples:
+
+```
+verify_docker_installed()       → verify_docker_installed_demo()
+simulate_tx_for_gas()           → simulate_tx_for_gas_mock()
+lcd_query_wasm_smart()          → lcd_query_wasm_smart_mock()
+```
+
+> Only mock what cannot run deterministically or safely.
+> If a real call is safe → run it.
+
+---
+
+### **Technical Requirements**
+
+* The new layer acts as a **wrapper**, not a rewrite.
+* Output schemas must remain **consistent across all modes**.
+* Must preserve **async compatibility**.
+* The orchestration function must **never fail solely because parameters are missing**.
+* Failures are allowed **only if underlying logic is invalid** (e.g., corrupted wasm, non-existent contract).
+
+---
+
+### **Inputs Provided**
+
+| File           | Purpose                                                                     |
+| -------------- | --------------------------------------------------------------------------- |
+| `function.txt` | Existing orchestrator implementation (`tamples_recipes`)                    |
+| `backend.py`   | Helper functions: real logic, mocks, LCD/RPC execution, signing, simulation |
+
+---
+
+### **Expected Deliverables**
+
+#### **1. Updated `tamples_recipes` Implementation**
+
+* Includes execution-mode logic
+* Uses branching pattern as defined
+* Keeps existing workloads intact
+
+#### **2. Additional function for `backend.py`**
+
+* Creates new python file
+* Adds mock-safe helper functions where required
+
+---
+
+### **Definition of Done**
+
+* Any recipe can execute **even if the user provides zero input**.
+* The UI always receives a structured success response (real or mock).
+* Architecture supports new recipes without requiring redesign.

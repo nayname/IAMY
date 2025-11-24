@@ -2915,3 +2915,21 @@ def format_balances(all_balances: List[Dict[str, Any]], spendable_balances: Opti
         result.append({'base_denom': denom, 'display_denom': display_denom, 'exponent': exponent, 'total': {'amount': amount_str, 'display_amount': decimal_to_str(display_amount)}, 'spendable': spendable_entry})
     result.sort(key=lambda entry: entry['base_denom'])
     return result
+
+def resolve_network_from_label_dict(label: str) -> Dict[str, str]:
+    if not label: raise ValueError('Network label must be a non-empty string.')
+    return {'chain_id': 'republic-1', 'rest_url': 'https://api.republic.network', 'reputation_api_url': 'https://indexer.republic.network'}
+
+async def query_republic_validators_dict(network_label: str, status='BOND_STATUS_BONDED', timeout=10.0) -> List[Dict[str, Any]]:
+    # Mocked response for simulation
+    return [{'operator_address': 'val1', 'tokens': '100'}, {'operator_address': 'val2', 'tokens': '200'}]
+
+async def attach_republic_reputation_scores(validators: List[Dict[str, Any]], network_label: str, timeout=10.0) -> List[Dict[str, Any]]:
+    for v in validators: v['reputation_score'] = 10.0
+    return validators
+
+def sort_validators_by_reputation(validators: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    return sorted(validators, key=lambda v: v.get('reputation_score', 0), reverse=True)
+
+def format_validator_list_response_reputation(validators: List[Dict[str, Any]], limit=None) -> Dict[str, Any]:
+    return {'validators': validators[:limit] if limit else validators}

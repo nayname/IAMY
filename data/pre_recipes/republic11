@@ -1,0 +1,52 @@
+[
+    {
+        "intent": "Submit a compute job to the Republic network using the Republic CLI",
+        "workflow": [
+            {
+                "step": 1,
+                "tool": "parse_job_submission_request",
+                "description": "Extract or define the required job parameters: job type (e.g., throughput, inference, flops), model identifier or artifact path, input data path, maximum runtime, required compute profile, offered REP budget/fee, target network (e.g., mainnet, testnet), and the sending wallet name or address."
+            },
+            {
+                "step": 2,
+                "tool": "validate_republic_cli_environment",
+                "description": "Check that the republic CLI binary is installed and available on PATH, and that the configured keyring or wallet has sufficient REP balance to pay the fee and any required stake for the job."
+            },
+            {
+                "step": 3,
+                "tool": "construct_republic_job_spec",
+                "description": "Build a structured job specification object (JSON or YAML) that encodes the job definition: workload type (benchmark or client job), model details, input payload or input URI, deadlines and timeouts, requested benchmark or PoME verification mode, and the REP fee budget. This mirrors the Republic job definition used by the decentralized scheduler."
+            },
+            {
+                "step": 4,
+                "tool": "write_job_spec_to_tempfile",
+                "description": "Serialize the job specification to a temporary file, for example /tmp/republic_job_spec.yaml, and return the absolute path to this file for use by the CLI."
+            },
+            {
+                "step": 5,
+                "tool": "build_republic_cli_submit_job_command",
+                "description": "Assemble the concrete CLI command string that will submit the compute job. Use a template such as: republic job submit --job-spec /tmp/republic_job_spec.yaml --from <WALLET_NAME_OR_ADDRESS> --network <NETWORK_ID> --fee <FEE_AMOUNT>REP --wait --output json. Ensure all placeholders are filled from earlier steps and that flags match the target environment (e.g., omit --wait for async behavior if desired)."
+            },
+            {
+                "step": 6,
+                "tool": "execute_cli_command",
+                "description": "Run the constructed republic job submit command in a backend environment (e.g., via a subprocess call), capturing stdout, stderr, and exit code without exposing key material to the frontend."
+            },
+            {
+                "step": 7,
+                "tool": "parse_job_submission_response",
+                "description": "Parse the CLI JSON output to extract the on-chain transaction hash, the assigned job_id, and the initial job status (e.g., QUEUED or SCHEDULED). Normalize any error messages if the CLI returned a non-zero exit code."
+            },
+            {
+                "step": 8,
+                "tool": "verify_job_queued_on_network",
+                "description": "If a job_id was returned, call a follow-up CLI command such as: republic job status <JOB_ID> --output json, and confirm that the job is present in the scheduler with a valid status (e.g., QUEUED or RUNNING) and that a validator has been or will be assigned according to Republic's compute validation protocol."
+            }
+        ],
+        "outcome_checks": [
+            "The republic job submit CLI command completes with exit code 0 and no critical errors in stderr.",
+            "The CLI response includes a valid job_id and a network transaction hash, indicating the job was accepted by the Republic network.",
+            "A subsequent republic job status <JOB_ID> query returns a matching job record with a status such as QUEUED or RUNNING, confirming that the compute job has been scheduled for execution by validators."
+        ]
+    }
+]

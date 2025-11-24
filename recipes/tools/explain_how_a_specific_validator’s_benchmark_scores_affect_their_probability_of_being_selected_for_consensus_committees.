@@ -1,0 +1,94 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Resolves a user-supplied Bech32 identifier into a canonical Republic validator operator address, validating format and mapping delegator accounts to their primary validator where needed.",
+            "function": "parse_and_validate_validator_address(identifier: str)",
+            "usage": "resolved = await parse_and_validate_validator_address(identifier=\"repub1xyz...\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Fetches the validator\u2019s core profile from the Republic indexer, including operator address, total stake, reputation score, and active/jailed status, and rejects non\u2011active validators.",
+            "function": "backend_republic_get_validator_profile(valoper_address: str)",
+            "usage": "profile = await backend_republic_get_validator_profile(\"repubvaloper1xyz...\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Retrieves the validator\u2019s latest compute benchmark metrics and composite compute score from the Republic compute validation subsystem.",
+            "function": "backend_republic_get_validator_benchmark_scores(valoper_address: str)",
+            "usage": "benchmarks = await backend_republic_get_validator_benchmark_scores(\"repubvaloper1xyz...\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Loads the current protocol parameters governing committee selection, such as the relative weights of stake, compute quality, and reputation plus any thresholds or caps.",
+            "function": "backend_republic_get_selection_weight_params()",
+            "usage": "params = await backend_republic_get_selection_weight_params()"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Combines the validator\u2019s stake, composite compute score, and reputation with network-wide aggregates and selection weights to compute a raw committee weight and normalized selection probability.",
+            "function": "compute_validator_committee_selection_weight(profile: ValidatorProfile, benchmarks: BenchmarkScores, params: SelectionWeightParams, totals: NetworkSelectionTotals)",
+            "usage": "result = compute_validator_committee_selection_weight(profile, benchmarks, params, totals)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Generates a human-readable narrative explaining how stake, compute benchmarks, and reputation each contribute to the validator\u2019s selection probability, including simple what-if sensitivity examples.",
+            "function": "generate_probability_explanation(ctx: ProbabilityContext)",
+            "usage": "explanation = generate_probability_explanation(ctx)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "resolved = await parse_and_validate_validator_address(identifier=\"repub1xyz...\")#step: 1 Tool: parse_and_validate_validator_address Desciption: Extract the validator identifier from the request (e.g., `{address}`) and validate its format according to Republic\u2019s validator address scheme. If a delegator or account address is provided instead, resolve or map it to the corresponding validator operator address where possible.",
+        "profile = await backend_republic_get_validator_profile(\"repubvaloper1xyz...\")#step: 2 Tool: backend_republic_get_validator_profile Desciption: From a backend service, query the Republic chain or indexer for the validator\u2019s core data: operator address, current stake (including delegated stake), reputation score, and status (active/jailed). Fail gracefully if the validator does not exist or is not currently part of the active set.",
+        "benchmarks = await backend_republic_get_validator_benchmark_scores(\"repubvaloper1xyz...\")#step: 3 Tool: backend_republic_get_validator_benchmark_scores Desciption: Fetch the validator\u2019s latest benchmark results from the compute validation subsystem: throughput benchmark, inference benchmark, and achieved FLOPs metrics. Include timestamps and any normalized composite compute quality score used in committee selection.",
+        "params = await backend_republic_get_selection_weight_params()#step: 4 Tool: backend_republic_get_selection_weight_params Desciption: Query current protocol parameters that govern committee selection, such as the relative weights of stake, compute quality, and reputation in the selection formula (e.g., stake_weight, compute_weight, reputation_weight) and any caps or minimum thresholds.",
+        "result = compute_validator_committee_selection_weight(profile, benchmarks, params, totals)#step: 5 Tool: compute_validator_committee_selection_weight Desciption: Using the validator\u2019s stake, benchmark-derived compute quality, and reputation, along with the selection parameters, compute the validator\u2019s effective selection weight. Normalize this weight against network-wide totals (which may require cached or separately maintained aggregates) to estimate the validator\u2019s probability of being chosen for a committee slot in a typical epoch.",
+        "explanation = generate_probability_explanation(ctx)#step: 6 Tool: generate_probability_explanation Desciption: Generate a human-readable explanation showing how each component (stake, benchmarks/compute quality, reputation) contributes to the validator\u2019s overall committee selection probability. Include examples or sensitivity analysis such as how increasing a particular benchmark score or stake would change their relative selection probability, assuming network conditions remain constant."
+    ],
+    "intent": "Explain how a specific validator\u2019s benchmark scores affect their probability of being selected for consensus committees.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "parse_and_validate_validator_address",
+            "description": "Extract the validator identifier from the request (e.g., `{address}`) and validate its format according to Republic\u2019s validator address scheme. If a delegator or account address is provided instead, resolve or map it to the corresponding validator operator address where possible."
+        },
+        {
+            "step": 2,
+            "tool": "backend_republic_get_validator_profile",
+            "description": "From a backend service, query the Republic chain or indexer for the validator\u2019s core data: operator address, current stake (including delegated stake), reputation score, and status (active/jailed). Fail gracefully if the validator does not exist or is not currently part of the active set."
+        },
+        {
+            "step": 3,
+            "tool": "backend_republic_get_validator_benchmark_scores",
+            "description": "Fetch the validator\u2019s latest benchmark results from the compute validation subsystem: throughput benchmark, inference benchmark, and achieved FLOPs metrics. Include timestamps and any normalized composite compute quality score used in committee selection."
+        },
+        {
+            "step": 4,
+            "tool": "backend_republic_get_selection_weight_params",
+            "description": "Query current protocol parameters that govern committee selection, such as the relative weights of stake, compute quality, and reputation in the selection formula (e.g., stake_weight, compute_weight, reputation_weight) and any caps or minimum thresholds."
+        },
+        {
+            "step": 5,
+            "tool": "compute_validator_committee_selection_weight",
+            "description": "Using the validator\u2019s stake, benchmark-derived compute quality, and reputation, along with the selection parameters, compute the validator\u2019s effective selection weight. Normalize this weight against network-wide totals (which may require cached or separately maintained aggregates) to estimate the validator\u2019s probability of being chosen for a committee slot in a typical epoch."
+        },
+        {
+            "step": 6,
+            "tool": "generate_probability_explanation",
+            "description": "Generate a human-readable explanation showing how each component (stake, benchmarks/compute quality, reputation) contributes to the validator\u2019s overall committee selection probability. Include examples or sensitivity analysis such as how increasing a particular benchmark score or stake would change their relative selection probability, assuming network conditions remain constant."
+        }
+    ],
+    "outcome_checks": [
+        "Confirm that the provided validator address maps to a valid, known validator on the Republic network.",
+        "Verify that benchmark scores and reputation data were successfully retrieved; if not, clearly indicate missing metrics in the explanation.",
+        "Ensure the computed selection weight is non-negative and that normalization against network totals yields a probability between 0 and 1.",
+        "Validate that the explanation text accurately reflects the underlying formula and parameter values used in the weight computation."
+    ]
+}

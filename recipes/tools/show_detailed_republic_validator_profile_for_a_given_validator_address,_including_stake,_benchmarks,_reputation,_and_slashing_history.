@@ -1,0 +1,119 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Resolve the human-friendly 'republic' label into a concrete Republic chain configuration with chain ID and REST/RPC/indexer endpoints.",
+            "function": "resolve_network_from_label(label: str)",
+            "usage": "network = resolve_network_from_label('republic')"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Validate that the provided address is a well-formed Republic valoper address for the chosen network and return its canonical form.",
+            "function": "validate_validator_address_format(address: str, network: Dict[str, Any])",
+            "usage": "canonical_valoper = validate_validator_address_format('repubvaloper1...', network)"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Query the Republic staking REST endpoint for core validator details such as moniker, operator address, status, commission, and total tokens.",
+            "function": "query_republic_validator_details(network: Dict[str, Any], valoper_address: str)",
+            "usage": "details = await query_republic_validator_details(network, canonical_valoper)"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Scan all delegations to this validator to compute total stake, self-delegation amount, and number of delegators in the native REP denom.",
+            "function": "query_republic_validator_stake_totals(network: Dict[str, Any], valoper_address: str)",
+            "usage": "stake_totals = await query_republic_validator_stake_totals(network, canonical_valoper)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Fetch the latest compute benchmark results for the validator from the Republic compute registry, including throughput, inference, and FLOPs.",
+            "function": "query_republic_compute_benchmarks(network: Dict[str, Any], valoper_address: str)",
+            "usage": "benchmarks = await query_republic_compute_benchmarks(network, canonical_valoper)"
+        },
+        {
+            "step": 6,
+            "label": "backend",
+            "introduction": "Retrieve the validator\u2019s current reputation score and its component breakdown from the Republic reputation indexer.",
+            "function": "query_republic_reputation_scores(network: Dict[str, Any], valoper_address: str)",
+            "usage": "reputation = await query_republic_reputation_scores(network, canonical_valoper)"
+        },
+        {
+            "step": 7,
+            "label": "backend",
+            "introduction": "Query the Republic slashing/indexer service for all slashing events affecting this validator, normalized with height, timestamp, reason, and amount.",
+            "function": "query_republic_slashing_history(network: Dict[str, Any], valoper_address: str)",
+            "usage": "slashing_history = await query_republic_slashing_history(network, canonical_valoper)"
+        },
+        {
+            "step": 8,
+            "label": "backend",
+            "introduction": "Orchestrate all underlying queries and compose a single structured validator profile object including info, stake, benchmarks, reputation, and slashing history.",
+            "function": "assemble_validator_profile(network_label: str, raw_valoper_address: str)",
+            "usage": "profile = await assemble_validator_profile('republic', 'repubvaloper1yourvalidatoraddress')"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "network = resolve_network_from_label('republic')#step: 1 Tool: resolve_network_from_label Desciption: Map the 'republic' label to the correct chain configuration (chain ID, RPC/REST endpoints, indexer URLs) for the Republic network.",
+        "canonical_valoper = validate_validator_address_format('repubvaloper1...', network)#step: 2 Tool: validate_validator_address_format Desciption: Validate that the provided {address} is a well-formed Republic validator operator address (correct prefix, length, and checksum). Normalize it to a canonical representation if necessary.",
+        "details = await query_republic_validator_details(network, canonical_valoper)#step: 3 Tool: query_republic_validator_details Desciption: Query the Republic staking/consensus module for core validator information for {address}, including moniker, operator address, consensus public key, status, commission, self-bond, and total tokens.",
+        "stake_totals = await query_republic_validator_stake_totals(network, canonical_valoper)#step: 4 Tool: query_republic_validator_stake_totals Desciption: Compute and attach detailed stake metrics for this validator, including total delegated stake in REP, self-delegation amount, and number of delegators if available.",
+        "benchmarks = await query_republic_compute_benchmarks(network, canonical_valoper)#step: 5 Tool: query_republic_compute_benchmarks Desciption: Fetch this validator's most recent compute benchmark results from the compute validation registry, including throughput, inference performance, and achieved FLOPs, and attach them to the profile.",
+        "reputation = await query_republic_reputation_scores(network, canonical_valoper)#step: 6 Tool: query_republic_reputation_scores Desciption: Retrieve the current reputation score for this validator, along with any available breakdown (e.g., contribution from benchmarks, job completion rate, and slashing history).",
+        "slashing_history = await query_republic_slashing_history(network, canonical_valoper)#step: 7 Tool: query_republic_slashing_history Desciption: Query the slashing module or indexed event logs for all slashing events involving this validator, including height/timestamp, reason (e.g., downtime, incorrect computation), and amount slashed.",
+        "profile = await assemble_validator_profile('republic', 'repubvaloper1yourvalidatoraddress')#step: 8 Tool: assemble_validator_profile Desciption: Combine the basic validator info, stake metrics, compute benchmarks, reputation score, and slashing history into a single structured profile object suitable for API or UI presentation."
+    ],
+    "intent": "Show detailed Republic validator profile for a given validator address, including stake, benchmarks, reputation, and slashing history.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "resolve_network_from_label",
+            "description": "Map the 'republic' label to the correct chain configuration (chain ID, RPC/REST endpoints, indexer URLs) for the Republic network."
+        },
+        {
+            "step": 2,
+            "tool": "validate_validator_address_format",
+            "description": "Validate that the provided {address} is a well-formed Republic validator operator address (correct prefix, length, and checksum). Normalize it to a canonical representation if necessary."
+        },
+        {
+            "step": 3,
+            "tool": "query_republic_validator_details",
+            "description": "Query the Republic staking/consensus module for core validator information for {address}, including moniker, operator address, consensus public key, status, commission, self-bond, and total tokens."
+        },
+        {
+            "step": 4,
+            "tool": "query_republic_validator_stake_totals",
+            "description": "Compute and attach detailed stake metrics for this validator, including total delegated stake in REP, self-delegation amount, and number of delegators if available."
+        },
+        {
+            "step": 5,
+            "tool": "query_republic_compute_benchmarks",
+            "description": "Fetch this validator's most recent compute benchmark results from the compute validation registry, including throughput, inference performance, and achieved FLOPs, and attach them to the profile."
+        },
+        {
+            "step": 6,
+            "tool": "query_republic_reputation_scores",
+            "description": "Retrieve the current reputation score for this validator, along with any available breakdown (e.g., contribution from benchmarks, job completion rate, and slashing history)."
+        },
+        {
+            "step": 7,
+            "tool": "query_republic_slashing_history",
+            "description": "Query the slashing module or indexed event logs for all slashing events involving this validator, including height/timestamp, reason (e.g., downtime, incorrect computation), and amount slashed."
+        },
+        {
+            "step": 8,
+            "tool": "assemble_validator_profile",
+            "description": "Combine the basic validator info, stake metrics, compute benchmarks, reputation score, and slashing history into a single structured profile object suitable for API or UI presentation."
+        }
+    ],
+    "outcome_checks": [
+        "If the provided address does not correspond to an existing validator, return a clear, structured error instead of an empty or partial profile.",
+        "Ensure the final profile object contains all requested sections: core metadata, stake details, compute benchmark results, reputation, and slashing history.",
+        "Verify that all slashing events in the profile are associated with the target validator and sorted in chronological order (e.g., by block height or timestamp)."
+    ]
+}

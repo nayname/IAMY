@@ -1,0 +1,81 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "Derives an inclusive [start_epoch, end_epoch] window from user-supplied parameters (start/end or last N), enforcing sensible defaults and caps via the Republic indexer.",
+            "function": "derive_epoch_range(params, indexer_base_url)",
+            "usage": "start_epoch, end_epoch = await derive_epoch_range(EpochRangeRequest(last_n=50), indexer_base_url=\"https://indexer.republic.network\")"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "Fetches epoch metadata for a given epoch range, including checkpoint block height/hash, timestamp, and committee validator IDs from the Republic indexer.",
+            "function": "get_epochs_with_checkpoints(start_epoch, end_epoch, indexer_base_url, page_size=50)",
+            "usage": "epochs = await get_epochs_with_checkpoints(start_epoch, end_epoch, indexer_base_url=\"https://indexer.republic.network\")"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "Retrieves the per-validator stake distribution and optional quality metrics for each epoch in the supplied list from the Republic indexer.",
+            "function": "get_stake_distribution_for_epochs(epoch_ids, indexer_base_url)",
+            "usage": "stake_distributions = await get_stake_distribution_for_epochs([e.epoch_id for e in epochs], indexer_base_url=\"https://indexer.republic.network\")"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "Combines epoch checkpoint metadata and stake distributions into a chronological timeline of committee composition and per-validator stake shares.",
+            "function": "assemble_epoch_committee_stake_timeline(epochs, stake_distributions)",
+            "usage": "timeline = assemble_epoch_committee_stake_timeline(epochs, stake_distributions)"
+        },
+        {
+            "step": 5,
+            "label": "backend",
+            "introduction": "Formats the assembled epoch timeline into a paginated summary or detailed response structure suitable for API/consumer use.",
+            "function": "format_epochs_overview_response(timeline, view=\"summary\", offset=0, limit=20)",
+            "usage": "response = format_epochs_overview_response(timeline, view=\"detailed\", offset=0, limit=20)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "start_epoch, end_epoch = await derive_epoch_range(EpochRangeRequest(last_n=50), indexer_base_url=\"https://indexer.republic.network\")#step: 1 Tool: derive_epoch_range_from_request Desciption: Interpret the user\u2019s request to determine which epochs to show. If explicit bounds (e.g., start_epoch, end_epoch) or a count (e.g., `last N epochs`) are provided, use them. Otherwise, default to a sensible window such as the most recent 10\u201350 epochs, enforcing an upper bound for performance.",
+        "epochs = await get_epochs_with_checkpoints(start_epoch, end_epoch, indexer_base_url=\"https://indexer.republic.network\")#step: 2 Tool: backend_republic_get_epochs_with_checkpoints Desciption: From a backend service, query the Republic node or indexer for each epoch in the requested range. For each epoch, retrieve: the epoch_id, checkpoint block height/hash, checkpoint timestamp, and the consensus committee for that epoch. Use efficient pagination or batch queries where possible instead of per-epoch RPC calls.",
+        "stake_distributions = await get_stake_distribution_for_epochs([e.epoch_id for e in epochs], indexer_base_url=\"https://indexer.republic.network\")#step: 3 Tool: backend_republic_get_stake_distribution_for_epochs Desciption: For the same set of epochs, fetch the stake distribution associated with each epoch\u2019s committee. This includes each committee validator\u2019s stake or voting power at that epoch and optionally their reputation/compute scores. Use historical state or indexer snapshots tied to checkpoint blocks where available.",
+        "timeline = assemble_epoch_committee_stake_timeline(epochs, stake_distributions)#step: 4 Tool: assemble_epoch_committee_stake_timeline Desciption: Combine checkpoint metadata, committee composition, and stake distribution into a chronological timeline. For each epoch, produce an object including epoch_id, checkpoint_block_height, committee_size, total_stake, and a breakdown of validators with their stake share and any available quality metrics.",
+        "response = format_epochs_overview_response(timeline, view=\"detailed\", offset=0, limit=20)#step: 5 Tool: format_epochs_overview_response Desciption: Format the aggregated data into a compact, consumer-friendly structure. Optionally support summary views (e.g., only epoch-level aggregates) and detailed expansion (per-validator breakdown). Ensure the response can be paginated or filtered by epoch range if requested by the caller."
+    ],
+    "intent": "List epochs and their checkpoint blocks with committee composition and stake distribution.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "derive_epoch_range_from_request",
+            "description": "Interpret the user\u2019s request to determine which epochs to show. If explicit bounds (e.g., start_epoch, end_epoch) or a count (e.g., `last N epochs`) are provided, use them. Otherwise, default to a sensible window such as the most recent 10\u201350 epochs, enforcing an upper bound for performance."
+        },
+        {
+            "step": 2,
+            "tool": "backend_republic_get_epochs_with_checkpoints",
+            "description": "From a backend service, query the Republic node or indexer for each epoch in the requested range. For each epoch, retrieve: the epoch_id, checkpoint block height/hash, checkpoint timestamp, and the consensus committee for that epoch. Use efficient pagination or batch queries where possible instead of per-epoch RPC calls."
+        },
+        {
+            "step": 3,
+            "tool": "backend_republic_get_stake_distribution_for_epochs",
+            "description": "For the same set of epochs, fetch the stake distribution associated with each epoch\u2019s committee. This includes each committee validator\u2019s stake or voting power at that epoch and optionally their reputation/compute scores. Use historical state or indexer snapshots tied to checkpoint blocks where available."
+        },
+        {
+            "step": 4,
+            "tool": "assemble_epoch_committee_stake_timeline",
+            "description": "Combine checkpoint metadata, committee composition, and stake distribution into a chronological timeline. For each epoch, produce an object including epoch_id, checkpoint_block_height, committee_size, total_stake, and a breakdown of validators with their stake share and any available quality metrics."
+        },
+        {
+            "step": 5,
+            "tool": "format_epochs_overview_response",
+            "description": "Format the aggregated data into a compact, consumer-friendly structure. Optionally support summary views (e.g., only epoch-level aggregates) and detailed expansion (per-validator breakdown). Ensure the response can be paginated or filtered by epoch range if requested by the caller."
+        }
+    ],
+    "outcome_checks": [
+        "Verify that at least one epoch in the requested range exists and has a corresponding checkpoint block.",
+        "Confirm that each epoch entry includes a non-empty committee list and total stake value.",
+        "Ensure the reported stake distribution for each epoch sums closely to the total stake recorded for that committee (within expected rounding error).",
+        "Check that epochs are ordered consistently (ascending or descending) and that pagination or range limits are correctly enforced."
+    ]
+}

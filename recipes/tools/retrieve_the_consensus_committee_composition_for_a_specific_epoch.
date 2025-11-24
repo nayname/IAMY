@@ -1,0 +1,68 @@
+{
+    "tools": [
+        {
+            "step": 1,
+            "label": "backend",
+            "introduction": "parse_and_validate_epoch_id parses a raw epoch parameter from a request and ensures it is a positive integer epoch_id.",
+            "function": "parse_and_validate_epoch_id(epoch_param)",
+            "usage": "epoch_id = parse_and_validate_epoch_id(request.query_params.get('epoch'))"
+        },
+        {
+            "step": 2,
+            "label": "backend",
+            "introduction": "get_epoch_committee queries the Republic REST API or CLI to fetch the consensus committee for a given epoch_id.",
+            "function": "get_epoch_committee(epoch_id, rest_url=None, use_cli_fallback=True)",
+            "usage": "committee = get_epoch_committee(epoch_id, rest_url=os.getenv('REPUBLIC_REST_URL'))"
+        },
+        {
+            "step": 3,
+            "label": "backend",
+            "introduction": "enrich_validator_metadata augments each committee entry with staking registry metadata such as moniker, identity, commission rate, and reputation.",
+            "function": "enrich_validator_metadata(committee, rest_url=None, indexer_url=None)",
+            "usage": "enriched_committee = enrich_validator_metadata(committee, rest_url=os.getenv('REPUBLIC_REST_URL'), indexer_url=os.getenv('REPUBLIC_INDEXER_URL'))"
+        },
+        {
+            "step": 4,
+            "label": "backend",
+            "introduction": "format_epoch_committee_response aggregates statistics and formats the epoch committee into a sorted JSON-ready response object.",
+            "function": "format_epoch_committee_response(epoch_id, validators)",
+            "usage": "response_payload = format_epoch_committee_response(epoch_id, enriched_committee)"
+        }
+    ],
+    "frontend": [],
+    "backend": [
+        "epoch_id = parse_and_validate_epoch_id(request.query_params.get('epoch'))#step: 1 Tool: parse_and_validate_epoch_id Desciption: Extract the epoch_id value from the user request (e.g., from a path parameter or query string) and validate that it is a positive integer. If the request uses a template like `epoch {epoch_id}`, parse out the numeric ID.",
+        "committee = get_epoch_committee(epoch_id, rest_url=os.getenv('REPUBLIC_REST_URL'))#step: 2 Tool: backend_republic_get_epoch_committee Desciption: From a backend service, query the Republic node or indexer for the consensus committee in the specified epoch_id. Return the list of validators in the committee along with their operator addresses, voting power/stake, and any available reputation or compute quality metrics. Use appropriate RPC/REST or CLI calls (e.g., via `republic` core utils) and never from the frontend directly.",
+        "enriched_committee = enrich_validator_metadata(committee, rest_url=os.getenv('REPUBLIC_REST_URL'), indexer_url=os.getenv('REPUBLIC_INDEXER_URL'))#step: 3 Tool: backend_republic_enrich_validator_metadata Desciption: For each validator in the committee, fetch additional metadata such as moniker, identity, commission rate, and current reputation score, by querying the staking/validator registry on the Republic chain or an indexer.",
+        "response_payload = format_epoch_committee_response(epoch_id, enriched_committee)#step: 4 Tool: format_epoch_committee_response Desciption: Aggregate and format the committee composition into a structured response. Include the epoch_id, total committee size, total voting power, and a list of validators with fields like {validator_address, moniker, stake_share, reputation, compute_benchmarks_if_available}. Sort validators by stake or reputation as appropriate and present the result as JSON suitable for direct rendering."
+    ],
+    "intent": "Retrieve the consensus committee composition for a specific epoch.",
+    "workflow": [
+        {
+            "step": 1,
+            "tool": "parse_and_validate_epoch_id",
+            "description": "Extract the epoch_id value from the user request (e.g., from a path parameter or query string) and validate that it is a positive integer. If the request uses a template like `epoch {epoch_id}`, parse out the numeric ID."
+        },
+        {
+            "step": 2,
+            "tool": "backend_republic_get_epoch_committee",
+            "description": "From a backend service, query the Republic node or indexer for the consensus committee in the specified epoch_id. Return the list of validators in the committee along with their operator addresses, voting power/stake, and any available reputation or compute quality metrics. Use appropriate RPC/REST or CLI calls (e.g., via `republic` core utils) and never from the frontend directly."
+        },
+        {
+            "step": 3,
+            "tool": "backend_republic_enrich_validator_metadata",
+            "description": "For each validator in the committee, fetch additional metadata such as moniker, identity, commission rate, and current reputation score, by querying the staking/validator registry on the Republic chain or an indexer."
+        },
+        {
+            "step": 4,
+            "tool": "format_epoch_committee_response",
+            "description": "Aggregate and format the committee composition into a structured response. Include the epoch_id, total committee size, total voting power, and a list of validators with fields like {validator_address, moniker, stake_share, reputation, compute_benchmarks_if_available}. Sort validators by stake or reputation as appropriate and present the result as JSON suitable for direct rendering."
+        }
+    ],
+    "outcome_checks": [
+        "Confirm that the provided epoch_id exists on-chain (e.g., is not greater than the latest epoch and is non-negative).",
+        "Verify that a non-empty committee list was returned for the given epoch_id.",
+        "Ensure each committee member record includes at least an operator address and voting power/stake value.",
+        "If enrichment is enabled, confirm that metadata lookups did not silently drop any validators (counts match between raw committee and enriched list)."
+    ]
+}
