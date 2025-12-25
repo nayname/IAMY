@@ -32,10 +32,12 @@ from cosmpy.aerial.exceptions import NotFoundError
 from cosmpy.aerial.tx import Transaction
 from cosmpy.protos.cosmwasm.wasm.v1.tx_pb2 import MsgStoreCode, MsgInstantiateContract
 from cosmpy.aerial.client import LedgerClient
+from starlette.responses import FileResponse
 from sympy.strategies.core import switch
 
 from chat.chat import response
 from create import generate_code, glue
+from lib.pp import Pipeline
 from ner.inference import NERExtractor
 from prepare_data import escape
 from rag.retrieve import retrieve
@@ -230,6 +232,8 @@ origins = [
    "https://neutron.thousandmonkeystypewriter.org",
    "http://88.198.17.207",
    "http://88.198.17.207:4000",
+   "http://144.76.41.116:4000",
+   "http://144.76.41.116",
    "http://88.198.17.207:3001",
    "http://88.198.17.207:3000",
 ]
@@ -247,7 +251,7 @@ app.add_middleware(
 )
 
 # Mount a directory for static files (like CSS, JS) if you have them
-# app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 embedding_model = SentenceTransformer("BAAI/bge-large-en-v1.5")
@@ -312,6 +316,44 @@ async def read_root(request: Request):
     Serves the main index.html page.
     """
     return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.get("/demo/")
+def root():
+    return FileResponse("static/demo.html")
+
+# --- Demo API endpoint ---
+@app.post("/query")
+async def agent_query(request: Request):
+    data = await request.json()
+
+    print(data)
+    f = open("/root/neutron/yaci-explorer-apis/log", "a")
+    f.write('\n'+data)
+    f.close()
+
+    p = Pipeline()
+
+    f = open("/root/data_parse_test/ebac/generate_execution", "r")
+    key = f.read().replace("{{user_query}}", data)
+
+    _, answer = p.ask_gpt([{"role": "system", "content": key}], "gpt-5.1", "")
+
+    # plan = {"kind": "simple_rpc",
+    #        "rpc": "get_transaction_detail",
+    #        "body": { "_hash": "0x705e08b0111e6b88f8379db9159d3f24025c56af0357d09d78a4042bc2bf6031" }}
+    # plan = {"kind": "simple_rest",
+    #         "path": "/events_main",
+    #         "params": { "id": "eq.0x705e08b0111e6b88f8379db9159d3f24025c56af0357d09d78a4042bc2bf6031" }}
+
+    try:
+        response = requests.post("http://localhost:4000/agent/query", json=json.loads(answer.choices[0].message.content))
+        print("Status:", response.status_code)
+        # print("Response JSON:", response.json())
+        return JSONResponse(response.json())
+    except Exception as e:
+        print("Error:", e)
+        return JSONResponse("Error")
 
 
 def compile_wasm_contract(contract_dir: str) -> str:
@@ -1804,9 +1846,11 @@ async def handle_generate(request_data: Request):
     """
     # Get the text from the request body
     req = await request_data.json()
+    print(req)
     # with open("log", "w") as f:  # opening a file handler to create new file
     #     json.dump(req, f)  # writing content to file
-    input_text = req["context"][0]["recipe"]
+    # input_text = req["context"][0]["recipe"]
+    input_text = req['query']
     print("QUERY: "+input_text)
 
     response = await tamples_recipes(input_text, req)

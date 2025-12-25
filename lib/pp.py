@@ -45,16 +45,15 @@ class Pipeline:
         # + " [Contexto da conversa] " + ctx
 
 
-    def ask_gpt(self, messages, model='o1'):
+    def ask_gpt(self, messages, model, config):
         if not model:
             model = self.open_ai_model
 
         # config.queries.append({"model": model, "messages": messages})
-        print(model)
+        start_time = time.time()
 
-        if model == "o1-mini" or model == "o1":
-            request = {"model": model, "reasoning_effort": "low", "messages": messages, "temperature": None}
-
+        if model == "o1-preview" or model == "o1":
+            request = {"model": model, "reasoning_effort": "high", "messages": messages, "temperature": None}
             response = client.chat.completions.create(
                 model=model,
                 # temperature=0.2,
@@ -62,6 +61,15 @@ class Pipeline:
                 # max_tokens=6000
             )
         elif model == 'o3-mini':
+            request = {"model": model, "reasoning_effort": "medium", "messages": messages, "temperature":None}
+            response = client.chat.completions.create(
+                model=model,
+                #reasoning_effort = "high",
+                # temperature=0.2,
+                messages=messages,
+                # max_tokens=6000
+            )
+        elif model == "gpt-5.1":
             request = {"model": model, "messages": messages, "temperature":None}
             response = client.chat.completions.create(
                 model=model,
@@ -70,22 +78,11 @@ class Pipeline:
                 messages=messages,
                 # max_tokens=6000
             )
-        elif model == 'gpt-4.5-preview' or model == 'gpt-4o':
-            request = {"model": model, "messages": messages, "temperature":None}
-            response = client.chat.completions.create(
-                model=model,
-                #reasoning_effort = "high",
-                temperature=0.0,
-                seed=123,
-                messages=messages,
-                # max_tokens=6000
-            )
         else:
             request = {"model": model, "messages": messages, "temperature":0.2}
             response = client.chat.completions.create(
                 model=model,
-                temperature=0.0,
-                seed=123,
+                temperature=0.2,
                 messages=messages,
                 # max_tokens=6000
             )
