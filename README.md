@@ -1,5 +1,5 @@
 
-# IAMY — Deterministic Execution Layer for Interfaces & Agents
+# IAMY — Executable Docs with Deterministic & Secure Execution
 
 IAMY is an **execution substrate** that turns **natural-language intent** into a **deterministic execution plan**, with clear preview, confirmation, and guarded execution. It is designed as a **backend execution service** for interfaces such as documentation platforms, dashboards, and AI agents — not as an autonomous agent.
 
