@@ -33,7 +33,7 @@ IAMY addresses this by introducing a **safety-oriented execution layer** that:
 
 A natural-language description of what a user wants to do.
 
-### Execution Plan
+### Execution Plan ("Recipe")
 
 A **deterministic, structured plan** that transforms an intent into explicit, reviewable steps.
 
