@@ -40,29 +40,6 @@ Execution is treated as a separate responsibility, with explicit boundaries, aud
 
 ---
 
-## 🚀 Quickstart — Mintlify Example (3 min)
-
-> 🍃 This example embeds an execution widget into a Mintlify MDX doc.  
-> You don’t need to modify Mintlify core — this is external and opt-in.
-
-1. Clone the repo  
-```bash
-git clone https://github.com/nayname/IAMY.git
-cd IAMY/examples/mintlify-site
-````
-
-2. Install dependencies and start
-
-```bash
-...
-```
-
-3. Open in your browser
-   👉 Visit `...` to interact with the execution widget.
-
-
----
-
 ## 🧠 Core Concepts
 
 ### Intent
@@ -108,6 +85,29 @@ Structured results and logs suitable for auditing, inspection, and replay.
 ❌ A general “AI agent”
 ❌ A mystery execution layer with hidden steps
 ❌ A replacement for user intent confirmation
+
+
+---
+
+## 🚀 Quickstart — Mintlify Example (3 min)
+
+> 🍃 This example embeds an execution widget into a Mintlify MDX doc.  
+> You don’t need to modify Mintlify core — this is external and opt-in.
+
+1. Clone the repo  
+```bash
+git clone https://github.com/nayname/IAMY.git
+cd IAMY/examples/mintlify-site
+````
+
+2. Install dependencies and start
+
+```bash
+...
+```
+
+3. Open in your browser
+   👉 Visit `...` to interact with the execution widget.
 
 ---
 
