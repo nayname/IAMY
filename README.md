@@ -73,26 +73,6 @@ Structured results and logs suitable for auditing, inspection, and replay.
 ❌ A mystery execution layer with hidden steps   
 ❌ A replacement for user intent confirmation   
 
-
----
-
-## 🚀 Quickstart - Mintlify Example (3 min)
-
-1. Clone the repo  
-```bash
-git clone https://github.com/nayname/IAMY.git
-cd IAMY/examples/mintlify-site
-````
-
-2. Install dependencies and start
-
-```bash
-...
-```
-
-3. Open in your browser
-   👉 Visit `...` to interact with the execution widget.
-
 ---
 
 ## 👥 Contributing & Feedback
