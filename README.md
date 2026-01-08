@@ -1,28 +1,31 @@
 
 # IAMY — Executable Docs with Deterministic & Secure Execution
 
-IAMY is an **execution substrate** that turns **natural-language intent** into a **deterministic execution plan**, with clear preview, confirmation, and guarded execution. It is designed as a **backend execution service** for interfaces such as documentation platforms, dashboards, and AI agents — not as an autonomous agent.
+IAMY is an **external execution layer** that lets users safely perform **user-initiated actions** from documentation platforms, dashboards, and agent interfaces. It turns natural-language intent into a **deterministic execution plan**, with explicit preview, confirmation, and guarded execution.
 
-This repo includes:
-- A **reference API backend** (`/plan`, `/execute` semantics)
-- A **Mintlify integration demo**
-- Adapter examples for other surfaces (dashboards, agents)
-- JSON schemas for structured plans and results
+IAMY is designed as a **backend execution service** that works alongside agents (e.g. documentation assistants), not an autonomous system.
 
-> Intent → **deterministic Execution Plan** → preview → confirm → execute → logs & audit
+> Intent → explicit execution plan → preview → confirm → execute → logs & audit
 
 ---
 
-## 🔎 What IAMY Solves
+## 🔎 The Problem: Executable Docs and the Leap of Trust
 
-Modern interfaces let users **read about tasks** but still require them to manually translate intent into actions (CLI, API calls, transactions). This leads to friction, errors, and poor UX.
+Modern documentation lets users **read about tasks**, but as docs become more interactive, they increasingly enable actions to be initiated directly from the interface. In financial or otherwise irreversible environments, this creates friction and risk.
 
-IAMY enables execution sheets that are:
-- **Deterministic** — no hallucination
-- **Previewable** — plan first, execute later
-- **Guarded** — explicit user confirmation
-- **Auditable** — structured results & logs
-- **Surface-agnostic** — works with docs, dashboards, agents
+In financial or otherwise irreversible environments, this creates a **"leap of trust"** problem. Once actions can be proposed by an LLM inside docs, users need strong guarantees about:
+
+* what will happen before anything runs
+* explicit confirmation and responsibility
+* predictable, repeatable execution
+
+IAMY addresses this by introducing a **safety-oriented execution layer** that:
+
+* **Deterministic** — no hidden steps or hallucinated actions
+* **Previewable** — execution is proposed before it runs
+* **Guarded** — nothing executes without explicit confirmation
+* **Auditable** — structured logs and results
+* **Surface-agnostic** — works with docs, dashboards, and agents
 
 ---
 
