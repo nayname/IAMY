@@ -27,19 +27,6 @@ IAMY addresses this by introducing a **safety-oriented execution layer** that:
 
 ---
 
-## 🔌 Why an External Execution Layer
-
-IAMY is intentionally designed as an **external** execution layer.
-
-This allows documentation platforms to:
-- avoid owning execution risk directly
-- keep agent reasoning flexible and UI-focused
-- evolve execution policies independently of the doc runtime
-
-Execution is treated as a separate responsibility, with explicit boundaries, auditability, and opt-in integration.
-
----
-
 ## 🧠 Core Concepts
 
 ### Intent
