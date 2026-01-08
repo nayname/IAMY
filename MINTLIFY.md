@@ -56,11 +56,4 @@ If these constraints are unacceptable, execution should remain out of scope for 
 ```mdx
 import { IamyExecWidget } from "@/components/IamyExecWidget";
 
-<IamyExecWidget
-  endpoint="https://YOUR_IAMY_BACKEND"
-  mode="preview"     // "mock" | "preview" | "execute"
-  suggestions={[
-    "Show how to deploy the contract",
-    "List the API call to query balances",
-  ]}
-/>
+...
