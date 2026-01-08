@@ -1,5 +1,5 @@
 
-# IAMY — Executable Docs with Deterministic & Secure Execution
+# IAMY - Executable Docs with Deterministic & Secure Execution
 
 IAMY is an **external execution layer** that lets users safely perform **user-initiated actions** from documentation platforms, dashboards, and agent interfaces. It turns natural-language intent into a **deterministic execution plan**, with explicit preview, confirmation, and guarded execution.
 
