@@ -75,16 +75,16 @@ Structured results and logs suitable for auditing, inspection, and replay.
 
 ## 💡 What IAMY Is (and Isn’t)
 
-**IAMY *is***
-✅ A backend execution substrate
-✅ Deterministic plan generation
-✅ Guarded execution modes
-✅ Execution adapters for external surfaces
+**IAMY *is***   
+✅ A backend execution substrate  
+✅ Deterministic plan generation  
+✅ Guarded execution modes  
+✅ Execution adapters for external surfaces 
 
-**IAMY *is not***
-❌ A general “AI agent”
-❌ A mystery execution layer with hidden steps
-❌ A replacement for user intent confirmation
+**IAMY *is not***   
+❌ A general “AI agent”   
+❌ A mystery execution layer with hidden steps   
+❌ A replacement for user intent confirmation   
 
 
 ---
