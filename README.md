@@ -89,7 +89,7 @@ Structured results and logs suitable for auditing, inspection, and replay.
 
 ---
 
-## 🚀 Quickstart — Mintlify Example (3 min)
+## 🚀 Quickstart - Mintlify Example (3 min)
 
 > 🍃 This example embeds an execution widget into a Mintlify MDX doc.  
 > You don’t need to modify Mintlify core — this is external and opt-in.
