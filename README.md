@@ -11,9 +11,7 @@ IAMY is designed as a **backend execution service** that works alongside LLM mod
 
 ## 🔎 The Problem: Executable Docs and the Leap of Trust
 
-Modern documentation lets users **read about tasks**, but as docs become more interactive, they increasingly enable actions to be initiated directly from the interface. In financial or otherwise irreversible environments, this creates friction and risk.
-
-In financial or otherwise irreversible environments, this creates a **"leap of trust"** problem. Once actions can be proposed by an LLM inside docs, users need strong guarantees about:
+Modern documentation lets users **read about tasks**, but as docs become more interactive, they increasingly enable actions to be initiated directly from the interface. In financial or otherwise irreversible environments, this creates friction and risk. This creates a **"leap of trust"** problem. Once actions can be proposed by an LLM inside docs, users need strong guarantees about:
 
 * what will happen before anything runs
 * explicit confirmation and responsibility
@@ -50,23 +48,6 @@ pnpm dev
 3. Open in your browser
    👉 Visit `http://localhost:3000/docs/exec-demo` to interact with the execution widget.
 
----
-
-## 📦 What’s in This Repo
-
-```
-IAMY
-├─ /core-execution/           # Core execution logic + schemas
-├─ /packages/
-│   ├─ mintlify-widget/       # React widget for MDX embedding
-│   ├─ dashboard-adapter/     # Example dashboard UI integration
-│   └─ agent-adapter/         # Example agent integration adapter
-├─ /server/                   # Minimal API server reference
-├─ /schemas/                  # ExecutionPlan & related JSON schemas
-├─ /examples/                 # Runnable examples
-│   └─ mintlify-site/
-└─ README.md
-```
 
 ---
 
@@ -78,80 +59,28 @@ A natural-language description of what a user wants to do.
 
 ### Execution Plan
 
-A **deterministic structured plan** that transforms an intent into explicit, reviewable steps.
+A **deterministic, structured plan** that transforms an intent into explicit, reviewable steps.
+
+Execution plans are not free-form outputs: they are validated against predefined schemas and **preventively evaluated using expert-defined rules and policies** before being shown to the user.
+
+### Guardrails
+
+Guardrails define **what is allowed to be proposed and executed**. They encode domain knowledge and safety constraints provided by experts (e.g. read-only limits, parameter bounds, allowed operations, environment restrictions).
+
+Guardrails are enforced **before execution**, ensuring unsafe or out-of-scope actions are never presented for confirmation.
 
 ### Preview
 
-Before anything runs, a user sees the plan in a UI and can confirm.
+Before anything runs, the user sees the full execution plan in a UI and can review every step.
 
 ### Execute
 
-After explicit confirmation, the plan runs via backend services or adapters.
+After explicit user confirmation, the validated plan runs via backend services or adapters.
 
-### Result
+### Result & Audit
 
-Structured logs/results that can be audited and replayed.
+Structured results and logs suitable for auditing, inspection, and replay.
 
----
-
-## 🧩 API Contract (Reference)
-
-**Plan**
-
-```
-POST /api/plan
-Content-Type: application/json
-
-{
-  "intent": "string",
-  "context": { ... }
-}
-```
-
-**Response**
-
-```json
-{
-  "plan": { /* structured ExecutionPlan */ },
-  "warnings": [ ... ]
-}
-```
-
-**Execute**
-
-```
-POST /api/execute
-Content-Type: application/json
-
-{
-  "plan": { /* from /plan */ },
-  "confirm": true
-}
-```
-
-**Response**
-
-```json
-{
-  "result": { /* outcome, logs, receipts */ }
-}
-```
-
-(This API is meant as a reference. See server implementation for details.)
-
----
-
-## 📌 Security Model (Important)
-
-IAMY is designed with **safety first**:
-
-* 🎯 Default mode: **preview only**
-* 🔐 Execution requires explicit user confirmation
-* 🔒 UI must never execute without confirmation
-* 🔑 No secrets in frontend — backend must enforce allowlists/credentials
-* 🧾 All runs generate structured logs/receipts
-
-This makes IAMY suitable for **enterprise control planes** and **responsible agents**.
 
 ---
 
@@ -165,23 +94,8 @@ This makes IAMY suitable for **enterprise control planes** and **responsible age
 
 **IAMY *is not***
 ❌ A general “AI agent”
-❌ A feature request to Mintlify core
 ❌ A mystery execution layer with hidden steps
 ❌ A replacement for user intent confirmation
-
----
-
-## 🧪 Surfaces We’re Exploring
-
-IAMY is built to support multiple frontends:
-
-| Surface         | Status           | Notes                             |
-| --------------- | ---------------- | --------------------------------- |
-| Docs (Mintlify) | Demo             | Intent → execution in MDX         |
-| Dashboard UIs   | Adapter sketches | Internal tools, admin flows       |
-| AI Agents       | Adapter sketches | Intent → plan → confirm → execute |
-
-(Expand these as adapters evolve.)
 
 ---
 
@@ -195,10 +109,6 @@ We are especially interested in contributions that help:
 * improve adapter patterns
 * add UI integrations without assuming host privileges
 * explore enterprise safety modes
-
-Before opening a PR, please read:
-➡️ `docs/MINTLIFY.md` (Mintlify integration notes)
-➡️ `docs/AGENTS.md` (Agent adapter design)
 
 ---
 
