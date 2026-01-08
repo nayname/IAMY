@@ -27,6 +27,19 @@ IAMY addresses this by introducing a **safety-oriented execution layer** that:
 
 ---
 
+## 🔌 Why an External Execution Layer
+
+IAMY is intentionally designed as an **external** execution layer.
+
+This allows documentation platforms to:
+- avoid owning execution risk directly
+- keep agent reasoning flexible and UI-focused
+- evolve execution policies independently of the doc runtime
+
+Execution is treated as a separate responsibility, with explicit boundaries, auditability, and opt-in integration.
+
+---
+
 ## 🚀 Quickstart — Mintlify Example (3 min)
 
 > 🍃 This example embeds an execution widget into a Mintlify MDX doc.  
@@ -41,12 +54,11 @@ cd IAMY/examples/mintlify-site
 2. Install dependencies and start
 
 ```bash
-pnpm install
-pnpm dev
+...
 ```
 
 3. Open in your browser
-   👉 Visit `http://localhost:3000/docs/exec-demo` to interact with the execution widget.
+   👉 Visit `...` to interact with the execution widget.
 
 
 ---
