@@ -64,9 +64,11 @@ It is a governance layer for applying intelligence—human or artificial—safel
 
 A natural-language description of what a user wants to do.
 
-### Execution Plan ("Recipe")
+### Execution Plan
 
 A **deterministic, structured plan** that transforms an intent into explicit, reviewable steps.
+
+Unlike prompt-based agent skills, an IAMY Execution Plan is not guidance for the model — it is a concrete, permissioned artifact interpreted and enforced by infrastructure.
 
 Execution plans are not free-form outputs: they are validated against predefined schemas and **preventively evaluated using expert-defined rules and policies** before being shown to the user.
 
