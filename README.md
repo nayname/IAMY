@@ -28,6 +28,36 @@ IAMY addresses this by introducing a **safety-oriented execution layer** that:
 
 ---
 
+## Philosophy
+
+IAMY is built on a simple premise:  
+intelligence can propose actions, but **infrastructure must enforce execution**.
+
+For centuries, humans—already a form of general intelligence—have relied on
+signatures, checklists, logs, audits, and separation of duties.
+Not because of lack of knowledge, but because **safe execution requires
+physical, inspectable constraints**.
+
+AI systems are no different.
+
+Prompt-level instructions and agent “skills” can improve reasoning,
+but they cannot guarantee safety, determinism, or accountability once actions
+affect real systems—APIs, infrastructure, or financial state.
+
+IAMY externalizes execution from the model.
+Instead of trusting the agent to behave correctly, IAMY enforces:
+
+- explicit execution plans
+- preview and confirmation
+- permissioned actions
+- deterministic execution
+- logs and auditability
+
+This is not a workaround for weak models.
+It is a governance layer for applying intelligence—human or artificial—safely at scale.
+
+---
+
 ## 🧠 Core Concepts
 
 ### Intent
