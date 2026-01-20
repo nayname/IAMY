@@ -62,7 +62,7 @@ Structured results and logs suitable for auditing, inspection, and replay.
 
 ---
 
-## Philosophy
+## 🏛️ Philosophy
 
 IAMY is built on a simple premise:  
 intelligence can propose actions, but **infrastructure must enforce execution**.
