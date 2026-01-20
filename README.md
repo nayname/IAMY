@@ -33,7 +33,7 @@ IAMY addresses this by introducing a **safety-oriented execution layer** that:
 IAMY is built on a simple premise:  
 intelligence can propose actions, but **infrastructure must enforce execution**.
 
-For centuries, humans—already a form of general intelligence—have relied on
+For centuries, humans — already a form of general intelligence — have relied on
 signatures, checklists, logs, audits, and separation of duties.
 Not because of lack of knowledge, but because **safe execution requires
 physical, inspectable constraints**.
