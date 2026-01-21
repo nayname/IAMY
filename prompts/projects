@@ -1,0 +1,151 @@
+You are helping me design a focused go-to-market strategy for an early-stage
+open-source infrastructure project.
+
+### 1. Project description (context you must keep consistent)
+
+The project is an external execution layer for AI/LLM-driven interfaces.
+
+It is NOT an autonomous agent framework.
+
+The core idea:
+When an LLM sits on the execution path between a user interface
+(docs, dashboards, admin panels) and backend actions (APIs, CLIs, transactions),
+there is a “leap of trust” problem.
+
+The project introduces a deterministic execution boundary:
+intent → explicit execution plan → preview → user confirmation → execution → audit.
+
+The goal is to make LLM-initiated actions:
+- predictable
+- reviewable
+- non-autonomous
+- safe for irreversible or high-stakes environments
+
+Typical surfaces:
+- documentation agents
+- internal dashboards
+- admin panels
+- infra tooling
+- blockchain / financial systems
+
+---
+
+### 2. What kinds of GitHub projects I want to find
+
+Find open-source GitHub projects that satisfy MOST of the following:
+
+A) Architecture
+- LLM or agent is involved in translating user intent into backend actions
+- Flow resembles: frontend → LLM/agent → backend / side effects
+
+B) Risk / ownership
+- Actions are irreversible, costly, or operationally sensitive
+- Someone clearly “owns” consequences (infra, ops, platform teams)
+
+C) Maturity
+- Active maintainers
+- Real users (not demo-only, not research toys)
+- Not FAANG-locked or closed ecosystems
+
+D) Signal
+- Issues or Discussions mention:
+  - safety
+  - trust
+  - approval
+  - dry-run
+  - permissions
+  - tool-calling risks
+  - MCP / agent execution concerns
+- Or evidence of hacked-in safeguards (prompts, manual confirmation, TODOs)
+
+Explicitly exclude:
+- consumer chatbots
+- content-generation tools
+- autonomous demo agents
+- repos with “do not use in prod” everywhere
+
+---
+
+### 3. How to evaluate and sort projects
+
+For each candidate project, score (0–2 each):
+
+1. LLM on execution path
+2. Irreversible / risky backend actions
+3. Clear maintainer ownership
+4. Evidence of trust/safety concern
+5. Architectural friction around execution
+
+Only keep projects scoring **≥7/10**.
+
+For each selected project, output:
+- Repo name + link
+- One-sentence description
+- Why execution trust is a real issue here
+- Where the signal appears (Issue / Discussion / README)
+- Whether it is better suited for:
+  - docs surface
+  - dashboard / admin surface
+  - internal tooling
+
+---
+
+### 4. Day-by-day GTM plan (10 days)
+
+Divide the work into a **10-day GTM plan**, with each day having:
+- a concrete goal
+- a bounded task list
+- a stopping condition
+
+Use this structure:
+
+Day 1–2: Discovery
+- Identify and shortlist high-signal repos
+- No outreach yet
+
+Day 3–4: Deep signal validation
+- Read issues / discussions
+- Extract exact language maintainers use around trust & safety
+
+Day 5–6: Mapping & positioning
+- Map each repo to the project’s execution-layer value
+- Decide: comment publicly vs email vs do nothing
+
+Day 7–8: Outreach (lightweight)
+- Draft GitHub-native comments or short emails
+- One project per message
+- No follow-ups, no selling, no meeting asks
+
+Day 9: Synthesis
+- Identify patterns:
+  - repeated objections
+  - repeated pain points
+  - repeated misunderstandings
+
+Day 10: Decision checkpoint
+- Based on signals, decide:
+  - continue this GTM lane
+  - pivot target surface
+  - stop this path
+
+---
+
+### 5. Output format
+
+Produce:
+1. A ranked list of GitHub projects (max 15)
+2. A table with scores and reasoning
+3. The 10-day GTM plan
+4. A short summary of what signals would indicate:
+   - strong pull
+   - weak pull
+   - dead end
+
+Do NOT:
+- hype
+- invent traction
+- suggest VC fundraising
+- suggest Reddit / YC forums
+- suggest mass outreach
+
+Be conservative, realistic, and operator-oriented.
