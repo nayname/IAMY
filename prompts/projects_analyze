@@ -1,0 +1,86 @@
+You are analyzing a GitHub repository in the context of an external execution-layer
+project for AI/LLM-driven interfaces.
+
+PROJECT CONTEXT (must stay consistent):
+The project is NOT an autonomous agent framework.
+It focuses on execution trust when an LLM sits between user intent and real actions.
+
+Core concern:
+When an LLM influences or initiates actions that mutate state, create artifacts,
+or trigger side effects, there is a “leap of trust” around execution,
+responsibility, and verification.
+
+Execution-layer model:
+intent → explicit execution plan → preview / verification → confirmation → execution → audit
+
+TASK:
+Study the given repository and identify concrete points that can be referenced
+in an Issue or Discussion relative to this execution-trust problem.
+
+Do NOT invent usage or production claims.
+Base everything strictly on what the repo enables, documents, or implies.
+
+Focus on:
+- where LLM output influences state, artifacts, or execution
+- where responsibility boundaries are implicit or unclear
+- where manual review or prompts are relied on instead of explicit safeguards
+
+OUTPUT FORMAT:
+
+1) What the repo actually does (brief, factual)
+- One short paragraph describing what the project enables in practice.
+
+2) Execution-relevant touchpoints
+List specific places where:
+- LLM output is applied, persisted, or executed
+- state is mutated (files, data, configs, infra, exports, etc.)
+- downstream systems depend on the result
+
+Use bullet points.
+Avoid speculation.
+
+3) Execution-trust angles (referenceable points)
+For each angle:
+- Describe the concrete behavior
+- Explain why it introduces an execution / responsibility question
+- Keep it neutral and non-accusatory
+
+These should be usable as anchors in an Issue or Discussion.
+
+4) What the repo currently relies on (if anything)
+Identify whether the repo relies on:
+- manual review
+- prompts
+- user caution
+- implicit human-in-the-loop
+- TODOs / comments / documentation warnings
+
+If none are visible, say so explicitly.
+
+5) Summary of signals for this repo
+
+Use this exact schema:
+
+| Signal | Yes / No / Partial | Notes |
+|------|--------------------|------|
+| LLM on execution or mutation path? |  |  |
+| Persistent or irreversible effects? |  |  |
+| Clear ownership of consequences? |  |  |
+| Evidence of trust / safety concern? |  |  |
+| Architectural friction around execution? |  |  |
+
+6) How this repo maps to an execution-layer discussion
+- One short paragraph explaining how an execution-layer concept
+  (plan / preview / confirmation / audit) could *conceptually*
+  relate to this repo — without proposing a concrete solution or integration.
+
+Tone requirements:
+- Technical
+- Neutral
+- Curious
+- No marketing
+- No judgment
+- No assumptions about maintainer intent
+
+The goal is to surface *discussion-worthy architectural tension*,
+not to pitch a product.
