@@ -1,0 +1,45 @@
+SECOND TASK (follow-up)
+
+For each execution-related pain point you identified in the repository
+(e.g. easy-llm-cli), map that pain point to the exact code locations
+that implement the current behavior.
+
+Hard constraints
+- Do NOT invent behavior or infer intent.
+- Base everything strictly on the repository’s code and in-repo documentation.
+- If a mapping is partial or unclear, say so explicitly.
+
+For EACH pain point, provide:
+
+1) Pain point identifier
+- A short label matching the pain point from the previous analysis.
+
+2) Code references
+- One or more concrete code blocks that participate in the pipeline.
+- Include:
+  - file path
+  - function / class / command name
+  - a short quoted snippet (only what’s necessary)
+  - a direct GitHub permalink to the lines
+
+3) Pipeline mapping
+Describe how these code blocks form the pipeline, e.g.:
+user input → LLM invocation → parsing / interpretation → tool / command execution → side effect
+
+4) What this code actually enforces (and what it does not)
+- What guarantees exist in code (if any)
+- What is implicitly trusted (LLM output, user intent, prompt correctness, etc.)
+- Where responsibility or verification is missing or deferred to the user
+
+5) Confidence level
+- Explicitly state whether this mapping is:
+  - clearly supported by the code
+  - partially supported
+  - ambiguous from the repo
+
+Output requirements
+- Use bullet points and short paragraphs.
+- No redesign proposals.
+- No product pitching.
+- This output should be usable directly as technical evidence
+  when starting an Issue or Discussion with the maintainers.
