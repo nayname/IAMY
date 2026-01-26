@@ -1,97 +1,79 @@
-You are analyzing a GitHub repository in the context of an external execution-layer
-project for AI/LLM-driven interfaces.
+You are analyzing a GitHub repository in the context of an external execution-layer project
+for AI/LLM-driven interfaces.
 
-PROJECT CONTEXT (must stay consistent):
-The project is NOT an autonomous agent framework.
-It focuses on execution trust when an LLM sits between user intent and real actions.
+PROJECT CONTEXT (must stay consistent)
+- This project is NOT an autonomous agent framework.
+- It focuses on execution trust when an LLM sits between user intent and real actions.
 
-Core concern:
-When an LLM influences or initiates actions that mutate state, create artifacts,
-or trigger side effects, there is a “leap of trust” around execution,
-responsibility, and verification.
+Core concern
+When an LLM (or agent) can trigger real backend actions, we hit trust / security /
+predictability / transparency problems: “Who is responsible?”, “What exactly will happen?”,
+“Can we verify before it runs?”, “Is there an audit trail?”
+We want to detect repos where this pain exists because the repo connects LLM output
+to real external actions.
 
-Execution-layer model:
+Execution-layer model (reference)
 intent → explicit execution plan → preview / verification → confirmation → execution → audit
 
-TASK:
-Study the given repository and identify concrete points that can be referenced
-in an Issue or Discussion relative to this execution-trust problem.
+TASK
+Study the given repository and its pipeline. Identify concrete pain points where the link
+between LLM output and external interfaces is weak or underspecified, and extract
+issue/discussion-worthy anchors.
 
-Do NOT invent usage or production claims.
-Base everything strictly on what the repo enables, documents, or implies.
+Hard constraints
+- Do NOT invent usage, production claims, or maintainer intent.
+- Base everything strictly on what is visible in the repo’s code (and its in-repo docs/comments).
+- If something is unclear, say “unclear from the repo” rather than guessing.
 
-Focus on:
-- where LLM output influences state, artifacts, or execution
-- where responsibility boundaries are implicit or unclear
-- where manual review or prompts are relied on instead of explicit safeguards
+Focus on
+- Where LLM output connects to external modules/tools/APIs/CLIs/services
+- Where state changes happen (files, configs, infra, exports, deployments, DB writes, etc.)
+- Where downstream systems depend on LLM-produced outputs
+- Where safeguards are prompt-based / manual / implied rather than explicit in code
 
-OUTPUT FORMAT:
+OUTPUT FORMAT
 
 1) What the repo actually does (brief, factual)
 - One short paragraph describing what the project enables in practice.
+- Cite the specific components that make this true (e.g., modules, commands, key files).
 
 2) Execution-relevant touchpoints
-List specific places where:
-- LLM output is applied, persisted, or executed
-- state is mutated (files, data, configs, infra, exports, etc.)
-- downstream systems depend on the result
+Provide bullet points. Each bullet must be grounded in a concrete code path or component.
 
-Use bullet points.
-Avoid speculation.
+For each touchpoint:
+a) Pipeline sketch (include the LLM step + the external side effect)
+   - Write as a simple arrow chain, e.g.:
+     user input → LLM prompt/response → tool invocation → side effect (file/API/infra)
+b) Current behavior (what the repo does today)
+   - What triggers the action? Where does the LLM output flow?
+   - What gets executed / written / changed?
+c) Why this raises an execution / responsibility question
+   - What could go wrong: ambiguity, injection, unexpected side effects, lack of determinism,
+     missing provenance, unclear confirmation boundary, etc.
+d) How an external execution layer would change the behavior (conceptual, not a design)
+   - Describe at a high level (plan/preview/confirm/audit), without proposing a concrete
+     integration or claiming feasibility unless the repo structure clearly supports it.
 
-3) Execution-trust angles (referenceable points)
-For each angle:
-- Describe the concrete behavior
-- Explain why it introduces an execution / responsibility question
-- Keep it neutral and non-accusatory
-
-These should be usable as anchors in an Issue or Discussion.
-
-4) What the repo currently relies on (if anything)
-Identify whether the repo relies on:
-- manual review
-- prompts
-- user caution
-- implicit human-in-the-loop
-- TODOs / comments / documentation warnings
-
+3) What the repo currently relies on (if anything)
+Identify explicit mechanisms the repo uses for safety/governance, such as:
+- manual review steps
+- “user caution” warnings in docs
+- prompt instructions as the main safeguard
+- implicit human-in-the-loop assumptions
+- TODOs / comments indicating missing guardrails
 If none are visible, say so explicitly.
 
-5) Summary of signals for this repo
+4) Practical integration fit (internal summary)
+In 1–2 sentences:
+- Is this repo a plausible integration target for an execution-layer concept, based on the
+  severity/centrality of the pain points you identified? (Rate: highly relevant / relevant /
+  weakly relevant / not relevant.)
+- Based on the code structure, how hard would it be for an external contributor to add a
+  module / adapter / hook point to support enforcement (easy / moderate / hard), and why
+  (e.g., clear abstraction boundaries vs. tightly coupled execution).
 
-Use this exact schema:
-
-| Signal | Yes / No / Partial | Notes |
-|------|--------------------|------|
-| LLM on execution or mutation path? |  |  |
-| Persistent or irreversible effects? |  |  |
-| Clear ownership of consequences? |  |  |
-| Evidence of trust / safety concern? |  |  |
-| Architectural friction around execution? |  |  |
-
-6) How this repo maps to an execution-layer discussion
-- One short paragraph explaining how an execution-layer concept
-  (plan / preview / confirmation / audit) could *conceptually*
-  relate to this repo — without proposing a concrete solution or integration.
-
-7) Practical integration fit (internal summary)
-- In 1–2 sentences, summarize:
-  - whether this repo is a plausible integration target
-  - and *why* (or why not), based on:
-    - execution surface
-    - ownership of consequences
-    - expected integration friction
-
-This section is for internal decision-making only and should be pragmatic,
-not aspirational.
-
-Tone requirements:
-- Technical
-- Neutral
-- Curious
-- No marketing
-- No judgment
-- No assumptions about maintainer intent
-
-The goal is to surface *discussion-worthy architectural tension*,
-not to pitch a product.
+Tone requirements
+- Technical, neutral, curious
+- No marketing, no judgment
+- No assumptions about intent
+Goal: surface discussion-worthy architectural tension, not pitch a product.
