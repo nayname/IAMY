@@ -54,7 +54,7 @@ Execution plans are not free-form outputs: they are validated against predefined
 
 ### Guardrails
 
-Guardrails define **what is allowed to be proposed and executed**. They encode domain knowledge and safety constraints provided by experts (e.g. read-only limits, parameter bounds, allowed operations, environment restrictions).
+Guardrails define **what actions are allowed to be proposed and executed**. They encode domain knowledge and safety constraints provided by experts (e.g. read-only limits, parameter bounds, allowed operations, environment restrictions).
 
 Guardrails are enforced **before execution**, ensuring unsafe or out-of-scope actions are never presented for confirmation.
 
