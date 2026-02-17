@@ -2,11 +2,11 @@
 # IAMY - Executable Docs with Deterministic & Secure Execution
 *Don’t enforce logic in prompts. Enforce it in infrastructure.*
 
-IAMY is an **external execution layer** that lets users safely perform **user-initiated actions** from documentation platforms, dashboards, and agent interfaces. It turns natural-language intent into a **deterministic execution plan**, with explicit preview, confirmation, and guarded execution.
+IAMY is an **external execution layer** that makes LLM-driven actions explicit, previewable, and policy-bound. It turns natural-language intent into a **deterministic execution plan**, which can be inspected, validated, and confirmed before any real action is executed.
 
-IAMY is designed as a **backend execution service** that works alongside LLM models.
+IAMY is designed as a **backend execution service** that sits between LLM systems and real infrastructure.
 
-> Intent → explicit execution plan → preview → validate → execute → logs & audit
+> Intent → explicit execution plan → validate → execute → logs & audit
 
 ---
 
