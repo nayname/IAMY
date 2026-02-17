@@ -1,0 +1,239 @@
+{
+  "$schema": "operational-profile.schema.json",
+  "profile_id": "dev-backend-ops",
+  "name": "Backend Operations Profile",
+  "description": "Operational profile for backend maintenance tasks",
+  "version": "1.0.0",
+  "environment": "development",
+  "project_root": "~/code/myproject",
+
+  "paths": {
+    "working_dirs": [
+      "~/code/myproject",
+      "/var/log/myproject"
+    ],
+    "protected_paths": [
+      "~/.ssh",
+      "~/.aws",
+      "~/.config",
+      "/etc",
+      "/var/lib",
+      "~/code/myproject/.env",
+      "~/code/myproject/.env.production"
+    ],
+    "sensitive_patterns": [
+      "*.env",
+      "*.env.*",
+      "*secret*",
+      "*credential*",
+      "*.pem",
+      "*.key",
+      "*password*"
+    ],
+    "scratch_dirs": [
+      "/tmp/myproject",
+      "~/code/myproject/tmp"
+    ]
+  },
+
+  "database": {
+    "protected_tables": [
+      "users",
+      "orders",
+      "payments",
+      "accounts",
+      "audit_log"
+    ],
+    "safe_tables": [
+      "sessions",
+      "cache_*",
+      "tmp_*",
+      "test_*"
+    ],
+    "require_where_clause": true,
+    "max_affected_rows": 1000,
+    "production_indicators": [
+      "prod",
+      "production",
+      "live",
+      "primary"
+    ]
+  },
+
+  "services": {
+    "protected_services": [
+      "postgresql",
+      "postgres",
+      "mysql",
+      "mongodb",
+      "nginx",
+      "haproxy"
+    ],
+    "safe_services": [
+      "redis",
+      "memcached",
+      "sidekiq",
+      "worker"
+    ],
+    "forbidden_commands": [
+      "rm -rf /",
+      "rm -rf ~",
+      "rm -rf /*",
+      "rm -rf ~/",
+      ":(){ :|:& };:",
+      "> /dev/sda",
+      "mkfs.",
+      "dd if=/dev/zero",
+      "chmod -R 777 /",
+      "chown -R",
+      "DROP DATABASE",
+      "DROP TABLE users",
+      "TRUNCATE users"
+    ],
+    "confirm_commands": [
+      "reboot",
+      "shutdown",
+      "systemctl restart",
+      "systemctl stop",
+      "service * restart",
+      "service * stop",
+      "kill -9",
+      "pkill",
+      "docker system prune",
+      "docker volume rm",
+      "kubectl delete",
+      "terraform destroy",
+      "terraform apply"
+    ]
+  },
+
+  "network": {
+    "allowed_domains": [
+      "api.github.com",
+      "*.internal.company.com",
+      "localhost",
+      "127.0.0.1"
+    ],
+    "blocked_domains": [
+      "*.pastebin.com",
+      "*.requestbin.com",
+      "*.webhook.site",
+      "*.ngrok.io",
+      "*.pipedream.net"
+    ],
+    "internal_patterns": [
+      "*.internal.*",
+      "*.local",
+      "*.svc.cluster.local",
+      "localhost",
+      "127.0.0.1",
+      "10.*",
+      "192.168.*"
+    ]
+  },
+
+  "procedures": [
+    {
+      "name": "credential_rotation",
+      "description": "Safely rotate database credentials across services",
+      "required_steps": [
+        "Generate new credentials in vault/secrets manager",
+        "Update credential in first service",
+        "Verify service connectivity",
+        "Repeat for remaining services",
+        "Verify all services healthy",
+        "Revoke old credentials"
+      ],
+      "preconditions": [
+        "All services are healthy",
+        "Backup of current credentials exists",
+        "Maintenance window is active"
+      ],
+      "postconditions": [
+        "All services can connect with new credentials",
+        "Old credentials are revoked",
+        "Audit log updated"
+      ],
+      "rollback_steps": [
+        "Revert to old credentials in affected services",
+        "Verify connectivity restored",
+        "Do NOT revoke old credentials"
+      ]
+    },
+    {
+      "name": "rolling_restart",
+      "description": "Restart services one at a time with health checks",
+      "required_steps": [
+        "Check current service health",
+        "Drain connections from instance",
+        "Restart instance",
+        "Wait for health check to pass",
+        "Restore traffic to instance",
+        "Proceed to next instance"
+      ],
+      "preconditions": [
+        "At least 2 healthy instances available",
+        "Health check endpoint is responding"
+      ],
+      "postconditions": [
+        "All instances restarted",
+        "All instances passing health checks",
+        "No dropped requests during restart"
+      ],
+      "rollback_steps": [
+        "Stop restart procedure",
+        "Restore traffic to all healthy instances",
+        "Investigate failed instance separately"
+      ]
+    },
+    {
+      "name": "database_cleanup",
+      "description": "Safely purge expired/orphaned data",
+      "required_steps": [
+        "Identify target tables and conditions",
+        "Run SELECT COUNT to preview affected rows",
+        "Verify count is within expected range",
+        "Execute DELETE with WHERE clause",
+        "Verify row count matches preview",
+        "Run VACUUM if applicable"
+      ],
+      "preconditions": [
+        "Recent backup exists",
+        "Target tables are NOT in protected list",
+        "Affected row count is below threshold"
+      ],
+      "postconditions": [
+        "Target data removed",
+        "No protected data affected",
+        "Audit log updated"
+      ],
+      "rollback_steps": [
+        "Restore from backup if needed",
+        "Document what was deleted",
+        "Review and adjust cleanup criteria"
+      ]
+    }
+  ],
+
+  "global_constraints": [
+    "Never modify production without explicit confirmation",
+    "Always verify environment before destructive operations",
+    "Log all state-mutating operations to audit trail",
+    "Never expose secrets in logs or output",
+    "Verify backup exists before data deletion"
+  ],
+
+  "maintenance_windows": [
+    "0 2 * * 0",
+    "0 2 * * 6"
+  ],
+  "blocked_hours": [
+    "09:00-18:00"
+  ],
+
+  "notify_on_high_risk": true,
+  "notify_channels": [
+    "slack:#ops-alerts",
+    "email:oncall@company.com"
+  ]
+}

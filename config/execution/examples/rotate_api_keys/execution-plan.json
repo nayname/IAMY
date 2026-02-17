@@ -1,0 +1,46 @@
+{
+  "description_for_user": "Rotate the shared API key by generating a new key, migrating each consumer one at a time, and revoking the old key after verification.",
+
+  "five_w_one_h": {
+    "who": "system",
+    "what": "Rotate API keys",
+    "where": "internal backend services using shared API credentials",
+    "when": "immediate",
+    "why": "Reduce security risk from long-lived API keys",
+    "how": "By generating a new key, updating consumers sequentially, verifying functionality, and revoking the old key"
+  },
+
+  "procedure": [
+    { "step": 1, "action": "Identify all consumers using the current API key" },
+    { "step": 2, "action": "Generate a new API key in the secrets manager" },
+    { "step": 3, "action": "Test the new API key with a sample API call" },
+    { "step": 4, "action": "Update the first consumer to use the new API key" },
+    { "step": 5, "action": "Restart or redeploy the first consumer" },
+    { "step": 6, "action": "Verify the first consumer operates correctly" },
+    { "step": 7, "action": "Repeat update and verification for remaining consumers" },
+    { "step": 8, "action": "Verify no consumers are using the old API key" },
+    { "step": 9, "action": "Revoke the old API key" },
+    { "step": 10, "action": "Confirm the old API key is rejected" },
+    { "step": 11, "action": "Update internal documentation" },
+    { "step": 12, "action": "Record the rotation in the audit log" }
+  ],
+
+  "surface_effects": {
+    "touches": [
+      "secrets manager",
+      "service configuration",
+      "audit logs"
+    ],
+    "modifies": true,
+    "creates": true,
+    "deletes": true
+  },
+
+  "constraints": [
+    "Must execute within an approved maintenance window",
+    "Must not revoke the old key before all consumers are verified",
+    "Must not expose API keys in logs or output"
+  ],
+
+  "execution_mode": "execute"
+}
