@@ -18,13 +18,15 @@ Active development happening at:
 
 ---
 
-## 🔎 The Problem: Executable Docs and the Leap of Trust
+## 🔎 The Problem: The Leap of Trust in LLM-Driven Execution
 
-Modern documentation lets users **read about tasks**, but as docs become more interactive, they increasingly enable actions to be initiated directly from the interface. In financial or otherwise irreversible environments, this creates friction and risk. This creates a **"leap of trust"** problem. Once actions can be proposed by an LLM inside docs, users need strong guarantees about:
+As soon as real actions can be proposed by an LLM — whether in automated pipelines, internal tools, or interactive interfaces — users face a leap-of-trust problem. Once execution is mediated by a model, users need strong guarantees about:
 
 * what will happen before anything runs
 * explicit confirmation and responsibility
 * predictable, repeatable execution
+
+Today, these questions are often resolved implicitly at runtime by the model itself.
 
 IAMY addresses this by introducing a **safety-oriented execution layer** that:
 
@@ -32,7 +34,7 @@ IAMY addresses this by introducing a **safety-oriented execution layer** that:
 * **Previewable** — execution is proposed before it runs
 * **Guarded** — nothing executes without explicit confirmation
 * **Auditable** — structured logs and results
-* **Surface-agnostic** — works with docs, dashboards, and agents
+* **Surface-agnostic** — works behind any LLM-driven interface
 
 ---
 
