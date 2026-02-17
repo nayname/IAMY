@@ -52,6 +52,9 @@ Unlike prompt-based agent skills, an IAMY Execution Plan is not guidance for the
 
 Execution plans are not free-form outputs: they are validated against predefined schemas and **preventively evaluated using expert-defined rules and policies** before being shown to the user.
 
+### Operational Profiles
+Users can encode domain-specific knowledge into plan generation — environment constraints, preferred tools, naming conventions, safe defaults. These profiles shape how plans are generated, not just how they're validated.
+
 ### Guardrails
 
 Guardrails define **what actions are allowed to be proposed and executed**. They encode domain knowledge and safety constraints provided by experts (e.g. read-only limits, parameter bounds, allowed operations, environment restrictions).
