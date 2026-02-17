@@ -14,7 +14,7 @@ IAMY is designed as a **backend execution service** that works alongside LLM mod
 
 Active development happening at:
 - [Execution Plan PR](https://github.com/nayname/openclaw-secure-stack/pull/1) — concrete implementation
-- [OpenClaw integration](https://github.com/openclaw/openclaw/pull/XXXX) — plugin for OpenClaw ecosystem
+- [OpenClaw security integration](https://github.com/yi-john-huang/openclaw-secure-stack) — security plugin for OpenClaw ecosystem
 
 Core concept: execution plan as artifact → validate → execute
 
