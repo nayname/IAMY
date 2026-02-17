@@ -6,7 +6,17 @@ IAMY is an **external execution layer** that lets users safely perform **user-in
 
 IAMY is designed as a **backend execution service** that works alongside LLM models.
 
-> Intent → explicit execution plan → preview → confirm → execute → logs & audit
+> Intent → explicit execution plan → preview → validate → execute → logs & audit
+
+---
+
+## Status
+
+Active development happening at:
+- [Execution Plan PR](https://github.com/nayname/openclaw-secure-stack/pull/1) — concrete implementation
+- [OpenClaw integration](https://github.com/openclaw/openclaw/pull/XXXX) — plugin for OpenClaw ecosystem
+
+Core concept: execution plan as artifact → validate → execute
 
 ---
 
